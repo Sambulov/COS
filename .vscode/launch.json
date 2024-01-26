@@ -35,8 +35,8 @@
             "device": "M463KG",
             "svdFile": "./NUM463KG/Res/M460.svd",
             "configFiles": [
-                "./NUM463KG/Res/nulink.cfg",
-                "./NUM463KG/Res/numicroM4.cfg"
+                "./NUM463KG/Res/tool.cfg",
+                "./NUM463KG/Res/mcu.cfg"
             ],
             "preRestartCommands": [
                 "set remotetimeout 200",

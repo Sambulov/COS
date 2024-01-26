@@ -6,3 +6,4 @@
 build/
 .cortex-debug.*
 .vscode/settings.json
+CMakeCache.txt

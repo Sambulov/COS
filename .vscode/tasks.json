@@ -1,0 +1,43 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Clean rebuild project",
+            "command": "cmake --build . --clean-first",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "base": "$gcc", 
+                "fileLocation": ["relative", "${workspaceFolder}/build"]
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Burn Nuvoton M463KG",
+
+            "command": "./openocd.exe",
+            "args": [
+                "-f", "${workspaceFolder}/NUM463KG/Res/nulink.cfg",
+                "-f", "${workspaceFolder}/NUM463KG/Res/numicroM4.cfg",
+                "-c", "init",
+                "-c", "halt",
+                "-c", "flash write_image erase C:/Projects/ATB/bmc-smarc-nuvoton/build/bmc.hex",
+                "-c", "reset run",
+                "-c", "shutdown"
+            ],
+            "options": {
+                "cwd": "C:/NuOpenOCD/bin"
+            },
+            "problemMatcher": "$gcc"
+        }
+
+    ]
+}

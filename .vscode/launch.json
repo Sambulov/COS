@@ -1,0 +1,53 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // https://github.com/Marus/cortex-debug/blob/master/debug_attributes.md
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug NUM463KG",
+            "type": "cortex-debug",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "executable": "./build/bmc.elf",
+            //"showDevDebugOutput": "parsed",
+            "windows": {
+                "searchDir": [ 
+                    "./NUM463KG/Res"
+                ],
+                "serverpath": "C:/NuOpenOCD/bin/openocd.exe",
+                "serverArgs": [],
+                "armToolchainPath": "",
+                "toolchainPrefix": ""
+            },
+            "linux": {
+                "serverpath": "/usr/bin/openocd",
+                "gdbPath": "/usr/bin/gdb-multiarch"
+            },
+            "serialNumber": "", // add programmer serial number if having multiple attached the same time.
+            "servertype": "openocd",
+            "rtos": "auto",
+            //"gdbTarget": "127.0.0.1:50000", // For externally controlled GDB
+            "interface": "swd",
+            "debuggerArgs": [],
+            "runToEntryPoint": "main",
+            "device": "M463KG",
+            "svdFile": "./NUM463KG/Res/M460.svd",
+            "configFiles": [
+                "./NUM463KG/Res/nulink.cfg",
+                "./NUM463KG/Res/numicroM4.cfg"
+            ],
+            "preRestartCommands": [
+                "set remotetimeout 200",
+                "file ./build/bmc.elf",
+                "load",
+                "enable breakpoint",
+                "set breakpoint pending on",
+                "monitor reset init",
+                "tbreak main",
+                "continue"
+            ]
+        }
+    ]
+}

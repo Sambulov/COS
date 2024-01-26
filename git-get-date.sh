@@ -1,0 +1,1 @@
+git log -1 --date=format:'%Y%m%d' | grep Date | sed 's/Date://' | sed 's/ //g'

@@ -5,7 +5,7 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Clean rebuild project",
+            "label": "Clean Rebuild",
             "command": "cmake --build . --clean-first",
             "options": {
                 "cwd": "${workspaceFolder}/build"
@@ -21,43 +21,93 @@
         },
         {
             "type": "shell",
-            "label": "Burn Nuvoton M463KG",
-
-            "command": "./openocd.exe",
+            "label": "OOCD Flash NUM463KG",
+            "linux": {
+				"command": "/home/NuOpenOCD/bin/openocd",
+			},
+			"windows": {
+                "command": "C:/NuOpenOCD/bin/openocd.exe",
+			},
             "args": [
-                "-f", "${workspaceFolder}/NUM463KG/Res/nulink.cfg",
-                "-f", "${workspaceFolder}/NUM463KG/Res/numicroM4.cfg",
+                "-f", "${workspaceFolder}/NUM463KG/Res/tool.cfg",
+                "-f", "${workspaceFolder}/NUM463KG/Res/mcu.cfg",
                 "-c", "init",
                 "-c", "halt",
-                "-c", "flash write_image erase C:/Projects/ATB/bmc-smarc-nuvoton/build/bmc.hex",
+                "-c", "flash write_image erase ./build/bmc.hex",
                 "-c", "reset run",
                 "-c", "shutdown"
             ],
             "options": {
-                "cwd": "C:/NuOpenOCD/bin"
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "type": "shell",
+            "label": "OOCD Erase NUM463KG",
+            "linux": {
+				"command": "/home/NuOpenOCD/bin/openocd",
+			},
+			"windows": {
+                "command": "C:/NuOpenOCD/bin/openocd.exe",
+			},
+            "args": [
+                "-f", "${workspaceFolder}/NUM463KG/Res/tool.cfg",
+                "-f", "${workspaceFolder}/NUM463KG/Res/mcu.cfg",
+                "-c", "init",
+                "-c", "halt",
+                "-c", "flash erase_address 0x00000000 0x00040000",
+                "-c", "shutdown"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": "$gcc"
         },
 		{
 			"type": "shell",
-			"label": "FlashJLink",
-			"linux": {
-				"command": "JLinkExe -commanderscript ./NUM463KG/Res/flash.jlink",
+			"label": "J-Link Flash NUM463KG",
+            "linux": {
+				"command": "JLinkExe -CommandFile ./NUM463KG/Res/flash.jlink",
 			},
 			"windows": {
-				"command": "JLink.exe -commanderscript ./NUM463KG/Res/flash.jlink",
+				"command": "JLink.exe -CommandFile ./NUM463KG/Res/flash.jlink",
 			},
 			"detail": "Flash",
 			"group": "build"
 		},
 		{
-			"label": "EraseMCU",
+			"label": "J-Link Erase NUM463KG",
 			"type": "shell",
 			"linux": {
-				"command": "JLinkExe -commanderscript ./NUM463KG/Res/erase.jlink",
+				"command": "JLinkExe -CommandFile ./NUM463KG/Res/erase.jlink",
 			},
 			"windows": {
-				"command": "JLink.exe -commanderscript ./NUM463KG/Res/erase.jlink",
+				"command": "JLink.exe -CommandFile ./NUM463KG/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
+		{
+			"type": "shell",
+			"label": "J-Link Flash GD32E230",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./GD32E230/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./GD32E230/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase GD32E230",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./GD32E230/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./GD32E230/Res/erase.jlink",
 			},
 			"detail": "Erase",
 			"group": "build"

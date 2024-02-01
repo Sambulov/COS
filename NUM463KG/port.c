@@ -51,13 +51,13 @@ void vSystemTask(void) {
   LED_YELLOW = 0;
   LED_RED = 1;
   LED_GREEN = 1;
-  CLK_SysTickLongDelay(100000);
+  CLK_SysTickLongDelay(500000);
   LED_YELLOW = 1;
   LED_RED = 0;
   LED_GREEN = 1;
-  CLK_SysTickLongDelay(100000);
+  CLK_SysTickLongDelay(500000);
   LED_YELLOW = 1;
   LED_RED = 1;
   LED_GREEN = 0;
-  CLK_SysTickLongDelay(100000);
+  CLK_SysTickLongDelay(500000);
 }

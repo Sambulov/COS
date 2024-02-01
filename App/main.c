@@ -15,7 +15,7 @@ int main() {
     //printf("|              Simple Blinky Demo              |\n");
     //printf("+----------------------------------------------+\n");
     while(1) {
-      vSystemTask();
+        vSystemTask();
     }
     return 0;
 }

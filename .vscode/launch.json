@@ -56,7 +56,7 @@
 			"cwd": "${workspaceFolder}",
 			"executable": "./build/bmc.elf",
 			"windows": {
-				"serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
+				"serverpath": "JLinkGDBServerCL.exe",
 			},
 			"linux": {
 				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
@@ -68,7 +68,32 @@
 			"interface": "swd",
 			"device": "M463KGCAE",
 			"svdFile": "./NUM463KG/Res/mcu.svd",
-			//"preLaunchTask": "FlashJLink",
+			//"preLaunchTask": "J-Link Flash NUM463KG",
+			//"liveWatch": {
+			//	"enabled": true,
+			//	"samplesPerSecond": 4
+			//},
+		},
+        {
+			"name": "Debug JLink GD32E230",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"executable": "./build/bmc.elf",
+			"windows": {
+				"serverpath": "JLinkGDBServerCL.exe",
+			},
+			"linux": {
+				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
+				"gdbPath": "/usr/bin/gdb-multiarch"
+			},
+			"runToEntryPoint": "main",
+			//"showDevDebugOutput": "raw",
+			"servertype": "jlink",
+			"interface": "swd",
+			"device": "GD32E230K6",
+			"svdFile": "./GD32E230/Res/mcu.svd",
+			"preLaunchTask": "J-Link Flash GD32E230",
 			//"liveWatch": {
 			//	"enabled": true,
 			//	"samplesPerSecond": 4

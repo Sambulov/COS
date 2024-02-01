@@ -67,28 +67,16 @@
     ],
     "buildPresets": [
         {
-            "name": "Debug",
+            "name": "DebugGD32E230",
             "description": "",
-            "displayName": " Debug",
-            "configurePreset": "Debug"
+            "displayName": "J-Link Debug GD32E230",
+            "configurePreset": "DebugGD32E230"
         },
         {
-            "name": "RelWithDebInfo",
+            "name": "DebugNUM463KG",
             "description": "",
-            "displayName": " RelWithDebInfo",
-            "configurePreset": "RelWithDebInfo"
-        },
-        {
-            "name": "MinSizeRel",
-            "description": "",
-            "displayName": " MinSizeRel",
-            "configurePreset": "MinSizeRel"
-        },
-        {
-            "name": "Release",
-            "description": "",
-            "displayName": " Release",
-            "configurePreset": "Release"
+            "displayName": "J-Link Debug NUM463KG",
+            "configurePreset": "DebugNUM463KG"
         }
     ]
 }

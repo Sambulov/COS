@@ -7,21 +7,43 @@
     },
     "configurePresets": [
         {
-            "name": "Debug",
-            "displayName": "Debug",
+            "name": "DebugNUM463KG",
+            "displayName": "Debug NUM463KG",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "MCU": "NUM463KG"
             }
         },
         {
-            "name": "Release",
-            "displayName": "Release",
+            "name": "DebugGD32E230",
+            "displayName": "Debug GD32E230",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "MCU": "GD32E230"
+            }
+        },
+        {
+            "name": "ReleaseNUM463KG",
+            "displayName": "Release NUM463KG",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "MCU": "NUM463KG"
+            }
+        },
+        {
+            "name": "ReleaseGD32E230",
+            "displayName": "Release GD32E230",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "MCU": "GD32E230"
             }
         },
         {

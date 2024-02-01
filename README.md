@@ -6,7 +6,7 @@
 1) Скачать и установить тулчейн https://developer.arm.com/downloads/-/gnu-rm
 2) Скачать и установить систему сборки Ninja https://github.com/ninja-build/ninja/releases
 3) Скачать и установить CMake https://cmake.org/download/
-4) Скачать и установить NuOpenOCD 
+4) Скачать и установить NuOpenOCD, ищем все [тут](https://www.nuvoton.com/products/microcontrollers/arm-cortex-m4-mcus/m463-can-fd-usb-hs-series/m463ygcae)
 5) Возможно понадобится добавить в PATH директории тулчейна, Ninja, NuOpenOCD ...
 
 ## Сборка проекта проекта

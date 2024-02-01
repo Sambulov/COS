@@ -1,0 +1,5 @@
+si 1
+speed 1000
+device GD32E230K6
+erase
+exit

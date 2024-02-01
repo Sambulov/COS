@@ -6,7 +6,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug NUM463KG",
+            "name": "Debug OOCD NUM463KG",
             "type": "cortex-debug",
             "request": "launch",
             "cwd": "${workspaceFolder}",
@@ -27,13 +27,13 @@
             },
             "serialNumber": "", // add programmer serial number if having multiple attached the same time.
             "servertype": "openocd",
-            "rtos": "auto",
             //"gdbTarget": "127.0.0.1:50000", // For externally controlled GDB
             "interface": "swd",
             "debuggerArgs": [],
+            "rtos": "auto",
             "runToEntryPoint": "main",
-            "device": "M463KG",
-            "svdFile": "./NUM463KG/Res/M460.svd",
+            "device": "M463KGCAE",
+            "svdFile": "./NUM463KG/Res/mcu.svd",
             "configFiles": [
                 "./NUM463KG/Res/tool.cfg",
                 "./NUM463KG/Res/mcu.cfg"
@@ -48,6 +48,31 @@
                 "tbreak main",
                 "continue"
             ]
-        }
+        },
+		{
+			"name": "Debug JLink NUM463KG",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"executable": "./build/bmc.elf",
+			"windows": {
+				"serverpath": "C:/Program Files/SEGGER/JLink/JLinkGDBServerCL.exe",
+			},
+			"linux": {
+				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
+				"gdbPath": "/usr/bin/gdb-multiarch"
+			},
+			"runToEntryPoint": "main",
+			//"showDevDebugOutput": "raw",
+			"servertype": "jlink",
+			"interface": "swd",
+			"device": "M463KGCAE",
+			"svdFile": "./NUM463KG/Res/mcu.svd",
+			//"preLaunchTask": "FlashJLink",
+			//"liveWatch": {
+			//	"enabled": true,
+			//	"samplesPerSecond": 4
+			//},
+		},
     ]
 }

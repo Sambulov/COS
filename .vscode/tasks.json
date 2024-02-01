@@ -37,7 +37,31 @@
                 "cwd": "C:/NuOpenOCD/bin"
             },
             "problemMatcher": "$gcc"
-        }
+        },
+		{
+			"type": "shell",
+			"label": "FlashJLink",
+			"linux": {
+				"command": "JLinkExe -commanderscript ./NUM463KG/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -commanderscript ./NUM463KG/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "EraseMCU",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -commanderscript ./NUM463KG/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -commanderscript ./NUM463KG/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
 
     ]
 }

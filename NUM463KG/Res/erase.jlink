@@ -1,0 +1,5 @@
+si 1
+speed 1000
+device M463KGCAE
+erase
+exit

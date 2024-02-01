@@ -14,11 +14,20 @@ set(CMAKE_C_STANDARD 11)
 #set(CMAKE_C_STANDARD_REQUIRED ON)
 #set(CMAKE_C_EXTENSIONS OFF)
 
+# Set default target MCU name
+if(NOT DEFINED MCU) 
+set(MCU "NUM463KG")
+endif()
+
 # Set terget core name
-set(MCPU cortex-m4)
+if(MCU STREQUAL "NUM463KG") 
+  set(MCPU cortex-m4)
+elseif(MCU STREQUAL "GD32E230")
+  set(MCPU cortex-m23)
+endif()
 
 # Set linker script file
-set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/NUM463KG/Res/linkerscript.ld")
+set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/${MCU}/Res/linkerscript.ld")
 
 # Set compiler options
 add_compile_options(-mfloat-abi=soft -mthumb -mlittle-endian -mthumb-interwork -ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
@@ -92,23 +101,25 @@ add_compile_definitions(${DEFINES})
 
 # Add Include directories
 include_directories(
-    ${CMAKE_SOURCE_DIR}/NUM463KG/CMSIS/Include
-    ${CMAKE_SOURCE_DIR}/NUM463KG/Include
-    ${CMAKE_SOURCE_DIR}/NUM463KG/StdDriver/inc
+    ${CMAKE_SOURCE_DIR}/App
+    ${CMAKE_SOURCE_DIR}/ARM/CMSIS
+    ${CMAKE_SOURCE_DIR}/${MCU}/Sys/inc
+    ${CMAKE_SOURCE_DIR}/${MCU}/Sys/Drivers/inc
 )
 
 # Add you source file
 file(GLOB SOURCES
-    "${CMAKE_SOURCE_DIR}/App/main.c"
-    "${CMAKE_SOURCE_DIR}/NUM463KG/*.c"
-    "${CMAKE_SOURCE_DIR}/NUM463KG/StdDriver/src/*.c"
+    "${CMAKE_SOURCE_DIR}/App/*.c"
+    "${CMAKE_SOURCE_DIR}/${MCU}/*.c"
+    "${CMAKE_SOURCE_DIR}/${MCU}/Sys/*.c"
+    "${CMAKE_SOURCE_DIR}/${MCU}/Sys/Drivers/src/*.c"
 )
 
 add_compile_options(-mcpu=${MCPU} )
 add_link_options(-mcpu=${MCPU} -T ${LINKER_SCRIPT})
 add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
-set(STARTUP_FILE ${CMAKE_SOURCE_DIR}/NUM463KG/startup_M460.S)
+set(STARTUP_FILE ${CMAKE_SOURCE_DIR}/${MCU}/Sys/startup.S)
 
 message("CMAKE_HOST_SYSTEM_NAME = ${CMAKE_HOST_SYSTEM_NAME}")
 message("CMAKE_HOST_SYSTEM_VERSION = ${CMAKE_HOST_SYSTEM_VERSION}")
@@ -138,7 +149,6 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
 
 # Write to flash
 # set(OPEN_OCD C:\\NuOpenOCD\\bin\\openocd.exe)
-# set(MCU "NUM463KG")
 
 # add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
 #         COMMENT "write to flash ..."

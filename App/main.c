@@ -8,7 +8,7 @@
 
 #include "portable.h"
 
-int main() {
+void main() {
     vSystemInit();
     //printf("\n");
     //printf("+----------------------------------------------+\n");
@@ -17,5 +17,4 @@ int main() {
     while(1) {
         vSystemTask();
     }
-    return 0;
 }

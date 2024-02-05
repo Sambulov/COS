@@ -54,7 +54,17 @@ $ arm-none-eabi-gdb.exe
 1) Скачать и установить [VS Code](https://code.visualstudio.com/download)
 2) Установить расширения C/C++, Cortex-Debug (у меня заработало с Venus's Cortex-Debug)
 
-Готово. В меню `Terminal->Run Task` доступно 6 заданий:
+Готово. 
+
+### Сборка
+Для сборки доступно 4 пресета:
+1) `Debug NUM463KG`
+2) `Release NUM463KG`
+3) `Debug GD32E230`
+4) `Release GD32E230`
+
+### Прошивка
+В меню `Terminal->Run Task` доступно 6 заданий:
 1) `OOCD Flash NUM463KG` - прошивка NUM463KG через OpenOCD
 2) `J-Link Flash NUM463KG` - прошивка NUM463KG через J-Link 
 3) `J-Link Flash GD32E230` - прошивка GD32E230 через J-Link
@@ -62,13 +72,16 @@ $ arm-none-eabi-gdb.exe
 5) `J-Link Erase NUM463KG` - очистка NUM463KG через J-Link
 6) `J-Link Erase GD32E230` - очистка GD32E230 через J-Link
 
+### Отладка
 В меню `Run and Debug` доступно 3 варианта:
 1) `Debug OOCD NUM463KG`
 2) `Debug J-Link NUM463KG`
 3) `Debug J-Link GD32E230`
 
-Запуск отладки F5.
+### Порядок действий 
+Собираем, шьем, запускаем отладку F5. Не все варианты отладки настроены на автоматическую перепрошивку.
 
+### З.Ы.
 Чтобы запитать Target через J-Link, выполнить команду в J-Link Commander
 `J-Link power on perm`
 

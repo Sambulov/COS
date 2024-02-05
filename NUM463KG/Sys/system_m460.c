@@ -60,6 +60,40 @@ void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
 
 
 /**
+ * @brief  
+ *
+ * @param  none
+ * @return none
+ */
+void SystemEnableSpimCache() {
+    CLK->AHBCLK0 |= CLK_AHBCLK0_SPIMCKEN_Msk;
+    SPIM->CTL1 |= SPIM_CTL1_CACHEOFF_Msk;
+    SPIM->CTL1 |= SPIM_CTL1_CCMEN_Msk;
+}
+
+/**
+ * @brief  Unlock register write
+ *
+ * @param  none
+ * @return none
+ */
+void UnlockRegister() {
+    SYS->REGLCTL = 0x59;
+    SYS->REGLCTL = 0x16;
+    SYS->REGLCTL = 0x88;
+}
+
+/**
+ * @brief  Lock register write
+ *
+ * @param  none
+ * @return none
+ */
+void LockRegister() {
+    SYS->REGLCTL = 0;
+}
+
+/**
  * @brief  Initialize the System
  *
  * @param  none

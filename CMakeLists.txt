@@ -119,7 +119,7 @@ add_compile_options(-mcpu=${MCPU} )
 add_link_options(-mcpu=${MCPU} -T ${LINKER_SCRIPT})
 add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
-set(STARTUP_FILE ${CMAKE_SOURCE_DIR}/${MCU}/Sys/startup.S)
+set(STARTUP_FILE ${CMAKE_SOURCE_DIR}/${MCU}/Sys/startup.c)
 
 message("CMAKE_HOST_SYSTEM_NAME = ${CMAKE_HOST_SYSTEM_NAME}")
 message("CMAKE_HOST_SYSTEM_VERSION = ${CMAKE_HOST_SYSTEM_VERSION}")

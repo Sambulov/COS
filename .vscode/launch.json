@@ -6,7 +6,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug OOCD NUM463KG",
+            "name": "Debug OOCD M463KGCAE",
             "type": "cortex-debug",
             "request": "launch",
             "cwd": "${workspaceFolder}",
@@ -14,7 +14,7 @@
             //"showDevDebugOutput": "parsed",
             "windows": {
                 "searchDir": [ 
-                    "./NUM463KG/Res"
+                    "./MCU/NUM46X/Res"
                 ],
                 "serverpath": "C:/NuOpenOCD/bin/openocd.exe",
                 "serverArgs": [],
@@ -33,10 +33,10 @@
             "rtos": "auto",
             "runToEntryPoint": "main",
             "device": "M463KGCAE",
-            "svdFile": "./NUM463KG/Res/mcu.svd",
+            "svdFile": "./MCU/NUM46X/Res/mcu.svd",
             "configFiles": [
-                "./NUM463KG/Res/tool.cfg",
-                "./NUM463KG/Res/mcu.cfg"
+                "./MCU/NUM46X/Res/tool.cfg",
+                "./MCU/NUM46X/Res/mcu.cfg"
             ],
             "preRestartCommands": [
                 "set remotetimeout 200",
@@ -50,7 +50,7 @@
             ]
         },
 		{
-			"name": "Debug JLink NUM463KG",
+			"name": "Debug JLink M463KGCAE",
 			"type": "cortex-debug",
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
@@ -67,7 +67,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "M463KGCAE",
-			"svdFile": "./NUM463KG/Res/mcu.svd",
+			"svdFile": "./MCU/NUM46X/Res/mcu.svd",
 			//"preLaunchTask": "J-Link Flash NUM463KG",
 			//"liveWatch": {
 			//	"enabled": true,
@@ -75,7 +75,7 @@
 			//},
 		},
         {
-			"name": "Debug JLink GD32E230",
+			"name": "Debug JLink GD32E230K6",
 			"type": "cortex-debug",
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
@@ -92,8 +92,8 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "GD32E230K6",
-			"svdFile": "./GD32E230/Res/mcu.svd",
-			"preLaunchTask": "J-Link Flash GD32E230",
+			"svdFile": "./MCU/GD32E23X/Res/mcu.svd",
+			"preLaunchTask": "J-Link Flash GD32E230K6",
 			//"liveWatch": {
 			//	"enabled": true,
 			//	"samplesPerSecond": 4

@@ -13,7 +13,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "MCU": "NUM463KG"
+                "MCU": "NUM46X"
             }
         },
         {
@@ -23,7 +23,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "MCU": "GD32E230"
+                "MCU": "GD32E23X"
             }
         },
         {
@@ -33,7 +33,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "MCU": "NUM463KG"
+                "MCU": "NUM46X"
             }
         },
         {
@@ -43,7 +43,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "MCU": "GD32E230"
+                "MCU": "GD32E23X"
             }
         },
         {

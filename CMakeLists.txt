@@ -16,18 +16,18 @@ set(CMAKE_C_STANDARD 11)
 
 # Set default target MCU name
 if(NOT DEFINED MCU) 
-set(MCU "NUM463KG")
+set(MCU "NUM46X")
 endif()
 
 # Set terget core name
-if(MCU STREQUAL "NUM463KG") 
+if(MCU STREQUAL "NUM46X") 
   set(MCPU cortex-m4)
-elseif(MCU STREQUAL "GD32E230")
+elseif(MCU STREQUAL "GD32E23X")
   set(MCPU cortex-m23)
 endif()
 
 # Set linker script file
-set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/${MCU}/Res/linkerscript.ld")
+set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Res/linkerscript.ld")
 
 # Set compiler options
 add_compile_options(-mfloat-abi=soft -mthumb -mlittle-endian -mthumb-interwork -ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
@@ -96,30 +96,34 @@ elseif(UNIX OR APPLE)
 endif()
 
 # Add C defines
-set(DEFINES "${DEFINES}FW_VERSION=${GIT_COMMIT_DATE}")
-add_compile_definitions(${DEFINES})
+add_compile_definitions(FW_VERSION=${GIT_COMMIT_DATE})
+add_compile_definitions(${MCU})
 
 # Add Include directories
 include_directories(
-    ${CMAKE_SOURCE_DIR}/App
-    ${CMAKE_SOURCE_DIR}/ARM/CMSIS
-    ${CMAKE_SOURCE_DIR}/${MCU}/Sys/inc
-    ${CMAKE_SOURCE_DIR}/${MCU}/Sys/Drivers/inc
+    "${CMAKE_SOURCE_DIR}/App"
+    "${CMAKE_SOURCE_DIR}/App/Tasks/Inc"
+    "${CMAKE_SOURCE_DIR}/HDL/Inc"
+    "${CMAKE_SOURCE_DIR}/MCU/ARM/CMSIS"
+    "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Sys/inc"
+    "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Sys/Drivers/inc"
 )
 
 # Add you source file
 file(GLOB SOURCES
-    "${CMAKE_SOURCE_DIR}/App/*.c"
-    "${CMAKE_SOURCE_DIR}/${MCU}/*.c"
-    "${CMAKE_SOURCE_DIR}/${MCU}/Sys/*.c"
-    "${CMAKE_SOURCE_DIR}/${MCU}/Sys/Drivers/src/*.c"
+  "${CMAKE_SOURCE_DIR}/App/*.c"
+  "${CMAKE_SOURCE_DIR}/App/Tasks/*.c"
+  "${CMAKE_SOURCE_DIR}/HDL/*.c"
+  "${CMAKE_SOURCE_DIR}/MCU/${MCU}/*.c"
+  "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Sys/*.c"
+  "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Sys/Drivers/src/*.c"
 )
 
 add_compile_options(-mcpu=${MCPU} )
 add_link_options(-mcpu=${MCPU} -T ${LINKER_SCRIPT})
 add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
-set(STARTUP_FILE ${CMAKE_SOURCE_DIR}/${MCU}/Sys/startup.c)
+set(STARTUP_FILE "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Sys/startup.c")
 
 message("CMAKE_HOST_SYSTEM_NAME = ${CMAKE_HOST_SYSTEM_NAME}")
 message("CMAKE_HOST_SYSTEM_VERSION = ${CMAKE_HOST_SYSTEM_VERSION}")

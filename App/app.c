@@ -4,9 +4,8 @@
  * @brief    
  *
  ******************************************************************************/
-//#include <stdio.h>
 
-#include "portable.h"
+#include "app.h"
 
 void main() {
     vSystemInit();

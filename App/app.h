@@ -1,6 +1,7 @@
 #ifndef APP_H_
 #define APP_H_
 
-#include "../HDL/Inc/hdl.h"
+#include "bldl.h"
+#include "dts.h"
 
 #endif // APP_H_

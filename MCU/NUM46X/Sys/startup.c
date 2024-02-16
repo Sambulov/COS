@@ -12,7 +12,8 @@ extern void *__StackTop;
 #ifdef __STARTUP_CLEAR_BSS_MULTIPLE
   extern void *__zero_table_start__; 
   extern void *__zero_table_end__;
-#elif defined (__STARTUP_CLEAR_BSS)
+#else
+//#elif defined (__STARTUP_CLEAR_BSS)
   extern void *__bss_start__; 
   extern void *__bss_end__;
 #endif /* __STARTUP_CLEAR_BSS_MULTIPLE || __STARTUP_CLEAR_BSS */
@@ -381,7 +382,8 @@ void __attribute__((naked, noreturn)) Reset_Handler() {
     for (pDest = pTabItem[0]; pDest != pEnd; pDest++)
       *pDest = 0;
   }
-#elif defined (__STARTUP_CLEAR_BSS)
+#else
+//#elif defined (__STARTUP_CLEAR_BSS)
 /*  Single BSS section scheme.
  *
  *  The BSS section is specified by following symbols

@@ -1,4 +1,4 @@
-#include "sw_wdt.h"
+#include "hdl.h"
 
 void lib_wdt_soc_state_set(lib_wdt_soc_handle_t *handle, lib_wdt_soc_state_t state)
 {

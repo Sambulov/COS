@@ -1,7 +1,5 @@
-#ifndef SW_WDT_H_
-#define SW_WDT_H_
-
-#include "app.h"
+#ifndef HDL_SW_WDT_H_
+#define HDL_SW_WDT_H_
 
 /* @STATE WDT SOC */
 typedef enum {

@@ -102,6 +102,7 @@ add_compile_definitions(${MCU})
 # Add Include directories
 include_directories(
     "${CMAKE_SOURCE_DIR}/App"
+    "${CMAKE_SOURCE_DIR}/App/BLDL/Inc"
     "${CMAKE_SOURCE_DIR}/App/Tasks/Inc"
     "${CMAKE_SOURCE_DIR}/HDL/Inc"
     "${CMAKE_SOURCE_DIR}/MCU/ARM/CMSIS"
@@ -112,9 +113,10 @@ include_directories(
 # Add you source file
 file(GLOB SOURCES
   "${CMAKE_SOURCE_DIR}/App/*.c"
+  "${CMAKE_SOURCE_DIR}/App/BLDL/Src/*.c"
   "${CMAKE_SOURCE_DIR}/App/Tasks/*.c"
-  "${CMAKE_SOURCE_DIR}/HDL/*.c"
-  "${CMAKE_SOURCE_DIR}/MCU/${MCU}/*.c"
+  "${CMAKE_SOURCE_DIR}/HDL/Src/*.c"
+  "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Port/*.c"
   "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Sys/*.c"
   "${CMAKE_SOURCE_DIR}/MCU/${MCU}/Sys/Drivers/src/*.c"
 )

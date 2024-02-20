@@ -27,6 +27,16 @@
             }
         },
         {
+            "name": "DebugSTM32L071",
+            "displayName": "Debug STM32L071",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "MCU": "STM32L0XX"
+            }
+        },
+        {
             "name": "ReleaseNUM463KG",
             "displayName": "Release NUM463KG",
             "generator": "Ninja",
@@ -44,6 +54,16 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "MCU": "GD32E23X"
+            }
+        },
+        {
+            "name": "ReleaseSTM32L071",
+            "displayName": "Release STM32L071",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "MCU": "STM32L0XX"
             }
         },
         {
@@ -77,6 +97,12 @@
             "description": "",
             "displayName": "J-Link Debug NUM463KG",
             "configurePreset": "DebugNUM463KG"
+        },
+        {
+            "name": "DebugSTM32L071",
+            "description": "",
+            "displayName": "J-Link Debug STM32L071",
+            "configurePreset": "DebugSTM32L071"
         }
     ]
 }

@@ -22,13 +22,28 @@
   } hdl_gpio_mode_t;
 
   typedef struct {
-    const rcu_periph_enum rcu;       // RCU_GPIOA, RCU_GPIOB, RCU_GPIOC, RCU_GPIOD, RCU_GPIOE, RCU_GPIOF
     const uint32_t port;             // GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF
     const uint32_t pin;              // GPIO_PIN_0,  GPIO_PIN_1,  GPIO_PIN_2,  GPIO_PIN_3,  GPIO_PIN_4,  GPIO_PIN_5,  GPIO_PIN_6,  GPIO_PIN_7,  GPIO_PIN_8,  GPIO_PIN_9,  GPIO_PIN_10, GPIO_PIN_11, GPIO_PIN_12, GPIO_PIN_13, GPIO_PIN_14, GPIO_PIN_15, GPIO_PIN_ALL.
     const hdl_gpio_mode_t *mode;
   } hdl_gpio_t;
 #endif
 
+#if defined ( STM32L0XX )
+  typedef struct {
+    const uint32_t af;        // see stm32l0xx_hal_gpio_ex.h, line 538
+    const uint32_t pull;      // GPIO_NOPULL, GPIO_PULLUP, GPIO_PULLDOWN
+    const uint32_t type;      // GPIO_MODE_INPUT, GPIO_MODE_OUTPUT_PP, GPIO_MODE_OUTPUT_OD, GPIO_MODE_AF_PP, GPIO_MODE_AF_OD
+    const uint32_t ospeed;    // GPIO_SPEED_FREQ_LOW, GPIO_SPEED_FREQ_MEDIUM, GPIO_SPEED_FREQ_HIGH, GPIO_SPEED_FREQ_VERY_HIGH
+  } hdl_gpio_mode_t;
+
+  typedef struct {
+    GPIO_TypeDef *port;       // GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOH
+    const uint16_t pin;             // GPIO_PIN_0, GPIO_PIN_1, ... GPIO_PIN_15, GPIO_PIN_All
+    const hdl_gpio_mode_t *mode;
+  } hdl_gpio_t;
+#endif
+
+/* NOTE: (HDL_GPIO_LOW == !HDL_GPIO_HIGH) always true */
 typedef enum {
   HDL_GPIO_LOW = 0,
   HDL_GPIO_HIGH = 1

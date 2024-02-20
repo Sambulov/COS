@@ -27,7 +27,6 @@
   extern const hdl_gpio_t dts_gpo_pmic_power_on;
   extern const hdl_gpio_t dts_gpio_soc_scl;
   extern const hdl_gpio_t dts_gpio_soc_sda;
-  extern const hdl_gpio_t dts_gpio_bmc_swdio;
 
   extern const hdl_button_hw_t dts_btn_power;
   extern const hdl_button_hw_t dts_btn_reset;
@@ -40,6 +39,6 @@
 
   extern const bldl_som_boot_sel_t dts_boot_select;
 
-  extern const bldl_som_state_hw_t dts_som_state_ctrl;
+  extern const bldl_som_power_state_hw_t dts_som_state_ctrl;
 
 #endif // DTS_H_

@@ -56,7 +56,7 @@ void hdl_btn_process(hdl_button_t *desc) {
       }
     case HDL_BTN_PRESSED:
       if(btn_active) {
-        uint8_t hold_timeout = ((hdl_millis() - pdesc->change_time) > (pdesc->hw->hold_delay - 1));
+        uint8_t hold_timeout = pdesc->hw->hold_delay && ((hdl_millis() - pdesc->change_time) >= pdesc->hw->hold_delay);
         if(hold_timeout) {
           pdesc->state = HDL_BTN_HOLDING;
           if((pdesc->on_button_hold_cb != NULL) && (pdesc->on_button_hold_cb->handler != NULL))

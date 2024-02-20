@@ -112,6 +112,29 @@
 			"detail": "Erase",
 			"group": "build"
 		},
-
+		{
+			"type": "shell",
+			"label": "J-Link Flash STM32L071KB",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/STM32L0XX/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/STM32L0XX/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase STM32L071KB",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/STM32L0XX/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/STM32L0XX/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
     ]
 }

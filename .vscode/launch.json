@@ -99,5 +99,30 @@
 			//	"samplesPerSecond": 4
 			//},
 		},
+        {
+			"name": "Debug JLink STM32L071KB",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"executable": "./build/bmc.elf",
+			"windows": {
+				"serverpath": "JLinkGDBServerCL.exe",
+			},
+			"linux": {
+				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
+				"gdbPath": "/usr/bin/gdb-multiarch"
+			},
+			"runToEntryPoint": "main",
+			//"showDevDebugOutput": "raw",
+			"servertype": "jlink",
+			"interface": "swd",
+			"device": "STM32L071KB",
+			"svdFile": "./MCU/STM32L071KB/Res/mcu.svd",
+			"preLaunchTask": "J-Link Flash STM32L071KB",
+			//"liveWatch": {
+			//	"enabled": true,
+			//	"samplesPerSecond": 4
+			//},
+		},
     ]
 }

@@ -40,29 +40,29 @@ void hdl_gpio_init(const hdl_gpio_t *gpio) {
     //   CLK->AHBCLK0 |= CLK_AHBCLK0_GPJCKEN_Msk;
     // break;
     default:
-    break;
+    return;
   }
-  GPIO_SetMode(gpio->port, gpio->u32Pin, gpio->u32IOMode);
-  GPIO_SetPullCtl(gpio->port, gpio->u32Pin, gpio->u32PullMode);
+  GPIO_SetMode(gpio->port, gpio->pin, gpio->mode);
+  GPIO_SetPullCtl(gpio->port, gpio->pin, gpio->pull_mode);
   //GPIO_EnableInt(gpio->port, gpio->u32Pin, gpio->u32IntMode);
   //GPIO_SetSlewCtl(gpio->port, gpio->u32Pin, gpio->u32SlewMode);
 }
 
 hdl_gpio_state hdl_gpio_read(const hdl_gpio_t *gpio) {
-  return (gpio->port->PIN & gpio->u32Pin)? HDL_GPIO_HIGH: HDL_GPIO_LOW;
+  return (gpio->port->PIN & gpio->pin)? HDL_GPIO_HIGH: HDL_GPIO_LOW;
 }
 
 void hdl_gpio_write(const hdl_gpio_t *gpio, const hdl_gpio_state state) {
   if(state == HDL_GPIO_LOW) {
-    gpio->port->DOUT &= ~(gpio->u32Pin);
+    gpio->port->DOUT &= ~(gpio->pin);
   }
   else {
-    gpio->port->DOUT |= gpio->u32Pin;
+    gpio->port->DOUT |= gpio->pin;
   }
 }
 
 void hdl_gpio_toggle(const hdl_gpio_t *gpio) {
-    gpio->port->DOUT ^= gpio->u32Pin;
+    gpio->port->DOUT ^= gpio->pin;
 }
 
 uint32_t hdl_millis() {

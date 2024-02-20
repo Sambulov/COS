@@ -9,7 +9,24 @@ void SysTick_Handler() {
 void hdl_gpio_init(const hdl_gpio_t *gpio) {
   if ((gpio == NULL) || (gpio->mode == NULL))
     return;
-  rcu_periph_clock_enable(gpio->rcu);
+  rcu_periph_enum rcu;
+  switch (gpio->port) {
+    case GPIOA:
+      rcu = RCU_GPIOA;
+      break;
+    case GPIOB:
+      rcu = RCU_GPIOB;
+      break;
+    case GPIOC:
+      rcu = RCU_GPIOC;
+      break;
+    case GPIOF:
+      rcu = RCU_GPIOF;
+      break;    
+    default:
+      return;
+  }
+  rcu_periph_clock_enable(rcu);
   gpio_af_set(gpio->port, gpio->mode->af, gpio->pin);
   gpio_mode_set(gpio->port, gpio->mode->type, gpio->mode->pull, gpio->pin);
   gpio_output_options_set(gpio->port, gpio->mode->otype, gpio->mode->ospeed, gpio->pin);
@@ -32,5 +49,5 @@ uint32_t hdl_millis() {
 }
 
 void hdl_system_init(const hdl_sys_t *desc) {
-  SysTick_Config(desc->ticks);
+  SysTick_Config(desc->ticks_per_ms);
 }

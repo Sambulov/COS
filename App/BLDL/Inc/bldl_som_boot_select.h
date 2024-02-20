@@ -10,6 +10,10 @@ typedef enum {
 } bldl_boot_select_t;
 
 typedef struct {
+  const hdl_gpio_state active_state_bs0;
+  const hdl_gpio_state active_state_bs1;
+  const hdl_gpio_state active_state_bs2;
+  const hdl_gpio_state active_state_fr;
   const hdl_gpio_t *gpio_fr;
   const hdl_gpio_t *gpio_bs2;
   const hdl_gpio_t *gpio_bs1;

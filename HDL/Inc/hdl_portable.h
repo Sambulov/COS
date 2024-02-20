@@ -15,9 +15,12 @@
   #include <stddef.h>
   #include "../MCU/GD32E23X/Sys/inc/gd32e23x.h"
   #define __MCU_HAL_OK__
-  typedef struct {
-    void *x;
-  } hdl_system_t;
+#endif
+
+#if defined ( STM32L0XX )
+  #include <stddef.h>
+  #include "stm32l0xx_hal.h"
+  #define __MCU_HAL_OK__
 #endif
 
 #ifndef __MCU_HAL_OK__

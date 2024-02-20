@@ -11,9 +11,9 @@ typedef enum {
 } bldl_boot_dev_t;
 
 typedef struct {
-  const hdl_gpio_state lock_active_state_sd;
-  const hdl_gpio_state lock_active_state_emmc;
-  const hdl_gpio_state lock_active_state_qspi;
+  const hdl_gpio_state active_state_lock_sd;
+  const hdl_gpio_state active_state_lock_emmc;
+  const hdl_gpio_state active_state_lock_qspi;
   const hdl_gpio_t *lock_pin_sd;
   const hdl_gpio_t *lock_pin_emmc;
   const hdl_gpio_t *lock_pin_qspi;

@@ -2,18 +2,28 @@
 
 bldl_boot_select_t bldl_som_boot_sel_get(const bldl_som_boot_sel_t *desc) {
   static uint8_t init = 1;
-  if(init) {
-    
-  }
   bldl_boot_select_t sel = BLDL_BOOT_SEL_NONE;
-  if(hdl_gpio_read(desc->gpio_fr) == HDL_GPIO_LOW)
-    sel |= BLDL_BOOT_FR;
-  if(hdl_gpio_read(desc->gpio_bs0) == HDL_GPIO_LOW)
-    sel |= BLDL_BOOT_SEL_0;
-  if(hdl_gpio_read(desc->gpio_bs1) == HDL_GPIO_LOW)
-    sel |= BLDL_BOOT_SEL_1;
-  if(hdl_gpio_read(desc->gpio_bs2) == HDL_GPIO_LOW)
-    sel |= BLDL_BOOT_SEL_2;
+  if(desc != NULL) {
+    if(init) {
+      hdl_gpio_init(desc->gpio_bs0);
+      hdl_gpio_init(desc->gpio_bs1);
+      hdl_gpio_init(desc->gpio_bs2);
+      hdl_gpio_init(desc->gpio_fr);
+      init = 0;
+    }
+/* NOTE: Force recovery pin shared with SWD interface on STM32L0XX and GD32E23X.
+   So this signal is unused in DEBUG mode */
+#if !defined(DEBUG) || (!defined(STM32L0XX) && !defined (GD32E23X))
+    if(hdl_gpio_read(desc->gpio_fr) == desc->active_state_fr)
+      sel |= BLDL_BOOT_FR;
+#endif
+    if(hdl_gpio_read(desc->gpio_bs0) == desc->active_state_bs0)
+      sel |= BLDL_BOOT_SEL_0;
+    if(hdl_gpio_read(desc->gpio_bs1) == desc->active_state_bs1)
+      sel |= BLDL_BOOT_SEL_1;
+    if(hdl_gpio_read(desc->gpio_bs2) == desc->active_state_bs2)
+      sel |= BLDL_BOOT_SEL_2;
+  }
   return sel;
 }
 

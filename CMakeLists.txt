@@ -24,6 +24,10 @@ if(MCU STREQUAL "NUM46X")
   set(MCPU cortex-m4)
 elseif(MCU STREQUAL "GD32E23X")
   set(MCPU cortex-m23)
+elseif(MCU STREQUAL "STM32L0XX")
+  set(MCPU cortex-m0)
+  add_compile_definitions("STM32L071KB")
+  add_compile_definitions("STM32L071xx")
 endif()
 
 # Set linker script file
@@ -71,6 +75,7 @@ elseif("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
     add_compile_options(-Os)
 else()
     message(STATUS "Minimal optimization, debug info included")
+    add_compile_definitions("DEBUG")
     add_compile_options(-O0 -ggdb)
 endif()
  

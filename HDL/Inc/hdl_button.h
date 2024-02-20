@@ -11,7 +11,7 @@ typedef enum {
   HDL_BTN_CLICK,
 } hdl_btn_state_t;
 
-#define HDL_BUTTON_DESC_SIZE    12
+#define HDL_BUTTON_PRV_SIZE    12
 	
 typedef struct {
   const uint32_t debounce_delay;
@@ -26,7 +26,7 @@ typedef struct {
   const hdl_callback_t *on_button_up_cb;
   const hdl_callback_t *on_button_click_cb;
   const hdl_callback_t *on_button_hold_cb;
-	uint8_t __private[HDL_BUTTON_DESC_SIZE];
+	uint8_t __private[HDL_BUTTON_PRV_SIZE];
 } hdl_button_t;
 
 void hdl_btn_init(hdl_button_t *desc);

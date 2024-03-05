@@ -16,11 +16,14 @@
 ## Сборка проекта проекта
 ```powershell
 cd <project dir>
-cmake.exe -D CMAKE_BUILD_TYPE=Debug -D MCU=NUM463KG -S '.' -B './build' -G Ninja
+cmake.exe -D CMAKE_BUILD_TYPE=Debug -D BOARD=ATB-RK3568J-SMC-R3 -S '.' -B './build' -G Ninja
 cd .\build\
 cmake --build . --clean-first
 ```
-В параметре `-D MCU=` указывается на базе какого контроллера собирать проект. Для Nuvoton - `NUM463KG`, для Gigadevice - `GD32E230`
+В параметре `-D BOARD=` указывается на базе какого контроллера собирать проект: 
+1) Для SMARC R0 на базе STM32L071 - `ATB-RK3568J-SMC-R0`
+2) Для SMARC R1 на базе GD32E230 - `ATB-RK3568J-SMC-R1`
+3) Для SMARC R3 на базе NUM463 - `ATB-RK3568J-SMC-R3`
 
 ## Прошивка микроконтроллера Nuvoton M463KG
 ### Локально через OpenOCD:
@@ -46,7 +49,7 @@ $ arm-none-eabi-gdb.exe
 ```
 Команды `(gdb) monitor flash info 0` и `(gdb) monitor flash protect 0 0 7 off` можно пропустить. Первая необходима чтобы помотреть состояние защиты флеш памяти от записи, вторая снять защиту.
 
-## Прошивка микроконтроллера Gigadevice GD32E230
+## Прошивка микроконтроллера Gigadevice GD32E230 и ST STM32L071
 
 Аналогично. Скрипты можно найти в директории контроллера, в `./Res`.
 
@@ -57,26 +60,31 @@ $ arm-none-eabi-gdb.exe
 Готово. 
 
 ### Сборка
-Для сборки доступно 4 пресета:
+Для сборки доступно 6 пресетов:
 1) `Debug NUM463KG`
 2) `Release NUM463KG`
 3) `Debug GD32E230`
 4) `Release GD32E230`
+5) `Debug STM32L071`
+6) `Release STM32L071`
 
 ### Прошивка
-В меню `Terminal->Run Task` доступно 6 заданий:
+В меню `Terminal->Run Task` доступно 8 заданий:
 1) `OOCD Flash NUM463KG` - прошивка NUM463KG через OpenOCD
 2) `J-Link Flash NUM463KG` - прошивка NUM463KG через J-Link 
 3) `J-Link Flash GD32E230` - прошивка GD32E230 через J-Link
-4) `OOCD Flash NUM463KG` - очистка NUM463KG через OpenOCD
-5) `J-Link Erase NUM463KG` - очистка NUM463KG через J-Link
-6) `J-Link Erase GD32E230` - очистка GD32E230 через J-Link
+4) `J-Link Flash STM32L071KB` - прошивка STM32L071 через J-Link
+5) `OOCD Flash NUM463KG` - очистка NUM463KG через OpenOCD
+6) `J-Link Erase NUM463KG` - очистка NUM463KG через J-Link
+7) `J-Link Erase GD32E230` - очистка GD32E230 через J-Link
+8) `J-Link Erase STM32L071KB` - очистка STM32L071 через J-Link
 
 ### Отладка
-В меню `Run and Debug` доступно 3 варианта:
+В меню `Run and Debug` доступно 4 варианта:
 1) `Debug OOCD NUM463KG`
 2) `Debug J-Link NUM463KG`
 3) `Debug J-Link GD32E230`
+4) `Debug J-Link STM32L071`
 
 ### Порядок действий 
 Собираем, шьем, запускаем отладку F5. Не все варианты отладки настроены на автоматическую перепрошивку.

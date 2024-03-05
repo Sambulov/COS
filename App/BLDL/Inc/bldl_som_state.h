@@ -14,7 +14,8 @@ typedef struct {
   const hdl_gpio_state active_state_power_good;
   const hdl_gpio_state active_state_pmic_power_on;
   const hdl_gpio_state active_state_pmic_soc_rst;
-
+  const hdl_gpio_state active_state_carrier_wdt;
+  const hdl_gpio_t *carrier_wdt;
   const hdl_gpio_t *carrier_pwr_on;
   const hdl_gpio_t *carrier_stby;
   const hdl_gpio_t *reset_out;

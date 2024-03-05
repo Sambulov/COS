@@ -1,9 +1,8 @@
 #include "hdl_portable.h"
 
-static volatile uint32_t ticks = 0;
-
-void SysTick_Handler() {
-  ticks++;
+void hdl_gpio_deinit(const hdl_gpio_t *gpio) {
+  gpio_af_set(gpio->port, GPIO_AF_0, gpio->pin);
+  gpio_mode_set(gpio->port, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, gpio->pin);
 }
 
 void hdl_gpio_init(const hdl_gpio_t *gpio) {
@@ -44,10 +43,3 @@ void hdl_gpio_toggle(const hdl_gpio_t *gpio) {
     gpio_bit_toggle(gpio->port, gpio->pin);
 }
 
-uint32_t hdl_millis() {
-  return ticks;
-}
-
-void hdl_system_init(const hdl_sys_t *desc) {
-  SysTick_Config(desc->ticks_per_ms);
-}

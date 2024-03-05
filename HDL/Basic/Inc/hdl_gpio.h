@@ -46,10 +46,11 @@
 /* NOTE: (HDL_GPIO_LOW == !HDL_GPIO_HIGH) always true */
 typedef enum {
   HDL_GPIO_LOW = 0,
-  HDL_GPIO_HIGH = 1
+  HDL_GPIO_HIGH = !HDL_GPIO_LOW
 } hdl_gpio_state;
 
 void hdl_gpio_init(const hdl_gpio_t *gpio);
+void hdl_gpio_deinit(const hdl_gpio_t *gpio);
 hdl_gpio_state hdl_gpio_read(const hdl_gpio_t *gpio);
 void hdl_gpio_write(const hdl_gpio_t *gpio, const hdl_gpio_state state);
 void hdl_gpio_toggle(const hdl_gpio_t *gpio);

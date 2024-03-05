@@ -1,0 +1,13 @@
+#ifndef RK809_H_
+#define RK809_H_
+
+#define RK809_PMIC_I2C_ADDR       0x20
+#define RK809_REG_OPERATIONAL_BASE  0x0000  //????
+
+#define RK809_REG_PMIC_CHIP_NAME  ((uint16_t)(RK809_REG_OPERATIONAL_BASE + 0x00ed))
+#define RK809_REG_PMIC_CHIP_VER   ((uint16_t)(RK809_REG_OPERATIONAL_BASE + 0x00ee))
+#define RK809_REG_PMIC_SYS_CFG3   ((uint16_t)(RK809_REG_OPERATIONAL_BASE + 0x00f4))
+
+
+
+#endif // RK809_H_

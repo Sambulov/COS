@@ -10,6 +10,7 @@
   // extern const hdl_gpio_t dts_gpi_carrier_wdt_time_out;
   // extern const hdl_gpio_t dts_gpi_carrier_charging;
   // extern const hdl_gpio_t dts_gpi_carrier_charger_prstn;
+
   extern const hdl_gpio_t dts_gpo_emmc_lock;
   extern const hdl_gpio_t dts_gpo_qspi_lock;
   extern const hdl_gpio_t dts_gpo_sd_lock;
@@ -31,9 +32,7 @@
   extern const hdl_button_hw_t dts_btn_power;
   extern const hdl_button_hw_t dts_btn_reset;
 
-  // extern const hdl_i2c_t i2c_0;
-
-  //extern const bldl_som_power_cycle_t dts_som_power_cycle;
+  extern const hdl_i2c_hw_t dts_i2c_0;
 
   extern const bldl_som_boot_lock_t dts_boot_lock;
 

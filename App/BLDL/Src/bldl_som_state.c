@@ -1,12 +1,12 @@
 #include "app.h"
 
 static void _exec_start(const bldl_som_power_state_hw_t *desc) {
-  bldl_boot_select_t sel = bldl_som_boot_sel_get(desc->bootsel);
-  uint8_t fr = (sel & BLDL_BOOT_FR) != 0;
+  uint8_t fr = ((bldl_som_boot_sel_get(desc->bootsel) & BLDL_BOOT_FR) != 0);
+  bldl_som_boot_dev_en(desc->boot_lock, (fr)? BLDL_BOOT_DEV_SD: BLDL_BOOT_DEV_ALL);
+  hdl_delay(10);
   hdl_gpio_write(desc->pmic_soc_rst, !desc->active_state_pmic_soc_rst);
   hdl_gpio_write(desc->reset_out, !desc->active_state_reset_out);
-  if (fr) {
-    bldl_som_boot_dev_en(desc->boot_lock, BLDL_BOOT_DEV_SD);
+  if((fr)) {
     hdl_delay(5000);
   }
   bldl_som_boot_dev_en(desc->boot_lock, BLDL_BOOT_DEV_ALL);
@@ -26,6 +26,9 @@ static void _exec_power_cycle(const bldl_som_power_state_hw_t *desc) {
   hdl_gpio_init(desc->power_good);
   hdl_gpio_init(desc->reset_in->btn_gpio);
   hdl_gpio_init(desc->pmic_power_on);
+  hdl_gpio_init(desc->carrier_wdt);
+
+  hdl_gpio_write(desc->carrier_wdt, !desc->active_state_carrier_wdt);
   hdl_gpio_write(desc->carrier_pwr_on, !desc->active_state_carrier_pwr_on);
   hdl_gpio_write(desc->carrier_stby, desc->active_state_carrier_stby);
 
@@ -34,12 +37,13 @@ static void _exec_power_cycle(const bldl_som_power_state_hw_t *desc) {
   while (hdl_gpio_read(desc->power_good) == !desc->active_state_power_good) ;
 
   hdl_gpio_write(desc->pmic_power_on, desc->active_state_pmic_power_on);
-  hdl_delay(500);
+  //hdl_delay(500);
   //hdl_gpio_write(desc->pmic_power_on, !desc->active_state_pmic_power_on);
   //hdl_delay(500); /* NOTE: specific for customer */
 
   hdl_gpio_write(desc->carrier_pwr_on, desc->active_state_carrier_pwr_on);
   hdl_gpio_write(desc->carrier_stby, !desc->active_state_carrier_stby);
+  hdl_delay(500);
   while (hdl_gpio_read(desc->reset_in->btn_gpio) == desc->reset_in->active_state) ;
 }
 

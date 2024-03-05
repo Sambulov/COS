@@ -184,11 +184,11 @@
   //   .mode = &dts_gpio_input_pullup_mode
   // };
 
-  // const hdl_gpio_t dts_gpi_carrier_wdt_time_out = {
-  //   .port = GPIOB,
-  //   .pin = GPIO_PIN_8,
-  //   .mode = &dts_gpio_input_pullup_mode
-  // };
+  const hdl_gpio_t dts_gpi_carrier_wdt_time_out = {
+    .port = GPIOB,
+    .pin = GPIO_PIN_8,
+    .mode = &dts_gpio_output_pp_mode
+  };
 
   // const hdl_gpio_t dts_gpi_carrier_charging = {
   //   .port = GPIOF,
@@ -308,16 +308,22 @@
     .mode = &dts_gpio_i2c_mode
   };
 
-  // const hdl_i2c_t dts_i2c_0 = {
-  //   .scl = &scl,
-  //   .sda = &sda,
-  //   .RCU_I2CX = RCU_I2C0,
-  //   .I2CX = I2C0,
-  //   .speed = 100000,
-  //   .dtcy = I2C_DTCY_2,
-  //   .is_slave = 1,
-  //   .slave_addr = 0x3F,
-  // };
+  const hdl_i2c_hw_t dts_i2c_0 = {
+    .scl = &dts_gpio_soc_scl,
+    .sda = &dts_gpio_soc_sda,
+    //.rx_dma_ch = &dts_i2c_rx_dma
+    //.tx_dma_ch = &dts_i2c_tx_dma
+    //.interrupt = &dts_i2c_int
+    //.
+    .periph = I2C0,
+    .speed = 100000,
+    .dtcy = I2C_DTCY_2,
+    .mode = 3,
+    .stretching = 1,
+    .general_call = 1,
+    .addr_size = I2C_ADDFORMAT_7BITS,
+    .addr = 0x3F,
+  };
 
 #endif
 
@@ -372,11 +378,12 @@
   //   .mode = &dts_gpio_input_pullup_mode
   // };
 
-  // const hdl_gpio_t dts_gpi_carrier_wdt_time_out = {
-  //   .port = GPIOB,
-  //   .pin = GPIO_PIN_8,
-  //   .mode = &dts_gpio_input_pullup_mode
-  // };
+
+  const hdl_gpio_t dts_gpi_carrier_wdt_time_out = {
+    .port = GPIOA,
+    .pin = GPIO_PIN_12,
+    .mode = &dts_gpio_output_pp_mode
+  };
 
   // const hdl_gpio_t dts_gpi_carrier_charging = {
   //   .port = GPIOF,
@@ -550,6 +557,8 @@ const bldl_som_power_state_hw_t dts_som_state_ctrl = {
   .active_state_power_good = HDL_GPIO_HIGH,
   .active_state_pmic_power_on = HDL_GPIO_HIGH,
   .active_state_pmic_soc_rst = HDL_GPIO_HIGH,
+  .active_state_carrier_wdt = HDL_GPIO_LOW,
+  .carrier_wdt = &dts_gpi_carrier_wdt_time_out,
   .carrier_pwr_on = &dts_gpo_carrier_pwr_on,
   .carrier_stby = &dts_gpo_carrier_stby,
   .reset_out = &dts_gpo_carrier_reset_out,

@@ -5,8 +5,16 @@ void hdl_gpio_deinit(const hdl_gpio_t *gpio) {
   gpio_mode_set(gpio->port, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, gpio->pin);
 }
 
+void hdl_gpio_set_mode(const hdl_gpio_t *gpio, const hdl_gpio_mode_t *mode) {
+  if ((gpio == NULL) || (mode == NULL))
+    return;
+  gpio_af_set(gpio->port, gpio->mode->af, gpio->pin);
+  gpio_mode_set(gpio->port, gpio->mode->type, gpio->mode->pull, gpio->pin);
+  gpio_output_options_set(gpio->port, gpio->mode->otype, gpio->mode->ospeed, gpio->pin);
+}
+
 void hdl_gpio_init(const hdl_gpio_t *gpio) {
-  if ((gpio == NULL) || (gpio->mode == NULL))
+  if (gpio == NULL)
     return;
   rcu_periph_enum rcu;
   switch (gpio->port) {
@@ -26,9 +34,7 @@ void hdl_gpio_init(const hdl_gpio_t *gpio) {
       return;
   }
   rcu_periph_clock_enable(rcu);
-  gpio_af_set(gpio->port, gpio->mode->af, gpio->pin);
-  gpio_mode_set(gpio->port, gpio->mode->type, gpio->mode->pull, gpio->pin);
-  gpio_output_options_set(gpio->port, gpio->mode->otype, gpio->mode->ospeed, gpio->pin);
+  hdl_gpio_set_mode(gpio, gpio->mode);
 }
 
 hdl_gpio_state hdl_gpio_read(const hdl_gpio_t *gpio) {

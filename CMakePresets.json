@@ -13,7 +13,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB-RK3568J-SMC-R3"
+                "BOARD": "ATB_RK3568J_SMC_R3"
             }
         },
         {
@@ -23,7 +23,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB-RK3568J-SMC-R1"
+                "BOARD": "ATB_RK3568J_SMC_R1"
             }
         },
         {
@@ -33,7 +33,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB-RK3568J-SMC-R0"
+                "BOARD": "ATB_RK3568J_SMC_R0"
             }
         },
         {
@@ -43,7 +43,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "ATB-RK3568J-SMC-R3"
+                "BOARD": "ATB_RK3568J_SMC_R3"
             }
         },
         {
@@ -53,7 +53,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "ATB-RK3568J-SMC-R1"
+                "BOARD": "ATB_RK3568J_SMC_R1"
             }
         },
         {
@@ -63,7 +63,7 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "ATB-RK3568J-SMC-R0"
+                "BOARD": "ATB_RK3568J_SMC_R0"
             }
         },
         {

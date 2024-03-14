@@ -16,21 +16,21 @@ set(CMAKE_C_STANDARD 11)
 
 # Set default target MCU name
 if(NOT DEFINED BOARD) 
-  set(BOARD "RK3568J-SMC-R3")
+  set(BOARD "ATB_RK3568J_SMC_R3")
 endif()
 
 # Set terget core name
-if(BOARD STREQUAL "ATB-RK3568J-SMC-R3")
+if(BOARD STREQUAL "ATB_RK3568J_SMC_R3")
   set(MCU  "NUM46X")
   set(CORE "ARM")
   set(MCPU cortex-m4)
   add_compile_definitions("__MCU_HAL_HDR__=<m460.h>")
-elseif(BOARD STREQUAL "ATB-RK3568J-SMC-R1")
+elseif(BOARD STREQUAL "ATB_RK3568J_SMC_R1")
   set(MCU "GD32E23X")
   set(CORE "ARM")
   set(MCPU cortex-m23)
   add_compile_definitions("__MCU_HAL_HDR__=<gd32e23x.h>")
-elseif(BOARD STREQUAL "ATB-RK3568J-SMC-R0")
+elseif(BOARD STREQUAL "ATB_RK3568J_SMC_R0")
   set(MCU "STM32L0XX")
   set(CORE "ARM")
   set(MCPU cortex-m0)
@@ -40,6 +40,8 @@ elseif(BOARD STREQUAL "ATB-RK3568J-SMC-R0")
 else()
   message( SEND_ERROR "Board not supported!" )
 endif()
+
+add_compile_definitions("${BOARD}")
 
 if (CORE STREQUAL "ARM")
   # Set linker script file

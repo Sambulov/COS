@@ -8,6 +8,14 @@
 #define RK809_REG_PMIC_CHIP_VER   ((uint16_t)(RK809_REG_OPERATIONAL_BASE + 0x00ee))
 #define RK809_REG_PMIC_SYS_CFG3   ((uint16_t)(RK809_REG_OPERATIONAL_BASE + 0x00f4))
 
+typedef struct {
+  hdl_i2c_t i2c;
 
+} hdl_pmic_rk809_t;
+
+
+void hdl_pmic_rk809_read_register(hdl_pmic_rk809_t desc, uint16_t reg);
+
+void hdl_pmic_rk809_write_register();
 
 #endif // RK809_H_

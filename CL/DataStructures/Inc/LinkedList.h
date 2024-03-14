@@ -34,14 +34,15 @@ typedef int32_t (*ListItemComparer_t)(LinkedListItem_t *, LinkedListItem_t *);
 typedef void (*LinkedListAction_t)(LinkedListItem_t*, void *pxArg);
 typedef uint8_t (*LinkedListMatch_t)(LinkedListItem_t*, void *pxArg);
 
-LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t pxLinkedList, LinkedListMatch_t pfMatch, void *pxSearchArgs);
+LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t pxList, LinkedListMatch_t pfMatch, void *pxSearchArgs);
 LinkedListItem_t *pxLinkedListFindNextOverlap(LinkedListItem_t *pxCurrent, LinkedListMatch_t pfMatch, void *pxSearchArgs);
 LinkedListItem_t *pxLinkedListFindNextNoOverlap(LinkedListItem_t *pxCurrent, LinkedListMatch_t pfMatch, void *pxSearchArgs);
-void vLinkedListDoForeach(LinkedList_t pxLinkedList, LinkedListAction_t fAction, void *pxArg);
-void vLinkedListInsert(LinkedList_t *ppxLinkedList, LinkedListItem_t *pxItem, ListItemComparer_t pfComparer);
+void vLinkedListDoForeach(LinkedList_t pxList, LinkedListAction_t fAction, void *pxArg);
+void vLinkedListInsert(LinkedList_t *ppxList, LinkedListItem_t *pxItem, ListItemComparer_t pfComparer);
 void vLinkedListInsertLast(LinkedList_t *ppxLinkedList, LinkedListItem_t *pxItem);
 void vLinkedListUnlink(LinkedListItem_t *pxItem);
-uint32_t ulLinkedListCount(LinkedList_t pxLinkedList, LinkedListMatch_t pfMatch, void *pxSearchArgs);
+uint32_t ulLinkedListCount(LinkedList_t pxList, LinkedListMatch_t pfMatch, void *pxSearchArgs);
+void vLinkedListClear(LinkedList_t *pxList);
 uint8_t bLinkedListContains(LinkedList_t pxList, LinkedListItem_t *pxItem);
 
 /*!
@@ -62,7 +63,8 @@ void linked_list_insert(linked_list_t *linked_list_ptr, linked_list_item_t *item
 void linked_list_insert_last(linked_list_t *linked_list_ptr, linked_list_item_t *item);
 void linked_list_unlink(linked_list_item_t *item);
 uint32_t linked_list_count(linked_list_t linked_list, linked_list_match_t match_fn, void *search_args);
-uint8_t linked_list_contains(linked_list_t list, linked_list_item_t *item);
+void linked_list_clear(LinkedList_t *linked_list_ptr);
+uint8_t linked_list_contains(linked_list_t linked_list, linked_list_item_t *item);
 
 #ifdef __cplusplus
 }

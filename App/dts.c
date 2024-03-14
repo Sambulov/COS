@@ -1,6 +1,6 @@
 #include "bldl.h"
 
-#if defined ( NUM46X )
+#if defined ( ATB_RK3568J_SMC_R3 )
   const hdl_sys_t dts_sys_cnf = {
 
   };
@@ -130,7 +130,7 @@
   };
 #endif
 
-#if defined ( GD32E23X )
+#if defined ( ATB_RK3568J_SMC_R1 )
   const hdl_sys_t dts_sys_cnf = {
     .ticks_per_ms = 72000000 / 1000,
   };
@@ -327,7 +327,7 @@
 
 #endif
 
-#if defined(STM32L0XX)
+#if defined(ATB_RK3568J_SMC_R0)
   const hdl_sys_t dts_sys_cnf = {
 
   };

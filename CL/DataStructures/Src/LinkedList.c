@@ -10,7 +10,7 @@
 
 // _Static_assert(sizeof(__LinkedListItem_t) == sizeof(LinkedListItem_t), "In LinkedList.h data structure size of LinkedListItem_t doesn't match, check LL_ITEM_SIZE");
 
-#define _bIsValidItem(it)         ((it == libNULL) || (it->validation == LINKED_LIST_VALIDATION))
+#define _bIsValidItem(it)         ((it == libNULL) || ((it)->validation == LINKED_LIST_VALIDATION))
 
 static void _vLinkBefore(LinkedListItem_t *pxCurrent, LinkedListItem_t *pxNew) {
 	if (pxCurrent != libNULL && (pxNew != libNULL) && (pxCurrent != pxNew)) {
@@ -46,34 +46,34 @@ void vLinkedListUnlink(LinkedListItem_t *pxItem) {
 	}
 }
 
-void vLinkedListInsert(LinkedList_t *ppxLinkedList, LinkedListItem_t *pxItem, ListItemComparer_t pfComparer) {
-	if ((pxItem == libNULL) || (ppxLinkedList == libNULL)) {
+void vLinkedListInsert(LinkedList_t *ppxList, LinkedListItem_t *pxItem, ListItemComparer_t pfComparer) {
+	if ((pxItem == libNULL) || (ppxList == libNULL)) {
 		return;
 	}
 	vLinkedListUnlink(pxItem);
-	LinkedListItem_t *current = *ppxLinkedList;
+	LinkedListItem_t *current = *ppxList;
 	if(_bIsValidItem(current)) {
-		pxItem->listPointer = ppxLinkedList;
+		pxItem->listPointer = ppxList;
 		if ((pfComparer != libNULL) && (current != libNULL)) {
 			while (pfComparer(pxItem, current) > 0) {
 				current = current->next;
-				if (current == *ppxLinkedList) {
+				if (current == *ppxList) {
 					break;
 				}
 			}
 		}
 		_vLinkBefore(current, pxItem);
-		*ppxLinkedList = pxItem;
+		*ppxList = pxItem;
 	}
 }
 
-void vLinkedListInsertLast(LinkedList_t *ppxLinkedList, LinkedListItem_t *pxItem) {
-	if(ppxLinkedList != libNULL) {
+void vLinkedListInsertLast(LinkedList_t *ppxList, LinkedListItem_t *pxItem) {
+	if(ppxList != libNULL) {
     	vLinkedListUnlink(pxItem);
-		LinkedList_t pxLinkedList = *ppxLinkedList;
-		vLinkedListInsert(ppxLinkedList, pxItem, libNULL);
-		if (pxLinkedList != libNULL) {
-			*ppxLinkedList = pxLinkedList;
+		LinkedList_t pxList = *ppxList;
+		vLinkedListInsert(ppxList, pxItem, libNULL);
+		if (pxList != libNULL) {
+			*ppxList = pxList;
 		}
 	}
 }
@@ -105,8 +105,8 @@ static LinkedListItem_t *_pxLinkedListFind(LinkedListItem_t *pxCurrent, LinkedLi
 	return libNULL;
 }
 
-LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t pxLinkedList, LinkedListMatch_t pfMatch, void *pxSearchArgs) {
-	return _pxLinkedListFind(pxLinkedList, pfMatch, pxSearchArgs, 1, 0);
+LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t pxList, LinkedListMatch_t pfMatch, void *pxSearchArgs) {
+	return _pxLinkedListFind(pxList, pfMatch, pxSearchArgs, 1, 0);
 }
 
 LinkedListItem_t *pxLinkedListFindNextOverlap(LinkedListItem_t *pxCurrent, LinkedListMatch_t pfMatch, void *pxSearchArgs) {
@@ -149,6 +149,17 @@ uint32_t ulLinkedListCount(LinkedList_t pxList, LinkedListMatch_t pfMatch, void 
 	return count;
 }
 
+static void _vUnlinkForeachWrap(LinkedListItem_t *it, void *pxArg) {
+  vLinkedListUnlink(it);
+};
+
+void vLinkedListClear(LinkedList_t *ppxList) {
+  if(ppxList != libNULL) {
+    vLinkedListDoForeach(*ppxList, &_vUnlinkForeachWrap, libNULL);
+    *ppxList = libNULL;
+  }
+}
+
 uint8_t bLinkedListContains(LinkedList_t pxList, LinkedListItem_t *pxItem) {
 	return (pxList != libNULL) && 
 		_bIsValidItem(pxList) && 
@@ -157,28 +168,30 @@ uint8_t bLinkedListContains(LinkedList_t pxList, LinkedListItem_t *pxItem) {
 		(pxList->listPointer == pxItem->listPointer);	
 }
 
-linked_list_item_t *linked_list_find_first(linked_list_t linked_list, linked_list_match_t match_fn, void *search_args)\
-                                                    __attribute__ ((alias ("pxLinkedListFindFirst")));
+linked_list_item_t *linked_list_find_first(linked_list_t, linked_list_match_t, void *)\
+                                                      __attribute__ ((alias ("pxLinkedListFindFirst")));
 
-linked_list_item_t *linked_list_find_next_overlap(linked_list_item_t *current, linked_list_match_t match_fn, void *search_args)\
-                                                    __attribute__ ((alias ("pxLinkedListFindNextOverlap")));
+linked_list_item_t *linked_list_find_next_overlap(linked_list_item_t *, linked_list_match_t, void *)\
+                                                      __attribute__ ((alias ("pxLinkedListFindNextOverlap")));
 
-linked_list_item_t *linked_list_find_next_no_overlap(linked_list_item_t *current, linked_list_match_t match_fn, void *search_args)\
-                                                    __attribute__ ((alias ("pxLinkedListFindNextNoOverlap")));
+linked_list_item_t *linked_list_find_next_no_overlap(linked_list_item_t *, linked_list_match_t, void *)\
+                                                      __attribute__ ((alias ("pxLinkedListFindNextNoOverlap")));
 
-void linked_list_do_foreach(linked_list_t linked_list, linked_list_action_t action_fn, void *arg)\
-                                                    __attribute__ ((alias ("vLinkedListDoForeach")));
+void linked_list_do_foreach(linked_list_t, linked_list_action_t, void *)\
+                                                      __attribute__ ((alias ("vLinkedListDoForeach")));
 
-void linked_list_insert(linked_list_t *linked_list_ptr, linked_list_item_t *item, list_item_comparer_t comparer_fn)\
-                                                    __attribute__ ((alias ("vLinkedListInsert")));
+void linked_list_insert(linked_list_t *, linked_list_item_t *, list_item_comparer_t)\
+                                                      __attribute__ ((alias ("vLinkedListInsert")));
 
-void linked_list_insert_last(linked_list_t *linked_list_ptr, linked_list_item_t *item)\
-                                                    __attribute__ ((alias ("vLinkedListInsertLast")));
+void linked_list_insert_last(linked_list_t *, linked_list_item_t *)\
+                                                      __attribute__ ((alias ("vLinkedListInsertLast")));
 
-void linked_list_unlink(linked_list_item_t *item)   __attribute__ ((alias ("vLinkedListUnlink")));
+void linked_list_unlink(linked_list_item_t *)     __attribute__ ((alias ("vLinkedListUnlink")));
 
-uint32_t linked_list_count(linked_list_t linked_list, linked_list_match_t match_fn, void *search_args)\
-                                                    __attribute__ ((alias ("ulLinkedListCount")));
+uint32_t linked_list_count(linked_list_t, linked_list_match_t, void *)\
+                                                      __attribute__ ((alias ("ulLinkedListCount")));
 
-uint8_t linked_list_contains(linked_list_t list, linked_list_item_t *item)\
-                                                    __attribute__ ((alias ("bLinkedListContains")));
+void linked_list_clear(LinkedList_t *) __attribute__ ((alias ("vLinkedListClear")));
+
+uint8_t linked_list_contains(linked_list_t, linked_list_item_t *)\
+                                                      __attribute__ ((alias ("bLinkedListContains")));

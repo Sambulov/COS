@@ -10,7 +10,7 @@ typedef enum {
   HDL_BTN_CLICKED,
 } hdl_btn_state_t;
 
-#define HDL_BUTTON_PRV_SIZE    20
+#define HDL_BUTTON_PRV_SIZE    16
 	
 typedef struct {
   const uint32_t debounce_delay;
@@ -19,12 +19,20 @@ typedef struct {
   const hdl_gpio_t *btn_gpio;
 } hdl_button_hw_t;
 
+typedef enum {
+  HDL_BTN_EVENT_RELEASE = 0x01,
+  HDL_BTN_EVENT_PRESS   = 0x02,
+  HDL_BTN_EVENT_HOLD    = 0x04,
+  HDL_BTN_EVENT_CLICK   = 0x08,
+} hdl_btn_event_t;
+
 typedef struct {
 	uint8_t __private[HDL_BUTTON_PRV_SIZE];
-  const hdl_callback_t *button_event_cb;
+  const hdl_button_hw_t *hw;
+  hdl_btn_event_t event_mask;
+  hdl_callback_t *button_event_cb;
 } hdl_button_t;
 
-void hdl_btn_init(hdl_button_t *desc, const hdl_button_hw_t *hw);
 void hdl_btn_work(hdl_button_t *desc);
 hdl_btn_state_t hdl_btn_state_get(hdl_button_t *desc);
 

@@ -12,42 +12,45 @@
 extern "C" {
 #endif
 
-//#define LL_ITEM_SIZE    16
+static inline void *__LinkedListCalcObjPtr(size_t llOffset, void *llPtr) { return (llPtr == libNULL) ? libNULL : ((uint8_t *)(llPtr) - llOffset); }
 
-//typedef struct LL_ITEM_T {
-//  uint8_t __prv[LL_ITEM_SIZE];
-//} LinkedListItem_t;
+#define LinkedListGetObject(objType, listPtr)           ((objType *)__LinkedListCalcObjPtr(offsetof(objType, __ll),(listPtr)))
+#define __LinkedListObject__                            LinkedListItem_t __ll;
+#define LinkedListItem(pxObj)                           (&((pxObj)->__ll))
 
-/*!
-  Camel case notation
-*/
+#define LL_ITEM_SIZE    16
 
-typedef struct LL_ITEM_T {
-	uint32_t validation;
-	struct LL_ITEM_T *next;
-	struct LL_ITEM_T *prev;
-	struct LL_ITEM_T **listPointer;
-} LinkedListItem_t;
+	typedef struct LL_ITEM_T {
+		uint8_t __prv[LL_ITEM_SIZE];
+	} LinkedListItem_t;
 
-typedef LinkedListItem_t* LinkedList_t;
-typedef int32_t (*ListItemComparer_t)(LinkedListItem_t *, LinkedListItem_t *);
-typedef void (*LinkedListAction_t)(LinkedListItem_t*, void *pxArg);
-typedef uint8_t (*LinkedListMatch_t)(LinkedListItem_t*, void *pxArg);
+	typedef LinkedListItem_t* LinkedList_t;
+	typedef int32_t(*ListItemComparer_t)(LinkedListItem_t *, LinkedListItem_t *);
+	typedef void(*LinkedListAction_t)(LinkedListItem_t*, void *);
+	typedef uint8_t(*LinkedListMatch_t)(LinkedListItem_t*, void *);
 
-LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t pxList, LinkedListMatch_t pfMatch, void *pxSearchArgs);
-LinkedListItem_t *pxLinkedListFindNextOverlap(LinkedListItem_t *pxCurrent, LinkedListMatch_t pfMatch, void *pxSearchArgs);
-LinkedListItem_t *pxLinkedListFindNextNoOverlap(LinkedListItem_t *pxCurrent, LinkedListMatch_t pfMatch, void *pxSearchArgs);
-void vLinkedListDoForeach(LinkedList_t pxList, LinkedListAction_t fAction, void *pxArg);
-void vLinkedListInsert(LinkedList_t *ppxList, LinkedListItem_t *pxItem, ListItemComparer_t pfComparer);
-void vLinkedListInsertLast(LinkedList_t *ppxLinkedList, LinkedListItem_t *pxItem);
-void vLinkedListUnlink(LinkedListItem_t *pxItem);
-uint32_t ulLinkedListCount(LinkedList_t pxList, LinkedListMatch_t pfMatch, void *pxSearchArgs);
-void vLinkedListClear(LinkedList_t *pxList);
-uint8_t bLinkedListContains(LinkedList_t pxList, LinkedListItem_t *pxItem);
+	LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t xList, LinkedListMatch_t pfMatch, void *pxMatchArg);
+	LinkedListItem_t *pxLinkedListFindNextOverlap(LinkedListItem_t *pxCurrentItem, LinkedListMatch_t pfMatch, void *pxMatchArg);
+	LinkedListItem_t *pxLinkedListFindNextNoOverlap(LinkedListItem_t *pxCurrentItem, LinkedListMatch_t pfMatch, void *pxMatchArg);
+	void vLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg);
+	void vLinkedListDoWhile(LinkedList_t xList, LinkedListMatch_t fAction, void *pxArg);
+	void vLinkedListInsert(LinkedList_t *pxList, LinkedListItem_t *pxItem, ListItemComparer_t pfCmp);
+	static inline void vLinkedListInsertLast(LinkedList_t *pxList, LinkedListItem_t *pxItem) {
+		vLinkedListInsert(pxList, pxItem, libNULL);
+	}
+	void vLinkedListUnlink(LinkedListItem_t *pxItem);
+	uint32_t ulLinkedListCount(LinkedList_t xList, LinkedListMatch_t pfMatch, void *pxMatchArg);
+	void vLinkedListClear(LinkedList_t xList);
+	uint8_t bLinkedListContains(LinkedList_t xList, LinkedListItem_t *pxItem);
 
 /*!
   Snake notation
 */
+
+#define linked_list_get_object(obj_type, list_ptr)  LinkedListGetObject(obj_type, list_ptr)
+
+#define __linked_list_object__                                __LinkedListObject__
+#define linked_list_item(obj)                                 LinkedListItem(obj)
 
 typedef LinkedListItem_t linked_list_item_t;
 typedef LinkedListItem_t* linked_list_t;

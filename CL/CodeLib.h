@@ -46,6 +46,7 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #define UNUSED(x)             ((void)(x))
 
 #include "LinkedList.h"
+#include "MachineState.h"
 
 #ifdef __cplusplus
 }

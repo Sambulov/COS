@@ -1,6 +1,7 @@
 #ifndef HDL_SYSTICK_H_
 #define HDL_SYSTICK_H_
 
+#define SYSTICK_VERSION  1
 
 #if defined ( NUM46X )
   typedef struct {

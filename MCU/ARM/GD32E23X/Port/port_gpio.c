@@ -1,23 +1,16 @@
 #include "hdl_portable.h"
 
-void hdl_gpio_deinit(const hdl_gpio_t *gpio) {
-  gpio_af_set(gpio->port, GPIO_AF_0, gpio->pin);
-  gpio_mode_set(gpio->port, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, gpio->pin);
-}
-
-void hdl_gpio_set_mode(const hdl_gpio_t *gpio, const hdl_gpio_mode_t *mode) {
-  if ((gpio == NULL) || (mode == NULL))
-    return;
-  gpio_af_set(gpio->port, gpio->mode->af, gpio->pin);
-  gpio_mode_set(gpio->port, gpio->mode->type, gpio->mode->pull, gpio->pin);
-  gpio_output_options_set(gpio->port, gpio->mode->otype, gpio->mode->ospeed, gpio->pin);
-}
-
-void hdl_gpio_init(const hdl_gpio_t *gpio) {
-  if (gpio == NULL)
-    return;
+hdl_init_state_t hdl_gpio(void *desc, const uint8_t enable) {
+  hdl_gpio_t *gpio = (hdl_gpio_t *)desc;
+  if ((gpio == NULL) || (gpio->mode == NULL) || (gpio->port == NULL))
+    return HDL_FALSE;
+  if(!enable) {
+    gpio_af_set(gpio->port->periph, GPIO_AF_0, gpio->pin);
+    gpio_mode_set(gpio->port->periph, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, gpio->pin);
+    return HDL_TRUE;
+  }
   rcu_periph_enum rcu;
-  switch (gpio->port) {
+  switch (gpio->port->periph) {
     case GPIOA:
       rcu = RCU_GPIOA;
       break;
@@ -31,21 +24,23 @@ void hdl_gpio_init(const hdl_gpio_t *gpio) {
       rcu = RCU_GPIOF;
       break;    
     default:
-      return;
+      return -1;
   }
   rcu_periph_clock_enable(rcu);
-  hdl_gpio_set_mode(gpio, gpio->mode);
+  gpio_af_set(gpio->port->periph, gpio->mode->af, gpio->pin);
+  gpio_mode_set(gpio->port->periph, gpio->mode->type, gpio->mode->pull, gpio->pin);
+  gpio_output_options_set(gpio->port->periph, gpio->mode->otype, gpio->mode->ospeed, gpio->pin);
+  return HDL_TRUE;
 }
 
 hdl_gpio_state hdl_gpio_read(const hdl_gpio_t *gpio) {
-  return (gpio_input_bit_get(gpio->port, gpio->pin) == RESET)? HDL_GPIO_LOW: HDL_GPIO_HIGH;
+  return (gpio_input_bit_get(gpio->port->periph, gpio->pin) == RESET)? HDL_GPIO_LOW: HDL_GPIO_HIGH;
 }
 
 void hdl_gpio_write(const hdl_gpio_t *gpio, const hdl_gpio_state state) {
-  gpio_bit_write(gpio->port, gpio->pin, (state == HDL_GPIO_LOW)? RESET: SET);
+  gpio_bit_write(gpio->port->periph, gpio->pin, (state == HDL_GPIO_LOW)? RESET: SET);
 }
 
 void hdl_gpio_toggle(const hdl_gpio_t *gpio) {
-    gpio_bit_toggle(gpio->port, gpio->pin);
+    gpio_bit_toggle(gpio->port->periph, gpio->pin);
 }
-

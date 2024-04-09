@@ -14,9 +14,9 @@ typedef struct {
   const hdl_gpio_state active_state_lock_sd;
   const hdl_gpio_state active_state_lock_emmc;
   const hdl_gpio_state active_state_lock_qspi;
-  const hdl_gpio_t *lock_pin_sd;
-  const hdl_gpio_t *lock_pin_emmc;
-  const hdl_gpio_t *lock_pin_qspi;
+  const hdl_gpio_pin_t *lock_pin_sd;
+  const hdl_gpio_pin_t *lock_pin_emmc;
+  const hdl_gpio_pin_t *lock_pin_qspi;
 } bldl_som_boot_lock_t;
 
 void bldl_som_boot_dev_en(const bldl_som_boot_lock_t *desc, const bldl_boot_dev_t dev);

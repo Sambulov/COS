@@ -3,31 +3,31 @@
 
   extern const hdl_sys_t dts_sys_cnf;
 
-  // extern const hdl_gpio_t dts_gpi_pmic_sleep_1v8;
-  // extern const hdl_gpio_t dts_gpi_carrier_lid;
-  // extern const hdl_gpio_t dts_gpi_carrier_batlow;
-  // extern const hdl_gpio_t dts_gpi_carrier_sleep;
-  // extern const hdl_gpio_t dts_gpi_carrier_wdt_time_out;
-  // extern const hdl_gpio_t dts_gpi_carrier_charging;
-  // extern const hdl_gpio_t dts_gpi_carrier_charger_prstn;
+  // extern const hdl_gpio_pin_t dts_gpi_pmic_sleep_1v8;
+  // extern const hdl_gpio_pin_t dts_gpi_carrier_lid;
+  // extern const hdl_gpio_pin_t dts_gpi_carrier_batlow;
+  // extern const hdl_gpio_pin_t dts_gpi_carrier_sleep;
+  // extern const hdl_gpio_pin_t dts_gpi_carrier_wdt_time_out;
+  // extern const hdl_gpio_pin_t dts_gpi_carrier_charging;
+  // extern const hdl_gpio_pin_t dts_gpi_carrier_charger_prstn;
 
-  extern const hdl_gpio_t dts_gpo_emmc_lock;
-  extern const hdl_gpio_t dts_gpo_qspi_lock;
-  extern const hdl_gpio_t dts_gpo_sd_lock;
-  extern const hdl_gpio_t dts_gpi_carrier_force_recovery;
-  extern const hdl_gpio_t dts_gpi_carrier_boot_sel0;
-  extern const hdl_gpio_t dts_gpi_carrier_boot_sel1;
-  extern const hdl_gpio_t dts_gpi_carrier_boot_sel2;
-  extern const hdl_gpio_t dts_gpi_carrier_reset_in;
-  extern const hdl_gpio_t dts_gpo_carrier_reset_out;
-  extern const hdl_gpio_t dts_gpi_carrier_power_good;
-  extern const hdl_gpio_t dts_gpo_carrier_pwr_on;
-  extern const hdl_gpio_t dts_gpo_carrier_stby;
-  extern const hdl_gpio_t dts_gpi_carrier_power_btn;
-  extern const hdl_gpio_t dts_gpo_pmic_soc_rst;
-  extern const hdl_gpio_t dts_gpo_pmic_power_on;
-  extern const hdl_gpio_t dts_gpio_soc_scl;
-  extern const hdl_gpio_t dts_gpio_soc_sda;
+  extern const hdl_gpio_pin_t dts_gpo_emmc_lock;
+  extern const hdl_gpio_pin_t dts_gpo_qspi_lock;
+  extern const hdl_gpio_pin_t dts_gpo_sd_lock;
+  extern const hdl_gpio_pin_t dts_gpi_carrier_force_recovery;
+  extern const hdl_gpio_pin_t dts_gpi_carrier_boot_sel0;
+  extern const hdl_gpio_pin_t dts_gpi_carrier_boot_sel1;
+  extern const hdl_gpio_pin_t dts_gpi_carrier_boot_sel2;
+  extern const hdl_gpio_pin_t dts_gpi_carrier_reset_in;
+  extern const hdl_gpio_pin_t dts_gpo_carrier_reset_out;
+  extern const hdl_gpio_pin_t dts_gpi_carrier_power_good;
+  extern const hdl_gpio_pin_t dts_gpo_carrier_pwr_on;
+  extern const hdl_gpio_pin_t dts_gpo_carrier_stby;
+  extern const hdl_gpio_pin_t dts_gpi_carrier_power_btn;
+  extern const hdl_gpio_pin_t dts_gpo_pmic_soc_rst;
+  extern const hdl_gpio_pin_t dts_gpo_pmic_power_on;
+  extern const hdl_gpio_pin_t dts_gpio_soc_scl;
+  extern const hdl_gpio_pin_t dts_gpio_soc_sda;
 
   extern const hdl_button_hw_t dts_btn_power;
   extern const hdl_button_hw_t dts_btn_reset;

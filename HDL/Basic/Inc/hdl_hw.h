@@ -4,17 +4,22 @@
 #define HDL_HW_PRIVATE_SIZE 20
 
 typedef enum {
-  HDL_HW_INIT_OK = 0,
+  HDL_HW_INIT_UNKNOWN = 0,
   HDL_HW_INIT_ONGOING = 1,
+  HDL_HW_INIT_OK = 2,
+  HDL_HW_INIT_TERMINATING = 2,  
   HDL_HW_INIT_FAILED = -1,
 } hdl_init_state_t;
 
 typedef hdl_init_state_t (*hdl_hardware_initializer_t)(void *desc, uint8_t enable);
 
-typedef struct {
+typedef struct _HDL_HW_T_{
   uint8_t __private[HDL_HW_PRIVATE_SIZE];
   hdl_hardware_initializer_t init;
+  struct _HDL_HW_T_ **dependencies;
 } hdl_hardware_t;
+
+#define hdl_hw_dependencies(...) ((hdl_hardware_t *[]){__VA_ARGS__, NULL})
 
 hdl_init_state_t hdl_hw_enable(hdl_hardware_t *desc, uint8_t enable);
 hdl_init_state_t hdl_hw_state(hdl_hardware_t *desc);

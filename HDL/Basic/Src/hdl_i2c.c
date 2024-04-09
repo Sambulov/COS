@@ -32,7 +32,8 @@ typedef struct {
   /* public */
   const hdl_i2c_hw_t *hw_conf;
   hdl_hal_i2c_t hal;
-  hdl_callback_t *server_event_cb;
+  event_handler_t *server_event_cb;
+  void *context;
 } hdl_i2c_private_t;
 
 _Static_assert(sizeof(hdl_i2c_message_private_t) == sizeof(hdl_i2c_message_t), "In hdl_i2c.h data structure size of hdl_i2c_message_t doesn't match, check HDL_I2C_MESSAGE_PRV_SIZE");

@@ -12,9 +12,8 @@
 #include <stddef.h>
 #include __MCU_HAL_HDR__
 
-#include "hdl_hw.h"
 #include "hdl_callback.h"
-
+#include "hdl_hw.h"
 //#include "Interrupt.h"
 #include "hdl_clock.h"
 #include "hdl_sys.h"

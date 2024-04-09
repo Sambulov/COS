@@ -13,11 +13,9 @@
 #endif
 
 #if defined ( GD32E23X )
-  typedef struct {
-    hdl_clock_t *clock;
-    const uint32_t periph;   // GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF
-  } hdl_gpio_port_t;
 
+  // periph GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF
+  typedef hdl_hardware_t hdl_gpio_port_t;
   typedef struct {
     const uint32_t af;        // GPIO_AF_0, GPIO_AF_1, ..., GPIO_AF_15.
     const uint32_t pull;      // GPIO_PUPD_NONE, GPIO_PUPD_PULLUP, GPIO_PUPD_PULLDOWN.
@@ -27,10 +25,13 @@
   } hdl_gpio_mode_t;
 
   typedef struct {
-    const hdl_gpio_port_t *port;
+    hdl_hardware_t hw;
     const hdl_gpio_mode_t *mode;
     const uint32_t pin;       // GPIO_PIN_0, GPIO_PIN_1, ..., GPIO_PIN_15, GPIO_PIN_ALL.
-  } hdl_gpio_t;
+  } hdl_gpio_pin_t;
+
+  hdl_init_state_t hdl_gpio_pin(void *desc, const uint8_t enable);
+  hdl_init_state_t hdl_gpio_port(void *desc, const uint8_t enable);
 #endif
 
 #if defined ( STM32L0XX )
@@ -55,9 +56,8 @@ typedef enum {
 
 _Static_assert(HDL_GPIO_LOW == !HDL_GPIO_HIGH, "Expression (HDL_GPIO_LOW == !HDL_GPIO_HIGH) must be always true");
 
-hdl_init_state_t hdl_gpio(void *desc, const uint8_t enable);
-hdl_gpio_state hdl_gpio_read(const hdl_gpio_t *gpio);
-void hdl_gpio_write(const hdl_gpio_t *gpio, const hdl_gpio_state state);
-void hdl_gpio_toggle(const hdl_gpio_t *gpio);
+hdl_gpio_state hdl_gpio_read(const hdl_gpio_pin_t *gpio);
+void hdl_gpio_write(const hdl_gpio_pin_t *gpio, const hdl_gpio_state state);
+void hdl_gpio_toggle(const hdl_gpio_pin_t *gpio);
 
 #endif // HDL_GPIO_H_

@@ -9,9 +9,7 @@
   #define HDL_I2C_HAL_PRV_SIZE                16
 
   typedef struct {
-    const hdl_clock_t clock;
-    const hdl_gpio_t *scl;
-    const hdl_gpio_t *sda;
+    hdl_hardware_t hw;
     const uint32_t periph;       /* I2C0, I2C1 */
     const uint32_t dtcy;         /* I2C_DTCY_2 or I2C_DTCY_16_9 */
     const uint32_t speed;        /* Max 1000000 */
@@ -80,11 +78,12 @@ typedef struct {
 	uint8_t __private[HDL_I2C_PRV_SIZE];
   const hdl_i2c_hw_t *hw_conf;
   hdl_hal_i2c_t hal;
-  hdl_callback_t *server_event_cb;
+  event_handler_t *server_event_cb;
+  void *context;
 } hdl_i2c_t;
 
 /* Portable functions */
-int32_t hdl_i2c(hdl_i2c_t *desc, uint8_t enable);
+hdl_init_state_t hdl_i2c(void *desc, uint8_t enable);
 void hdl_hal_i2c_bus_state(hdl_i2c_t *desc);
 void hdl_i2c_client_xfer_message(hdl_i2c_t *desc, hdl_i2c_message_t *msg);
 //void hdl_i2c_server_xfer_message(hdl_i2c_t *desc, hdl_i2c_message_t *msg);

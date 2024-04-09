@@ -107,43 +107,45 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 
 void main() {
 
-  static bldl_som_power_state_t som_state = {
-     .hw = &dts_som_state_ctrl
-  };
+  // static bldl_som_power_state_t som_state = {
+  //    .hw = &dts_som_state_ctrl
+  // };
 
-  // hdl_system_init(&dts_sys_cnf);
+  // // hdl_system_init(&dts_sys_cnf);
 
-  hdl_callback_t power_btn_cb = {
-    .context = &som_state,
-    .handler = &power_btn_handler
-  };
+  // hdl_callback_t power_btn_cb = {
+  //   .context = &som_state,
+  //   .handler = &power_btn_handler
+  // };
 
-  hdl_callback_t reset_btn_cb = {
-    .context = &som_state,
-    .handler = &reset_btn_handler
-  };
+  // hdl_callback_t reset_btn_cb = {
+  //   .context = &som_state,
+  //   .handler = &reset_btn_handler
+  // };
 
-  hdl_button_t power_button = {
-    .hw = &dts_btn_power,
-    .button_event_cb = &power_btn_cb,
-    .event_mask = HDL_BTN_EVENT_RELEASE |
-                  HDL_BTN_EVENT_PRESS |
-                  HDL_BTN_EVENT_HOLD |
-                  HDL_BTN_EVENT_CLICK
-  };
+  // hdl_button_t power_button = {
+  //   .hw = &dts_btn_power,
+  //   .button_event_cb = &power_btn_cb,
+  //   .event_mask = HDL_BTN_EVENT_RELEASE |
+  //                 HDL_BTN_EVENT_PRESS |
+  //                 HDL_BTN_EVENT_HOLD |
+  //                 HDL_BTN_EVENT_CLICK
+  // };
 
-  hdl_button_t reset_button = {
-    .hw = &dts_btn_reset,
-    .button_event_cb = &reset_btn_cb,
-    .event_mask = HDL_BTN_EVENT_RELEASE |
-                  HDL_BTN_EVENT_PRESS
-  };
+  // hdl_button_t reset_button = {
+  //   .hw = &dts_btn_reset,
+  //   .button_event_cb = &reset_btn_cb,
+  //   .event_mask = HDL_BTN_EVENT_RELEASE |
+  //                 HDL_BTN_EVENT_PRESS
+  // };
 
   // bldl_som_exec_state(&som_state, BLDL_SOM_STATE_OFF);
   // //bldl_som_exec_state(&som_state, BLDL_SOM_STATE_ON);
   // test_read_pmic_regs();
+  //hdl_hw_enable(&dts_gpi_carrier_power_btn.hw, HDL_TRUE);
+
   while(1) {
-    hdl_btn_work(&power_button);
-    hdl_btn_work(&reset_button);
+    // hdl_btn_work(&power_button);
+    // hdl_btn_work(&reset_button);
   }
 }

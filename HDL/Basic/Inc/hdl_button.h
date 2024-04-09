@@ -16,7 +16,7 @@ typedef struct {
   const uint32_t debounce_delay;
   const uint32_t hold_delay;
   const hdl_gpio_state active_state;
-  const hdl_gpio_t *btn_gpio;
+  const hdl_gpio_pin_t *btn_gpio;
 } hdl_button_hw_t;
 
 typedef enum {
@@ -30,7 +30,8 @@ typedef struct {
 	uint8_t __private[HDL_BUTTON_PRV_SIZE];
   const hdl_button_hw_t *hw;
   hdl_btn_event_t event_mask;
-  hdl_callback_t *button_event_cb;
+  event_handler_t button_event_cb;
+  void *context;
 } hdl_button_t;
 
 void hdl_btn_work(hdl_button_t *desc);

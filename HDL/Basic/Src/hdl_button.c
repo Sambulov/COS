@@ -18,7 +18,8 @@ typedef struct {
   uint32_t input_change_time;
   const hdl_button_hw_t *hw;
   hdl_btn_event_t event_mask;
-  const hdl_callback_t *button_event_cb;
+  event_handler_t button_event_cb;
+  void *context;
 } hdl_button_private_t;
 
 _Static_assert(sizeof(hdl_button_private_t) == sizeof(hdl_button_t), "In hdl_button.h data structure size of hdl_button_t doesn't match, check HDL_BUTTON_DESC_SIZE");
@@ -33,11 +34,10 @@ hdl_init_state_t hdl_button(void *desc, uint8_t enable) {
     pdesc->ovn = HDL_BUTTON_OVN;
     pdesc->input_state = HDL_BTN_RELEASED;
     pdesc->output_state = HDL_BTN_O_DEFAULT;
-    return hdl_gpio((void *)btn->hw->btn_gpio, enable);
+    //return hdl_gpio((void *)btn->hw->btn_gpio, enable);
   }
   return HDL_FALSE;
 }
-
 
 uint8_t _hdl_btn_init() {
 }
@@ -72,10 +72,8 @@ uint8_t hdl_btn_release(hdl_button_t *desc) {
 }
 
 static void _btn_rise_event(hdl_button_private_t *pdesc, hdl_btn_event_t event) {
-  if((pdesc->button_event_cb != NULL) && 
-     (pdesc->button_event_cb->handler != NULL) &&
-     (pdesc->event_mask & event))
-    pdesc->button_event_cb->handler(event, pdesc, pdesc->button_event_cb->context);
+  if((pdesc->button_event_cb != NULL) && (pdesc->event_mask & event))
+    pdesc->button_event_cb(event, pdesc, pdesc->context);
 }
 
 void hdl_btn_work(hdl_button_t *desc) {

@@ -17,6 +17,7 @@ typedef struct _HDL_HW_T_{
   uint8_t __private[HDL_HW_PRIVATE_SIZE];
   hdl_hardware_initializer_t init;
   struct _HDL_HW_T_ **dependencies;
+  void *periph;
 } hdl_hardware_t;
 
 #define hdl_hw_dependencies(...) ((hdl_hardware_t *[]){__VA_ARGS__, NULL})

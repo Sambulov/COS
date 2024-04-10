@@ -2,9 +2,14 @@
 
 /* TODO: Does flash depend on clock or not? Should you set flash clock before clock? */
 
+/* Value of HXTAL, we can`t get this value from register, this value depends on dts*/
+static uint32_t hxtal_mhz = 0;
+static const uint32_t irc8m_mhz = 8000000;
+static const uint32_t lxtal_mhz = 32768;
+static const uint32_t irc40k_mhz = 40000;
+static const uint32_t irc28m_mhz = 28000000;
+
 #define IS_POWER_OF_TWO(x) ((x) && !((x) & ((x)-1)))
-
-
 /*!
     \brief          This macros checks correct APB1 and APB2 prescaler value
     \param[in]      x - APB1 prescaler (1, 2, 4, 8, 16)
@@ -412,7 +417,7 @@ hdl_init_state_t hdl_gd_clock_system_source_pll(void *desc, uint8_t enable){
 /*!
     \brief          Set pll source as HXTAL
     \note           HXTAL - high speed crystal oscillator
-    \param[in]      desc - descriptor
+    \param[in]      desc - descriptor can be casting to hdl_clock_t*
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -422,8 +427,14 @@ hdl_init_state_t hdl_gd_clock_system_source_pll(void *desc, uint8_t enable){
       \retval         HDL_HW_INIT_FAILED
  */
 hdl_init_state_t hdl_gd_clock_hxtal(void *desc, uint8_t enable){
+  hdl_clock_t* hdl_clock = NULL;
   FlagStatus osci_statable = RESET;
   uint32_t stb_cnt = 0;
+
+  if(desc == NULL)
+    return HDL_HW_INIT_FAILED;
+
+  hdl_clock = (hdl_clock_t *)desc;
   if (enable){
     /* Turn on oscillator */
     rcu_osci_on(RCU_HXTAL);
@@ -436,10 +447,12 @@ hdl_init_state_t hdl_gd_clock_hxtal(void *desc, uint8_t enable){
     if (osci_statable == RESET)
       return HDL_HW_INIT_FAILED;
 
+    hxtal_mhz = hdl_clock->freq;
     return HDL_HW_INIT_OK;
   }
   else{
     rcu_osci_off(RCU_HXTAL);
+    hxtal_mhz = 0;
     return HDL_HW_INIT_OK;
   }
 }
@@ -447,7 +460,7 @@ hdl_init_state_t hdl_gd_clock_hxtal(void *desc, uint8_t enable){
 /*!
     \brief          LXTAL set state
     \note           LXTAL - low speed crystal or ceramic resonator oscillator
-    \param[in]      desc - descriptor
+    \param[in]      desc - descriptor can be casting to hdl_clock_t*
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -484,7 +497,7 @@ hdl_init_state_t hdl_gd_clock_lxtal(void *desc, uint8_t enable){
 /*!
     \brief          IRC40K set state
     \note           IRC40K - internal 40 KHz RC Oscillator
-    \param[in]      desc - descriptor
+    \param[in]      desc - descriptor can be casting to hdl_clock_t*
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -521,7 +534,7 @@ hdl_init_state_t hdl_gd_clock_irc40k(void *desc, uint8_t enable){
 /*!
     \brief          IRC8M set state
     \note           IRC8M - The internal 8 MHz RC oscillator
-    \param[in]      desc - descriptor
+    \param[in]      desc - descriptor can be casting to hdl_clock_t*
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -573,7 +586,7 @@ hdl_init_state_t hdl_gd_clock_irc8m(void *desc, uint8_t enable)
 /*!
     \brief          IRC28M set state
     \note           IRC28M - The internal 28 MHz RC Oscillator
-    \param[in]      desc - descriptor
+    \param[in]      desc - descriptor can be casting to hdl_clock_t*
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -711,7 +724,7 @@ hdl_init_state_t hdl_gd_clock_selector_pll_hxtal(void *desc, uint8_t enable)
 
 /*!
     \brief          Set pll selector as a irc8m
-    \param[in]      desc - descriptor
+    \param[in]      desc - can be casting to hdl_clock_prescaler_t *
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -720,15 +733,23 @@ hdl_init_state_t hdl_gd_clock_selector_pll_hxtal(void *desc, uint8_t enable)
       \retval         HDL_HW_INIT_ONGOING
       \retval         HDL_HW_INIT_FAILED
  */
-hdl_init_state_t hdl_gd_clock_selector_pll_irc8m(void *desc, uint8_t enable){
-    RCU_CFG0 &= ~(RCU_CFG0_PLLSEL);
-    RCU_CFG0 |= (RCU_PLLSRC_IRC8M_DIV2);
-    return HDL_HW_INIT_OK;
+hdl_init_state_t hdl_gd_clock_selector_pll_irc8m(void *desc, uint8_t enable)
+{
+  hdl_clock_prescaler_t* hdl_prescaler = NULL;
+  if (desc == NULL)
+    return HDL_HW_INIT_FAILED;
+
+  hdl_prescaler = (hdl_clock_prescaler_t*)desc;
+
+
+  RCU_CFG0 &= ~(RCU_CFG0_PLLSEL);
+  RCU_CFG0 |= (RCU_PLLSRC_IRC8M_DIV2);
+  return HDL_HW_INIT_OK;
 }
 
 /*!
-    \brief          Set pll prescaler
-    \param[in]      desc - descriptor
+    \brief          Set pll prescaler (in the circuit it`s PREDV)
+    \param[in]      desc - can be cating to hdl_clock_prescaler_t*
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -739,11 +760,17 @@ hdl_init_state_t hdl_gd_clock_selector_pll_irc8m(void *desc, uint8_t enable){
  */
 hdl_init_state_t hdl_gd_clock_pll_prescaler(void *desc, uint8_t enable){
   uint32_t prescaler_value = 0;
-  /* Try casting void pointer to PLL multiply coefficient */
+  hdl_clock_prescaler_t* hdl_prescaler = NULL;
+  /* Try casting void pointer to hdl_clock_prescaler_t */
   if (desc == NULL)
     return HDL_HW_INIT_FAILED;
   else{
-    prescaler_value = *((uint32_t *)desc);
+    /* Checking to void pointer */
+    hdl_prescaler = (hdl_clock_prescaler_t *)desc;
+    if(hdl_prescaler->hw.periph == NULL || hdl_prescaler->hw.dependencies == NULL)
+      return HDL_HW_INIT_FAILED;
+    /* Geting prescaler value from dts */
+    prescaler_value = hdl_prescaler->div;
     uint32_t rez = 0;
     /* Check valid value */
     PLL_PRESCALER_ASSERT(prescaler_value, rez);
@@ -753,11 +780,16 @@ hdl_init_state_t hdl_gd_clock_pll_prescaler(void *desc, uint8_t enable){
 
   if (enable){
     uint32_t register_bit_field_value = 0;
+    /* Convert prescaler value to bit field for register */
     PLL_PREDV_COVERT_INTEGER_TO_BIT_FIELD(prescaler_value, register_bit_field_value);
     if (register_bit_field_value == 0xffffffff)
       return HDL_HW_INIT_FAILED;
 
     rcu_hxtal_prediv_config(register_bit_field_value);
+    /* We can`t get value hxtal_mhz without static variable*/
+    hdl_prescaler->freq = hxtal_mhz / prescaler_value;
+    hdl_prescaler->div = hxtal_mhz % prescaler_value;
+
     return HDL_HW_INIT_OK;
   }
   else{

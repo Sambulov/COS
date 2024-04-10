@@ -6,12 +6,6 @@
   };
 
   /* TODO Flash must be initialize before pll setting */
-  #define HDL_GD_IRC8M_ENABLE             HDL_TRUE
-  #define HDL_GD_HXTAL_ENABLE             HDL_TRUE
-  #define HDL_GD_LXTAL_ENABLE             HDL_TRUE
-  #define HDL_GD_IRC40K_ENABLE            HDL_TRUE
-  #define HDL_GD_IRC28M_ENABLE            HDL_TRUE
-
   #define HDL_GD_HXTAL_CLOCK              8000000
   #define HDL_GD_LXTAL_CLOCK              32768
   #define HDL_GD_HXTAL_2_PLLSEL_PREDIV    1
@@ -19,10 +13,9 @@
   #define HDL_GD_AHB_PREDIV               1
   #define HDL_GD_APB1_PREDIV              1
   #define HDL_GD_APB2_PREDIV              1
-  #define HDL_GD_RTC_CLOCK                GD_SELECTOR_RTC_HXTAL /* GD_SELECTOR_RTC_NONE, GD_SELECTOR_RTC_HXTAL, GD_SELECTOR_RTC_LXTAL, GD_SELECTOR_RTC_IRC40K */
-  #define HDL_GD_PLL_MUL_CLOCK            GD_SELECTOR_PLL_HXTAL /* GD_SELECTOR_PLL_IRC8M, GD_SELECTOR_PLL_HXTAL */
-  #define HDL_GD_SYS_CLOCK                GD_SYSTEM_CLOCK_SOURCE_CK_PLL /*GD_SYSTEM_CLOCK_SOURCE_IRC8M, GD_SYSTEM_CLOCK_SOURCE_HXTAL, GD_SYSTEM_CLOCK_SOURCE_CK_PLL */
-
+  #define HDL_GD_RTC_CLOCK                GD_SELECTOR_RTC_HXTAL     /* GD_SELECTOR_RTC_NONE, GD_SELECTOR_RTC_HXTAL, GD_SELECTOR_RTC_LXTAL, GD_SELECTOR_RTC_IRC40K */
+  #define HDL_GD_PLL_MUL_CLOCK            dts_clock_pll_prescaler   /* Can be clocked by: dts_clock_pll_prescaler, dts_clock_irc8m. For dts_clock_irc8m applied prediv 2 */
+  #define HDL_GD_SYS_CLOCK                dts_clock_pll_mf          /* Can be clocked by: dts_clock_pll_mf, dts_clock_irc8m, dts_clock_hxtal */
 
   _Static_assert((HDL_GD_HXTAL_CLOCK >= 4000000) && (HDL_GD_HXTAL_CLOCK <= 32000000), "HDL_GD_HXTAL_CLOCK mast be from 4 to 32 MHz");
   _Static_assert((HDL_GD_LXTAL_CLOCK >= 32000) && (HDL_GD_LXTAL_CLOCK <= 1000000), "HDL_GD_LXTAL_CLOCK mast be from 32KHz to 1MHz");
@@ -35,82 +28,64 @@
   /**************************************************************
    *  Oscillator
    *************************************************************/
-#if (HDL_GD_IRC8M_ENABLE == HDL_TRUE)
-  const hdl_clock_t dts_clock_irc8m = {
+  hdl_clock_t dts_clock_irc8m = {
       .hw.init = &hdl_gd_clock_irc8m,
       .hw.periph = HDL_GD_IRC8M_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = 8000000};
-#endif
-#if (HDL_GD_HXTAL_ENABLE == HDL_TRUE)
-  const hdl_clock_t dts_clock_hxtal = {
+
+  hdl_clock_t dts_clock_hxtal = {
       .hw.init = &hdl_gd_clock_hxtal,
       .hw.periph = HDL_GD_HXTAL_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = HDL_GD_HXTAL_CLOCK};
-#endif
-#if (HDL_GD_LXTAL_ENABLE == HDL_TRUE)
-  const hdl_clock_t dts_clock_lxtal = {
+
+  hdl_clock_t dts_clock_lxtal = {
       .hw.init = &hdl_gd_clock_lxtal,
       .hw.periph = HDL_GD_LXTAL_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = HDL_GD_LXTAL_CLOCK};
-#endif
-#if (HDL_GD_IRC28M_ENABLE == HDL_TRUE)
-  const hdl_clock_t dts_clock_irc28m = {
+
+  hdl_clock_t dts_clock_irc28m = {
       .hw.init = &hdl_gd_clock_irc28m,
       .hw.periph = HDL_GD_IRC28M_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = 28000000};
-#endif
-#if (HDL_GD_IRC40K_ENABLE == HDL_TRUE)
-  const hdl_clock_t dts_clock_irc40k = {
+
+  hdl_clock_t dts_clock_irc40k = {
       .hw.init = &hdl_gd_clock_irc40k,
       .hw.periph = HDL_GD_IRC40K_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = 40000};
-#endif
 
   /**************************************************************
    *  PLL prescaler
    *************************************************************/
-#if (HDL_GD_SYS_CLOCK == GD_SYSTEM_CLOCK_SOURCE_CK_PLL)
   hdl_clock_prescaler_t dts_clock_pll_prescaler = {
       .hw.init = &hdl_gd_clock_pll_prescaler,
-      .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_hxtal.hw),
+      .hw.dependencies = hdl_hw_dependencies(&dts_clock_hxtal.hw),
       .hw.periph = HDL_GD_PLL_PRESCALER_CLOCK_PERIPHERY,
       .muldiv_factor = HDL_GD_HXTAL_2_PLLSEL_PREDIV,
   };
-#endif
 
   /**************************************************************
    *  Selector PLL source second rang (HXTAL or IRC8M)
    **************************************************************/
-#if (HDL_GD_SYS_CLOCK == GD_SYSTEM_CLOCK_SOURCE_CK_PLL)
   hdl_clock_prescaler_t dts_clock_pll_selector = {
-#if (HDL_GD_PLL_MUL_CLOCK == GD_SELECTOR_PLL_HXTAL)
-      .hw.init = &hdl_gd_clock_selector_pll_hxtal,
-      .hw.dependencies = hdl_hw_dependencies(&dts_clock_pll_prescaler.hw),
+      .hw.init = &hdl_gd_clock_selector_pll,
+      /* If source IRC8M before oscillator there is prescaler 2, this logic realized inside driver */
+      .hw.dependencies = hdl_hw_dependencies(&HDL_GD_PLL_MUL_CLOCK.hw),
       .hw.periph = HDL_GD_PLL_SELECTOR_CLOCK_PERIPHERY,
-#endif
-#if (HDL_GD_PLL_MUL_CLOCK == GD_SELECTOR_PLL_IRC8M)
-      .hw.init = &hdl_gd_clock_selector_pll_irc8m,
-      .hw.dependencies = hdl_hw_dependencies(&dts_clock_irc8m.hw),
-      .hw.periph = HDL_GD_PLL_SELECTOR_CLOCK_PERIPHERY,
-#endif
       .muldiv_factor = 1,
   };
-#endif
 
   /**************************************************************
-   *  PLL multiply coefficient
+   *  PLL multiply factor
    *************************************************************/
-#if (HDL_GD_SYS_CLOCK == GD_SYSTEM_CLOCK_SOURCE_CK_PLL)
-  hdl_clock_prescaler_t dts_clock_pll_multiply_coefficient = {
+  hdl_clock_prescaler_t dts_clock_pll_mf = {
       .hw.init = &hdl_gd_clock_pll_multiply_coefficient,
       .hw.dependencies = hdl_hw_dependencies(&dts_clock_pll_selector.hw),
       .hw.periph = HDL_GD_PLL_MULTIPLY_CLOCK_PERIPHERY,
       .muldiv_factor = HDL_GD_PLLMUL,
   };
-#endif
 
   /**************************************************************
-   *  Selector system clock source (only one source can be determined)
+   *  Selector system clock source (IRC8M, CK_PLL, HXTAL)
    **************************************************************/
   hdl_clock_prescaler_t dts_clock_system_clock_source = {
 #if (HDL_GD_SYS_CLOCK == GD_SYSTEM_CLOCK_SOURCE_CK_PLL)
@@ -484,3 +459,11 @@ const bldl_som_power_state_hw_t dts_som_state_ctrl = {
   .boot_lock = &dts_boot_lock,
   .bootsel = &dts_boot_select
 };
+
+void test()
+{
+  dts_clock_hxtal.hw.init(&dts_clock_hxtal, 1);
+  dts_clock_pll_prescaler.hw.init(&dts_clock_pll_prescaler, 1);
+  dts_clock_pll_selector.hw.init(&dts_clock_pll_selector, 1);
+  dts_clock_pll_mf.hw.init(&dts_clock_pll_mf, 1);
+}

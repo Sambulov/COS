@@ -5,6 +5,33 @@
     // https://github.com/Marus/cortex-debug/blob/master/debug_attributes.md
     "version": "0.2.0",
     "configurations": [
+		{
+			"name": "Debug JLink Bodin",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"executable": "${workspaceRoot}/build/bmc.elf",
+			"windows": {
+				"serverpath": "C:/Program Files/SEGGER/JLink_V794d/JLinkGDBServerCL.exe",
+			},
+			"linux": {
+				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
+				"gdbPath": "/usr/bin/gdb-multiarch"
+			},
+			"runToEntryPoint": "main",
+			"showDevDebugOutput": "raw",
+			"servertype": "jlink",
+			"interface": "swd",
+			"device": "GD32E230K6",
+			"svdFile": "./MCU/GD32E23X/Res/mcu.svd",
+			//"svdFile": "${workspaceRoot}/project/gd_drivers/system/GD32E230.svd",
+			"preLaunchTask": "FlashMCU",
+			"liveWatch": {
+				"enabled": true,
+				"samplesPerSecond": 4
+			},
+		},
+
         {
             "name": "Debug OOCD M463KGCAE",
             "type": "cortex-debug",

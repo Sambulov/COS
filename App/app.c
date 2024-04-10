@@ -106,7 +106,7 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 // }
 
 void main() {
-
+test();
   // static bldl_som_power_state_t som_state = {
   //    .hw = &dts_som_state_ctrl
   // };

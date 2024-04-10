@@ -75,9 +75,8 @@ typedef void (*event_handler_t)(uint32_t event, void *sender, void *context);
   hdl_init_state_t hdl_gd_clock_lxtal(void *desc, uint8_t enable);
   hdl_init_state_t hdl_gd_clock_irc40k(void *desc, uint8_t enable);
   hdl_init_state_t hdl_gd_clock_irc28m(void *desc, uint8_t enable);
-
-  /* TODO: What is rtc source? */
-  hdl_init_state_t hdl_gd_clock_rtc(void *desc, uint8_t enable);
+  /* pll prescaler(after HXTAL) */
+  hdl_init_state_t hdl_gd_clock_pll_prescaler(void *desc, uint8_t enable);
 
   /* pll set source */
   hdl_init_state_t hdl_gd_clock_system_source_pll(void *desc, uint8_t enable);
@@ -85,11 +84,10 @@ typedef void (*event_handler_t)(uint32_t event, void *sender, void *context);
   hdl_init_state_t hdl_gd_clock_system_source_irc8m(void *desc, uint8_t enable);
   
   /* pll selector */
-  hdl_init_state_t hdl_gd_clock_selector_pll_hxtal(void *desc, uint8_t enable);
-  hdl_init_state_t hdl_gd_clock_selector_pll_irc8m(void *desc, uint8_t enable);
+  hdl_init_state_t hdl_gd_clock_selector_pll(void *desc, uint8_t enable);
   
-  /* pll prescaler */
-  hdl_init_state_t hdl_gd_clock_pll_prescaler(void *desc, uint8_t enable);
+  
+
   /* pll multiply coefficient */
   hdl_init_state_t hdl_gd_clock_pll_multiply_coefficient(void *desc, uint8_t enable);
 

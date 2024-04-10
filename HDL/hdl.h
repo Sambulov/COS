@@ -39,4 +39,6 @@ typedef enum {
 }
 #endif
 
+void test(void);
+
 #endif // HDL_H_

@@ -168,39 +168,10 @@ static const uint32_t gd_rcu_pll_prescaler_array[] = {INVAID_VALUE, RCU_PLL_PRED
   } while (0)
 
 
-
-// hdl_init_state_t hdl_gd_clock_system_source(void *desc, uint8_t enable){
-//   hdl_clock_prescaler_t *hdl_prescaler = NULL;
-//   /* Try casting void pointer to hdl_clock_prescaler_t */
-//   hdl_prescaler = (hdl_clock_prescaler_t *)desc;
-//   if (hdl_prescaler->hw.periph == NULL || hdl_prescaler->hw.dependencies == NULL || hdl_prescaler->hw.dependencies[0] == NULL)
-//     return HDL_HW_INIT_FAILED;
-//   /* Try casting hdl_prescaler.hw.dependencies to hdl_clock_t */
-//   hdl_clock_t *hdl_clock = (hdl_clock_t *)hdl_prescaler->hw.dependencies[0];
-//   if (enable){
-//     switch ((uint32_t)hdl_clock->hw.periph){
-//       case (uint32_t)HDL_GD_PLL_MULTIPLY_CLOCK_PERIPHERY:
-
-//         break;
-//       case (uint32_t)HDL_GD_IRC8M_OSCILLATOR_CLOCK_PERIPHERY:
-
-//         break;
-//       case (uint32_t)HDL_GD_IRC8M_OSCILLATOR_CLOCK_PERIPHERY:
-
-//         break;
-//       default:
-//         return HDL_HW_INIT_FAILED;
-//       }
-//     return HDL_HW_INIT_OK;
-//   }
-//   else{
-//     return HDL_HW_INIT_OK;
-//   }
-// }
-
 /*!
-    \brief          Set pll source as CK_PLL
-    \param[in]      desc - descriptor
+    \brief          Set system source
+    \brief          System source can be CK_PLL, IRC8M, HXTAL
+    \param[in]      desc - can be casting to hdl_clock_prescaler_t*
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -209,120 +180,102 @@ static const uint32_t gd_rcu_pll_prescaler_array[] = {INVAID_VALUE, RCU_PLL_PRED
       \retval         HDL_HW_INIT_ONGOING
       \retval         HDL_HW_INIT_FAILED
 */
-hdl_init_state_t hdl_gd_clock_system_source_pll(void *desc, uint8_t enable){
+hdl_init_state_t hdl_gd_clock_system_source(void *desc, uint8_t enable){
   /* Manufacturer don`t define this value */
   #define CK_SYS_STARTUP_TIMEOUT ((uint32_t)0xFFFF)
   #define PLL_STARTUP_TIMEOUT ((uint32_t)0xFFFF)
-
+  hdl_clock_prescaler_t *hdl_prescaler = NULL;
   FlagStatus osci_statable = RESET;
   FlagStatus ck_sys_changed_status = RESET;
   uint32_t stb_cnt = 0;
 
+  /* Try casting void pointer to hdl_clock_prescaler_t */
+  hdl_prescaler = (hdl_clock_prescaler_t *)desc;
+  if (hdl_prescaler->hw.periph == NULL || hdl_prescaler->hw.dependencies == NULL || hdl_prescaler->hw.dependencies[0] == NULL)
+    return HDL_HW_INIT_FAILED;
+  /* Try casting hdl_prescaler.hw.dependencies to hdl_clock_t */
+  hdl_clock_t *hdl_clock = (hdl_clock_t *)hdl_prescaler->hw.dependencies[0];
   if (enable){
-    rcu_osci_on(RCU_PLL_CK);
-    /* Wait PLL stabilization */
-    while ((RESET == osci_statable) && (PLL_STARTUP_TIMEOUT != stb_cnt))
-    {
-        osci_statable = rcu_flag_get(RCU_FLAG_PLLSTB);
-        stb_cnt++;
+    switch ((uint32_t)hdl_clock->hw.periph){
+      /* Source clock selector is clocking by CK_PLL */
+      case (uint32_t)HDL_GD_PLL_MULTIPLY_CLOCK_PERIPHERY:
+        /* Turn on pll_ck */
+        rcu_osci_on(RCU_PLL_CK);
+        /* Wait PLL stabilization */
+        stb_cnt = 0;
+        while ((RESET == osci_statable) && (PLL_STARTUP_TIMEOUT != stb_cnt))
+        {
+            osci_statable = rcu_flag_get(RCU_FLAG_PLLSTB);
+            stb_cnt++;
+        }
+        if (osci_statable == RESET)
+          return HDL_HW_INIT_FAILED;
+        /* Change switch state */
+        rcu_system_clock_source_config(RCU_CKSYSSRC_PLL);
+        /* Wait CK_SYS changed status */
+        stb_cnt = 0;
+        while ((RESET == ck_sys_changed_status) && (CK_SYS_STARTUP_TIMEOUT != stb_cnt))
+        {
+          ck_sys_changed_status = (RCU_SCSS_PLL != (RCU_CFG0 & RCU_CFG0_SCSS)) ? RESET : SET;
+          stb_cnt++;
+        }
+        if (ck_sys_changed_status == RESET)
+          return HDL_HW_INIT_FAILED;
+      break;
+      /* Source clock selector is clocking by HXTAL */
+      case (uint32_t)HDL_GD_HXTAL_OSCILLATOR_CLOCK_PERIPHERY:
+        /* Change switch state */
+        rcu_system_clock_source_config(RCU_CKSYSSRC_HXTAL);
+        /* Wait CK_SYS changed status */
+        stb_cnt = 0;
+        while ((RESET == ck_sys_changed_status) && (CK_SYS_STARTUP_TIMEOUT != stb_cnt))
+        {
+          ck_sys_changed_status = (RCU_SCSS_HXTAL != (RCU_CFG0 & RCU_CFG0_SCSS)) ? RESET : SET;
+          stb_cnt++;
+        }
+        if (ck_sys_changed_status == RESET)
+          return HDL_HW_INIT_FAILED;
+      break;
+      /* Source clock selector is clocking by IRC8M */
+      case (uint32_t)HDL_GD_IRC8M_OSCILLATOR_CLOCK_PERIPHERY:
+        /* Change switch state */
+        rcu_system_clock_source_config(RCU_CKSYSSRC_IRC8M);
+        /* Wait CK_SYS changed status */
+        stb_cnt = 0;
+        while ((RESET == ck_sys_changed_status) && (CK_SYS_STARTUP_TIMEOUT != stb_cnt))
+        {
+          ck_sys_changed_status = (RCU_SCSS_IRC8M != (RCU_CFG0 & RCU_CFG0_SCSS)) ? RESET : SET;
+          stb_cnt++;
+        }
+        if (ck_sys_changed_status == RESET)
+          return HDL_HW_INIT_FAILED;
+      break;
+      default:
+        return HDL_HW_INIT_FAILED;
     }
-    if (osci_statable == RESET)
-      return HDL_HW_INIT_FAILED;
-
-    rcu_system_clock_source_config(RCU_CKSYSSRC_PLL);
-    /* Wait CK_SYS changed status */
-    uint32_t stb_cnt = 0;
-    while ((RESET == ck_sys_changed_status) && (CK_SYS_STARTUP_TIMEOUT != stb_cnt))
-    {
-      ck_sys_changed_status = (RCU_SCSS_PLL != (RCU_CFG0 & RCU_CFG0_SCSS)) ? RESET : SET;
-      stb_cnt++;
-    }
-    if (ck_sys_changed_status == RESET)
-      return HDL_HW_INIT_FAILED;
+    hdl_prescaler->freq = hdl_clock->freq;
+    hdl_prescaler->div = hdl_clock->div;
 
     return HDL_HW_INIT_OK;
   }
   else{
+    /* Turn off pll ck */
     rcu_osci_off(RCU_PLL_CK);
+    /* Reset to default value */
     rcu_system_clock_source_config(RCU_CKSYSSRC_IRC8M);
+    /* Wait CK_SYS changed status */
+    stb_cnt = 0;
+    while ((RESET == ck_sys_changed_status) && (CK_SYS_STARTUP_TIMEOUT != stb_cnt))
+    {
+      ck_sys_changed_status = (RCU_SCSS_IRC8M != (RCU_CFG0 & RCU_CFG0_SCSS)) ? RESET : SET;
+      stb_cnt++;
+    }
+    if (ck_sys_changed_status == RESET)
+      return HDL_HW_INIT_FAILED;
+      
     return HDL_HW_INIT_OK;
   }
 }
-
-  /*!
-      \brief          Set pll source as HXTAL
-      \note           HXTAL - high speed crystal oscillator
-      \param[in]      desc - descriptor
-      \param[in]      enable
-        \arg            0 - diable
-        \arg            other - enable
-      \return
-        \retval         HDL_HW_INIT_OK
-        \retval         HDL_HW_INIT_ONGOING
-        \retval         HDL_HW_INIT_FAILED
-  */
-  hdl_init_state_t hdl_gd_clock_system_source_hxtal(void *desc, uint8_t enable){
-    /* Manufacturer don`t define this value */
-    #define CK_SYS_STARTUP_TIMEOUT ((uint32_t)0xFFFF)
-    FlagStatus ck_sys_changed_status = RESET;
-    uint32_t stb_cnt = 0;
-    if (enable){
-      rcu_system_clock_source_config(RCU_CKSYSSRC_HXTAL);
-      /* Wait CK_SYS changed status */
-      stb_cnt = 0;
-      while ((RESET == ck_sys_changed_status) && (CK_SYS_STARTUP_TIMEOUT != stb_cnt))
-      {
-        ck_sys_changed_status = (RCU_SCSS_HXTAL != (RCU_CFG0 & RCU_CFG0_SCSS)) ? RESET : SET;
-        stb_cnt++;
-      }
-      if (ck_sys_changed_status == RESET)
-        return HDL_HW_INIT_FAILED;
-
-      return HDL_HW_INIT_OK;
-    }
-    else{
-      // rcu_system_clock_source_config(RCU_CKSYSSRC_IRC8M);
-      return HDL_HW_INIT_OK;
-    }
-  }
-
-  /*!
-      \brief          Set pll source as IRC8M
-      \param[in]      desc - descriptor
-      \param[in]      enable
-        \arg            0 - diable
-        \arg            other - enable
-      \return
-        \retval         HDL_HW_INIT_OK
-        \retval         HDL_HW_INIT_ONGOING
-        \retval         HDL_HW_INIT_FAILED
-  */
-  hdl_init_state_t hdl_gd_clock_system_source_irc8m(void *desc, uint8_t enable)
-  {
-    /* Manufacturer don`t define this value */
-    #define CK_SYS_STARTUP_TIMEOUT ((uint32_t)0xFFFF)
-    FlagStatus ck_sys_changed_status = RESET;
-    uint32_t stb_cnt = 0;
-    if (enable){
-      rcu_system_clock_source_config(RCU_CKSYSSRC_IRC8M);
-      /* Wait CK_SYS changed status */
-      stb_cnt = 0;
-      while ((RESET == ck_sys_changed_status) && (CK_SYS_STARTUP_TIMEOUT != stb_cnt))
-      {
-        ck_sys_changed_status = (RCU_SCSS_IRC8M != (RCU_CFG0 & RCU_CFG0_SCSS)) ? RESET : SET;
-        stb_cnt++;
-      }
-      if (ck_sys_changed_status == RESET)
-        return HDL_HW_INIT_FAILED;
-
-      return HDL_HW_INIT_OK;
-    }
-    else{
-      // rcu_osci_off(RCU_IRC8M);
-      return HDL_HW_INIT_OK;
-    }
-  }
-
 /*!
     \brief          Set pll source as HXTAL
     \note           HXTAL - high speed crystal oscillator
@@ -530,8 +483,9 @@ hdl_init_state_t hdl_gd_clock_irc28m(void *desc, uint8_t enable){
 }
 
 /*!
-    \brief          Set rtc source as HXTAL
-    \param[in]      desc - descriptor
+    \brief          Set rtc source
+    \note           Can be clocking by HXTAL, LXTAL, IRC40K and defualt value is empty
+    \param[in]      desc - can be casting to hdl_clock_prescaler_t*
     \param[in]      enable
       \arg            0 - diable
       \arg            other - enable
@@ -540,75 +494,44 @@ hdl_init_state_t hdl_gd_clock_irc28m(void *desc, uint8_t enable){
       \retval         HDL_HW_INIT_ONGOING
       \retval         HDL_HW_INIT_FAILED
  */
-hdl_init_state_t hdl_gd_clock_selector_rtc_hxtal(void *desc, uint8_t enable){
-  if(enable)
-    rcu_rtc_clock_config(RCU_RTCSRC_HXTAL_DIV32);
-  else
+hdl_init_state_t hdl_gd_clock_selector_rtc(void *desc, uint8_t enable){
+  hdl_clock_prescaler_t *hdl_prescaler = NULL;
+  uint32_t frequency_prescaler = 1;
+  /* Try casting void pointer to hdl_clock_prescaler_t */
+  hdl_prescaler = (hdl_clock_prescaler_t *)desc;
+  if (hdl_prescaler->hw.periph == NULL || hdl_prescaler->hw.dependencies == NULL || hdl_prescaler->hw.dependencies[0] == NULL)
+    return HDL_HW_INIT_FAILED;
+  /* Try casting hdl_prescaler.hw.dependencies to hdl_clock_t */
+  hdl_clock_t *hdl_clock = (hdl_clock_t *)hdl_prescaler->hw.dependencies[0];
+  if (enable){
+    switch ((uint32_t)hdl_clock->hw.periph){
+      /* RTC is cloking by HXTAL / 32 */
+      case (uint32_t)HDL_GD_HXTAL_OSCILLATOR_CLOCK_PERIPHERY:
+        rcu_rtc_clock_config(RCU_RTCSRC_HXTAL_DIV32);
+        frequency_prescaler = 32;
+      break;
+      /* RTC is cloking by LXTAL */
+      case (uint32_t)HDL_GD_LXTAL_OSCILLATOR_CLOCK_PERIPHERY:
+       rcu_rtc_clock_config(RCU_RTCSRC_LXTAL);
+      break;
+      /* RTC is cloking by IRC40K */
+      case (uint32_t)HDL_GD_IRC40K_OSCILLATOR_CLOCK_PERIPHERY:
+       rcu_rtc_clock_config(RCU_RTCSRC_IRC40K);
+      break;
+
+      default:
+        return HDL_HW_INIT_FAILED;
+    }
+    /* TODO: This value can be calculated incorrect */
+    hdl_prescaler->freq = hdl_clock->freq / frequency_prescaler;
+    hdl_prescaler->div = hdl_clock->div / frequency_prescaler;
+
+    return HDL_HW_INIT_OK;
+  }
+  else{
     rcu_rtc_clock_config(RCU_RTCSRC_NONE);
-
-  return HDL_HW_INIT_OK;
-}
-
-/*!
-    \brief          Set rtc source as LXTAL
-    \param[in]      desc - descriptor
-    \param[in]      enable
-      \arg            0 - diable
-      \arg            other - enable
-    \return
-      \retval         HDL_HW_INIT_OK
-      \retval         HDL_HW_INIT_ONGOING
-      \retval         HDL_HW_INIT_FAILED
- */
-hdl_init_state_t hdl_gd_clock_selector_rtc_lxtal(void *desc, uint8_t enable)
-{
-  if (enable)
-    rcu_rtc_clock_config(RCU_RTCSRC_LXTAL);
-  else
-    rcu_rtc_clock_config(RCU_RTCSRC_NONE);
-
-  return HDL_HW_INIT_OK;
-}
-
-/*!
-    \brief          Set rtc source as IRC40k
-    \param[in]      desc - descriptor
-    \param[in]      enable
-      \arg            0 - diable
-      \arg            other - enable
-    \return
-      \retval         HDL_HW_INIT_OK
-      \retval         HDL_HW_INIT_ONGOING
-      \retval         HDL_HW_INIT_FAILED
- */
-hdl_init_state_t hdl_gd_clock_selector_rtc_irc40k(void *desc, uint8_t enable)
-{
-  if (enable)
-    rcu_rtc_clock_config(RCU_RTCSRC_IRC40K);
-  else
-    rcu_rtc_clock_config(RCU_RTCSRC_NONE);
-
-  return HDL_HW_INIT_OK;
-}
-/*!
-    \brief          Set rtc source as none(default value)
-    \param[in]      desc - descriptor
-    \param[in]      enable
-      \arg            0 - diable
-      \arg            other - enable
-    \return
-      \retval         HDL_HW_INIT_OK
-      \retval         HDL_HW_INIT_ONGOING
-      \retval         HDL_HW_INIT_FAILED
- */
-hdl_init_state_t hdl_gd_clock_selector_rtc_none(void *desc, uint8_t enable)
-{
-  if (enable)
-    rcu_rtc_clock_config(RCU_RTCSRC_NONE);
-  else
-    rcu_rtc_clock_config(RCU_RTCSRC_NONE);
-
-  return HDL_HW_INIT_OK;
+    return HDL_HW_INIT_OK;
+  }
 }
 
 /*!
@@ -758,6 +681,34 @@ hdl_init_state_t hdl_gd_clock_sys(void *desc, uint8_t enable)
       \retval         HDL_HW_INIT_FAILED
  */
 hdl_init_state_t hdl_gd_clock_ahb(void *desc, uint8_t enable){
+  //   uint32_t multiply_coefficient = 0;
+  // hdl_clock_prescaler_t *hdl_prescaler = NULL;
+  // /* Try casting void pointer to hdl_clock_prescaler_t */
+  // hdl_prescaler = (hdl_clock_prescaler_t *)desc;
+  // if (hdl_prescaler->hw.periph == NULL || hdl_prescaler->hw.dependencies == NULL || hdl_prescaler->hw.dependencies[0] == NULL)
+  //   return HDL_HW_INIT_FAILED;
+  // /* Try casting hdl_prescaler.hw.dependencies to hdl_clock_t */
+  // hdl_clock_t *hdl_clock = (hdl_clock_t *)hdl_prescaler->hw.dependencies[0];
+
+  // if (enable){
+  //   /* Geting prescaler value from dts */
+  //   multiply_coefficient = hdl_prescaler->muldiv_factor;
+  //   uint32_t register_bit_field_value = gd_rcu_pll_multiply_coefficient_array[multiply_coefficient];
+  //   if (register_bit_field_value == INVAID_VALUE)
+  //     return HDL_HW_INIT_FAILED;
+  //   /* Calling CMSIS function */
+  //   RCU_CFG0 &= ~RCU_CFG0_PLLMF;
+  //   RCU_CFG0 |= register_bit_field_value;
+  //   /* Calculate output frequency*/
+  //   /* TODO: fractal part calculating don't work correct */
+  //   hdl_prescaler->freq = hdl_clock->freq * multiply_coefficient;
+  //   hdl_prescaler->div = hdl_clock->div * multiply_coefficient;
+
+  //   return HDL_HW_INIT_OK;
+  // }
+  // else{
+  //   return HDL_HW_INIT_OK;
+  // }
   uint32_t prescaler_value = 0;
   /* Try casting void pointer to PLL multiply coefficient */
   if (desc == NULL)

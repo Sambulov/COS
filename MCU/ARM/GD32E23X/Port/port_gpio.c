@@ -27,9 +27,11 @@ hdl_init_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
 
   if(enable)
     rcu_periph_clock_enable(rcu);
-  else
+  else{
     rcu_periph_clock_disable(rcu);
-
+    return HDL_HW_DEINIT_OK;
+  }
+    
   return HDL_HW_INIT_OK;
 }
 
@@ -51,6 +53,7 @@ hdl_init_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
   else{
      gpio_af_set(gpio_port, 0, gpio->pin);
      gpio_mode_set(gpio_port, GPIO_MODE_INPUT, GPIO_PUPD_NONE, gpio->pin);
+     return HDL_HW_DEINIT_OK;
   }
 
   return HDL_HW_INIT_OK;

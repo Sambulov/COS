@@ -108,7 +108,7 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 
 void main() {
 
-  cooperative_scheduler(false);
+  
   // static bldl_som_power_state_t som_state = {
   //    .hw = &dts_som_state_ctrl
   // };
@@ -145,8 +145,9 @@ void main() {
   // //bldl_som_exec_state(&som_state, BLDL_SOM_STATE_ON);
   // test_read_pmic_regs();
   //hdl_hw_enable(&dts_gpi_carrier_power_btn.hw, HDL_TRUE);
-
+  hdl_hw_enable(&dts_gpo_emmc_lock);
   while(1) {
+    cooperative_scheduler(false);
     // hdl_btn_work(&power_button);
     // hdl_btn_work(&reset_button);
   }

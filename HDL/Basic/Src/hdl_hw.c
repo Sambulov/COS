@@ -22,7 +22,7 @@ static uint8_t _hdl_hw_work(CoroutineDesc_t this, uint8_t cancel, void *arg) {
   hdl_hardware_private_t *dev = linked_list_get_object(hdl_hardware_private_t, dev_deinit_queue);
   if(dev != NULL) {
     res = dev->init(dev, HDL_FALSE);
-    if(res == HDL_HW_INIT_UNKNOWN)
+    if(res == HDL_HW_DEINIT_OK)
       linked_list_unlink(linked_list_item(dev));
   }
   dev = linked_list_get_object(hdl_hardware_private_t, dev_init_queue);
@@ -111,11 +111,13 @@ static void _hdl_hw_free(hdl_hardware_private_t *desc) {
   /* ??? call dev deinit first time here ??? */
   linked_list_insert_last(&dev_deinit_queue, linked_list_item(desc));
   hdl_hardware_private_t **parent = (hdl_hardware_private_t **)desc->dependencies;
-  while(*parent != NULL) {
-    (*parent)->dependents--;
-    if((*parent)->dependents == 0)
-      _hdl_hw_free(*parent);
-    parent++;
+  if(parent != NULL) {
+    while(*parent != NULL) {
+      (*parent)->dependents--;
+      if((*parent)->dependents == 0)
+        _hdl_hw_free(*parent);
+      parent++;
+    }
   }
 }
 

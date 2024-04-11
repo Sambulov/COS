@@ -9,6 +9,7 @@ typedef enum {
   HDL_HW_INIT_TERMINATING = -1,
   HDL_HW_INIT_FAILED = -2,
   HDL_HW_INIT_UNKNOWN = HDL_HW_INIT_FAILED,
+  HDL_HW_DEINIT_OK = HDL_HW_INIT_FAILED
 } hdl_init_state_t;
 
 typedef hdl_init_state_t (*hdl_hardware_initializer_t)(void *desc, uint8_t enable);

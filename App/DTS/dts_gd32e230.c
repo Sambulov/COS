@@ -13,7 +13,7 @@
   #define HDL_GD_AHB_PREDIV               1
   #define HDL_GD_APB1_PREDIV              1
   #define HDL_GD_APB2_PREDIV              1
-  #define HDL_GD_RTC_CLOCK                GD_SELECTOR_RTC_HXTAL     /* GD_SELECTOR_RTC_NONE, GD_SELECTOR_RTC_HXTAL, GD_SELECTOR_RTC_LXTAL, GD_SELECTOR_RTC_IRC40K */
+  #define HDL_GD_RTC_CLOCK                dts_clock_hxtal           /* Can be clocked by: dts_clock_hxtal, dts_clock_lxtal, dts_clock_irc40k. For dts_clock_hxtal applied prediv 2 */
   #define HDL_GD_PLL_MUL_CLOCK            dts_clock_pll_prescaler   /* Can be clocked by: dts_clock_pll_prescaler, dts_clock_irc8m. For dts_clock_irc8m applied prediv 2 */
   #define HDL_GD_SYS_CLOCK                dts_clock_pll_mf          /* Can be clocked by: dts_clock_pll_mf, dts_clock_irc8m, dts_clock_hxtal */
 
@@ -30,26 +30,31 @@
    *************************************************************/
   hdl_clock_t dts_clock_irc8m = {
       .hw.init = &hdl_gd_clock_irc8m,
+      .hw.dependencies = NULL,
       .hw.periph = HDL_GD_IRC8M_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = 8000000};
 
   hdl_clock_t dts_clock_hxtal = {
       .hw.init = &hdl_gd_clock_hxtal,
+      .hw.dependencies = NULL,
       .hw.periph = HDL_GD_HXTAL_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = HDL_GD_HXTAL_CLOCK};
 
   hdl_clock_t dts_clock_lxtal = {
       .hw.init = &hdl_gd_clock_lxtal,
+      .hw.dependencies = NULL,
       .hw.periph = HDL_GD_LXTAL_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = HDL_GD_LXTAL_CLOCK};
 
   hdl_clock_t dts_clock_irc28m = {
       .hw.init = &hdl_gd_clock_irc28m,
+      .hw.dependencies = NULL,
       .hw.periph = HDL_GD_IRC28M_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = 28000000};
 
   hdl_clock_t dts_clock_irc40k = {
       .hw.init = &hdl_gd_clock_irc40k,
+      .hw.dependencies = NULL,
       .hw.periph = HDL_GD_IRC40K_OSCILLATOR_CLOCK_PERIPHERY,
       .freq = 40000};
 
@@ -88,49 +93,21 @@
    *  Selector system clock source (IRC8M, CK_PLL, HXTAL)
    **************************************************************/
   hdl_clock_prescaler_t dts_clock_system_clock_source = {
-#if (HDL_GD_SYS_CLOCK == GD_SYSTEM_CLOCK_SOURCE_CK_PLL)
-      .hw.init = &hdl_gd_clock_system_source_pll,
-      .hw.dependencies = hdl_hw_dependencies(&dts_clock_pll_selector.hw),
-      .hw.periph = HDL_GD_SYSTEM_SOURCE_CLOCK_PERIPHERY,
-#endif
-#if (HDL_GD_SYS_CLOCK == GD_SELECTOR_PLL_HXTAL)
-      .hw.init = &hdl_gd_clock_system_source_hxtal,
-      .hw.dependencies = hdl_hw_dependencies(&dts_clock_hxtal.hw),
-      .hw.periph = HDL_GD_SYSTEM_SOURCE_CLOCK_PERIPHERY,
-#endif
-#if (HDL_GD_SYS_CLOCK == GD_SELECTOR_PLL_IRC8M)
-      .hw.init = &hdl_gd_clock_system_source_irc8m,
-      .hw.dependencies = hdl_hw_dependencies(&dts_clock_irc8m.hw),
-      .hw.periph = HDL_GD_SYSTEM_SOURCE_CLOCK_PERIPHERY,
-#endif
-      .muldiv_factor = 1,
+    .hw.init = &hdl_gd_clock_system_source,
+    .hw.dependencies = hdl_hw_dependencies(&HDL_GD_SYS_CLOCK.hw),
+    .hw.periph = HDL_GD_SYSTEM_SOURCE_CLOCK_PERIPHERY,
+    .muldiv_factor = 1,
   };
 
   /**************************************************************
    *  Selector RTC
    *************************************************************/
-  hdl_clock_prescaler_t dts_clock_selector_rtc = {
-#if (HDL_GD_RTC_CLOCK == GD_SELECTOR_RTC_NONE)
-      .hw.init = &hdl_gd_clock_selector_rtc_none,
-      .hw.periph = HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY,
-#endif
-#if (HDL_GD_RTC_CLOCK == GD_SELECTOR_RTC_HXTAL)
-      .hw.init = &hdl_gd_clock_selector_rtc_hxtal,
-      .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_hxtal.hw),
-      .hw.periph = HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY,
-#endif
-#if (HDL_GD_RTC_CLOCK == GD_SELECTOR_RTC_LXTAL)
-      .hw.init = &hdl_gd_clock_selector_rtc_lxtal,
-      .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_lxtal.hw),
-      .hw.periph = HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY,
-#endif
-#if (HDL_GD_RTC_CLOCK == GD_SELECTOR_RTC_IRC40K)
-      .hw.init = &hdl_gd_clock_selector_rtc_irc40k,
-      .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_irc40k.hw),
-      .hw.periph = HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY,
-#endif
-      .muldiv_factor = 1,
-  };
+  // hdl_clock_prescaler_t dts_clock_selector_rtc = {
+  //   .hw.init = &hdl_gd_clock_selector_rtc,
+  //   .hw.dependencies = hdl_hw_dependencies(&HDL_GD_RTC_CLOCK.hw),
+  //   .hw.periph = HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY,
+  //   .muldiv_factor = 1,
+  // };
 
   /**************************************************************
    *  CK_SYS

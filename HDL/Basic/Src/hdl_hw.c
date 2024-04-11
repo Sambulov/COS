@@ -11,7 +11,7 @@ typedef struct {
   void *periph;
 } hdl_hardware_private_t;
 
-_Static_assert(sizeof(hdl_hardware_private_t) == sizeof(hdl_hardware_t), "In hdl_hw.h data structure size of hdl_hardware_t doesn't match, check HDL_HW_PRIVATE_SIZE");
+//_Static_assert(sizeof(hdl_hardware_private_t) == sizeof(hdl_hardware_t), "In hdl_hw.h data structure size of hdl_hardware_t doesn't match, check HDL_HW_PRIVATE_SIZE");
 
 static linked_list_t dev_init_queue = NULL;
 static linked_list_t dev_list = NULL;

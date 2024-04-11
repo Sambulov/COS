@@ -1,7 +1,5 @@
 #include "CodeLib.h"
 
-//#include "LinkedList.h"
-
 #define LINKED_LIST_VALIDATION    ((uint16_t)(0xD639A5BC))
 
 typedef struct __LL_ITEM_T {

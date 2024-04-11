@@ -69,7 +69,7 @@
   //   .mode = &dts_gpio_input_pullup_mode
   // };
 
-  const hdl_gpio_t dts_gpo_emmc_lock = {
+  hdl_gpio_t dts_gpo_emmc_lock = {
     .port = GPIOA,
     .pin = GPIO_PIN_0,
     .mode = &dts_gpio_output_pp_mode

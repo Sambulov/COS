@@ -159,37 +159,37 @@
     .periph = (void *)GPIOB,
   };
 
-  const hdl_gpio_port_t hdl_gpio_port_c = {
+  hdl_gpio_port_t hdl_gpio_port_c = {
     .init = &hdl_gpio_port,
     .dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
     .periph = (void *)GPIOC,
   };
 
-  const hdl_gpio_port_t hdl_gpio_port_f = {
+  hdl_gpio_port_t hdl_gpio_port_f = {
     .init = &hdl_gpio_port,
     .dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
     .periph = (void *)GPIOF,
   };
 
-  const hdl_gpio_mode_t dts_gpio_output_pp_mode = {
+  hdl_gpio_mode_t dts_gpio_output_pp_mode = {
     .type = GPIO_MODE_OUTPUT,
     .otype = GPIO_OTYPE_PP,
     .ospeed = GPIO_OSPEED_2MHZ,
   };
 
-  const hdl_gpio_mode_t dts_gpio_input_pullup_mode = {
+  hdl_gpio_mode_t dts_gpio_input_pullup_mode = {
     .type = GPIO_MODE_INPUT,
     .pull = GPIO_PUPD_PULLUP,
   };
 
-  const hdl_gpio_mode_t dts_gpio_swd_mode = {
+  hdl_gpio_mode_t dts_gpio_swd_mode = {
     .af = GPIO_AF_0,
     .type = GPIO_MODE_AF,
     .otype = GPIO_OTYPE_PP,
     .ospeed = GPIO_OSPEED_50MHZ,
   };
 
-  const hdl_gpio_mode_t dts_gpio_i2c_mode = {
+  hdl_gpio_mode_t dts_gpio_i2c_mode = {
     .af = GPIO_AF_4,
     .type = GPIO_MODE_AF,
     .otype = GPIO_OTYPE_OD,
@@ -220,7 +220,7 @@
   //   .mode = &dts_gpio_input_pullup_mode
   // };
 
-  const hdl_gpio_pin_t dts_gpi_carrier_wdt_time_out = {
+  hdl_gpio_pin_t dts_gpi_carrier_wdt_time_out = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_8,
@@ -239,28 +239,28 @@
   //   .mode = &dts_gpio_input_pullup_mode
   // };
 
-  const hdl_gpio_pin_t dts_gpo_emmc_lock = {
+  hdl_gpio_pin_t dts_gpo_emmc_lock = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_0,
     .mode = &dts_gpio_output_pp_mode
   };
 
-  const hdl_gpio_pin_t dts_gpo_qspi_lock = {
+  hdl_gpio_pin_t dts_gpo_qspi_lock = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_1,
     .mode = &dts_gpio_output_pp_mode
   };
 
-  const hdl_gpio_pin_t dts_gpo_sd_lock = {
+  hdl_gpio_pin_t dts_gpo_sd_lock = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_2,
     .mode = &dts_gpio_output_pp_mode
   };
 
-  const hdl_gpio_pin_t dts_gpi_carrier_force_recovery = {
+  hdl_gpio_pin_t dts_gpi_carrier_force_recovery = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_13,
@@ -271,77 +271,77 @@
     #endif
   };
 
-  const hdl_gpio_pin_t dts_gpi_carrier_boot_sel0 = {
+  hdl_gpio_pin_t dts_gpi_carrier_boot_sel0 = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_4,
     .mode = &dts_gpio_input_pullup_mode
   };
 
-  const hdl_gpio_pin_t dts_gpi_carrier_boot_sel1 = {
+  hdl_gpio_pin_t dts_gpi_carrier_boot_sel1 = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_5,
     .mode = &dts_gpio_input_pullup_mode
   };
 
-  const hdl_gpio_pin_t dts_gpi_carrier_boot_sel2 = {
+  hdl_gpio_pin_t dts_gpi_carrier_boot_sel2 = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_6,
     .mode = &dts_gpio_input_pullup_mode
   };
 
-  const hdl_gpio_pin_t dts_gpi_carrier_power_good = {
+  hdl_gpio_pin_t dts_gpi_carrier_power_good = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_0,
     .mode = &dts_gpio_input_pullup_mode
   };
 
-  const hdl_gpio_pin_t dts_gpi_carrier_reset_in = {
+  hdl_gpio_pin_t dts_gpi_carrier_reset_in = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_7,
     .mode = &dts_gpio_input_pullup_mode
   };
 
-  const hdl_gpio_pin_t dts_gpo_carrier_reset_out = {
+  hdl_gpio_pin_t dts_gpo_carrier_reset_out = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_8,
     .mode = &dts_gpio_output_pp_mode
   };
 
-  const hdl_gpio_pin_t dts_gpo_carrier_pwr_on = {
+  hdl_gpio_pin_t dts_gpo_carrier_pwr_on = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_1,
     .mode = &dts_gpio_output_pp_mode
   };
 
-  const hdl_gpio_pin_t dts_gpo_carrier_stby = {
+  hdl_gpio_pin_t dts_gpo_carrier_stby = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_3,
     .mode = &dts_gpio_output_pp_mode
   };
 
-  const hdl_gpio_pin_t dts_gpi_carrier_power_btn = {
+  hdl_gpio_pin_t dts_gpi_carrier_power_btn = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_4,
     .mode = &dts_gpio_input_pullup_mode
   };
 
-  const hdl_gpio_pin_t dts_gpo_pmic_soc_rst = {
+  hdl_gpio_pin_t dts_gpo_pmic_soc_rst = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_3,
     .mode = &dts_gpio_output_pp_mode
   };
 
-  const hdl_gpio_pin_t dts_gpo_pmic_power_on = {
+  hdl_gpio_pin_t dts_gpo_pmic_power_on = {
     .hw.init = &hdl_gpio_pin,
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_5,
@@ -362,7 +362,7 @@
     .mode = &dts_gpio_i2c_mode
   };
 
-  const hdl_i2c_hw_t dts_i2c_0 = {
+  hdl_i2c_hw_t dts_i2c_0 = {
     .hw.init = &hdl_i2c,
     .hw.dependencies = hdl_hw_dependencies(&dts_clock_apb1.hw, &dts_gpio_soc_scl.hw, &dts_gpio_soc_sda.hw),
     //.clock = (hdl_clock_t *)&,
@@ -383,21 +383,21 @@
 
 #endif
 
-const hdl_button_hw_t dts_btn_power = {
+hdl_button_hw_t dts_btn_power = {
   .active_state = HDL_GPIO_LOW,
   .btn_gpio = &dts_gpi_carrier_power_btn,
   .debounce_delay = 50,
   .hold_delay = 5000
 };
 
-const hdl_button_hw_t dts_btn_reset = {
+hdl_button_hw_t dts_btn_reset = {
   .active_state = HDL_GPIO_LOW,
   .btn_gpio = & dts_gpi_carrier_reset_in,
   .debounce_delay = 5,
   .hold_delay = 0 /* never */
 };
 
-const bldl_som_boot_lock_t dts_boot_lock = {
+bldl_som_boot_lock_t dts_boot_lock = {
   .active_state_lock_emmc = HDL_GPIO_HIGH,
   .active_state_lock_qspi = HDL_GPIO_HIGH,
   .active_state_lock_sd = HDL_GPIO_HIGH,
@@ -406,7 +406,7 @@ const bldl_som_boot_lock_t dts_boot_lock = {
   .lock_pin_sd = &dts_gpo_sd_lock
 };
 
-const bldl_som_boot_sel_t dts_boot_select = {
+bldl_som_boot_sel_t dts_boot_select = {
   .active_state_bs0 = HDL_GPIO_LOW,
   .active_state_bs1 = HDL_GPIO_LOW,
   .active_state_bs2 = HDL_GPIO_LOW,
@@ -417,7 +417,7 @@ const bldl_som_boot_sel_t dts_boot_select = {
   .gpio_fr = &dts_gpi_carrier_force_recovery
 };
 
-const bldl_som_power_state_hw_t dts_som_state_ctrl = {
+bldl_som_power_state_hw_t dts_som_state_ctrl = {
   .active_state_carrier_pwr_on = HDL_GPIO_HIGH,
   .active_state_carrier_stby = HDL_GPIO_LOW,
   .active_state_reset_out = HDL_GPIO_LOW,

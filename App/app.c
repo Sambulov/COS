@@ -145,7 +145,7 @@ void main() {
   // //bldl_som_exec_state(&som_state, BLDL_SOM_STATE_ON);
   // test_read_pmic_regs();
   //hdl_hw_enable(&dts_gpi_carrier_power_btn.hw, HDL_TRUE);
-  hdl_hw_enable(&dts_gpo_emmc_lock);
+  hdl_hw_enable(&dts_gpo_emmc_lock.hw);
   while(1) {
     cooperative_scheduler(false);
     // hdl_btn_work(&power_button);

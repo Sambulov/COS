@@ -6,6 +6,7 @@
  ******************************************************************************/
 
 #include "app.h"
+#include "CodeLib.h"
 
 static void power_btn_handler(uint32_t event, void *sender, void *context) {
   // hdl_button_t *btn = (hdl_button_t *)sender;
@@ -107,6 +108,7 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 
 void main() {
 
+  cooperative_scheduler(false);
   // static bldl_som_power_state_t som_state = {
   //    .hw = &dts_som_state_ctrl
   // };

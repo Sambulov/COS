@@ -20,19 +20,16 @@ typedef struct {
 
 #if defined ( GD32E23X )
 
-#define HDL_HXTAL_PERIPH  ((void *)0x00000001)
-
 #define HDL_IRC8M_CLOCK_PERIPH   ((void*)0x00000001)
 #define HDL_HXTAL_CLOCK_PERIPH   ((void*)0x00000002)
 
   typedef struct {
     hdl_hardware_t hw;
-    float freq;
+    uint32_t freq;
+    uint32_t div;
     uint8_t clock_monitor_enable;  /* 0 - clock monitor disabled, !0 - enabled */
   } hdl_sys_clock_t;
 
-
-typedef void (*event_handler_t)(uint32_t event, void *sender, void *context);
   hdl_init_state_t hdl_gd_clock_hxtal(void *desc, uint8_t enable);
   hdl_init_state_t hdl_gd_clock_lxtal(void *desc, uint8_t enable);
   hdl_init_state_t hdl_gd_clock_irc40k(void *desc, uint8_t enable);

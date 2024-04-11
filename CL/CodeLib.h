@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 #define SIZE_ALIGN2(x)         (((x) + (x & 0x01)))
-#define SIZE_ALIGN4(x)         ((ALIGN2(x) + (ALIGN2(x) & 0x02)))
+#define SIZE_ALIGN4(x)         ((SIZE_ALIGN2(x) + (SIZE_ALIGN2(x) & 0x02)))
 
 typedef __builtin_va_list      va_list;
 typedef __INT8_TYPE__          int8_t;
@@ -46,6 +46,7 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #define UNUSED(x)             ((void)(x))
 
 #include "LinkedList.h"
+#include "CooperativeMultitasking.h"
 #include "MachineState.h"
 
 #ifdef __cplusplus

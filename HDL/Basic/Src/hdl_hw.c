@@ -87,6 +87,7 @@ static uint8_t _dev_parent_match(LinkedListItem_t *item, void *arg) {
     while (*dependency != NULL) {
       if(*dependency == parent)
         return HDL_TRUE;
+      dependency++;
     }
   }
   return HDL_FALSE;

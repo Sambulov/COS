@@ -145,9 +145,19 @@ void main() {
   // //bldl_som_exec_state(&som_state, BLDL_SOM_STATE_ON);
   // test_read_pmic_regs();
   //hdl_hw_enable(&dts_gpi_carrier_power_btn.hw, HDL_TRUE);
-  hdl_hw_enable(&dts_gpo_emmc_lock.hw);
+  //hdl_hw_enable(&dts_gpo_emmc_lock.hw);
+  hdl_hw_enable(&dts_gpo_carrier_pwr_on.hw);
+  //hdl_hw_enable(&dts_gpi_carrier_boot_sel2.hw);
+  //hdl_hw_kill(&dts_gpo_emmc_lock.hw);
   while(1) {
     cooperative_scheduler(false);
+    if(hdl_hw_state(&dts_gpo_carrier_pwr_on.hw) == HDL_HW_INIT_OK)
+    { 
+      for(int i = 0; i < 10000000;i++)
+        __NOP();
+
+      hdl_gpio_toggle(&dts_gpo_carrier_pwr_on);
+    }
     // hdl_btn_work(&power_button);
     // hdl_btn_work(&reset_button);
   }

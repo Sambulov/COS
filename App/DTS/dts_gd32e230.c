@@ -6,9 +6,9 @@
   };
 
   /* TODO Flash must be initialize before pll setting */
-  #define HDL_GD_HXTAL_CLOCK              8000000
+  #define HDL_GD_HXTAL_CLOCK              16000000
   #define HDL_GD_LXTAL_CLOCK              32768
-  #define HDL_GD_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_GD_HXTAL_2_PLLSEL_PREDIV    2
   #define HDL_GD_PLLMUL                   9
   #define HDL_GD_AHB_PREDIV               1
   #define HDL_GD_APB1_PREDIV              1
@@ -100,14 +100,14 @@
   };
 
   /**************************************************************
-   *  Selector RTC
+   *  Selector RTC(HXTAL, LXTAL, IRC40K)
    *************************************************************/
-  // hdl_clock_prescaler_t dts_clock_selector_rtc = {
-  //   .hw.init = &hdl_gd_clock_selector_rtc,
-  //   .hw.dependencies = hdl_hw_dependencies(&HDL_GD_RTC_CLOCK.hw),
-  //   .hw.periph = HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY,
-  //   .muldiv_factor = 1,
-  // };
+  hdl_clock_prescaler_t dts_clock_selector_rtc = {
+    .hw.init = &hdl_gd_clock_selector_rtc,
+    .hw.dependencies = hdl_hw_dependencies(&HDL_GD_RTC_CLOCK.hw),
+    .hw.periph = HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY,
+    .muldiv_factor = 1,
+  };
 
   /**************************************************************
    *  CK_SYS

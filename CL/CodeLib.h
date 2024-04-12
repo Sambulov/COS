@@ -6,15 +6,12 @@
         e-mail: dmitry.sambulov@gmail.com
  */
 
-#ifndef LIB_PORTABLE_H_INCLUDED
-#define LIB_PORTABLE_H_INCLUDED
+#ifndef CODE_LIB_H_INCLUDED
+#define CODE_LIB_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define SIZE_ALIGN2(x)         (((x) + (x & 0x01)))
-#define SIZE_ALIGN4(x)         ((SIZE_ALIGN2(x) + (SIZE_ALIGN2(x) & 0x02)))
 
 typedef __builtin_va_list      va_list;
 typedef __INT8_TYPE__          int8_t;
@@ -43,6 +40,8 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #define va_end(v)              __builtin_va_end(v)
 #define va_arg(v,l)            __builtin_va_arg(v,l)
 
+#include "Macros.h"
+
 #define UNUSED(x)             ((void)(x))
 
 #include "LinkedList.h"
@@ -53,4 +52,4 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 }
 #endif
 	
-#endif /* LIB_PORTABLE_H_INCLUDED */
+#endif /* CODE_LIB_H_INCLUDED */

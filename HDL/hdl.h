@@ -31,10 +31,9 @@ typedef enum {
 #include "hdl_i2c.h"
 #include "hdl_button.h"
 #include "hdl_sw_wdt.h"
-#include "hdl_clock.h"
 
 #include "RK809.h"
-
+#include "atb_uio.h"
 #ifdef __cplusplus
 }
 #endif

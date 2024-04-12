@@ -47,11 +47,10 @@ typedef struct {
 #define HDL_GD_APB1_PRESCALER_CLOCK_PERIPHERY            ((void *)0x0000000F)
 #define HDL_GD_APB2_PRESCALER_CLOCK_PERIPHERY            ((void *)0x00000010)
 
-
-
   typedef struct {
     hdl_hardware_t hw;
-    float freq;
+    uint32_t freq;
+    uint32_t div;
     uint8_t clock_monitor_enable;  /* 0 - clock monitor disabled, !0 - enabled */
   } hdl_sys_clock_t;
 

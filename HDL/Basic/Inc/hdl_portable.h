@@ -14,8 +14,12 @@
 
 #include "hdl_callback.h"
 #include "hdl_hw.h"
+#include "hdl_core.h"
+#include "hdl_clock.h"
 //#include "Interrupt.h"
 #include "hdl_clock.h"
+#include "hdl_clock_counter.h"
+#include "hdl_sys_timer.h"
 #include "hdl_sys.h"
 #include "hdl_gpio.h"
 //#include "hdl_i2c.h"

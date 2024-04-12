@@ -147,8 +147,12 @@ void main() {
   //hdl_hw_enable(&dts_gpi_carrier_power_btn.hw, HDL_TRUE);
   //hdl_hw_enable(&dts_gpo_emmc_lock.hw);
   hdl_hw_enable(&dts_gpo_carrier_pwr_on.hw);
+  hdl_hw_enable(&dts_sys_timer_ms.hw);
   //hdl_hw_enable(&dts_gpi_carrier_boot_sel2.hw);
   //hdl_hw_kill(&dts_gpo_emmc_lock.hw);
+
+  //dts_sys_timer_ms.val
+
   while(1) {
     cooperative_scheduler(false);
     if(hdl_hw_state(&dts_gpo_carrier_pwr_on.hw) == HDL_HW_INIT_OK)

@@ -142,9 +142,24 @@
    *************************************************************/
   hdl_clock_prescaler_t dts_clock_apb2 = {
       .hw.init = &hdl_gd_clock_apb2,
-      .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_ahb),
+      .hw.dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
       .hw.periph = HDL_GD_APB2_PRESCALER_CLOCK_PERIPHERY,
       .muldiv_factor = HDL_GD_APB2_PREDIV,
+  };
+
+  hdl_clock_counter_t dts_systick_counter = {
+    .hw.init = &hdl_clock_counter,
+    .hw.dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
+    .hw.periph = SysTick,
+    .diction = HDL_DOWN_COUNTER,
+    .counter_reload = 72000
+  };
+
+  hdl_sys_timer_t dts_sys_timer_ms = {
+    .hw.init = hdl_sys_timer,
+    .hw.dependencies = hdl_hw_dependencies(&dts_systick_counter.hw),
+    .hw.periph = NULL,
+    .val = 0
   };
 
   hdl_gpio_port_t hdl_gpio_port_a = {

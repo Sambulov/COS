@@ -55,6 +55,7 @@ void * g_pfnVectors[0x40] __attribute__ ((section (".isr_vector"), used)) = {
   ((void *)0),
   &PendSV_Handler,
   &SysTick_Handler,
+  
   &WWDGT_IRQHandler,
   &LVD_IRQHandler,
   &RTC_IRQHandler,

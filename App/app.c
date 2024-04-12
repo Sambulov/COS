@@ -152,15 +152,22 @@ void main() {
   //hdl_hw_kill(&dts_gpo_emmc_lock.hw);
 
   //dts_sys_timer_ms.val
+  hdl_hw_enable(&dts_sys_timer_ms.hw);
 
   while(1) {
+    static uint32_t time_stamp_ms = 0;
     cooperative_scheduler(false);
     if(hdl_hw_state(&dts_gpo_carrier_pwr_on.hw) == HDL_HW_INIT_OK)
-    { 
-      for(int i = 0; i < 10000000;i++)
-        __NOP();
-
-      hdl_gpio_toggle(&dts_gpo_carrier_pwr_on);
+    {
+      if(hdl_hw_state(&dts_sys_timer_ms.hw) == HDL_HW_INIT_OK)
+      {
+        if(TIME_ELAPSED(time_stamp_ms, 1, millis(&dts_sys_timer_ms)))
+        {
+          time_stamp_ms = millis(&dts_sys_timer_ms);
+          hdl_gpio_toggle(&dts_gpo_carrier_pwr_on);
+        }
+          
+      }
     }
     // hdl_btn_work(&power_button);
     // hdl_btn_work(&reset_button);

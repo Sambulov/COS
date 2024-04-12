@@ -11,6 +11,6 @@ static inline uint32_t hdl_sys_timer_get(hdl_sys_timer_t *desc) {
   return desc->val;
 }
 
-#define millis(desc)  hdl_sys_timer_get_ms(desc)
+#define millis(desc)  hdl_sys_timer_get(desc)
 
 #endif // HDL_SYS_TIMER_H_

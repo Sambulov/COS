@@ -3,6 +3,7 @@
 
 typedef struct {
   hdl_hardware_t hw;
+  hdl_interrupt_t *reload_iterrupt;
   uint32_t val;
 }hdl_sys_timer_t;
 

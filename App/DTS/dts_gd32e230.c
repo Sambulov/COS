@@ -17,6 +17,9 @@
   #define HDL_GD_PLL_MUL_CLOCK            dts_clock_pll_prescaler   /* Can be clocked by: dts_clock_pll_prescaler, dts_clock_irc8m. For dts_clock_irc8m applied prediv 2 */
   #define HDL_GD_SYS_CLOCK                dts_clock_pll_mf          /* Can be clocked by: dts_clock_pll_mf, dts_clock_irc8m, dts_clock_hxtal */
 
+
+  #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
+
   _Static_assert((HDL_GD_HXTAL_CLOCK >= 4000000) && (HDL_GD_HXTAL_CLOCK <= 32000000), "HDL_GD_HXTAL_CLOCK mast be from 4 to 32 MHz");
   _Static_assert((HDL_GD_LXTAL_CLOCK >= 32000) && (HDL_GD_LXTAL_CLOCK <= 1000000), "HDL_GD_LXTAL_CLOCK mast be from 32KHz to 1MHz");
   _Static_assert((HDL_GD_HXTAL_2_PLLSEL_PREDIV >= 1) && (HDL_GD_HXTAL_2_PLLSEL_PREDIV <= 16), "HDL_GD_HXTAL_2_PLLSEL_PREDIV mast be within 1-16");
@@ -24,69 +27,101 @@
   _Static_assert((BITS_COUNT_U16(HDL_GD_AHB_PREDIV) == 1) && (HDL_GD_PLLMUL <= 512), "HDL_GD_AHB_PREDIV mast be 1, 2, 4, 8, 16, 128, 256 or 512");
   _Static_assert((BITS_COUNT_U16(HDL_GD_APB1_PREDIV) == 1) && (HDL_GD_APB1_PREDIV <= 16), "HDL_GD_APB1_PREDIV mast be 1, 2, 4, 8 or 16");
   _Static_assert((BITS_COUNT_U16(HDL_GD_APB2_PREDIV) == 1) && (HDL_GD_APB2_PREDIV <= 16), "HDL_GD_APB2_PREDIV mast be 1, 2, 4, 8 or 16");
+  _Static_assert((HDL_INTERRUPT_PRIO_GROUP_BITS == __NVIC_PRIO_BITS), "HDL_INTERRUPT_PRIO_GROUP_BITS fixed on 2 for cortex-m23");
+
+  hdl_core_t dts_sys_core = {
+    .hw.init = &hdl_core,
+    .hw.dependencies = NULL,
+    .hw.periph = SCB,
+    /* TODO: ... */
+  };
+
+  hdl_nvic_t dts_nvic = {
+    .hw.init = &hdl_nvic,
+    .hw.dependencies = hdl_hw_dependencies(&dts_sys_core.hw),
+    .hw.periph = NVIC,
+    .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
+  };
+
+  hdl_nvic_interrupt_t dts_systick_irq = {
+    .irq_type = SysTick_IRQn,
+    .priority = 0,
+    .priority_group = 0,
+  };
+
+  
 
   /**************************************************************
    *  Oscillator
    *************************************************************/
   hdl_clock_t dts_clock_irc8m = {
-      .hw.init = &hdl_gd_clock_irc8m,
-      .hw.dependencies = NULL,
-      .hw.periph = HDL_GD_IRC8M_OSCILLATOR_CLOCK_PERIPHERY,
-      .freq = 8000000};
+    .hw.init = &hdl_gd_clock_irc8m,
+    .hw.dependencies = NULL,
+    .hw.periph = (void *)RCU,
+    .freq = 8000000,
+    .div = 1
+  };
 
   hdl_clock_t dts_clock_hxtal = {
-      .hw.init = &hdl_gd_clock_hxtal,
-      .hw.dependencies = NULL,
-      .hw.periph = HDL_GD_HXTAL_OSCILLATOR_CLOCK_PERIPHERY,
-      .freq = HDL_GD_HXTAL_CLOCK};
+    .hw.init = &hdl_gd_clock_hxtal,
+    .hw.dependencies = NULL,
+    .hw.periph = (void *)RCU,
+    .freq = HDL_GD_HXTAL_CLOCK,
+    .div = 1
+  };
 
   hdl_clock_t dts_clock_lxtal = {
-      .hw.init = &hdl_gd_clock_lxtal,
-      .hw.dependencies = NULL,
-      .hw.periph = HDL_GD_LXTAL_OSCILLATOR_CLOCK_PERIPHERY,
-      .freq = HDL_GD_LXTAL_CLOCK};
+    .hw.init = &hdl_gd_clock_lxtal,
+    .hw.dependencies = NULL,
+    .hw.periph = (void *)RCU,
+    .freq = HDL_GD_LXTAL_CLOCK,
+    .div = 1
+  };
 
   hdl_clock_t dts_clock_irc28m = {
-      .hw.init = &hdl_gd_clock_irc28m,
-      .hw.dependencies = NULL,
-      .hw.periph = HDL_GD_IRC28M_OSCILLATOR_CLOCK_PERIPHERY,
-      .freq = 28000000};
+    .hw.init = &hdl_gd_clock_irc28m,
+    .hw.dependencies = NULL,
+    .hw.periph = (void *)RCU,
+    .freq = 28000000,
+    .div = 1
+  };
 
   hdl_clock_t dts_clock_irc40k = {
-      .hw.init = &hdl_gd_clock_irc40k,
-      .hw.dependencies = NULL,
-      .hw.periph = HDL_GD_IRC40K_OSCILLATOR_CLOCK_PERIPHERY,
-      .freq = 40000};
+    .hw.init = &hdl_gd_clock_irc40k,
+    .hw.dependencies = NULL,
+    .freq = 40000,
+    .div = 1
+  };
 
   /**************************************************************
    *  PLL prescaler
    *************************************************************/
   hdl_clock_prescaler_t dts_clock_pll_prescaler = {
-      .hw.init = &hdl_gd_clock_pll_prescaler,
-      .hw.dependencies = hdl_hw_dependencies(&dts_clock_hxtal.hw),
-      .hw.periph = HDL_GD_PLL_PRESCALER_CLOCK_PERIPHERY,
-      .muldiv_factor = HDL_GD_HXTAL_2_PLLSEL_PREDIV,
+    .hw.init = &hdl_gd_clock_pll_prescaler,
+    .hw.dependencies = hdl_hw_dependencies(&dts_clock_hxtal.hw),
+    .hw.periph = (void *)RCU,
+    .muldiv_factor = HDL_GD_HXTAL_2_PLLSEL_PREDIV,
   };
 
   /**************************************************************
    *  Selector PLL source second rang (HXTAL or IRC8M)
    **************************************************************/
   hdl_clock_prescaler_t dts_clock_pll_selector = {
-      .hw.init = &hdl_gd_clock_selector_pll,
-      /* If source IRC8M before oscillator there is prescaler 2, this logic realized inside driver */
-      .hw.dependencies = hdl_hw_dependencies(&HDL_GD_PLL_MUL_CLOCK.hw),
-      .hw.periph = HDL_GD_PLL_SELECTOR_CLOCK_PERIPHERY,
-      .muldiv_factor = 1,
+    .hw.init = &hdl_gd_clock_selector_pll,
+    /* If source IRC8M before oscillator there is prescaler 2, this logic realized inside driver */
+    .hw.dependencies = hdl_hw_dependencies(&HDL_GD_PLL_MUL_CLOCK.hw),
+    .hw.periph = (void *)RCU,
+    .muldiv_factor = 1,
   };
 
   /**************************************************************
    *  PLL multiply factor
    *************************************************************/
   hdl_clock_prescaler_t dts_clock_pll_mf = {
-      .hw.init = &hdl_gd_clock_pll_multiply_coefficient,
-      .hw.dependencies = hdl_hw_dependencies(&dts_clock_pll_selector.hw),
-      .hw.periph = HDL_GD_PLL_MULTIPLY_CLOCK_PERIPHERY,
-      .muldiv_factor = HDL_GD_PLLMUL,
+    .hw.init = &hdl_gd_clock_pll_multiply_coefficient,
+    .hw.dependencies = hdl_hw_dependencies(&dts_clock_pll_selector.hw),
+    .hw.periph = (void *)RCU,
+    .muldiv_factor = HDL_GD_PLLMUL,
   };
 
   /**************************************************************
@@ -94,8 +129,8 @@
    **************************************************************/
   hdl_clock_prescaler_t dts_clock_system_clock_source = {
     .hw.init = &hdl_gd_clock_system_source,
-    .hw.dependencies = hdl_hw_dependencies(&HDL_GD_SYS_CLOCK.hw),
-    .hw.periph = HDL_GD_SYSTEM_SOURCE_CLOCK_PERIPHERY,
+    .hw.dependencies = hdl_hw_dependencies(&dts_sys_core.hw, &HDL_GD_SYS_CLOCK.hw),
+    .hw.periph = (void *)RCU,
     .muldiv_factor = 1,
   };
 
@@ -105,7 +140,7 @@
   hdl_clock_prescaler_t dts_clock_selector_rtc = {
     .hw.init = &hdl_gd_clock_selector_rtc,
     .hw.dependencies = hdl_hw_dependencies(&HDL_GD_RTC_CLOCK.hw),
-    .hw.periph = HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY,
+    .hw.periph = (void *)RCU,
     .muldiv_factor = 1,
   };
 
@@ -113,52 +148,53 @@
    *  CK_SYS
    *************************************************************/
   hdl_clock_prescaler_t dts_clock_sys = {
-      .hw.init = &hdl_gd_clock_sys,
-      .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_system_clock_source),
-      .hw.periph = HDL_GD_CK_SYS_CLOCK_PERIPHERY,
-      .muldiv_factor = 1,
+    .hw.init = &hdl_gd_clock_sys,
+    .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_system_clock_source),
+    .hw.periph = (void *)RCU,
+    .muldiv_factor = 1,
   };
 
   /**************************************************************
    *  AHB Prescaler
    *************************************************************/
   hdl_clock_prescaler_t dts_clock_ahb = {
-      .hw.init = &hdl_gd_clock_ahb,
-      .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_system_clock_source),
-      .hw.periph = HDL_GD_AHB_PRESCALER_CLOCK_PERIPHERY,
-      .muldiv_factor = HDL_GD_AHB_PREDIV,
+    .hw.init = &hdl_gd_clock_ahb,
+    .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_system_clock_source),
+    .hw.periph = (void *)RCU,
+    .muldiv_factor = HDL_GD_AHB_PREDIV,
   };
   /**************************************************************
    *  APB1 Prescaler
    *************************************************************/
   hdl_clock_prescaler_t dts_clock_apb1 = {
-      .hw.init = &hdl_gd_clock_apb1,
-      .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_ahb),
-      .hw.periph = HDL_GD_APB1_PRESCALER_CLOCK_PERIPHERY,
-      .muldiv_factor = HDL_GD_APB1_PREDIV,
+    .hw.init = &hdl_gd_clock_apb1,
+    .hw.dependencies = hdl_hw_dependencies((hdl_hardware_t *)&dts_clock_ahb),
+    .hw.periph = (void *)RCU,
+    .muldiv_factor = HDL_GD_APB1_PREDIV,
   };
   /**************************************************************
    *  APB2 Prescaler
    *************************************************************/
   hdl_clock_prescaler_t dts_clock_apb2 = {
-      .hw.init = &hdl_gd_clock_apb2,
-      .hw.dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
-      .hw.periph = HDL_GD_APB2_PRESCALER_CLOCK_PERIPHERY,
-      .muldiv_factor = HDL_GD_APB2_PREDIV,
+    .hw.init = &hdl_gd_clock_apb2,
+    .hw.dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
+    .hw.periph = (void *)RCU,
+    .muldiv_factor = HDL_GD_APB2_PREDIV,
   };
 
   hdl_clock_counter_t dts_systick_counter = {
     .hw.init = &hdl_clock_counter,
     .hw.dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
-    .hw.periph = SysTick,
+    .hw.periph = (void *)SysTick,
     .diction = HDL_DOWN_COUNTER,
     .counter_reload = 72000
   };
 
   hdl_sys_timer_t dts_sys_timer_ms = {
     .hw.init = hdl_sys_timer,
-    .hw.dependencies = hdl_hw_dependencies(&dts_systick_counter.hw),
+    .hw.dependencies = hdl_hw_dependencies(&dts_systick_counter.hw, &dts_nvic.hw),
     .hw.periph = NULL,
+    .reload_iterrupt = &dts_systick_irq,
     .val = 0
   };
 
@@ -197,7 +233,7 @@
     .pull = GPIO_PUPD_PULLUP,
   };
 
-  hdl_gpio_mode_t dts_gpio_swd_mode = {
+  hdl_gpio_mode_t dts_gpio_alternate_swd_mode = {
     .af = GPIO_AF_0,
     .type = GPIO_MODE_AF,
     .otype = GPIO_OTYPE_PP,
@@ -280,7 +316,7 @@
     .hw.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_13,
     #if defined(DEBUG)
-    .mode = &dts_gpio_swd_mode
+    .mode = &dts_gpio_alternate_swd_mode
     #else
     .mode = &dts_gpio_input_pullup_mode
     #endif

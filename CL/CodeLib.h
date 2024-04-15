@@ -30,6 +30,8 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 
 #define libNULL                ((void *)0)
 
+#define UNUSED(x)              ((void)(x))
+
 #define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
 
 #define __weak                 __attribute__((weak))
@@ -41,9 +43,6 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #define va_arg(v,l)            __builtin_va_arg(v,l)
 
 #include "Macros.h"
-
-#define UNUSED(x)             ((void)(x))
-
 #include "LinkedList.h"
 #include "CooperativeMultitasking.h"
 #include "MachineState.h"

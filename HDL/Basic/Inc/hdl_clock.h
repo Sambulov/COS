@@ -20,33 +20,6 @@ typedef struct {
 
 #if defined ( GD32E23X )
 
-/* Unique periphery ID  */
-/* Oscillator */
-#define HDL_GD_HXTAL_OSCILLATOR_CLOCK_PERIPHERY          ((void *)0x00000001)
-#define HDL_GD_IRC8M_OSCILLATOR_CLOCK_PERIPHERY          ((void *)0x00000002)
-#define HDL_GD_LXTAL_OSCILLATOR_CLOCK_PERIPHERY          ((void *)0x00000003)
-#define HDL_GD_IRC40K_OSCILLATOR_CLOCK_PERIPHERY         ((void *)0x00000004)
-#define HDL_GD_IRC28M_OSCILLATOR_CLOCK_PERIPHERY         ((void *)0x00000005)
-/* PLL prescaler PREDV */
-#define HDL_GD_PLL_PRESCALER_CLOCK_PERIPHERY             ((void *)0x00000006)
-/* PLLSEL */
-#define HDL_GD_PLL_SELECTOR_CLOCK_PERIPHERY              ((void *)0x00000007)
-/* PLL multiply coefficient PLLMF */
-#define HDL_GD_PLL_MULTIPLY_CLOCK_PERIPHERY              ((void *)0x00000008)
-/* SCS */
-#define HDL_GD_SYSTEM_SOURCE_CLOCK_PERIPHERY             ((void *)0x00000009)
-/* RTC selector RTCSRS */
-#define HDL_GD_RTC_SELECTOR_CLOCK_PERIPHERY              ((void *)0x0000000A)
-/* CKOUTSEL */
-#define HDL_GD_CKOUT_PRESCALER_CLOCK_PERIPHERY           ((void *)0x0000000B)
-/* CKOUTDIV */
-#define HDL_GD_CKOUT_SELECTOR_CLOCK_PERIPHERY            ((void *)0x0000000C)
-/* Periphery bus */
-#define HDL_GD_CK_SYS_CLOCK_PERIPHERY                    ((void *)0x0000000D)
-#define HDL_GD_AHB_PRESCALER_CLOCK_PERIPHERY             ((void *)0x0000000E)
-#define HDL_GD_APB1_PRESCALER_CLOCK_PERIPHERY            ((void *)0x0000000F)
-#define HDL_GD_APB2_PRESCALER_CLOCK_PERIPHERY            ((void *)0x00000010)
-
   typedef struct {
     hdl_hardware_t hw;
     uint32_t freq;

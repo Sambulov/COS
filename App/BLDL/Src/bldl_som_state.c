@@ -52,20 +52,20 @@ void bldl_som_exec_state(bldl_som_power_state_t *desc, bldl_som_state_t new_stat
 //   if(desc == NULL) 
 //     return;
 //   if(init) {
-//     _exec_power_cycle(desc->hw);
+//     _exec_power_cycle(desc->module);
 //     desc->current_state = BLDL_SOM_STATE_OFF;
 //     init = 0;
 //   }
 //   if(desc->current_state != new_state) {
 //     if(desc->current_state == BLDL_SOM_STATE_ON) {
 //       if((new_state == BLDL_SOM_STATE_RESET) || (new_state == BLDL_SOM_STATE_OFF)) {
-//         _exec_reset(desc->hw);
+//         _exec_reset(desc->module);
 //         desc->current_state = new_state;
 //       }
 //     }  
 //     else { /* ((current_state == BLDL_SOM_STATE_RESET) || (current_state == BLDL_SOM_STATE_OFF))*/
 //       if(new_state == BLDL_SOM_STATE_ON) {
-//           _exec_start(desc->hw);
+//           _exec_start(desc->module);
 //         desc->current_state = new_state;
 //       }
 //     }

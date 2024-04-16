@@ -3,8 +3,4 @@
 
 typedef void (*event_handler_t)(uint32_t event, void *sender, void *context);
 
-// typedef struct {
-//   void *context;
-// } hdl_callback_t;
-
 #endif // HDL_CALLBACK_H_

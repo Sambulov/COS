@@ -1,14 +1,14 @@
 #include "hdl_portable.h"
 
 
-hdl_init_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
+hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
   /* Casting desc to hdl_gpio_port_t* type */
   hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;
-  if(port->periph == NULL)
-    return HDL_HW_INIT_FAILED;
+  if(port->reg == NULL)
+    return HDL_MODULE_INIT_FAILED;
 
   rcu_periph_enum rcu;
-  switch ((uint32_t)port->periph){
+  switch ((uint32_t)port->reg){
     case GPIOA:
       rcu = RCU_GPIOA;
       break;
@@ -22,27 +22,27 @@ hdl_init_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
       rcu = RCU_GPIOF;
       break;    
     default:
-      return HDL_HW_INIT_FAILED;
+      return HDL_MODULE_INIT_FAILED;
   }
 
   if(enable)
     rcu_periph_clock_enable(rcu);
   else{
     rcu_periph_clock_disable(rcu);
-    return HDL_HW_DEINIT_OK;
+    return HDL_MODULE_DEINIT_OK;
   }
     
-  return HDL_HW_INIT_OK;
+  return HDL_MODULE_INIT_OK;
 }
 
-hdl_init_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
+hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
   /* Casting desc to hdl_gpio_pin_t* type */
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
 
-  if (gpio->mode == NULL || gpio->hw.dependencies[0] == NULL || gpio->hw.dependencies[0]->periph == NULL)
-    return HDL_HW_INIT_FAILED;
+  if (gpio->mode == NULL || gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
+    return HDL_MODULE_INIT_FAILED;
   /* gpio_port it`s GPIOx(x = A,B,C) */
-  uint32_t gpio_port = (uint32_t)gpio->hw.dependencies[0]->periph;
+  uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
   if(enable){
     gpio_af_set(gpio_port, gpio->mode->af, gpio->pin);
     gpio_mode_set(gpio_port, gpio->mode->type, gpio->mode->pull, gpio->pin);
@@ -53,32 +53,32 @@ hdl_init_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
   else{
      gpio_af_set(gpio_port, 0, gpio->pin);
      gpio_mode_set(gpio_port, GPIO_MODE_INPUT, GPIO_PUPD_NONE, gpio->pin);
-     return HDL_HW_DEINIT_OK;
+     return HDL_MODULE_DEINIT_OK;
   }
 
-  return HDL_HW_INIT_OK;
+  return HDL_MODULE_INIT_OK;
 }
 
 hdl_gpio_state hdl_gpio_read(const hdl_gpio_pin_t *gpio){
-  if (gpio->hw.dependencies[0] == NULL || gpio->hw.dependencies[0]->periph == NULL)
+  if (gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
     return HDL_GPIO_LOW;
   /* gpio_port it`s GPIOx(x = A,B,C) */
-  uint32_t gpio_port = (uint32_t)gpio->hw.dependencies[0]->periph;
+  uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
   return (gpio_input_bit_get(gpio_port, gpio->pin) == RESET) ? HDL_GPIO_LOW : HDL_GPIO_HIGH;
 }
 
 void hdl_gpio_write(const hdl_gpio_pin_t *gpio, const hdl_gpio_state state){
-  if (gpio->hw.dependencies[0] == NULL || gpio->hw.dependencies[0]->periph == NULL)
+  if (gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
     return;
   /* gpio_port it`s GPIOx(x = A,B,C) */
-  uint32_t gpio_port = (uint32_t)gpio->hw.dependencies[0]->periph;
+  uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
   gpio_bit_write(gpio_port, gpio->pin, (state == HDL_GPIO_LOW) ? RESET : SET);
 }
 
 void hdl_gpio_toggle(const hdl_gpio_pin_t *gpio){
-  if (gpio->hw.dependencies[0] == NULL || gpio->hw.dependencies[0]->periph == NULL)
+  if (gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
     return;
   /* gpio_port it`s GPIOx(x = A,B,C) */
-  uint32_t gpio_port = (uint32_t)gpio->hw.dependencies[0]->periph;
+  uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
   gpio_bit_toggle(gpio_port, gpio->pin);
 }

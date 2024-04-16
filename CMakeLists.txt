@@ -141,7 +141,7 @@ if (CORE STREQUAL "ARM")
   "${CMAKE_SOURCE_DIR}/App/*.c"
   "${CMAKE_SOURCE_DIR}/App/BLDL/Src/*.c"
   "${CMAKE_SOURCE_DIR}/App/Tasks/*.c"
-  "${CMAKE_SOURCE_DIR}/App/DTS/*.c"
+  "${CMAKE_SOURCE_DIR}/App/MIG/*.c"
   "${CMAKE_SOURCE_DIR}/CL/Src/*.c"
   "${CMAKE_SOURCE_DIR}/CL/DataStructures/Src/*.c"
   "${CMAKE_SOURCE_DIR}/CL/Workflow/Src/*.c"

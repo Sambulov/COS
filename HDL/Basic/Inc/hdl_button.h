@@ -28,7 +28,7 @@ typedef enum {
 
 typedef struct {
 	uint8_t __private[HDL_BUTTON_PRV_SIZE];
-  const hdl_button_hw_t *hw;
+  const hdl_button_hw_t *module;
   hdl_btn_event_t event_mask;
   event_handler_t button_event_cb;
   void *context;

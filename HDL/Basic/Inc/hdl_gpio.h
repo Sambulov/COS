@@ -14,8 +14,8 @@
 
 #if defined ( GD32E23X )
 
-  // periph GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF
-  typedef hdl_hardware_t hdl_gpio_port_t;
+  // reg GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF
+  typedef hdl_module_t hdl_gpio_port_t;
   typedef struct {
     const uint32_t af;        // GPIO_AF_0, GPIO_AF_1, ..., GPIO_AF_15.
     const uint32_t pull;      // GPIO_PUPD_NONE, GPIO_PUPD_PULLUP, GPIO_PUPD_PULLDOWN.
@@ -25,13 +25,13 @@
   } hdl_gpio_mode_t;
 
   typedef struct {
-    hdl_hardware_t hw;
+    hdl_module_t module;
     const hdl_gpio_mode_t *mode;
     const uint32_t pin;       // GPIO_PIN_0, GPIO_PIN_1, ..., GPIO_PIN_15, GPIO_PIN_ALL.
   } hdl_gpio_pin_t;
 
-  hdl_init_state_t hdl_gpio_pin(void *desc, const uint8_t enable);
-  hdl_init_state_t hdl_gpio_port(void *desc, const uint8_t enable);
+  hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable);
+  hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable);
 #endif
 
 #if defined ( STM32L0XX )

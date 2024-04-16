@@ -15,7 +15,7 @@ static void power_btn_handler(uint32_t event, void *sender, void *context) {
   // {
   //   case HDL_BTN_EVENT_PRESS:
   //   case HDL_BTN_EVENT_RELEASE:
-  //     hdl_gpio_write(&dts_gpo_pmic_power_on, ((hdl_btn_event_t)event == HDL_BTN_EVENT_PRESS)? HDL_GPIO_HIGH: HDL_GPIO_LOW);
+  //     hdl_gpio_write(&mod_gpo_pmic_power_on, ((hdl_btn_event_t)event == HDL_BTN_EVENT_PRESS)? HDL_GPIO_HIGH: HDL_GPIO_LOW);
   //     break;
   //   case HDL_BTN_EVENT_CLICK:
   //     if(som_state->current_state == BLDL_SOM_STATE_OFF)
@@ -56,7 +56,7 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 //   };
 
 //   hdl_i2c_t i2c = {
-//     .hw_conf = &dts_i2c_0,
+//     .hw_conf = &mod_i2c_0,
 //     .server_event_cb = &i2c_cb
 //   };
 
@@ -110,10 +110,10 @@ void main() {
 
   
   // static bldl_som_power_state_t som_state = {
-  //    .hw = &dts_som_state_ctrl
+  //    .module = &mod_som_state_ctrl
   // };
 
-  // // hdl_system_init(&dts_sys_cnf);
+  // // hdl_system_init(&mod_sys_cnf);
 
   // hdl_callback_t power_btn_cb = {
   //   .context = &som_state,
@@ -126,7 +126,7 @@ void main() {
   // };
 
   // hdl_button_t power_button = {
-  //   .hw = &dts_btn_power,
+  //   .module = &mod_btn_power,
   //   .button_event_cb = &power_btn_cb,
   //   .event_mask = HDL_BTN_EVENT_RELEASE |
   //                 HDL_BTN_EVENT_PRESS |
@@ -135,7 +135,7 @@ void main() {
   // };
 
   // hdl_button_t reset_button = {
-  //   .hw = &dts_btn_reset,
+  //   .module = &mod_btn_reset,
   //   .button_event_cb = &reset_btn_cb,
   //   .event_mask = HDL_BTN_EVENT_RELEASE |
   //                 HDL_BTN_EVENT_PRESS
@@ -144,28 +144,28 @@ void main() {
   // bldl_som_exec_state(&som_state, BLDL_SOM_STATE_OFF);
   // //bldl_som_exec_state(&som_state, BLDL_SOM_STATE_ON);
   // test_read_pmic_regs();
-  //hdl_hw_enable(&dts_gpi_carrier_power_btn.hw, HDL_TRUE);
-  //hdl_hw_enable(&dts_gpo_emmc_lock.hw);
-  hdl_hw_enable(&dts_gpo_carrier_pwr_on.hw);
-  hdl_hw_enable(&dts_sys_timer_ms.hw);
-  //hdl_hw_enable(&dts_gpi_carrier_boot_sel2.hw);
-  //hdl_hw_kill(&dts_gpo_emmc_lock.hw);
+  //hdl_enable(&mod_gpi_carrier_power_btn.module, HDL_TRUE);
+  //hdl_enable(&mod_gpo_emmc_lock.module);
+  hdl_enable(&mod_gpo_carrier_pwr_on.module);
+  hdl_enable(&mod_sys_timer_ms.module);
+  //hdl_enable(&mod_gpi_carrier_boot_sel2.module);
+  //hdl_kill(&mod_gpo_emmc_lock.module);
 
-  //dts_sys_timer_ms.val
-  hdl_hw_enable(&dts_sys_timer_ms.hw);
-  hdl_hw_enable(&dts_timer0_counter.hw);
+  //mod_sys_timer_ms.val
+  hdl_enable(&mod_sys_timer_ms.module);
+  hdl_enable(&mod_timer0_counter.module);
   while(1) {
     static uint32_t time_stamp_ms = 0;
     uint32_t cnt = TIMER_CNT(TIMER0);
     cooperative_scheduler(false);
-    if(hdl_hw_state(&dts_gpo_carrier_pwr_on.hw) == HDL_HW_INIT_OK)
+    if(hdl_state(&mod_gpo_carrier_pwr_on.module) == HDL_MODULE_INIT_OK)
     {
-      if(hdl_hw_state(&dts_sys_timer_ms.hw) == HDL_HW_INIT_OK)
+      if(hdl_state(&mod_sys_timer_ms.module) == HDL_MODULE_INIT_OK)
       {
-        if(TIME_ELAPSED(time_stamp_ms, 1000, millis(&dts_sys_timer_ms)))
+        if(TIME_ELAPSED(time_stamp_ms, 1000, millis(&mod_sys_timer_ms)))
         {
-          time_stamp_ms = millis(&dts_sys_timer_ms);
-          hdl_gpio_toggle(&dts_gpo_carrier_pwr_on);
+          time_stamp_ms = millis(&mod_sys_timer_ms);
+          hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
         }
           
       }

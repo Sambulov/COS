@@ -1,7 +1,7 @@
 #include "hdl_portable.h"
 
 typedef struct {
-  hdl_hardware_t hw;
+  hdl_module_t module;
   uint32_t prio_bits;
   void *int_context[64];
   event_handler_t int_handlers[64];
@@ -239,18 +239,18 @@ void irq_n_handler() {
   for(;;) ;
 }
 
-hdl_init_state_t hdl_core(void *desc, uint8_t enable) {
+hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   /* TODO: */
   if(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->flash_latency;
-    return HDL_HW_INIT_OK;
+    return HDL_MODULE_INIT_OK;
   }
   FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
-  return HDL_HW_DEINIT_OK;
+  return HDL_MODULE_DEINIT_OK;
 }
 
-hdl_init_state_t hdl_nvic(void *desc, uint8_t enable) {
+hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
   if(enable) {
     hdl_nvic_t *nvic = (hdl_nvic_t *)desc;
     /* NVIC_SetPriorityGrouping   not available for Cortex-M23 */
@@ -258,9 +258,9 @@ hdl_init_state_t hdl_nvic(void *desc, uint8_t enable) {
 
     __ic = (hdl_nvic_private_t *)desc;
     /* TODO: fing wokaround to save context for interrupt vector */
-    return HDL_HW_INIT_OK;
+    return HDL_MODULE_INIT_OK;
   }
-  return HDL_HW_DEINIT_OK;
+  return HDL_MODULE_DEINIT_OK;
 }
 
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *interrupt, event_handler_t handler, void *context) {

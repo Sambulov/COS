@@ -28,7 +28,7 @@ typedef struct {
 } bldl_som_power_state_hw_t;
 
 typedef struct {
-  const bldl_som_power_state_hw_t *hw;
+  const bldl_som_power_state_hw_t *module;
   bldl_som_state_t current_state;
 } bldl_som_power_state_t;
 

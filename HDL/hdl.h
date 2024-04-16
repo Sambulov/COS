@@ -21,16 +21,10 @@ extern "C" {
                                         ((x >> 8 ) & 1) + ((x >> 9 ) & 1) + ((x >> 10) & 1) + ((x >> 11) & 1) + \
                                         ((x >> 12) & 1) + ((x >> 13) & 1) + ((x >> 14) & 1) + ((x >> 15) & 1)
 
-typedef enum {
-  HDL_OK = 0,
-  
-
-} hdl_errno_t;
 
 #include "hdl_portable.h"
 #include "hdl_i2c.h"
 #include "hdl_button.h"
-#include "hdl_sw_wdt.h"
 
 #include "RK809.h"
 #include "atb_uio.h"

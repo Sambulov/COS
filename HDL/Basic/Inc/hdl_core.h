@@ -12,19 +12,24 @@ typedef struct{
   //event_handler_t systick_handler;
 } hdl_core_t;
 
-#define HDL_NVIC_PRV_SIZE            512
-
-typedef struct {
-  hdl_module_t module;
-  uint32_t prio_bits;
-  uint8_t __private[HDL_NVIC_PRV_SIZE];
-} hdl_nvic_t;
+//#define HDL_NVIC_PRV_SIZE            512
+#define HDL_INTERRUPT_PRV_SIZE       9
 
 typedef struct {
   IRQn_Type irq_type;
   uint8_t priority_group;
   uint8_t priority;
+  uint8_t __private[HDL_INTERRUPT_PRV_SIZE];
 } hdl_nvic_interrupt_t;
+
+#define hdl_interrupts(...) ((hdl_nvic_interrupt_t *[]){__VA_ARGS__, NULL})
+
+typedef struct {
+  hdl_module_t module;
+  uint32_t prio_bits;
+  hdl_nvic_interrupt_t **interrupts;
+//  uint8_t __private[HDL_NVIC_PRV_SIZE];
+} hdl_nvic_t;
 
 hdl_module_state_t hdl_core(void *desc, uint8_t enable);
 hdl_module_state_t hdl_nvic(void *desc, uint8_t enable);

@@ -27,17 +27,18 @@
     /* TODO: ... */
   };
 
-  hdl_nvic_t mod_nvic = {
-    .module.init = &hdl_nvic,
-    .module.dependencies = hdl_hw_dependencies(&mod_sys_core.module),
-    .module.reg = NVIC,
-    .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  };
-
   hdl_nvic_interrupt_t mod_systick_irq = {
     .irq_type = SysTick_IRQn,
     .priority = 0,
     .priority_group = 0,
+  };
+
+  hdl_nvic_t mod_nvic = {
+    .module.init = &hdl_nvic,
+    .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
+    .module.reg = NVIC,
+    .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
+    .interrupts = hdl_interrupts(&mod_systick_irq)
   };
 
   /**************************************************************
@@ -87,7 +88,7 @@
    *************************************************************/
   hdl_clock_prescaler_t mod_clock_pll_prescaler = {
     .module.init = &hdl_clock_pll_prescaler,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_hxtal.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_hxtal.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_HXTAL_2_PLLSEL_PREDIV,
   };
@@ -98,7 +99,7 @@
   hdl_clock_prescaler_t mod_clock_pll_selector = {
     .module.init = &hdl_clock_selector_pll,
     /* If source IRC8M before oscillator there is prescaler 2, this logic realized inside driver */
-    .module.dependencies = hdl_hw_dependencies(&HDL_PLL_MUL_CLOCK.module),
+    .module.dependencies = hdl_module_dependencies(&HDL_PLL_MUL_CLOCK.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = 1,
   };
@@ -108,7 +109,7 @@
    *************************************************************/
   hdl_clock_prescaler_t mod_clock_pll_mul = {
     .module.init = &hdl_clock_pll_mul,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_pll_selector.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_pll_selector.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_PLLMUL,
   };
@@ -118,7 +119,7 @@
    **************************************************************/
   hdl_clock_prescaler_t mod_clock_system_clock_source = {
     .module.init = &hdl_clock_system,
-    .module.dependencies = hdl_hw_dependencies(&mod_sys_core.module, &HDL_SYS_CLOCK.module),
+    .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &HDL_SYS_CLOCK.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = 1,
   };
@@ -128,7 +129,7 @@
    *************************************************************/
   hdl_clock_prescaler_t mod_clock_selector_rtc = {
     .module.init = &hdl_clock_selector_rtc,
-    .module.dependencies = hdl_hw_dependencies(&HDL_RTC_CLOCK.module),
+    .module.dependencies = hdl_module_dependencies(&HDL_RTC_CLOCK.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = 1,
   };
@@ -138,7 +139,7 @@
    *************************************************************/
   hdl_clock_prescaler_t mod_clock_ahb = {
     .module.init = &hdl_clock_ahb,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_system_clock_source.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_system_clock_source.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_AHB_PREDIV,
   };
@@ -147,7 +148,7 @@
    *************************************************************/
   hdl_clock_prescaler_t mod_clock_apb1 = {
     .module.init = &hdl_clock_apb1,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_ahb.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_APB1_PREDIV,
   };
@@ -156,21 +157,21 @@
    *************************************************************/
   hdl_clock_prescaler_t mod_clock_apb2 = {
     .module.init = &hdl_clock_apb2,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_ahb.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_APB2_PREDIV,
   };
 
   hdl_clock_prescaler_t mod_clock_timer0 = {
     .module.init = NULL,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_ahb.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = 72,
   };
 
   hdl_clock_counter_t mod_timer0_counter = {
     .module.init = &hdl_clock_counter,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_timer0.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_timer0.module),
     .module.reg = (void *)TIMER0,
     .diction = HDL_UP_COUNTER,
     .counter_reload = 1000 - 1
@@ -178,7 +179,7 @@
 
   hdl_clock_counter_t mod_systick_counter = {
     .module.init = &hdl_clock_counter,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_ahb.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)SysTick,
     .diction = HDL_DOWN_COUNTER,
     .counter_reload = 72000 - 1
@@ -186,7 +187,7 @@
 
   hdl_sys_timer_t mod_sys_timer_ms = {
     .module.init = hdl_sys_timer,
-    .module.dependencies = hdl_hw_dependencies(&mod_systick_counter.module, &mod_nvic.module),
+    .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
     .reload_iterrupt = &mod_systick_irq,
     .val = 0
@@ -194,25 +195,25 @@
 
   hdl_gpio_port_t hdl_gpio_port_a = {
     .init = &hdl_gpio_port,
-    .dependencies = hdl_hw_dependencies(&mod_clock_ahb.module),
+    .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .reg = (void *)GPIOA,
   };
 
   hdl_gpio_port_t hdl_gpio_port_b = {
     .init = &hdl_gpio_port,
-    .dependencies = hdl_hw_dependencies(&mod_clock_ahb.module),
+    .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .reg = (void *)GPIOB,
   };
 
   hdl_gpio_port_t hdl_gpio_port_c = {
     .init = &hdl_gpio_port,
-    .dependencies = hdl_hw_dependencies(&mod_clock_ahb.module),
+    .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .reg = (void *)GPIOC,
   };
 
   hdl_gpio_port_t hdl_gpio_port_f = {
     .init = &hdl_gpio_port,
-    .dependencies = hdl_hw_dependencies(&mod_clock_ahb.module),
+    .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .reg = (void *)GPIOF,
   };
 
@@ -267,7 +268,7 @@
 
   hdl_gpio_pin_t mod_gpi_carrier_wdt_time_out = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_8,
     .mode = &mod_gpio_output_pp_mode
   };
@@ -286,28 +287,28 @@
 
   hdl_gpio_pin_t mod_gpo_emmc_lock = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_0,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_qspi_lock = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_1,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_sd_lock = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_2,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_force_recovery = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_13,
     #if defined(DEBUG)
     .mode = &mod_gpio_alternate_swd_mode
@@ -318,98 +319,98 @@
 
   hdl_gpio_pin_t mod_gpi_carrier_boot_sel0 = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_4,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_boot_sel1 = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_5,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_boot_sel2 = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_6,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_power_good = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_0,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_reset_in = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_7,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpo_carrier_reset_out = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_8,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_carrier_pwr_on = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_1,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_carrier_stby = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_3,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_power_btn = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_4,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpo_pmic_soc_rst = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_3,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_pmic_power_on = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_b),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_5,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpio_soc_scl = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_9,
     .mode = &mod_gpio_i2c_mode
   };
 
   hdl_gpio_pin_t mod_gpio_soc_sda = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_hw_dependencies(&hdl_gpio_port_a),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
     .pin = GPIO_PIN_10,
     .mode = &mod_gpio_i2c_mode
   };
 
   hdl_i2c_hw_t mod_i2c_0 = {
     .module.init = &hdl_i2c,
-    .module.dependencies = hdl_hw_dependencies(&mod_clock_apb1.module, &mod_gpio_soc_scl.module, &mod_gpio_soc_sda.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module, &mod_gpio_soc_scl.module, &mod_gpio_soc_sda.module),
     //.clock = (hdl_clock_t *)&,
     //.rx_dma_ch = &mod_i2c_rx_dma
     //.tx_dma_ch = &mod_i2c_tx_dma

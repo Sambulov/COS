@@ -1,13 +1,22 @@
 #include "hdl_portable.h"
 
 typedef struct {
+  IRQn_Type irq_type;
+  uint8_t priority_group;
+  uint8_t priority;
+  void *handler_context;
+  event_handler_t handler;
+} hdl_nvic_interrupt_private_t;
+
+typedef struct {
   hdl_module_t module;
   uint32_t prio_bits;
-  void *int_context[64];
-  event_handler_t int_handlers[64];
+  hdl_nvic_interrupt_private_t **interrupts;
+//  void *int_context[64];
+//  event_handler_t int_handlers[64];
 } hdl_nvic_private_t;
 
-_Static_assert(sizeof(hdl_nvic_private_t) == sizeof(hdl_nvic_t), "In hdl_core.h data structure size of hdl_nvic_t doesn't match, check HDL_NVIC_PRV_SIZE");
+_Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_nvic_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
 
 extern void *_estack;
 extern void *_sidata, *_sdata, *_edata;
@@ -166,26 +175,29 @@ __attribute__((naked, noreturn)) void Reset_Handler() {
   for (;;) ;
 }
 
-/* TODO: test with __attribute__ ((naked)) */
-void exception_handler(uint8_t exception, uint32_t event) {
-  event_handler_t handler = __ic->int_handlers[exception];
-  if(handler!=NULL) {
-    handler(event, __ic, __ic->int_context[exception]);
-    return;
+static void _call_isr_handler(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs, uint32_t event) {
+  if(isrs != NULL) {
+    while (*isrs != NULL) {
+      if((*isrs)->irq_type == irq) {
+        (*isrs)->handler(event, __ic, (*isrs)->handler_context);
+        return;
+      }
+      isrs++;
+    }
   }
-	//If you get stuck here, your code is missing a handler for some interrupt.
+  //If you get stuck here, your code is missing a handler for some interrupt.
 	asm("bkpt 255");
   for(;;) ;
 }
 
 /* TODO: test with __attribute__ ((naked)) */
 void nmi_handler() {
-  exception_handler(NMI_HANDLER_OFFSET, 0);
+  _call_isr_handler(NonMaskableInt_IRQn, __ic->interrupts, 0);
 }
 
 /* TODO: test with __attribute__ ((naked)) */
 void hard_fault_handler() {
-  exception_handler(HARD_FAULT_HANDLER_OFFSET, 0);
+  _call_isr_handler(HardFault_IRQn, __ic->interrupts, 0);
 }
 
 /* TODO: check sv call, exapmple call: asm("SVC #6"); */
@@ -207,36 +219,27 @@ static void svc_handler_main(uint32_t *sp) {
   /* go back 2 bytes (16-bit opcode) */
   instruction -= 2;
   /* get the opcode, in little endian */
-  exception_handler(SVC_HANDLER_OFFSET, (uint8_t)*instruction);
+  _call_isr_handler(SVCall_IRQn, __ic->interrupts, (uint8_t)*instruction);
 }
 
 /* TODO: test with __attribute__ ((naked)) */
 void pend_sv_handler() {
-  exception_handler(PEND_SV_HANDLER_OFFSET, 0);
+  _call_isr_handler(PendSV_IRQn, __ic->interrupts, 0);
 }
 
 /* TODO: test with __attribute__ ((naked)) */
 void systick_handler() {
-  exception_handler(SYSTICK_HANDLER_OFFSET, 0);
+  _call_isr_handler(SysTick_IRQn, __ic->interrupts, 0);
 }
 
 void irq_n_handler() {
-  uint32_t ind = 0;
   for(uint32_t i = 0; i< sizeof(NVIC->IABR); i++) {
     if(NVIC->IABR[i]) {
-      ind = (32 * i) + (31 - __CLZ(NVIC->IABR[i]));
-      /* TODO: check if it is the only bit in IABR */
-      event_handler_t handler = __ic->int_handlers[IRQ_N_HANDLERS_OFFSET+ind];
-      if(handler!=NULL) {
-        handler(0, __ic, __ic->int_context[IRQ_N_HANDLERS_OFFSET+ind]);
-        return;
-      }
+      uint32_t ind = (32 * i) + (31 - __CLZ(NVIC->IABR[i]));
+      _call_isr_handler(ind, __ic->interrupts, 0);
       break;
     }
   }
-	//If you get stuck here, your code is missing a handler for some interrupt.
-	asm("bkpt 255");
-  for(;;) ;
 }
 
 hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
@@ -265,6 +268,10 @@ hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
 
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *interrupt, event_handler_t handler, void *context) {
   if((ic != NULL) && (interrupt != NULL) && (handler != NULL)) {
+    hdl_nvic_interrupt_private_t *isr = (hdl_nvic_interrupt_private_t *)interrupt;
+    isr->handler = handler;
+    isr->handler_context = context;
+
     uint32_t prio = ((interrupt->priority_group << (8U - ic->prio_bits)) | 
                     (interrupt->priority & (0xFF >> ic->prio_bits)) & 
                     0xFFUL);
@@ -277,28 +284,18 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *i
     if(interrupt->irq_type < 0) {
       switch (interrupt->irq_type) {
         case SysTick_IRQn:
-          __ic->int_handlers[SYSTICK_HANDLER_OFFSET] = handler;
-          __ic->int_context[SYSTICK_HANDLER_OFFSET] = context;
           SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;                  /* Enable SysTick IRQ */
           break;
         case PendSV_IRQn:
-          __ic->int_handlers[PEND_SV_HANDLER_OFFSET] = handler;
-          __ic->int_context[PEND_SV_HANDLER_OFFSET] = context;
           // TODO: enable if possible, ;
           break;
         case SVCall_IRQn:
-          __ic->int_handlers[SVC_HANDLER_OFFSET] = handler;
-          __ic->int_context[SVC_HANDLER_OFFSET] = context;
           // TODO: enable if possible, ;
           break;
         case HardFault_IRQn:
-          __ic->int_handlers[HARD_FAULT_HANDLER_OFFSET] = handler;
-          __ic->int_context[HARD_FAULT_HANDLER_OFFSET] = context;
           // TODO: enable if possible, ;
           break;
         case NonMaskableInt_IRQn:
-          __ic->int_handlers[NMI_HANDLER_OFFSET] = handler;
-          __ic->int_context[NMI_HANDLER_OFFSET] = context;
           // TODO: enable if possible, ;
           break;
         default:
@@ -306,9 +303,6 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *i
       }
     }
     else {
-      uint32_t handler_offset = IRQ_N_HANDLERS_OFFSET + interrupt->irq_type;
-      __ic->int_handlers[handler_offset] = handler;
-      __ic->int_context[handler_offset] = context;
       NVIC_EnableIRQ(interrupt->irq_type);
     }
     return HDL_TRUE;

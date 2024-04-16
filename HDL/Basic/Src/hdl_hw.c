@@ -21,13 +21,17 @@ static uint8_t _hdl_hw_work(CoroutineDesc_t this, uint8_t cancel, void *arg) {
   hdl_init_state_t res;
   hdl_hardware_private_t *dev = linked_list_get_object(hdl_hardware_private_t, dev_deinit_queue);
   if(dev != NULL) {
-    res = dev->init(dev, HDL_FALSE);
+    res = HDL_HW_DEINIT_OK;
+    if(dev->init != NULL)
+      res = dev->init(dev, HDL_FALSE);
     if(res == HDL_HW_DEINIT_OK)
       linked_list_unlink(linked_list_item(dev));
   }
   dev = linked_list_get_object(hdl_hardware_private_t, dev_init_queue);
   if(dev != NULL) {
-    res = dev->init(dev, HDL_TRUE);
+    res = HDL_HW_INIT_OK;
+    if(dev->init != NULL)
+      res = dev->init(dev, HDL_TRUE);
     switch (res) {
       case HDL_HW_INIT_OK:
         linked_list_insert_last(&dev_list, linked_list_item(dev));

@@ -4,6 +4,7 @@
   extern hdl_sys_t dts_sys_cnf;
 
   extern hdl_sys_timer_t dts_sys_timer_ms;
+  extern hdl_clock_counter_t dts_timer0_counter;
 
   // extern const hdl_gpio_pin_t dts_gpi_pmic_sleep_1v8;
   // extern const hdl_gpio_pin_t dts_gpi_carrier_lid;

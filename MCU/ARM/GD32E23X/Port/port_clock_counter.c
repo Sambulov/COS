@@ -11,6 +11,20 @@ hdl_init_state_t hdl_clock_counter(void *desc, const uint8_t enable) {
                      SysTick_CTRL_ENABLE_Msk;                         /* Enable SysTick Timer */
     return HDL_HW_INIT_OK;
   }
+  else if((uint32_t)counter->hw.periph == (uint32_t)TIMER0){
+    hdl_clock_prescaler_t *clock_prescaler = (hdl_clock_prescaler_t *)counter->hw.dependencies[0];
+    timer_parameter_struct config;
+    config.prescaler = clock_prescaler->muldiv_factor;
+    config.alignedmode = TIMER_COUNTER_EDGE;
+    config.counterdirection = (counter->diction == HDL_UP_COUNTER) ? TIMER_COUNTER_UP : TIMER_COUNTER_DOWN;
+    config.period = counter->counter_reload;
+    config.clockdivision = TIMER_CKDIV_DIV1;
+    config.repetitioncounter = 0;
+    rcu_periph_clock_enable(RCU_TIMER0);
+    timer_init(TIMER0, &config);
+    timer_enable(TIMER0);
+    return HDL_HW_INIT_OK;
+  }
   return HDL_HW_INIT_FAILED;
   /* TODO init timers */
 }

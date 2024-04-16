@@ -49,7 +49,7 @@ hdl_init_state_t hdl_gd_clock_system_source(void *desc, uint8_t enable){
   if (hdl_prescaler->hw.periph == NULL || hdl_prescaler->hw.dependencies == NULL || hdl_prescaler->hw.dependencies[0] == NULL)
     return HDL_HW_INIT_FAILED;
   /* Try casting hdl_prescaler.hw.dependencies to hdl_clock_t */
-  hdl_clock_t *hdl_clock = (hdl_clock_t *)hdl_prescaler->hw.dependencies[0];
+  hdl_clock_t *hdl_clock = (hdl_clock_t *)hdl_prescaler->hw.dependencies[1];
   if (enable){
     if(hdl_clock->hw.init == &hdl_gd_clock_pll_multiply_coefficient) {
       /* Turn on pll_ck */

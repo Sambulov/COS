@@ -153,15 +153,16 @@ void main() {
 
   //dts_sys_timer_ms.val
   hdl_hw_enable(&dts_sys_timer_ms.hw);
-
+  hdl_hw_enable(&dts_timer0_counter.hw);
   while(1) {
     static uint32_t time_stamp_ms = 0;
+    uint32_t cnt = TIMER_CNT(TIMER0);
     cooperative_scheduler(false);
     if(hdl_hw_state(&dts_gpo_carrier_pwr_on.hw) == HDL_HW_INIT_OK)
     {
       if(hdl_hw_state(&dts_sys_timer_ms.hw) == HDL_HW_INIT_OK)
       {
-        if(TIME_ELAPSED(time_stamp_ms, 1, millis(&dts_sys_timer_ms)))
+        if(TIME_ELAPSED(time_stamp_ms, 1000, millis(&dts_sys_timer_ms)))
         {
           time_stamp_ms = millis(&dts_sys_timer_ms);
           hdl_gpio_toggle(&dts_gpo_carrier_pwr_on);

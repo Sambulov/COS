@@ -32,7 +32,7 @@
   hdl_core_t dts_sys_core = {
     .hw.init = &hdl_core,
     .hw.dependencies = NULL,
-    .hw.periph = SCB,
+    .hw.periph = SCB_BASE,
     .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
     /* TODO: ... */
   };
@@ -183,12 +183,27 @@
     .muldiv_factor = HDL_GD_APB2_PREDIV,
   };
 
+  hdl_clock_prescaler_t dts_clock_timer0 = {
+    .hw.init = NULL,
+    .hw.dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
+    .hw.periph = (void *)RCU,
+    .muldiv_factor = 72,
+  };
+
+  hdl_clock_counter_t dts_timer0_counter = {
+    .hw.init = &hdl_clock_counter,
+    .hw.dependencies = hdl_hw_dependencies(&dts_clock_timer0.hw),
+    .hw.periph = (void *)TIMER0,
+    .diction = HDL_UP_COUNTER,
+    .counter_reload = 1000 - 1
+  };
+
   hdl_clock_counter_t dts_systick_counter = {
     .hw.init = &hdl_clock_counter,
     .hw.dependencies = hdl_hw_dependencies(&dts_clock_ahb.hw),
     .hw.periph = (void *)SysTick,
     .diction = HDL_DOWN_COUNTER,
-    .counter_reload = 72000
+    .counter_reload = 72000 - 1
   };
 
   hdl_sys_timer_t dts_sys_timer_ms = {

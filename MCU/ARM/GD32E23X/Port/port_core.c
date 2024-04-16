@@ -242,8 +242,11 @@ void irq_n_handler() {
 hdl_init_state_t hdl_core(void *desc, uint8_t enable) {
   /* TODO: */
   if(enable) {
+    hdl_core_t *core = (hdl_core_t *)desc;
+    FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->flash_latency;
     return HDL_HW_INIT_OK;
   }
+  FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
   return HDL_HW_DEINIT_OK;
 }
 

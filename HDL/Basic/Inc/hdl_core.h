@@ -4,7 +4,7 @@
 
 typedef struct{
   hdl_hardware_t hw;
-  uint32_t flash_lantency;
+  uint32_t flash_latency;
   //event_handler_t nmi_handler;
   //event_handler_t hard_fault_handler;
   //event_handler_t sv_call_handler;

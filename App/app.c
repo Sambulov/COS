@@ -8,6 +8,10 @@
 #include "app.h"
 #include "CodeLib.h"
 
+extern hdl_nvic_t mod_nvic;
+extern hdl_nvic_interrupt_t mod_exti_1_irq;
+extern hdl_nvic_interrupt_t mod_exti_irq;
+
 static void power_btn_handler(uint32_t event, void *sender, void *context) {
   // hdl_button_t *btn = (hdl_button_t *)sender;
   // bldl_som_power_state_t *som_state = (bldl_som_power_state_t *)context;
@@ -106,9 +110,33 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 
 // }
 
+
+void event_exti_isr(uint32_t event, void *sender, void *context) {
+  __NOP();
+  NVIC_SetPendingIRQ(EXTI2_3_IRQn);
+  while (1)
+  {
+    __NOP();
+  }
+  
+}
+
+void event_exti_1_isr(uint32_t event, void *sender, void *context) {
+  __NOP();
+  while (1)
+  {
+    __NOP();
+  }
+}
+
+
+
 void main() {
 
+  hdl_enable(&mod_nvic.module);
+
   
+
   // static bldl_som_power_state_t som_state = {
   //    .module = &mod_som_state_ctrl
   // };
@@ -154,10 +182,22 @@ void main() {
   //mod_sys_timer_ms.val
   hdl_enable(&mod_sys_timer_ms.module);
   hdl_enable(&mod_timer0_counter.module);
+
+  //syscfg_exti_line_config(EXTI_SOURCE_GPIOA, EXTI_SOURCE_PIN0);
+  //exti_init(EXTI_0, EXTI_INTERRUPT, EXTI_TRIG_RISING);
+  
+  
   while(1) {
     static uint32_t time_stamp_ms = 0;
     uint32_t cnt = TIMER_CNT(TIMER0);
     cooperative_scheduler(false);
+
+    if(hdl_state(&mod_nvic.module) == HDL_MODULE_INIT_OK){
+        hdl_interrupt_request(&mod_nvic, &mod_exti_irq, &event_exti_isr, NULL);
+        hdl_interrupt_request(&mod_nvic, &mod_exti_1_irq, &event_exti_1_isr, NULL);
+        NVIC_SetPendingIRQ(EXTI0_1_IRQn);
+    }
+
     if(hdl_state(&mod_gpo_carrier_pwr_on.module) == HDL_MODULE_INIT_OK)
     {
       if(hdl_state(&mod_sys_timer_ms.module) == HDL_MODULE_INIT_OK)

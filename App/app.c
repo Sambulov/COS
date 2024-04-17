@@ -11,6 +11,7 @@
 extern hdl_nvic_t mod_nvic;
 extern hdl_nvic_interrupt_t mod_exti_0_1_irq;
 extern hdl_nvic_interrupt_t mod_exti_2_3_irq;
+extern hdl_nvic_interrupt_t mod_unexisting_8_irq;
 
 static void power_btn_handler(uint32_t event, void *sender, void *context) {
   // hdl_button_t *btn = (hdl_button_t *)sender;
@@ -128,6 +129,16 @@ void event_exti_0_1_isr(uint32_t event, void *sender, void *context) {
   }
 }
 
+void event_unexisting_8_isr(uint32_t event, void *sender, void *context) {
+  __NOP();
+  NVIC_SetPendingIRQ(EXTI0_1_IRQn);
+  while (1)
+  {
+    __NOP();
+  }
+}
+
+
 
 
 void main() {
@@ -194,7 +205,9 @@ void main() {
     if(hdl_state(&mod_nvic.module) == HDL_MODULE_INIT_OK){
         hdl_interrupt_request(&mod_nvic, &mod_exti_2_3_irq, &event_exti_2_3_isr, NULL);
         hdl_interrupt_request(&mod_nvic, &mod_exti_0_1_irq, &event_exti_0_1_isr, NULL);
-        NVIC_SetPendingIRQ(EXTI2_3_IRQn);
+        hdl_interrupt_request(&mod_nvic, &mod_unexisting_8_irq, &event_unexisting_8_isr, NULL);
+        
+        NVIC_SetPendingIRQ(8);
     }
 
     if(hdl_state(&mod_gpo_carrier_pwr_on.module) == HDL_MODULE_INIT_OK)

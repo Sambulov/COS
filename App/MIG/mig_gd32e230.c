@@ -45,12 +45,18 @@
     .priority_group = 2,
   };
 
+  hdl_nvic_interrupt_t mod_unexisting_8_irq = {
+    .irq_type = 8,
+    .priority = 0,
+    .priority_group = 2,
+  };
+
   hdl_nvic_t mod_nvic = {
     .module.init = &hdl_nvic,
     //.module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-    .interrupts = hdl_interrupts(&mod_systick_irq, &mod_exti_0_1_irq, &mod_exti_2_3_irq)
+    .interrupts = hdl_interrupts(&mod_systick_irq, &mod_exti_0_1_irq, &mod_exti_2_3_irq, &mod_unexisting_8_irq)
   };
 
   /**************************************************************

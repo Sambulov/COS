@@ -25,49 +25,58 @@ void __libc_init_array();
 void main();
 hdl_nvic_private_t *__ic = NULL;
 
+static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs, uint32_t event) {
+  if(isrs != NULL) {
+    while (*isrs != NULL) {
+      if((*isrs)->irq_type == irq) {
+        (*isrs)->handler(event, __ic, (*isrs)->handler_context);
+        return;
+      }
+      isrs++;
+    }
+  }
+  //If you get stuck here, your code is missing a handler for some interrupt.
+	asm("bkpt 255");
+  for(;;) ;
+}
 
+/* TODO: test with __attribute__ ((naked)) */
 void Reset_Handler();
 void irq_n_handler();
-void nmi_handler();
-void hard_fault_handler();
+void nmi_handler()                      { _call_isr(NonMaskableInt_IRQn, __ic->interrupts, 0); }
+void hard_fault_handler()               { _call_isr(HardFault_IRQn, __ic->interrupts, 0); }
 void svc_handler();
-void pend_sv_handler();
-void systick_handler();
-void WWDGT_IRQHandler()                   __attribute__ ((alias ("irq_n_handler")));
-void LVD_IRQHandler()                     __attribute__ ((alias ("irq_n_handler")));
-void RTC_IRQHandler()                     __attribute__ ((alias ("irq_n_handler")));
-void FMC_IRQHandler()                     __attribute__ ((alias ("irq_n_handler")));
-void RCU_IRQHandler()                     __attribute__ ((alias ("irq_n_handler")));
-void EXTI0_1_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void EXTI2_3_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void EXTI4_15_IRQHandler()                __attribute__ ((alias ("irq_n_handler")));
-void DMA_Channel0_IRQHandler()            __attribute__ ((alias ("irq_n_handler")));
-void DMA_Channel1_2_IRQHandler()          __attribute__ ((alias ("irq_n_handler")));
-void DMA_Channel3_4_IRQHandler()          __attribute__ ((alias ("irq_n_handler")));
-void ADC_CMP_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void TIMER0_BRK_UP_TRG_COM_IRQHandler()   __attribute__ ((alias ("irq_n_handler")));
-void TIMER0_Channel_IRQHandler()          __attribute__ ((alias ("irq_n_handler")));
-void TIMER2_IRQHandler()                  __attribute__ ((alias ("irq_n_handler")));
-void TIMER5_IRQHandler()                  __attribute__ ((alias ("irq_n_handler")));
-void TIMER13_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void TIMER14_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void TIMER15_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void TIMER16_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void I2C0_EV_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void I2C1_EV_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void SPI0_IRQHandler()                    __attribute__ ((alias ("irq_n_handler")));
-void SPI1_IRQHandler()                    __attribute__ ((alias ("irq_n_handler")));
-void USART0_IRQHandler()                  __attribute__ ((alias ("irq_n_handler")));
-void USART1_IRQHandler()                  __attribute__ ((alias ("irq_n_handler")));
-void I2C0_ER_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
-void I2C1_ER_IRQHandler()                 __attribute__ ((alias ("irq_n_handler")));
+void pend_sv_handler()                  { _call_isr(PendSV_IRQn, __ic->interrupts, 0); }
+void systick_handler()                  { _call_isr(SysTick_IRQn, __ic->interrupts, 0); }
 
-#define NMI_HANDLER_OFFSET                0
-#define HARD_FAULT_HANDLER_OFFSET         1
-#define SVC_HANDLER_OFFSET                2
-#define PEND_SV_HANDLER_OFFSET            3
-#define SYSTICK_HANDLER_OFFSET            4
-#define IRQ_N_HANDLERS_OFFSET             5
+void WWDGT_IRQHandler()                 { _call_isr(WWDGT_IRQn, __ic->interrupts, 0); }
+void LVD_IRQHandler()                   { _call_isr(LVD_IRQn, __ic->interrupts, 0); }
+void RTC_IRQHandler()                   { _call_isr(RTC_IRQn, __ic->interrupts, 0); }
+void FMC_IRQHandler()                   { _call_isr(FMC_IRQn, __ic->interrupts, 0); }
+void RCU_IRQHandler()                   { _call_isr(RCU_IRQn, __ic->interrupts, 0); }
+void EXTI0_1_IRQHandler()               { _call_isr(EXTI0_1_IRQn, __ic->interrupts, 0); }
+void EXTI2_3_IRQHandler()               { _call_isr(EXTI2_3_IRQn, __ic->interrupts, 0); }
+void EXTI4_15_IRQHandler()              { _call_isr(EXTI4_15_IRQn, __ic->interrupts, 0); }
+void DMA_Channel0_IRQHandler()          { _call_isr(DMA_Channel0_IRQn, __ic->interrupts, 0); }
+void DMA_Channel1_2_IRQHandler()        { _call_isr(DMA_Channel1_2_IRQn, __ic->interrupts, 0); }
+void DMA_Channel3_4_IRQHandler()        { _call_isr(DMA_Channel3_4_IRQn, __ic->interrupts, 0); }
+void ADC_CMP_IRQHandler()               { _call_isr(ADC_CMP_IRQn, __ic->interrupts, 0); }
+void TIMER0_BRK_UP_TRG_COM_IRQHandler() { _call_isr(TIMER0_BRK_UP_TRG_COM_IRQn, __ic->interrupts, 0); }
+void TIMER0_Channel_IRQHandler()        { _call_isr(TIMER0_Channel_IRQn, __ic->interrupts, 0); }
+void TIMER2_IRQHandler()                { _call_isr(TIMER2_IRQn, __ic->interrupts, 0); }
+void TIMER5_IRQHandler()                { _call_isr(TIMER5_IRQn, __ic->interrupts, 0); }
+void TIMER13_IRQHandler()               { _call_isr(TIMER13_IRQn, __ic->interrupts, 0); }
+void TIMER14_IRQHandler()               { _call_isr(TIMER14_IRQn, __ic->interrupts, 0); }
+void TIMER15_IRQHandler()               { _call_isr(TIMER15_IRQn, __ic->interrupts, 0); }
+void TIMER16_IRQHandler()               { _call_isr(TIMER16_IRQn, __ic->interrupts, 0); }
+void I2C0_EV_IRQHandler()               { _call_isr(I2C0_EV_IRQn, __ic->interrupts, 0); }
+void I2C1_EV_IRQHandler()               { _call_isr(I2C1_EV_IRQn, __ic->interrupts, 0); }
+void SPI0_IRQHandler()                  { _call_isr(SPI0_IRQn, __ic->interrupts, 0); }
+void SPI1_IRQHandler()                  { _call_isr(SPI1_IRQn, __ic->interrupts, 0); }
+void USART0_IRQHandler()                { _call_isr(USART0_IRQn, __ic->interrupts, 0); }
+void USART1_IRQHandler()                { _call_isr(USART1_IRQn, __ic->interrupts, 0); }
+void I2C0_ER_IRQHandler()               { _call_isr(I2C0_ER_IRQn, __ic->interrupts, 0); }
+void I2C1_ER_IRQHandler()               { _call_isr(I2C1_ER_IRQn, __ic->interrupts, 0); }
 
 void * g_pfnVectors[0x40] __attribute__ ((section (".isr_vector"), used)) = {
   &_estack,
@@ -86,55 +95,54 @@ void * g_pfnVectors[0x40] __attribute__ ((section (".isr_vector"), used)) = {
   ((void *)0),
   &pend_sv_handler,
   &systick_handler,
-  
-  &WWDGT_IRQHandler,
-  &LVD_IRQHandler,
-  &RTC_IRQHandler,
-  &FMC_IRQHandler,
-  &RCU_IRQHandler,
-  &EXTI0_1_IRQHandler,
-  &EXTI2_3_IRQHandler,
-  &EXTI4_15_IRQHandler,
-  ((void *)0),
-  &DMA_Channel0_IRQHandler,
-  &DMA_Channel1_2_IRQHandler,
-  &DMA_Channel3_4_IRQHandler,
-  &ADC_CMP_IRQHandler,
-  &TIMER0_BRK_UP_TRG_COM_IRQHandler,
-  &TIMER0_Channel_IRQHandler,
-  ((void *)0),
-  &TIMER2_IRQHandler,
-  &TIMER5_IRQHandler,
-  ((void *)0),
-  &TIMER13_IRQHandler,
-  &TIMER14_IRQHandler,
-  &TIMER15_IRQHandler,
-  &TIMER16_IRQHandler,
-  &I2C0_EV_IRQHandler,
-  &I2C1_EV_IRQHandler,
-  &SPI0_IRQHandler,
-  &SPI1_IRQHandler,
-  &USART0_IRQHandler,
-  &USART1_IRQHandler,
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  &I2C0_ER_IRQHandler,
-  ((void *)0),
-  &I2C1_ER_IRQHandler,
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
+  &WWDGT_IRQHandler,                    /* IRQ0 */ 
+  &LVD_IRQHandler,                      /* IRQ1 */
+  &RTC_IRQHandler,                      /* IRQ2 */
+  &FMC_IRQHandler,                      /* IRQ3 */
+  &RCU_IRQHandler,                      /* IRQ4 */
+  &EXTI0_1_IRQHandler,                  /* IRQ5 */
+  &EXTI2_3_IRQHandler,                  /* IRQ6 */
+  &EXTI4_15_IRQHandler,                 /* IRQ7 */
+  &irq_n_handler,                       /* IRQ8 */
+  &DMA_Channel0_IRQHandler,             /* IRQ9 */
+  &DMA_Channel1_2_IRQHandler,           /* IRQ10 */
+  &DMA_Channel3_4_IRQHandler,           /* IRQ11 */
+  &ADC_CMP_IRQHandler,                  /* IRQ12 */
+  &TIMER0_BRK_UP_TRG_COM_IRQHandler,    /* IRQ13 */
+  &TIMER0_Channel_IRQHandler,           /* IRQ14 */
+  &irq_n_handler,                       /* IRQ15 */
+  &TIMER2_IRQHandler,                   /* IRQ16 */
+  &TIMER5_IRQHandler,                   /* IRQ17 */
+  &irq_n_handler,                       /* IRQ18 */
+  &TIMER13_IRQHandler,                  /* IRQ19 */
+  &TIMER14_IRQHandler,                  /* IRQ21 */
+  &TIMER15_IRQHandler,                  /* IRQ22 */
+  &TIMER16_IRQHandler,                  /* IRQ23 */
+  &I2C0_EV_IRQHandler,                  /* IRQ24 */
+  &I2C1_EV_IRQHandler,                  /* IRQ25 */
+  &SPI0_IRQHandler,                     /* IRQ26 */
+  &SPI1_IRQHandler,                     /* IRQ27 */
+  &USART0_IRQHandler,                   /* IRQ28 */
+  &USART1_IRQHandler,                   /* IRQ29 */
+  &irq_n_handler,                       /* IRQ30 */
+  &irq_n_handler,                       /* IRQ31 */
+  &irq_n_handler,                       /* IRQ32 */
+  &I2C0_ER_IRQHandler,                  /* IRQ33 */
+  &irq_n_handler,                       /* IRQ34 */
+  &I2C1_ER_IRQHandler,                  /* IRQ35 */
+  &irq_n_handler,                       /* IRQ36 */
+  &irq_n_handler,                       /* IRQ37 */
+  &irq_n_handler,                       /* IRQ38 */
+  &irq_n_handler,                       /* IRQ39 */
+  &irq_n_handler,                       /* IRQ40 */
+  &irq_n_handler,                       /* IRQ41 */
+  &irq_n_handler,                       /* IRQ42 */
+  &irq_n_handler,                       /* IRQ43 */
+  &irq_n_handler,                       /* IRQ44 */
+  &irq_n_handler,                       /* IRQ45 */
+  &irq_n_handler,                       /* IRQ46 */
+  &irq_n_handler,                       /* IRQ47 */
+  &irq_n_handler,                       /* IRQ48 */
 };
 
 // __attribute__((naked)) void switch_to_psp(void) {
@@ -173,31 +181,6 @@ __attribute__((naked, noreturn)) void Reset_Handler() {
   for (;;) ;
 }
 
-static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs, uint32_t event) {
-  if(isrs != NULL) {
-    while (*isrs != NULL) {
-      if((*isrs)->irq_type == irq) {
-        (*isrs)->handler(event, __ic, (*isrs)->handler_context);
-        return;
-      }
-      isrs++;
-    }
-  }
-  //If you get stuck here, your code is missing a handler for some interrupt.
-	asm("bkpt 255");
-  for(;;) ;
-}
-
-/* TODO: test with __attribute__ ((naked)) */
-void nmi_handler() {
-  _call_isr(NonMaskableInt_IRQn, __ic->interrupts, 0);
-}
-
-/* TODO: test with __attribute__ ((naked)) */
-void hard_fault_handler() {
-  _call_isr(HardFault_IRQn, __ic->interrupts, 0);
-}
-
 /* TODO: check sv call, exapmple call: asm("SVC #6"); */
 __attribute__ ((naked)) void svc_handler(void) {
   //asm("TST LR, 4"); // check LR to know which stack is used
@@ -218,16 +201,6 @@ static void svc_handler_main(uint32_t *sp) {
   instruction -= 2;
   /* get the opcode, in little endian */
   _call_isr(SVCall_IRQn, __ic->interrupts, (uint8_t)*instruction);
-}
-
-/* TODO: test with __attribute__ ((naked)) */
-void pend_sv_handler() {
-  _call_isr(PendSV_IRQn, __ic->interrupts, 0);
-}
-
-/* TODO: test with __attribute__ ((naked)) */
-void systick_handler() {
-  _call_isr(SysTick_IRQn, __ic->interrupts, 0);
 }
 
 void irq_n_handler() {

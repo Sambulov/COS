@@ -9,8 +9,8 @@
 #include "CodeLib.h"
 
 extern hdl_nvic_t mod_nvic;
-extern hdl_nvic_interrupt_t mod_exti_1_irq;
-extern hdl_nvic_interrupt_t mod_exti_irq;
+extern hdl_nvic_interrupt_t mod_exti_0_1_irq;
+extern hdl_nvic_interrupt_t mod_exti_2_3_irq;
 
 static void power_btn_handler(uint32_t event, void *sender, void *context) {
   // hdl_button_t *btn = (hdl_button_t *)sender;
@@ -111,17 +111,16 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 // }
 
 
-void event_exti_isr(uint32_t event, void *sender, void *context) {
+void event_exti_2_3_isr(uint32_t event, void *sender, void *context) {
   __NOP();
-  NVIC_SetPendingIRQ(EXTI2_3_IRQn);
+  NVIC_SetPendingIRQ(EXTI0_1_IRQn);
   while (1)
   {
     __NOP();
-  }
-  
+  }  
 }
 
-void event_exti_1_isr(uint32_t event, void *sender, void *context) {
+void event_exti_0_1_isr(uint32_t event, void *sender, void *context) {
   __NOP();
   while (1)
   {
@@ -193,9 +192,9 @@ void main() {
     cooperative_scheduler(false);
 
     if(hdl_state(&mod_nvic.module) == HDL_MODULE_INIT_OK){
-        hdl_interrupt_request(&mod_nvic, &mod_exti_irq, &event_exti_isr, NULL);
-        hdl_interrupt_request(&mod_nvic, &mod_exti_1_irq, &event_exti_1_isr, NULL);
-        NVIC_SetPendingIRQ(EXTI0_1_IRQn);
+        hdl_interrupt_request(&mod_nvic, &mod_exti_2_3_irq, &event_exti_2_3_isr, NULL);
+        hdl_interrupt_request(&mod_nvic, &mod_exti_0_1_irq, &event_exti_0_1_isr, NULL);
+        NVIC_SetPendingIRQ(EXTI2_3_IRQn);
     }
 
     if(hdl_state(&mod_gpo_carrier_pwr_on.module) == HDL_MODULE_INIT_OK)

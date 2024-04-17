@@ -12,8 +12,6 @@ typedef struct {
   hdl_module_t module;
   uint32_t prio_bits;
   hdl_nvic_interrupt_private_t **interrupts;
-//  void *int_context[64];
-//  event_handler_t int_handlers[64];
 } hdl_nvic_private_t;
 
 _Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_nvic_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
@@ -175,7 +173,7 @@ __attribute__((naked, noreturn)) void Reset_Handler() {
   for (;;) ;
 }
 
-static void _call_isr_handler(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs, uint32_t event) {
+static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs, uint32_t event) {
   if(isrs != NULL) {
     while (*isrs != NULL) {
       if((*isrs)->irq_type == irq) {
@@ -192,12 +190,12 @@ static void _call_isr_handler(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs
 
 /* TODO: test with __attribute__ ((naked)) */
 void nmi_handler() {
-  _call_isr_handler(NonMaskableInt_IRQn, __ic->interrupts, 0);
+  _call_isr(NonMaskableInt_IRQn, __ic->interrupts, 0);
 }
 
 /* TODO: test with __attribute__ ((naked)) */
 void hard_fault_handler() {
-  _call_isr_handler(HardFault_IRQn, __ic->interrupts, 0);
+  _call_isr(HardFault_IRQn, __ic->interrupts, 0);
 }
 
 /* TODO: check sv call, exapmple call: asm("SVC #6"); */
@@ -219,27 +217,36 @@ static void svc_handler_main(uint32_t *sp) {
   /* go back 2 bytes (16-bit opcode) */
   instruction -= 2;
   /* get the opcode, in little endian */
-  _call_isr_handler(SVCall_IRQn, __ic->interrupts, (uint8_t)*instruction);
+  _call_isr(SVCall_IRQn, __ic->interrupts, (uint8_t)*instruction);
 }
 
 /* TODO: test with __attribute__ ((naked)) */
 void pend_sv_handler() {
-  _call_isr_handler(PendSV_IRQn, __ic->interrupts, 0);
+  _call_isr(PendSV_IRQn, __ic->interrupts, 0);
 }
 
 /* TODO: test with __attribute__ ((naked)) */
 void systick_handler() {
-  _call_isr_handler(SysTick_IRQn, __ic->interrupts, 0);
+  _call_isr(SysTick_IRQn, __ic->interrupts, 0);
 }
 
 void irq_n_handler() {
+  uint32_t prio = -1;
+  IRQn_Type irq = 0;
   for(uint32_t i = 0; i< sizeof(NVIC->IABR); i++) {
-    if(NVIC->IABR[i]) {
-      uint32_t ind = (32 * i) + (31 - __CLZ(NVIC->IABR[i]));
-      _call_isr_handler(ind, __ic->interrupts, 0);
-      break;
+    uint32_t iabr = NVIC->IABR[i];
+    while(iabr) {
+      uint8_t bit = 31 - __CLZ(iabr);
+      IRQn_Type cur_irq = (32 * i) + bit;
+      uint32_t cur_prio = NVIC_GetPriority(cur_irq);
+      if(cur_prio < prio) {
+        irq = cur_irq;
+        prio = cur_prio;
+      }
+      iabr &= ~(1 << bit);
     }
   }
+  _call_isr(irq, __ic->interrupts, 0);
 }
 
 hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
@@ -267,7 +274,7 @@ hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
 }
 
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *interrupt, event_handler_t handler, void *context) {
-  if((ic != NULL) && (interrupt != NULL) && (handler != NULL)) {
+  if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK) && (interrupt != NULL) && (handler != NULL)) {
     hdl_nvic_interrupt_private_t *isr = (hdl_nvic_interrupt_private_t *)interrupt;
     isr->handler = handler;
     isr->handler_context = context;

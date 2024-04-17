@@ -33,24 +33,24 @@
     .priority_group = 0,
   };
 
-  hdl_nvic_interrupt_t mod_exti_irq = {
+  hdl_nvic_interrupt_t mod_exti_0_1_irq = {
     .irq_type = EXTI0_1_IRQn,
-    .priority = 0,
-    .priority_group = 2,
-  };
-
-  hdl_nvic_interrupt_t mod_exti_1_irq = {
-    .irq_type = EXTI2_3_IRQn,
     .priority = 0,
     .priority_group = 1,
   };
 
+  hdl_nvic_interrupt_t mod_exti_2_3_irq = {
+    .irq_type = EXTI2_3_IRQn,
+    .priority = 0,
+    .priority_group = 2,
+  };
+
   hdl_nvic_t mod_nvic = {
     .module.init = &hdl_nvic,
-    .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
+    //.module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-    .interrupts = hdl_interrupts(&mod_systick_irq, &mod_exti_irq, &mod_exti_1_irq)
+    .interrupts = hdl_interrupts(&mod_systick_irq, &mod_exti_0_1_irq, &mod_exti_2_3_irq)
   };
 
   /**************************************************************

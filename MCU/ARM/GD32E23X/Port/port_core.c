@@ -14,7 +14,23 @@ typedef struct {
   hdl_nvic_interrupt_private_t **interrupts;
 } hdl_nvic_private_t;
 
+typedef struct {
+  hdl_exti_line_t exti_line;
+  uint8_t source_selection;
+  //hdl_exti_mode_t exti_mode;
+  hdl_exti_trig_type_t trigger;
+  void *handler_context;
+  event_handler_t handler;
+} hdl_nvic_exti_private_t;
+
+#define HDL_MODIFY_REG(reg, mask, bits)         (reg = (((reg) & ~(mask)) | (bits)))
+#define HDL_CLEAR_REG(reg, bits)                (reg = ((reg) & ~(bits)))
+#define HDL_SET_REG(reg, bits)                  (reg = ((reg) |  (bits)))
+
+#define hdl_exti_clear_pending()     (EXTI_PD |= exti_line)
+
 _Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_nvic_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
+_Static_assert(sizeof(hdl_nvic_exti_private_t) == sizeof(hdl_nvic_exti_t), "In hdl_core.h data structure size of hdl_nvic_exti_t doesn't match, check HDL_EXTI_PRV_SIZE");
 
 extern void *_estack;
 extern void *_sidata, *_sdata, *_edata;
@@ -233,19 +249,38 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
+#define EXTI_LINES_ALL_POSSIBLE   EXTI_0  | EXTI_1  | EXTI_2  |  EXTI_3 | \
+                                  EXTI_4  | EXTI_5  | EXTI_6  |  EXTI_7 | \
+                                  EXTI_8  | EXTI_9  | EXTI_10 | EXTI_11 | \
+                                  EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15 | \
+                                  EXTI_16 | EXTI_17 | EXTI_19 | EXTI_21
+
 hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
   if(enable) {
     hdl_nvic_t *nvic = (hdl_nvic_t *)desc;
     /* NVIC_SetPriorityGrouping   not available for Cortex-M23 */
     nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0);
-
+    SYSCFG_CPU_IRQ_LAT = nvic->irq_latency;
     __ic = (hdl_nvic_private_t *)desc;
     /* TODO: fing wokaround to save context for interrupt vector */
     return HDL_MODULE_INIT_OK;
   }
+  else {
+    //TODO: disable envic
+    HDL_CLEAR_REG(EXTI_FTEN,  EXTI_LINES_ALL_POSSIBLE);
+    HDL_CLEAR_REG(EXTI_RTEN,  EXTI_LINES_ALL_POSSIBLE);
+    HDL_CLEAR_REG(EXTI_EVEN,  EXTI_LINES_ALL_POSSIBLE);
+    HDL_CLEAR_REG(EXTI_INTEN, EXTI_LINES_ALL_POSSIBLE);
+    HDL_CLEAR_REG(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
+    HDL_CLEAR_REG(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
+    HDL_CLEAR_REG(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
+    /* Clear pending */
+    HDL_SET_REG(EXTI_PD, EXTI_LINES_ALL_POSSIBLE);
+  }
   return HDL_MODULE_DEINIT_OK;
 }
 
+/* TODO: pass interrupt number only */
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *interrupt, event_handler_t handler, void *context) {
   if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK) && (interrupt != NULL) && (handler != NULL)) {
     hdl_nvic_interrupt_private_t *isr = (hdl_nvic_interrupt_private_t *)interrupt;
@@ -288,4 +323,47 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *i
     return HDL_TRUE;
   }
   return HDL_FALSE;
+}
+
+uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line, event_handler_t handler, void *context) {
+  if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK)) {
+    hdl_nvic_exti_private_t **extis = (hdl_nvic_exti_private_t **)ic->exti_lines;
+    if(extis != NULL) {
+      while (*extis != NULL) {
+        if((*extis)->exti_line == exti_line) {
+          (*extis)->handler = handler;
+          (*extis)->handler_context = context;
+          uint8_t exti_no = 31 - __CLZ(exti_line);
+          if(exti_no <= 15) { /* if GPIO exti lines */
+            volatile uint32_t *src_reg = (uint32_t *)(SYSCFG + 0x08U + (exti_no & (~0x03UL)));
+            /* set source no, defined by user */
+            HDL_MODIFY_REG(*src_reg, 0x0FUL << (exti_no & 0x03UL), ((uint32_t)((*extis)->source_selection)) << (exti_no & 0x03UL));
+          } /* other lines from internal modules are fixed */
+          if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
+            EXTI_FTEN |= exti_line;
+          }
+          else {
+            EXTI_FTEN &= ~exti_line;
+          }
+          if((*extis)->trigger & HDL_EXTI_TRIGGER_RISING) {
+            EXTI_RTEN |= exti_line;
+          }
+          else {
+            EXTI_RTEN &= ~exti_line;
+          }
+          EXTI_EVEN |= exti_line;
+          if(handler != NULL) {
+            EXTI_INTEN |= exti_line;
+          }
+          return HDL_TRUE;
+        }
+        extis++;
+      }
+    }
+  }
+  return HDL_FALSE;
+}
+
+void hdl_exti_sw_trugger(hdl_interrupt_controller_t *desc, hdl_exti_line_t exti_line) {
+  EXTI_SWIEV |= exti_line;
 }

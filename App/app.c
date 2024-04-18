@@ -12,6 +12,7 @@ extern hdl_nvic_t mod_nvic;
 extern hdl_nvic_interrupt_t mod_exti_0_1_irq;
 extern hdl_nvic_interrupt_t mod_exti_2_3_irq;
 extern hdl_nvic_interrupt_t mod_unexisting_8_irq;
+extern hdl_dma_t mod_dma;
 
 static void power_btn_handler(uint32_t event, void *sender, void *context) {
   // hdl_button_t *btn = (hdl_button_t *)sender;
@@ -192,12 +193,26 @@ void main() {
   //mod_sys_timer_ms.val
   hdl_enable(&mod_sys_timer_ms.module);
   hdl_enable(&mod_timer0_counter.module);
-
+  hdl_enable(&mod_dma.module);
   //syscfg_exti_line_config(EXTI_SOURCE_GPIOA, EXTI_SOURCE_PIN0);
   //exti_init(EXTI_0, EXTI_INTERRUPT, EXTI_TRIG_RISING);
-  
+  uint32_t a = 0xff;
+  uint32_t b = 0x0;
+  hdl_dma_config_t config;
+  config.memory_addr = (uint32_t)&b;
+  config.memory_width = HDL_DMA_SIZE_OF_MEMORY_32_BIT;
+  config.memory_inc = HDL_DMA_INCREMENT_OFF;
+  config.periph_addr = (uint32_t)&a;
+  config.periph_inc = HDL_DMA_INCREMENT_OFF;
+  config.periph_width = HDL_DMA_SIZE_OF_MEMORY_32_BIT;
+  config.amount = 1;
+  config.direction = HDL_DMA_DIRECTION_M2M;
+  config.dma_mode = HDL_DMA_MODE_SINGLE_CONVERSION;
+  config.priority = 0;
+
   
   while(1) {
+    static uint8_t flag = 0;
     static uint32_t time_stamp_ms = 0;
     uint32_t cnt = TIMER_CNT(TIMER0);
     cooperative_scheduler(false);
@@ -207,7 +222,17 @@ void main() {
         hdl_interrupt_request(&mod_nvic, &mod_exti_0_1_irq, &event_exti_0_1_isr, NULL);
         hdl_interrupt_request(&mod_nvic, &mod_unexisting_8_irq, &event_unexisting_8_isr, NULL);
         
-        NVIC_SetPendingIRQ(8);
+        //NVIC_SetPendingIRQ(8);
+    }
+
+    /* DMA test */
+    if(hdl_state(&mod_dma.module) == HDL_MODULE_INIT_OK){
+      if(!flag)
+      {
+        flag = 1;
+        hdl_dma_config(NULL, &config, 0);
+        hdl_dma_sw_triger(NULL, 0);
+      }
     }
 
     if(hdl_state(&mod_gpo_carrier_pwr_on.module) == HDL_MODULE_INIT_OK)

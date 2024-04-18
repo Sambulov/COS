@@ -179,6 +179,14 @@
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_APB2_PREDIV,
   };
+  /**************************************************************
+   *  DMA
+   *************************************************************/
+  hdl_dma_t mod_dma = {
+    .module.init = &hdl_dma,
+    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb),
+    .module.reg = (void*)DMA_BASE,
+  };
 
   hdl_clock_prescaler_t mod_clock_timer0 = {
     .module.init = NULL,

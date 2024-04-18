@@ -30,9 +30,8 @@ typedef exti_mode_enum hdl_exti_mode_t;
 typedef struct {
   hdl_exti_line_t exti_line;
   uint8_t source_selection;
-  //hdl_exti_mode_t exti_mode;
+  hdl_exti_mode_t exti_mode;
   hdl_exti_trig_type_t trigger;
-  uint8_t __private[HDL_EXTI_PRV_SIZE];
 } hdl_nvic_exti_t;
 
 #define hdl_interrupts(...) ((hdl_nvic_interrupt_t *[]){__VA_ARGS__, NULL})
@@ -58,7 +57,7 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *i
 /*
   if handler is null, then exti will be confugured in event mode, else in interrupt mode
 */
-uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line, event_handler_t handler, void *context);
+uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line);
 
 void hdl_exti_sw_trugger(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line);
 

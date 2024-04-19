@@ -284,49 +284,48 @@ hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
-/* TODO: pass interrupt number only */
-uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *interrupt, event_handler_t handler, void *context) {
-  if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK) && (interrupt != NULL) && (handler != NULL)) {
-    hdl_nvic_interrupt_private_t *isr = (hdl_nvic_interrupt_private_t *)interrupt;
-    isr->handler = handler;
-    isr->handler_context = context;
-
-    uint32_t prio = ((interrupt->priority_group << (8U - ic->prio_bits)) | 
-                    (interrupt->priority & (0xFF >> ic->prio_bits)) & 
-                    0xFFUL);
-    uint32_t shift = _BIT_SHIFT(interrupt->irq_type);
-    volatile uint32_t *ipr = (interrupt->irq_type < 0)? &(SCB->SHPR[_SHP_IDX(interrupt->irq_type)]):
-                                                        &(NVIC->IPR[_IP_IDX(interrupt->irq_type)]);
-    /* set priority for interrupt */
-    *ipr = (*ipr & ~(0xFFUL << shift)) | (prio << shift);
-    /* interrupt enable */
-    if(interrupt->irq_type < 0) {
-      switch (interrupt->irq_type) {
-        case SysTick_IRQn:
-          SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;                  /* Enable SysTick IRQ */
-          break;
-        case PendSV_IRQn:
-          // TODO: enable if possible, ;
-          break;
-        case SVCall_IRQn:
-          // TODO: enable if possible, ;
-          break;
-        case HardFault_IRQn:
-          // TODO: enable if possible, ;
-          break;
-        case NonMaskableInt_IRQn:
-          // TODO: enable if possible, ;
-          break;
-        default:
-          return HDL_FALSE;
-      }
+uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t irq, event_handler_t handler, void *context) {
+  if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->interrupts == NULL) || (handler == NULL))
+    return HDL_FALSE;
+  hdl_nvic_interrupt_private_t **isr = (hdl_nvic_interrupt_private_t **)ic->interrupts;
+  while ((isr != NULL) && (*isr)->irq_type != irq) isr++;
+  if(isr == NULL) return HDL_FALSE;
+  (*isr)->handler = handler;
+  (*isr)->handler_context = context;
+  uint32_t prio = (((*isr)->priority_group << (8U - ic->prio_bits)) | 
+                  ((*isr)->priority & (0xFF >> ic->prio_bits)) & 
+                  0xFFUL);
+  uint32_t shift = _BIT_SHIFT((*isr)->irq_type);
+  volatile uint32_t *ipr = ((*isr)->irq_type < 0)? &(SCB->SHPR[_SHP_IDX((*isr)->irq_type)]):
+                                                    &(NVIC->IPR[_IP_IDX((*isr)->irq_type)]);
+  /* set priority for interrupt */
+  *ipr = (*ipr & ~(0xFFUL << shift)) | (prio << shift);
+  /* interrupt enable */
+  if((*isr)->irq_type < 0) {
+    switch ((*isr)->irq_type) {
+      case SysTick_IRQn:
+        SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;                  /* Enable SysTick IRQ */
+        break;
+      case PendSV_IRQn:
+        // TODO: enable if possible, ;
+        break;
+      case SVCall_IRQn:
+        // TODO: enable if possible, ;
+        break;
+      case HardFault_IRQn:
+        // TODO: enable if possible, ;
+        break;
+      case NonMaskableInt_IRQn:
+        // TODO: enable if possible, ;
+        break;
+      default:
+        return HDL_FALSE;
     }
-    else {
-      NVIC_EnableIRQ(interrupt->irq_type);
-    }
-    return HDL_TRUE;
   }
-  return HDL_FALSE;
+  else {
+    NVIC_EnableIRQ((*isr)->irq_type);
+  }
+  return HDL_TRUE;
 }
 
 uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line) {

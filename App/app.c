@@ -213,9 +213,9 @@ void main() {
       cooperative_scheduler(false);
   }
 
-  hdl_interrupt_request(&mod_nvic, &mod_exti_2_3_irq, &event_exti_2_3_isr, NULL);
-  hdl_interrupt_request(&mod_nvic, &mod_unexisting_8_irq, &event_unexisting_8_isr, NULL);
-  hdl_interrupt_request(&mod_nvic, &mod_exti_0_1_irq, &event_exti_0_1_isr, NULL);
+  hdl_interrupt_request(&mod_nvic, EXTI2_3_IRQn, &event_exti_2_3_isr, NULL);
+  hdl_interrupt_request(&mod_nvic, 8, &event_unexisting_8_isr, NULL);
+  hdl_interrupt_request(&mod_nvic, EXTI0_1_IRQn, &event_exti_0_1_isr, NULL);
   hdl_exti_request(&mod_nvic, EXTI_0);
   //NVIC_SetPendingIRQ(8);
 

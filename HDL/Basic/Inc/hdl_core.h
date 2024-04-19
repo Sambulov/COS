@@ -9,8 +9,10 @@ typedef struct{
 
 #define HDL_INTERRUPT_PRV_SIZE       9
 
+typedef IRQn_Type hdl_irq_n_t;
+
 typedef struct {
-  IRQn_Type irq_type;
+  hdl_irq_n_t irq_type;
   uint8_t priority_group;
   uint8_t priority;
   uint8_t __private[HDL_INTERRUPT_PRV_SIZE];
@@ -51,7 +53,7 @@ typedef hdl_nvic_t hdl_interrupt_controller_t;
 typedef hdl_nvic_interrupt_t hdl_interrupt_t;
 
 
-uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *interrupt, event_handler_t handler, void *context);
+uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t interrupt, event_handler_t handler, void *context);
 
 uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line);
 

@@ -224,7 +224,7 @@
     .module.init = hdl_sys_timer,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
-    .reload_iterrupt = &mod_systick_irq,
+    .reload_iterrupt = SysTick_IRQn,
     .val = 0
   };
 

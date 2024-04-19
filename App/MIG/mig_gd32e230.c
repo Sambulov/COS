@@ -231,31 +231,32 @@
   /**************************************************************
    *  ADC
    *************************************************************/
-  hdl_adc_channel_source_t mod_adc_channel_0 = {
-    .channel_number = HDL_ADC_CHANNEL_0,
+  hdl_adc_source_t mod_adc_source_0 = {
+    .channel_number = HDL_ADC_CHANNEL_3,
     .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
   };
-  hdl_adc_channel_source_t mod_adc_channel_1 = {
-    .channel_number = HDL_ADC_CHANNEL_1,
-    .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
-  };
-  hdl_adc_channel_source_t mod_adc_channel_7 = {
+  hdl_adc_source_t mod_adc_source_1 = {
     .channel_number = HDL_ADC_CHANNEL_7,
     .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
   };
-  hdl_adc_channel_source_t mod_adc_channel_8 = {
-    .channel_number = HDL_ADC_CHANNEL_8,
-    .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
-  };
+  // hdl_adc_channel_source_t mod_adc_channel_7 = {
+  //   .channel_number = HDL_ADC_CHANNEL_7,
+  //   .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+  // };
+  // hdl_adc_channel_source_t mod_adc_channel_8 = {
+  //   .channel_number = HDL_ADC_CHANNEL_8,
+  //   .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+  // };
+
   hdl_adc_t mod_adc = {
     .module.init = &hdl_adc,
     .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_sys_timer_ms.module, &mod_dma.module),
     .module.reg = (void*)ADC_BASE,
+    .dma_channel = DMA_CH0,
     .start_triger = HDL_ADC_TRIGER_SOFTWARE,
-    .mode = ADC_OPERATION_MODE_SINGLE_SCAN,
+    .mode = ADC_OPERATION_MODE_CONTINUOS_SCAN,
     .resolution = HDL_ADC_RESOLUTION_12BIT,
-    .channel_array = hdl_adc_channel_sequence(&mod_adc_channel_0, &mod_adc_channel_1,
-                                                &mod_adc_channel_7, &mod_adc_channel_8)
+    .sources = hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0),
   };
 
   hdl_gpio_port_t hdl_gpio_port_a = {
@@ -291,6 +292,11 @@
   hdl_gpio_mode_t mod_gpio_input_pullup_mode = {
     .type = GPIO_MODE_INPUT,
     .pull = GPIO_PUPD_PULLUP,
+  };
+
+  hdl_gpio_mode_t mod_gpio_input_analog = {
+    .type = GPIO_MODE_ANALOG,
+    .pull = GPIO_PUPD_NONE,
   };
 
   hdl_gpio_mode_t mod_gpio_alternate_swd_mode = {
@@ -336,6 +342,20 @@
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
     .pin = GPIO_PIN_8,
     .mode = &mod_gpio_output_pp_mode
+  };
+
+  hdl_gpio_pin_t mod_gpio_adc_channel_3v3 = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+    .pin = GPIO_PIN_7,
+    .mode = &mod_gpio_input_analog  
+  };
+
+    hdl_gpio_pin_t mod_gpio_adc_channel_1v5 = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+    .pin = GPIO_PIN_3,
+    .mode = &mod_gpio_input_analog  
   };
 
   // const hdl_gpio_t mod_gpi_carrier_charging = {

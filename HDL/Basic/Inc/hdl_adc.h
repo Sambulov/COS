@@ -71,7 +71,7 @@ typedef enum {
 typedef struct {
     hdl_adc_channel_e channel_number;
     hdl_adc_channel_sample_time_e channel_sample_time;
-} hdl_adc_channel_source_t;
+} hdl_adc_source_t;
 
 typedef struct {
     uint8_t __private[EVENT_ADC_PRIVATE_SIZE];
@@ -81,13 +81,14 @@ typedef struct {
 
 typedef struct{
     hdl_module_t module;
+    hdl_dma_channel_t dma_channel;
     hdl_adc_triger_e start_triger;                   
     adc_operation_mode_e mode;                /* ADC_OPERATION_MODE_SINGLE_SCAN, ADC_OPERATION_MODE_CONTINUOS_SCAN  */
     hdl_adc_resolution_e resolution;          /* HDL_ADC_RESOLUTION_xBIT (x = 12, 10, 8, 6) */
-    hdl_adc_channel_source_t **channel_array; /* max value 15 */
+    hdl_adc_source_t **sources; /* max value 15 */
 } hdl_adc_t;
 
-#define hdl_adc_channel_sequence(...) ((hdl_adc_channel_source_t *[]){__VA_ARGS__, NULL})
+#define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
 /* Initialization */
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable);
 uint8_t hdl_adc_start(hdl_adc_t *hdl_adc, void *buff);

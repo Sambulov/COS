@@ -11,8 +11,8 @@ typedef enum {
 } hdl_dma_direction_e;
 
 typedef enum {
-    HDL_DMA_MODE_SINGLE_CONVERSION, /* DMA single conversion mode, each next conversion have to started by event */
-    HDL_DMA_MODE_CIRCULAR_CONVERSION /* DMA circular mode, each next conversion will be started automatically */
+    HDL_DMA_MODE_SINGLE, /* DMA single conversion mode, each next conversion have to started by event */
+    HDL_DMA_MODE_CIRCULAR /* DMA circular mode, each next conversion will be started automatically */
 } hdl_dma_mode_e;
 
 typedef enum {

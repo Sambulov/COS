@@ -30,6 +30,9 @@
   extern hdl_gpio_pin_t mod_gpio_soc_scl;
   extern hdl_gpio_pin_t mod_gpio_soc_sda;
 
+  extern hdl_gpio_pin_t mod_gpio_adc_channel_1v5;
+  extern hdl_gpio_pin_t mod_gpio_adc_channel_3v3;
+
   extern hdl_button_hw_t mod_btn_power;
   extern hdl_button_hw_t mod_btn_reset;
 

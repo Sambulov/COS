@@ -134,7 +134,7 @@ void event_8_isr(uint32_t event, void *sender, void *context) {
 }
 
 
-uint16_t adc_value[4];
+uint16_t adc_value[2];
 
 void main() {
 
@@ -183,6 +183,8 @@ void main() {
   //hdl_kill(&mod_gpo_emmc_lock.module);
 
   //mod_sys_timer_ms.val
+  hdl_enable(&mod_gpio_adc_channel_1v5.module);
+  hdl_enable(&mod_gpio_adc_channel_3v3.module);
   hdl_enable(&mod_sys_timer_ms.module);
   hdl_enable(&mod_timer0_counter.module);
   hdl_enable(&mod_dma.module);
@@ -204,14 +206,15 @@ void main() {
   // config.dma_mode = HDL_DMA_MODE_SINGLE_CONVERSION;
   // config.priority = 0;
 
-  while (hdl_state(&mod_nvic.module) != HDL_MODULE_INIT_OK) {
+  while (hdl_state(&mod_adc.module) != HDL_MODULE_INIT_OK) {
       cooperative_scheduler(false);
   }
+  hdl_adc_start(&mod_adc, adc_value);
 
   hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ6_EXTI2_3, &event_exti_2_3_isr, NULL);
   hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ8, &event_8_isr, NULL);
   hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ5_EXTI0_1, &event_exti_0_1_isr, NULL);
-  hdl_exti_request(&mod_nvic, EXTI_0);
+  hdl_exti_request(&mod_nvic, HDL_EXTI_LINE_0);
   //hdl_nvic_sw_trigger(HDL_NVIC_IRQ8);
 
   while(1) {

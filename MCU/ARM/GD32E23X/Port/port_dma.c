@@ -49,8 +49,6 @@ uint8_t hdl_dma_config(hdl_dma_t *h, hdl_dma_config_t *config, hdl_dma_channel_t
         dma_memory_increase_enable(channel);
     if(config->periph_inc)
         dma_periph_increase_enable(channel);
-    if (config->dma_mode == HDL_DMA_MODE_CIRCULAR_CONVERSION)
-        dma_circulation_enable(channel);
     if(config->direction == HDL_DMA_DIRECTION_P2M)
         dma_transfer_direction_config(channel, DMA_PERIPHERAL_TO_MEMORY);
     else if(config->direction == HDL_DMA_DIRECTION_M2P)
@@ -61,10 +59,11 @@ uint8_t hdl_dma_config(hdl_dma_t *h, hdl_dma_config_t *config, hdl_dma_channel_t
         dma_transfer_direction_config(channel, DMA_PERIPHERAL_TO_MEMORY);
         dma_memory_to_memory_enable(channel);
     }
-    if (config->dma_mode == HDL_DMA_MODE_SINGLE_CONVERSION)
+    if (config->dma_mode == HDL_DMA_MODE_SINGLE)
         dma_circulation_disable(channel);
-    else if (config->dma_mode == HDL_DMA_MODE_CIRCULAR_CONVERSION)
+    else
         dma_circulation_enable(channel);
+    
     return HDL_TRUE;
 }
 

@@ -366,6 +366,6 @@ uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_li
   return HDL_FALSE;
 }
 
-void hdl_exti_sw_trugger(hdl_interrupt_controller_t *desc, hdl_exti_line_t exti_line) {
+void hdl_exti_sw_trigger(hdl_interrupt_controller_t *desc, hdl_exti_line_t exti_line) {
   EXTI_SWIEV |= exti_line;
 }

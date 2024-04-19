@@ -8,7 +8,6 @@ typedef struct{
 } hdl_core_t;
 
 #define HDL_INTERRUPT_PRV_SIZE       9
-#define HDL_EXTI_PRV_SIZE            8
 
 typedef struct {
   IRQn_Type irq_type;
@@ -54,11 +53,8 @@ typedef hdl_nvic_interrupt_t hdl_interrupt_t;
 
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_interrupt_t *interrupt, event_handler_t handler, void *context);
 
-/*
-  if handler is null, then exti will be confugured in event mode, else in interrupt mode
-*/
 uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line);
 
-void hdl_exti_sw_trugger(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line);
+void hdl_exti_sw_trigger(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line);
 
 #endif // HDL_CORE_H_

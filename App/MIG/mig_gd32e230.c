@@ -179,6 +179,14 @@
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_APB2_PREDIV,
   };
+  /**************************************************************
+   *  DMA
+   *************************************************************/
+  hdl_dma_t mod_dma = {
+    .module.init = &hdl_dma,
+    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+    .module.reg = (void*)DMA_BASE,
+  };
 
   hdl_clock_prescaler_t mod_clock_timer0 = {
     .module.init = NULL,
@@ -209,6 +217,36 @@
     .module.reg = NULL,
     .reload_iterrupt = &mod_systick_irq,
     .val = 0
+  };
+
+  /**************************************************************
+   *  ADC
+   *************************************************************/
+  hdl_adc_channel_source_t mod_adc_channel_0 = {
+    .channel_number = HDL_ADC_CHANNEL_0,
+    .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+  };
+  hdl_adc_channel_source_t mod_adc_channel_1 = {
+    .channel_number = HDL_ADC_CHANNEL_1,
+    .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+  };
+  hdl_adc_channel_source_t mod_adc_channel_7 = {
+    .channel_number = HDL_ADC_CHANNEL_7,
+    .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+  };
+  hdl_adc_channel_source_t mod_adc_channel_8 = {
+    .channel_number = HDL_ADC_CHANNEL_8,
+    .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+  };
+  hdl_adc_t mod_adc = {
+    .module.init = &hdl_adc,
+    .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_sys_timer_ms.module, &mod_dma.module),
+    .module.reg = (void*)ADC_BASE,
+    .start_triger = HDL_ADC_TRIGER_SOFTWARE,
+    .mode = ADC_OPERATION_MODE_SINGLE_SCAN,
+    .resolution = HDL_ADC_RESOLUTION_12BIT,
+    .channel_array = hdl_adc_channel_sequence(&mod_adc_channel_0, &mod_adc_channel_1,
+                                                &mod_adc_channel_7, &mod_adc_channel_8)
   };
 
   hdl_gpio_port_t hdl_gpio_port_a = {

@@ -42,8 +42,8 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         return HDL_MODULE_INIT_FAILED;
     /* We can find timer in our dependencies */
     hdl_timer_ms = (hdl_sys_timer_t *)hdl_adc->module.dependencies[1];
-    /* TODO: SEE ADC_REGULAR_INSERTED_CHANNEL*/
-    if(enable){
+    /* TODO: SEE ADC_REGULAR_INSERTED_CHANNEL */
+    if(enable) {
         switch (state_machine){
             case GD_ADC_STATE_MACHINE_DISABLE:
                 rcu_periph_clock_enable(RCU_ADC);

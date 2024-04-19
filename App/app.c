@@ -125,10 +125,6 @@ void event_exti_2_3_isr(uint32_t event, void *sender, void *context) {
 
 void event_exti_0_1_isr(uint32_t event, void *sender, void *context) {
   __NOP();
-  while (1)
-  {
-    __NOP();
-  }
 }
 
 void event_unexisting_8_isr(uint32_t event, void *sender, void *context) {
@@ -213,23 +209,25 @@ void main() {
   // config.dma_mode = HDL_DMA_MODE_SINGLE_CONVERSION;
   // config.priority = 0;
 
-  
+  while (hdl_state(&mod_nvic.module) != HDL_MODULE_INIT_OK) {
+      cooperative_scheduler(false);
+  }
+
+  hdl_interrupt_request(&mod_nvic, &mod_exti_2_3_irq, &event_exti_2_3_isr, NULL);
+  hdl_interrupt_request(&mod_nvic, &mod_unexisting_8_irq, &event_unexisting_8_isr, NULL);
+  hdl_interrupt_request(&mod_nvic, &mod_exti_0_1_irq, &event_exti_0_1_isr, NULL);
+  hdl_exti_request(&mod_nvic, EXTI_0);
+  //NVIC_SetPendingIRQ(8);
+
   while(1) {
     static uint8_t flag = 0;
     static uint32_t time_stamp_ms = 0;
     uint32_t cnt = TIMER_CNT(TIMER0);
     cooperative_scheduler(false);
 
-    if(hdl_state(&mod_nvic.module) == HDL_MODULE_INIT_OK){
-        hdl_interrupt_request(&mod_nvic, &mod_exti_2_3_irq, &event_exti_2_3_isr, NULL);
-        hdl_interrupt_request(&mod_nvic, &mod_exti_0_1_irq, &event_exti_0_1_isr, NULL);
-        hdl_interrupt_request(&mod_nvic, &mod_unexisting_8_irq, &event_unexisting_8_isr, NULL);
-        
-        //NVIC_SetPendingIRQ(8);
-    }
-    if(hdl_state(&mod_adc.module) == HDL_MODULE_INIT_OK){
-      hdl_adc_start(&mod_adc, adc_value);
-    }
+    // if(hdl_state(&mod_adc.module) == HDL_MODULE_INIT_OK){
+    //   hdl_adc_start(&mod_adc, adc_value);
+    // }
 
     // /* DMA test */
     // if(hdl_state(&mod_dma.module) == HDL_MODULE_INIT_OK){

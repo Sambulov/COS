@@ -284,7 +284,7 @@ hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
-uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t irq, event_handler_t handler, void *context) {
+uint8_t hdl_nvic_irq_request(hdl_interrupt_controller_t *ic, hdl_nvic_irq_n_t irq, event_handler_t handler, void *context) {
   if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->interrupts == NULL) || (handler == NULL))
     return HDL_FALSE;
   hdl_nvic_interrupt_private_t **isr = (hdl_nvic_interrupt_private_t **)ic->interrupts;
@@ -328,33 +328,33 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t irq, e
   return HDL_TRUE;
 }
 
-uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_line) {
+uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t line) {
   if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK)) {
     hdl_nvic_exti_t **extis = ic->exti_lines;
     if(extis != NULL) {
       while (*extis != NULL) {
-        if((*extis)->exti_line == exti_line) {
-          uint8_t exti_no = 31 - __CLZ(exti_line);
+        if((*extis)->line == line) {
+          uint8_t exti_no = 31 - __CLZ(line);
           if(exti_no <= 15) { /* if GPIO exti lines */
             volatile uint32_t *src_reg = (uint32_t *)(SYSCFG + 0x08U + (exti_no & (~0x03UL)));
             /* set exti source */
-            HDL_REG_MODIFY(*src_reg, 0x0FUL << (exti_no & 0x03UL), ((uint32_t)((*extis)->source_selection)) << (exti_no & 0x03UL));
+            HDL_REG_MODIFY(*src_reg, 0x0FUL << (exti_no & 0x03UL), ((uint32_t)((*extis)->source)) << (exti_no & 0x03UL));
           } /* other lines from internal modules are fixed */
           if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
-            EXTI_FTEN |= exti_line;
+            EXTI_FTEN |= line;
           }
           else {
-            EXTI_FTEN &= ~exti_line;
+            EXTI_FTEN &= ~line;
           }
           if((*extis)->trigger & HDL_EXTI_TRIGGER_RISING) {
-            EXTI_RTEN |= exti_line;
+            EXTI_RTEN |= line;
           }
           else {
-            EXTI_RTEN &= ~exti_line;
+            EXTI_RTEN &= ~line;
           }
-          EXTI_EVEN |= exti_line;
-          if((*extis)->exti_mode == EXTI_INTERRUPT) {
-            EXTI_INTEN |= exti_line;
+          EXTI_EVEN |= line;
+          if((*extis)->mode == HDL_EXTI_MODE_INTERRUPT) {
+            EXTI_INTEN |= line;
           }
           return HDL_TRUE;
         }
@@ -365,6 +365,6 @@ uint8_t hdl_exti_request(hdl_interrupt_controller_t *ic, hdl_exti_line_t exti_li
   return HDL_FALSE;
 }
 
-void hdl_exti_sw_trigger(hdl_interrupt_controller_t *desc, hdl_exti_line_t exti_line) {
-  EXTI_SWIEV |= exti_line;
+void hdl_exti_sw_trigger(hdl_interrupt_controller_t *desc, hdl_exti_line_t line) {
+  EXTI_SWIEV |= line;
 }

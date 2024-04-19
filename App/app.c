@@ -9,9 +9,6 @@
 #include "CodeLib.h"
 
 extern hdl_nvic_t mod_nvic;
-extern hdl_nvic_interrupt_t mod_exti_0_1_irq;
-extern hdl_nvic_interrupt_t mod_exti_2_3_irq;
-extern hdl_nvic_interrupt_t mod_unexisting_8_irq;
 extern hdl_dma_t mod_dma;
 extern hdl_adc_t mod_adc;
 
@@ -127,7 +124,7 @@ void event_exti_0_1_isr(uint32_t event, void *sender, void *context) {
   __NOP();
 }
 
-void event_unexisting_8_isr(uint32_t event, void *sender, void *context) {
+void event_8_isr(uint32_t event, void *sender, void *context) {
   __NOP();
   NVIC_SetPendingIRQ(EXTI0_1_IRQn);
   while (1)
@@ -142,8 +139,6 @@ uint16_t adc_value[4];
 void main() {
 
   hdl_enable(&mod_nvic.module);
-
-  
 
   // static bldl_som_power_state_t som_state = {
   //    .module = &mod_som_state_ctrl
@@ -213,11 +208,11 @@ void main() {
       cooperative_scheduler(false);
   }
 
-  hdl_interrupt_request(&mod_nvic, EXTI2_3_IRQn, &event_exti_2_3_isr, NULL);
-  hdl_interrupt_request(&mod_nvic, 8, &event_unexisting_8_isr, NULL);
-  hdl_interrupt_request(&mod_nvic, EXTI0_1_IRQn, &event_exti_0_1_isr, NULL);
+  hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ6_EXTI2_3, &event_exti_2_3_isr, NULL);
+  hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ8, &event_8_isr, NULL);
+  hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ5_EXTI0_1, &event_exti_0_1_isr, NULL);
   hdl_exti_request(&mod_nvic, EXTI_0);
-  //NVIC_SetPendingIRQ(8);
+  //hdl_nvic_sw_trigger(HDL_NVIC_IRQ8);
 
   while(1) {
     static uint8_t flag = 0;

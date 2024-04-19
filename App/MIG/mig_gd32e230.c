@@ -27,34 +27,34 @@
     /* TODO: ... */
   };
 
-  hdl_nvic_interrupt_t mod_systick_irq = {
-    .irq_type = SysTick_IRQn,
+  hdl_nvic_interrupt_t mod_irq_systick = {
+    .irq_type = HDL_NVIC_EXCEPTION_SisTick,
     .priority = 0,
     .priority_group = 0,
   };
 
-  hdl_nvic_interrupt_t mod_exti_0_1_irq = {
-    .irq_type = EXTI0_1_IRQn,
+  hdl_nvic_interrupt_t mod_irq_exti_0_1 = {
+    .irq_type = HDL_NVIC_IRQ5_EXTI0_1,
     .priority = 0,
     .priority_group = 1,
   };
 
-  hdl_nvic_interrupt_t mod_exti_2_3_irq = {
-    .irq_type = EXTI2_3_IRQn,
+  hdl_nvic_interrupt_t mod_irq_exti_2_3 = {
+    .irq_type = HDL_NVIC_IRQ6_EXTI2_3,
     .priority = 0,
     .priority_group = 2,
   };
 
-  hdl_nvic_interrupt_t mod_unexisting_8_irq = {
-    .irq_type = 8,
+  hdl_nvic_interrupt_t mod_irq_8 = {
+    .irq_type = HDL_NVIC_IRQ8,
     .priority = 0,
     .priority_group = 2,
   };
 
   hdl_nvic_exti_t mod_nvic_exti_line_0 = {
-    .exti_line = EXTI_0,
-    .exti_mode = EXTI_INTERRUPT,
-    .source_selection = 0, /* TODO: DEFINES */
+    .line = EXTI_0,
+    .mode = EXTI_INTERRUPT,
+    .source = HDL_EXTI_SOURCE_PA,
     .trigger = HDL_EXTI_TRIGGER_FALLING
   };
 
@@ -64,7 +64,7 @@
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .irq_latency = 0, /* TODO: define static assert */
-    .interrupts = hdl_interrupts(&mod_systick_irq, &mod_exti_0_1_irq, &mod_exti_2_3_irq, &mod_unexisting_8_irq),
+    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_8),
     .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0)
   };
 
@@ -224,7 +224,7 @@
     .module.init = hdl_sys_timer,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
-    .reload_iterrupt = SysTick_IRQn,
+    .reload_iterrupt = HDL_NVIC_EXCEPTION_SisTick,
     .val = 0
   };
 

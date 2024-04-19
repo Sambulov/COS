@@ -52,8 +52,8 @@
   };
 
   hdl_nvic_exti_t mod_nvic_exti_line_0 = {
-    .line = EXTI_0,
-    .mode = EXTI_INTERRUPT,
+    .line = HDL_EXTI_LINE_0,
+    .mode = HDL_EXTI_MODE_INTERRUPT,
     .source = HDL_EXTI_SOURCE_PA,
     .trigger = HDL_EXTI_TRIGGER_FALLING
   };

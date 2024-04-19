@@ -1,5 +1,5 @@
 #ifndef HDL_DMA_H_
-#define HDL_CLK_H_
+#define HDL_DMA_H_
 
 #define DMA_PRIVATE_SIZE  (4)
 #define EVENT_DMA_PRIVATE_SIZE  (4)

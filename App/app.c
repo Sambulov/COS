@@ -178,14 +178,13 @@ void main() {
   //hdl_enable(&mod_gpi_carrier_power_btn.module, HDL_TRUE);
   //hdl_enable(&mod_gpo_emmc_lock.module);
   hdl_enable(&mod_gpo_carrier_pwr_on.module);
-  hdl_enable(&mod_sys_timer_ms.module);
+  hdl_enable(&mod_timer_ms.module);
   //hdl_enable(&mod_gpi_carrier_boot_sel2.module);
   //hdl_kill(&mod_gpo_emmc_lock.module);
 
   //mod_sys_timer_ms.val
   hdl_enable(&mod_gpio_adc_channel_1v5.module);
   hdl_enable(&mod_gpio_adc_channel_3v3.module);
-  hdl_enable(&mod_sys_timer_ms.module);
   hdl_enable(&mod_timer0_counter.module);
   hdl_enable(&mod_dma.module);
   hdl_enable(&mod_adc.module);
@@ -206,20 +205,19 @@ void main() {
   // config.dma_mode = HDL_DMA_MODE_SINGLE_CONVERSION;
   // config.priority = 0;
 
-  while (hdl_state(&mod_adc.module) != HDL_MODULE_INIT_OK) {
+  while (!hdl_init_complete()) {
       cooperative_scheduler(false);
   }
   hdl_adc_start(&mod_adc, adc_value);
-
   hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ6_EXTI2_3, &event_exti_2_3_isr, NULL);
   hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ8, &event_8_isr, NULL);
   hdl_nvic_irq_request(&mod_nvic, HDL_NVIC_IRQ5_EXTI0_1, &event_exti_0_1_isr, NULL);
   hdl_exti_request(&mod_nvic, HDL_EXTI_LINE_0);
   //hdl_nvic_sw_trigger(HDL_NVIC_IRQ8);
-
+  static uint8_t flag = 0;
+  static uint32_t time_stamp_ms = 0;
+  time_stamp_ms = hdl_timer_get(&mod_timer_ms);
   while(1) {
-    static uint8_t flag = 0;
-    static uint32_t time_stamp_ms = 0;
     uint32_t cnt = TIMER_CNT(TIMER0);
     cooperative_scheduler(false);
 
@@ -236,18 +234,9 @@ void main() {
     //     hdl_dma_sw_triger(NULL, 0);
     //   }
     // }
-
-    if(hdl_state(&mod_gpo_carrier_pwr_on.module) == HDL_MODULE_INIT_OK)
-    {
-      if(hdl_state(&mod_sys_timer_ms.module) == HDL_MODULE_INIT_OK)
-      {
-        if(TIME_ELAPSED(time_stamp_ms, 1000, millis(&mod_sys_timer_ms)))
-        {
-          time_stamp_ms = millis(&mod_sys_timer_ms);
-          hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
-        }
-          
-      }
+    if(TIME_ELAPSED(time_stamp_ms, 1000, hdl_timer_get(&mod_timer_ms))) {
+      time_stamp_ms += 1000;
+      hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
     }
     // hdl_btn_work(&power_button);
     // hdl_btn_work(&reset_button);

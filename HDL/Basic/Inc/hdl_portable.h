@@ -19,7 +19,7 @@
 #include "hdl_dma.h"
 #include "hdl_adc.h"
 #include "hdl_clock_counter.h"
-#include "hdl_sys_timer.h"
+#include "hdl_timer.h"
 #include "hdl_gpio.h"
 //#include "hdl_i2c.h"
 

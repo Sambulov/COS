@@ -132,3 +132,7 @@ void hdl_kill(hdl_module_t *desc) {
     _hdl_hw_free(dependent);
   }
 }
+
+uint8_t hdl_init_complete() {
+  return (dev_init_queue == NULL)? HDL_TRUE: HDL_FALSE;
+}

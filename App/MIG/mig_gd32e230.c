@@ -220,8 +220,8 @@
     .counter_reload = 72000 - 1
   };
 
-  hdl_sys_timer_t mod_sys_timer_ms = {
-    .module.init = hdl_sys_timer,
+  hdl_timer_t mod_timer_ms = {
+    .module.init = hdl_timer,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
     .reload_iterrupt = HDL_NVIC_EXCEPTION_SisTick,
@@ -250,12 +250,14 @@
 
   hdl_adc_t mod_adc = {
     .module.init = &hdl_adc,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_sys_timer_ms.module, &mod_dma.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_timer_ms.module, &mod_dma.module),
     .module.reg = (void*)ADC_BASE,
     .dma_channel = DMA_CH0,
     .start_triger = HDL_ADC_TRIGER_SOFTWARE,
     .mode = ADC_OPERATION_MODE_CONTINUOS_SCAN,
     .resolution = HDL_ADC_RESOLUTION_12BIT,
+    .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
+    .init_timeout = 3000,
     .sources = hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0),
   };
 
@@ -340,21 +342,21 @@
   hdl_gpio_pin_t mod_gpi_carrier_wdt_time_out = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
-    .pin = GPIO_PIN_8,
+    .module.reg = (void *)GPIO_PIN_8,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpio_adc_channel_3v3 = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_7,
+    .module.reg = (void *)GPIO_PIN_7,
     .mode = &mod_gpio_input_analog  
   };
 
     hdl_gpio_pin_t mod_gpio_adc_channel_1v5 = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_3,
+    .module.reg = (void *)GPIO_PIN_3,
     .mode = &mod_gpio_input_analog  
   };
 
@@ -373,28 +375,28 @@
   hdl_gpio_pin_t mod_gpo_emmc_lock = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_0,
+    .module.reg = (void *)GPIO_PIN_0,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_qspi_lock = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_1,
+    .module.reg = (void *)GPIO_PIN_1,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_sd_lock = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_2,
+    .module.reg = (void *)GPIO_PIN_2,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_force_recovery = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_13,
+    .module.reg = (void *)GPIO_PIN_13,
     #if defined(DEBUG)
     .mode = &mod_gpio_alternate_swd_mode
     #else
@@ -405,91 +407,91 @@
   hdl_gpio_pin_t mod_gpi_carrier_boot_sel0 = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_4,
+    .module.reg = (void *)GPIO_PIN_4,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_boot_sel1 = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_5,
+    .module.reg = (void *)GPIO_PIN_5,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_boot_sel2 = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_6,
+    .module.reg = (void *)GPIO_PIN_6,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_power_good = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_0,
+    .module.reg = (void *)GPIO_PIN_0,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_reset_in = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_7,
+    .module.reg = (void *)GPIO_PIN_7,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpo_carrier_reset_out = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_8,
+    .module.reg = (void *)GPIO_PIN_8,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_carrier_pwr_on = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
-    .pin = GPIO_PIN_1,
+    .module.reg = (void *)GPIO_PIN_1,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_carrier_stby = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
-    .pin = GPIO_PIN_3,
+    .module.reg = (void *)GPIO_PIN_3,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpi_carrier_power_btn = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
-    .pin = GPIO_PIN_4,
+    .module.reg = (void *)GPIO_PIN_4,
     .mode = &mod_gpio_input_pullup_mode
   };
 
   hdl_gpio_pin_t mod_gpo_pmic_soc_rst = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_3,
+    .module.reg = (void *)GPIO_PIN_3,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpo_pmic_power_on = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
-    .pin = GPIO_PIN_5,
+    .module.reg = (void *)GPIO_PIN_5,
     .mode = &mod_gpio_output_pp_mode
   };
 
   hdl_gpio_pin_t mod_gpio_soc_scl = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_9,
+    .module.reg = (void *)GPIO_PIN_9,
     .mode = &mod_gpio_i2c_mode
   };
 
   hdl_gpio_pin_t mod_gpio_soc_sda = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-    .pin = GPIO_PIN_10,
+    .module.reg = (void *)GPIO_PIN_10,
     .mode = &mod_gpio_i2c_mode
   };
 

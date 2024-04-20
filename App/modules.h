@@ -1,7 +1,7 @@
 #ifndef MODULES_H_
 #define MODULES_H_
 
-  extern hdl_sys_timer_t mod_sys_timer_ms;
+  extern hdl_timer_t mod_timer_ms;
   extern hdl_clock_counter_t mod_timer0_counter;
 
   // extern const hdl_gpio_pin_t mod_gpi_pmic_sleep_1v8;

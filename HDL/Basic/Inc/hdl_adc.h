@@ -13,7 +13,7 @@
 typedef enum {
     ADC_OPERATION_MODE_SINGLE_SCAN,    /* Single SCAN, user must launched every conversion with some triger */
     ADC_OPERATION_MODE_CONTINUOS_SCAN, /* Continuous scan, each next conversion after first triger will be do automaticly */
-} adc_operation_mode_e;
+} hdl_adc_operation_mode_e;
 
 typedef enum {
     HDL_ADC_CHANNEL_0 = ADC_CHANNEL_0,
@@ -79,13 +79,20 @@ typedef struct {
     event_handler_t analog_watchdog_triger;
 } hdl_adc_event_t;
 
+typedef enum {
+  HDL_ADC_DATA_ALIGN_RIGHT = ADC_DATAALIGN_RIGHT,
+  HDL_ADC_DATA_ALIGN_LEFT = ADC_DATAALIGN_LEFT
+} hdl_adc_data_alignment_t;
+
 typedef struct{
     hdl_module_t module;
     hdl_dma_channel_t dma_channel;
-    hdl_adc_triger_e start_triger;                   
-    adc_operation_mode_e mode;                /* ADC_OPERATION_MODE_SINGLE_SCAN, ADC_OPERATION_MODE_CONTINUOS_SCAN  */
-    hdl_adc_resolution_e resolution;          /* HDL_ADC_RESOLUTION_xBIT (x = 12, 10, 8, 6) */
-    hdl_adc_source_t **sources; /* max value 15 */
+    hdl_adc_triger_e start_triger;
+    hdl_adc_operation_mode_e mode;
+    hdl_adc_resolution_e resolution;
+    hdl_adc_data_alignment_t data_alignment;
+    uint32_t init_timeout;
+    hdl_adc_source_t **sources;               /* max amiunt 15 */
 } hdl_adc_t;
 
 #define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})

@@ -27,7 +27,7 @@
   typedef struct {
     hdl_module_t module;
     const hdl_gpio_mode_t *mode;
-    const uint32_t pin;       // GPIO_PIN_0, GPIO_PIN_1, ..., GPIO_PIN_15, GPIO_PIN_ALL.
+    //const uint32_t pin;       // GPIO_PIN_0, GPIO_PIN_1, ..., GPIO_PIN_15, GPIO_PIN_ALL.
   } hdl_gpio_pin_t;
 
   hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable);

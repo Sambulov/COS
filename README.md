@@ -94,3 +94,156 @@ $ arm-none-eabi-gdb.exe
 `J-Link power on perm`
 
 (TODO: проверить все на LInux)
+
+### Портирование библиотеки на новый контроллер:
+1) Скачать драйверы от производителя 
+   - CMSIS(для контроллера не ядра ARM) положить в исходники в директорию `/Sys`, заголовки в `Sys/Inc`
+   - SPL/HAL положить в директорию `/Sys/Drivers` исходники и заголовки в `Src`, `Inc` соответственно
+2) Найти linker script, переименовать `linkerscript.ld`, положить в директорию `Res`
+3) Найти Svd файл, переименовать `mcu.svd`, положить в директорию `Res`
+4) Поправить j-link скрипты (`erase.jlink` и `flash.jlink`), поменять имя устройства. 
+```
+...
+device GD32F103VG
+...
+```
+*можно скопировать у портов других контроллеров
+
+5) Скопировать содержимое `/MCU/ARM/PortTemplate` в `/MCU/ARM/<your mcu>/Port`
+6) Создать в проекте задание на сборку и прошивку контроллера в `CMakePresets.json`
+```
+   "configurePresets": [
+        {
+            "name": "DebugGD32F103",
+            "displayName": "Debug GD32F103",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "USPD"  <---- имя платформы проекта
+            }
+        },
+		...
+        {
+            "name": "ReleaseGD32F103",
+            "displayName": "Release GD32F103",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BOARD": "USPD"
+            }
+        },
+	]
+    "buildPresets": [
+        {
+            "name": "DebugGD32F103",
+            "description": "",
+            "displayName": "J-Link Debug GD32F103",
+            "configurePreset": "DebugGD32F103"
+        },
+		...
+	]
+```
+
+7) Добавить в `CMakeLists.txt` определение для платформы
+```
+  ...
+  elseif(BOARD STREQUAL "USPD") <---- имя платформы проекта
+    set(MCU "GD32F103VG")       <---- контроллер платформы проекта
+    set(CORE "ARM")
+    set(MCPU cortex-m3)         <---- ядро контроллера проекта
+    add_compile_definitions("__MCU_HAL_HDR__=<gd32f10x.h>") <---- заголовок импортируемых драйверов контроллера
+	add_compile_definitions("GD32F10X_XD")                  <---- дополнительные глобальные определения необходимые для сборки, не обязательно
+  ...
+```
+8) Добавить в .vscode/launch.json конфигурацию для нового контроллера
+```
+   "configurations": [
+	    {
+			"name": "Debug JLink GD32F103VG",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"executable": "./build/bmc.elf",
+			"windows": {
+				"serverpath": "JLinkGDBServerCL.exe",
+			},
+			"linux": {
+				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
+				"gdbPath": "/usr/bin/gdb-multiarch"
+			},
+			"runToEntryPoint": "main",
+			//"showDevDebugOutput": "raw",
+			"servertype": "jlink",
+			"interface": "swd",
+			"device": "GD32F103VG",
+			"svdFile": "./MCU/ARM/GD32F103VG/Res/mcu.svd",
+			"preLaunchTask": "J-Link Flash GD32F103VG",
+			//"liveWatch": {
+			//	"enabled": true,
+			//	"samplesPerSecond": 4
+			//},
+		},
+		...
+	]
+```
+9) Добавить в /.vcode/tasks.json 2 задания
+```
+    "tasks": [
+		{
+			"type": "shell",
+			"label": "J-Link Flash GD32F103VG",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/GD32F10x/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/GD32F10x/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase GD32F103VG",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/GD32F10x/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/GD32F10x/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
+        ...
+    ]
+```
+10) Описать все необходимые методы драйверов HDL. Точка входа располагается в файле `port_core.c`, с него следует начинать портирование. Портирование драйвера ядра ARM сводится к правильному описанию вектора прерываний (можно посмотреть в startup-файле контроллера), написанию драйвера nvic и exti, а также произвести специфические настройки типа задержки обращения во флеш, задержки прерываний и тп.
+11) Для разных контроллеров могут понадобиться разные опции периферии, тогда соответствующая структура описывается в заголовочных файлах port_xxx.h, которые должны располагаться в директории `Port/Inc`. Затем данный заголовочный файл включается в заголовочный файл HDL драйвера.
+12) Создать файл графа инициализации в директории `MIG`. Использовать определение платформы проекта (см. п.7). MIG файлы должны быть уникальны для платформы-проекта.
+```
+#if defined ( <your board> ) 
+...
+#endif
+```
+13) Создать файл для тестов под портируемый контроллер `Test/test_<your_mcu>.c`. Примерное содержимое: 
+```
+#include "app.h"
+#include "CodeLib.h"
+
+#if defined ( <your_mcu> )
+
+void test() {
+  /* init module here */
+  while (!hdl_init_complete()) {
+    cooperative_scheduler(false);
+  }
+
+  while (1) {
+    cooperative_scheduler(false);
+	/* test module */
+  }
+}
+
+#endif
+```

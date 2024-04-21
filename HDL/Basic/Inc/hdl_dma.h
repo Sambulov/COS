@@ -57,11 +57,11 @@ typedef struct{
 } hdl_dma_config_t;
 
 typedef enum {
+    HDL_DMA_STATUS_NONE = (0),
     HDL_DMA_STATUS_FULL_TRANSFER = (1),
     HDL_DMA_STATUS_HALF_TRANSFER = (2),
     HDL_DMA_STATUS_ERROR_TRANSFER = (4),
 } hdl_dma_status_e;
-
 
 /*!
     \brief          DMA initialization and deinitialization
@@ -75,42 +75,45 @@ typedef enum {
       \retval         HDL_MODULE_DEINIT_OK
  */
 hdl_module_state_t hdl_dma(void *desc, uint8_t enable);
+
 /*!
     \brief          Config DMA channel
     \note           After that DMA will be waiting start trigger for starting transfer
-    \param[in]      h - DMA handler
+    \param[in]      dma - DMA handler
     \param[in]      config - config struct
     \param[in]      channel - channel number
     \return         
       \retval         HDL_TRUE - OK
       \retval         HDL_FALSE - ERROR
  */
-uint8_t hdl_dma_config(hdl_dma_t *h, hdl_dma_config_t *config, hdl_dma_channel_t channel);
+uint8_t hdl_dma_config(hdl_dma_t *dma, hdl_dma_config_t *config, hdl_dma_channel_t channel);
+
 /*!
     \brief          Software triger for starting transfer
-    \param[in]      h - DMA handler
+    \param[in]      dma - DMA handler
     \param[in]      channel - DMA channel
     \return         
       \retval         HDL_TRUE - OK
       \retval         HDL_FALSE - ERROR
  */
-uint8_t hdl_dma_sw_triger(hdl_dma_t *h, hdl_dma_channel_t channel); 
+uint8_t hdl_dma_sw_triger(hdl_dma_t *dma, hdl_dma_channel_t channel);
+
 /*!
     \brief          Get DMA channel status
-    \param[in]      h - DMA handler
+    \param[in]      dma - DMA handler
     \param[in]      channel - DMA channel
     \return         hdl_dma_status_e
  */
-hdl_dma_status_e hdl_dma_status(hdl_dma_t *h, hdl_dma_channel_t channel);
+hdl_dma_status_e hdl_dma_status(hdl_dma_t *dma, hdl_dma_channel_t channel);
+
 /*!
     \brief          Get DMA transfer counter value
-    \param[in]      h - DMA handler
+    \param[in]      dma - DMA handler
     \param[in]      channel - DMA channel
     \return         Counter value
  */
-uint32_t hdl_dma_counter(hdl_dma_t *h, hdl_dma_channel_t channel);
-/* Subscribe to IRQ */
-uint8_t hdl_dma_subscribe(hdl_dma_t *h, hdl_dma_event_t *event);
+uint32_t hdl_dma_counter(hdl_dma_t *dma, hdl_dma_channel_t channel);
+
 
 #if defined ( GD32E23X )
 

@@ -37,6 +37,12 @@ elseif(BOARD STREQUAL "ATB_RK3568J_SMC_R0")
   add_compile_definitions("__MCU_HAL_HDR__=<stm32l0xx_hal.h>")
   add_compile_definitions("STM32L071KB")
   add_compile_definitions("STM32L071xx")
+elseif(BOARD STREQUAL "USPD")
+  set(MCU "GD32F103VG")
+  set(CORE "ARM")
+  set(MCPU cortex-m3)
+  add_compile_definitions("__MCU_HAL_HDR__=<gd32f10x.h>")
+  add_compile_definitions("GD32F10X_XD")
 else()
   message( SEND_ERROR "Board not supported!" )
 endif()
@@ -132,6 +138,7 @@ if (CORE STREQUAL "ARM")
       "${CMAKE_SOURCE_DIR}/HDL/ATB/Inc"
       "${CMAKE_SOURCE_DIR}/HDL/PMIC/Inc"
       "${CMAKE_SOURCE_DIR}/MCU/ARM/CMSIS"
+      "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Port/Inc"
       "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/Inc"
       "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/Drivers/Inc"
   )
@@ -142,6 +149,7 @@ if (CORE STREQUAL "ARM")
   "${CMAKE_SOURCE_DIR}/App/BLDL/Src/*.c"
   "${CMAKE_SOURCE_DIR}/App/Tasks/*.c"
   "${CMAKE_SOURCE_DIR}/App/MIG/*.c"
+  "${CMAKE_SOURCE_DIR}/App/Test/*.c"
   "${CMAKE_SOURCE_DIR}/CL/Src/*.c"
   "${CMAKE_SOURCE_DIR}/CL/DataStructures/Src/*.c"
   "${CMAKE_SOURCE_DIR}/CL/Workflow/Src/*.c"
@@ -157,7 +165,7 @@ if (CORE STREQUAL "ARM")
   add_link_options(-mcpu=${MCPU} -T ${LINKER_SCRIPT})
   add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
-  set(STARTUP_FILE "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/startup.c")
+  #set(STARTUP_FILE "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/startup.c")
 
   message("CMAKE_HOST_SYSTEM_NAME = ${CMAKE_HOST_SYSTEM_NAME}")
   message("CMAKE_HOST_SYSTEM_VERSION = ${CMAKE_HOST_SYSTEM_VERSION}")
@@ -168,7 +176,8 @@ if (CORE STREQUAL "ARM")
 
   set(EXECUTABLE ${PROJECT_NAME}.elf)
 
-  add_executable(${EXECUTABLE} ${SOURCES} ${STARTUP_FILE} ${LINKER_SCRIPT})
+  #add_executable(${EXECUTABLE} ${SOURCES} ${STARTUP_FILE} ${LINKER_SCRIPT})
+  add_executable(${EXECUTABLE} ${SOURCES} ${LINKER_SCRIPT})
 
   set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
   set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)

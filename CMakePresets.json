@@ -37,6 +37,16 @@
             }
         },
         {
+            "name": "DebugGD32F103",
+            "displayName": "Debug GD32F103",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "USPD"
+            }
+        },
+        {
             "name": "ReleaseNUM463KG",
             "displayName": "Release NUM463KG",
             "generator": "Ninja",
@@ -64,6 +74,16 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "BOARD": "ATB_RK3568J_SMC_R0"
+            }
+        },
+        {
+            "name": "ReleaseGD32F103",
+            "displayName": "Release GD32F103",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BOARD": "USPD"
             }
         },
         {
@@ -103,6 +123,12 @@
             "description": "",
             "displayName": "J-Link Debug STM32L071",
             "configurePreset": "DebugSTM32L071"
+        },
+        {
+            "name": "DebugGD32F103",
+            "description": "",
+            "displayName": "J-Link Debug GD32F103",
+            "configurePreset": "DebugGD32F103"
         }
     ]
 }

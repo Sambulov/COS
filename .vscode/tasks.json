@@ -126,6 +126,30 @@
 		},
 		{
 			"type": "shell",
+			"label": "J-Link Flash GD32F103VG",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/GD32F103VG/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/GD32F103VG/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase GD32F103VG",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/GD32F103VG/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/GD32F103VG/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
+		{
+			"type": "shell",
 			"label": "J-Link Flash STM32L071KB",
 			"linux": {
 				"command": "JLinkExe -CommandFile ./MCU/ARM/STM32L0XX/Res/flash.jlink",

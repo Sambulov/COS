@@ -5,7 +5,7 @@
 #define HDL_I2C_PRV_SIZE                    48
 #define HDL_I2C_TRANSACTION_PRV_SIZE        28
 
-#if defined ( GD32E23X )
+#if defined ( GD32E23X ) || defined ( GD32F103VG )
   #define HDL_I2C_HAL_PRV_SIZE                16
 
   typedef struct {
@@ -90,7 +90,7 @@ void hdl_i2c_client_xfer_message(hdl_i2c_t *desc, hdl_i2c_message_t *msg);
 void hdl_hal_i2c_deinit(hdl_i2c_t *desc);
 /* ================== */
 
-void hdl_i2c_work(hdl_i2c_t *desc);
+//void hdl_i2c_work(hdl_i2c_t *desc);
 void hdl_i2c_client_transaction_init_reset(hdl_i2c_transaction_t *transaction);
 void hdl_i2c_client_transaction_add_message(hdl_i2c_transaction_t *transaction, hdl_i2c_message_t *message);
 void hdl_i2c_client_enqueue_transaction(hdl_i2c_t *desc, hdl_i2c_transaction_t *transaction);

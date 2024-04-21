@@ -1,6 +1,5 @@
 #include "hdl_portable.h"
 
-
 hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
   /* Casting desc to hdl_gpio_port_t* type */
   hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;

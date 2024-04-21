@@ -4,4 +4,6 @@
 #include "bldl.h"
 #include "modules.h"
 
+void test();
+
 #endif // APP_H_

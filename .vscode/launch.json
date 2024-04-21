@@ -151,5 +151,30 @@
 			//	"samplesPerSecond": 4
 			//},
 		},
+		{
+			"name": "Debug JLink GD32F103VG",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"executable": "./build/bmc.elf",
+			"windows": {
+				"serverpath": "JLinkGDBServerCL.exe",
+			},
+			"linux": {
+				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
+				"gdbPath": "/usr/bin/gdb-multiarch"
+			},
+			"runToEntryPoint": "main",
+			//"showDevDebugOutput": "raw",
+			"servertype": "jlink",
+			"interface": "swd",
+			"device": "GD32F103VG",
+			"svdFile": "./MCU/ARM/GD32F103VG/Res/mcu.svd",
+			"preLaunchTask": "J-Link Flash GD32F103VG",
+			//"liveWatch": {
+			//	"enabled": true,
+			//	"samplesPerSecond": 4
+			//},
+		},
     ]
 }

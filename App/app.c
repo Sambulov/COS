@@ -111,27 +111,27 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 // }
 
 
-void event_exti1_isr(uint32_t event, void *sender, void *context) {
-  __NOP();
-  NVIC_SetPendingIRQ(HDL_NVIC_IRQ6_EXTI0);
-  while (1)
-  {
-    __NOP();
-  }  
-}
+// void event_exti1_isr(uint32_t event, void *sender, void *context) {
+//   __NOP();
+//   NVIC_SetPendingIRQ(HDL_NVIC_IRQ6_EXTI0);
+//   while (1)
+//   {
+//     __NOP();
+//   }  
+// }
 
-void event_exti0_isr(uint32_t event, void *sender, void *context) {
-  __NOP();
-}
+// void event_exti0_isr(uint32_t event, void *sender, void *context) {
+//   __NOP();
+// }
 
-void event_60_isr(uint32_t event, void *sender, void *context) {
-  __NOP();
-  NVIC_SetPendingIRQ(HDL_NVIC_IRQ7_EXTI1);
-  while (1)
-  {
-    __NOP();
-  }
-}
+// void event_60_isr(uint32_t event, void *sender, void *context) {
+//   __NOP();
+//   NVIC_SetPendingIRQ(HDL_NVIC_IRQ7_EXTI1);
+//   while (1)
+//   {
+//     __NOP();
+//   }
+// }
 
 
 uint16_t adc_value[2];

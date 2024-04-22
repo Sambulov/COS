@@ -4,7 +4,7 @@
 #if defined ( GD32E23X ) || defined ( GD32F103VG )
 
 #define EVENT_ADC_PRIVATE_SIZE  (4)
-#define ADC_PRIVATE_FIELD_SIZE  (8)     /* this size have to be equal */ 
+#define ADC_PRIVATE_FIELD_SIZE  (8)
 /* 
 *   TODO: oversampling don`t support, discontinuos operation mode don`t support, single operation don`t support,
 *   conversion result threshold monitor function don`t support 

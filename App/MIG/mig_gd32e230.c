@@ -254,11 +254,11 @@
     .module.reg = (void*)ADC_BASE,
     .dma_channel = DMA_CH0,
     .start_triger = HDL_ADC_TRIGER_SOFTWARE,
-    .mode = ADC_OPERATION_MODE_SINGLE_SCAN,
+    .mode = ADC_OPERATION_MODE_CONTINUOS_SCAN,
     .resolution = HDL_ADC_RESOLUTION_12BIT,
     .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
     .init_timeout = 3000,
-    .sources = hdl_adc_sources(&mod_adc_source_0, &mod_adc_source_1),
+    .sources = hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0),
   };
 
   hdl_gpio_port_t hdl_gpio_port_a = {

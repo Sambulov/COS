@@ -61,6 +61,7 @@ typedef enum {
     HDL_DMA_STATUS_FULL_TRANSFER = (1),
     HDL_DMA_STATUS_HALF_TRANSFER = (2),
     HDL_DMA_STATUS_ERROR_TRANSFER = (4),
+    HDL_DMA_STATUS_CHANNEL_ENABLE = (8)
 } hdl_dma_status_e;
 
 /*!
@@ -89,15 +90,24 @@ hdl_module_state_t hdl_dma(void *desc, uint8_t enable);
 uint8_t hdl_dma_config(hdl_dma_t *dma, hdl_dma_config_t *config, hdl_dma_channel_t channel);
 
 /*!
-    \brief          Software triger for starting transfer
+    \brief          Enable DMA channel
     \param[in]      dma - DMA handler
     \param[in]      channel - DMA channel
     \return         
       \retval         HDL_TRUE - OK
       \retval         HDL_FALSE - ERROR
  */
-uint8_t hdl_dma_sw_triger(hdl_dma_t *dma, hdl_dma_channel_t channel);
+uint8_t hdl_dma_channel_enable(hdl_dma_t *dma, hdl_dma_channel_t channel);
 
+/*!
+    \brief          Disable DMA channel
+    \param[in]      dma - DMA handler
+    \param[in]      channel - DMA channel
+    \return         
+      \retval         HDL_TRUE - OK
+      \retval         HDL_FALSE - ERROR
+ */
+uint8_t hdl_dma_channel_disable(hdl_dma_t *dma, hdl_dma_channel_t channel);
 /*!
     \brief          Get DMA channel status
     \param[in]      dma - DMA handler

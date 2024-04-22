@@ -10,15 +10,14 @@ typedef enum {
 
 typedef struct 
 {
-    uint32_t time_stamp;
+    uint32_t time_stamp;            
     uint8_t empty[2];
     uint8_t 
-    flag_get_time           : 1,
+    flag_get_time           : 1,    
     flag_delay_after_start  : 1,
     flag_reset_calibrate    : 1,
     flag_enable_calibrate   : 1,
     empty1                  : 4;
-
     uint8_t state_machine;      /* gd_adc_state_machine_e */
 } gd_adc_private_t;
 
@@ -64,6 +63,7 @@ hdl_module_state_t _gd_adc_calibrate(hdl_timer_t *timer, gd_adc_private_t *priva
     return HDL_MODULE_INIT_OK;
 }
 
+/* Fill DMA struct field */
 void _gd_adc_dma_stuct_fill(hdl_dma_config_t* dma_struct, void* memmory_address, uint32_t amount_transfer){
     dma_struct->memory_addr = (uint32_t)memmory_address;
     dma_struct->memory_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT;
@@ -114,10 +114,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
                 if(hdl_adc->start_triger == HDL_ADC_TRIGER_SOFTWARE)
                     adc_external_trigger_config(ADC_REGULAR_CHANNEL, ENABLE);
                 adc_external_trigger_source_config(ADC_REGULAR_CHANNEL, hdl_adc->start_triger);
-                
-                
                 adc_enable();
-
                 private->state_machine = GD_ADC_STATE_MACHINE_CALIBRATE;
                 private->flag_get_time = 0;
                 private->flag_delay_after_start = 0;
@@ -189,7 +186,7 @@ hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff){
 
     if(hdl_adc->mode == ADC_OPERATION_MODE_CONTINUOS_SCAN){
         /* Config and start DMA */
-        if((DMA_CHCTL(hdl_adc->dma_channel) & (1 << 0)) == RESET){
+        if(!(hdl_dma_status(hdl_dma, hdl_adc->dma_channel) & HDL_DMA_STATUS_CHANNEL_ENABLE)) {
             /* pointer points to the first element in the array */
             hdl_adc_source_t **adc_channel_source = hdl_adc->sources;
             int16_t channel_element_number = 0;
@@ -202,7 +199,7 @@ hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff){
             hdl_dma_config(hdl_dma, &config, hdl_adc->dma_channel);
             /* TODO: if channel == 1 */
             /* TODO: if channel !=0 || !=1  return FALSE*/
-            dma_channel_enable(hdl_adc->dma_channel);
+            hdl_dma_channel_enable(hdl_dma, hdl_adc->dma_channel);
             if(hdl_adc->start_triger == HDL_ADC_TRIGER_SOFTWARE)
                 adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
             else
@@ -211,7 +208,8 @@ hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff){
         return HDL_ADC_STATUS_OK;
     }
     else if(hdl_adc->mode == ADC_OPERATION_MODE_SINGLE_SCAN){
-        if(dma_flag_get(0, DMA_FLAG_FTF) || (DMA_CHCTL(hdl_adc->dma_channel) & (1 << 0)) == RESET){
+        if(!(hdl_dma_status(hdl_dma, hdl_adc->dma_channel) & HDL_DMA_STATUS_CHANNEL_ENABLE) || 
+        (hdl_dma_status(hdl_dma, hdl_adc->dma_channel) & HDL_DMA_STATUS_FULL_TRANSFER)) {
             /* pointer points to the first element in the array */
             hdl_adc_source_t **adc_channel_source = hdl_adc->sources;
             int16_t channel_element_number = 0;
@@ -224,7 +222,7 @@ hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff){
             hdl_dma_config(hdl_dma, &config, hdl_adc->dma_channel);
             /* TODO: if channel == 1 */
             /* TODO: if channel !=0 || !=1  return FALSE*/
-            dma_channel_enable(hdl_adc->dma_channel);
+            hdl_dma_channel_enable(hdl_dma, hdl_adc->dma_channel);
             if(hdl_adc->start_triger == HDL_ADC_TRIGER_SOFTWARE)
                 adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
             else

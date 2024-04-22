@@ -254,7 +254,7 @@
     .module.reg = (void*)ADC_BASE,
     .dma_channel = DMA_CH0,
     .start_triger = HDL_ADC_TRIGER_SOFTWARE,
-    .mode = ADC_OPERATION_MODE_CONTINUOS_SCAN,
+    .mode = ADC_OPERATION_MODE_SINGLE_SCAN,
     .resolution = HDL_ADC_RESOLUTION_12BIT,
     .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
     .init_timeout = 3000,

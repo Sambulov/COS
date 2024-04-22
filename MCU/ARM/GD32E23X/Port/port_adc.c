@@ -75,8 +75,8 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
                 /* routine sequence lenght */
                 
 
-                //adc_channel_length_config(ADC_REGULAR_CHANNEL, channel_element_number);
-                adc_discontinuous_mode_config(ADC_REGULAR_CHANNEL, channel_element_number);
+                adc_channel_length_config(ADC_REGULAR_CHANNEL, channel_element_number);
+                //adc_discontinuous_mode_config(ADC_REGULAR_CHANNEL, channel_element_number);
                 adc_data_alignment_config(hdl_adc->data_alignment);
                 adc_resolution_config((uint32_t)hdl_adc->resolution);
                 adc_external_trigger_source_config(ADC_REGULAR_CHANNEL, hdl_adc->start_triger );

@@ -7,6 +7,7 @@ extern hdl_adc_t mod_adc;
 extern hdl_gpio_pin_t mod_gpio_adc_channel_3v3;
 extern hdl_gpio_pin_t mod_gpio_adc_channel_1v5;
 extern hdl_timer_t mod_timer_ms;
+extern hdl_timer_t mod_timer_ms;
 
 uint16_t adc_raw[2];
 void test() {
@@ -28,14 +29,18 @@ void test() {
     cooperative_scheduler(false);
   }
 
-;
+  hdl_adc_start(&mod_adc, adc_raw);
 
   while (1) {
     cooperative_scheduler(false);
 
+     hdl_adc_start(&mod_adc, adc_raw);
+     hdl_adc_start(&mod_adc, adc_raw);
+    hdl_adc_status(&mod_adc);
     if (TIME_ELAPSED(time_stamp_ms, 1000, hdl_timer_get(&mod_timer_ms)))
     {
-        hdl_adc_start(&mod_adc, adc_raw);
+         //hdl_adc_start(&mod_adc, adc_raw);
+        __NOP();
     }
   }
 

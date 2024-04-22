@@ -45,6 +45,11 @@ uint8_t hdl_dma_config(hdl_dma_t *h, hdl_dma_config_t *config, hdl_dma_channel_t
     dma_priority_config(channel, config->priority);
     dma_memory_width_config(channel, gd_dma_memory_width_array[config->memory_width]);
     dma_periph_width_config(channel, gd_dma_peripheral_width_array[config->periph_width]);
+
+    //dma_interrupt_enable(channel, DMA_INT_FTF); 
+    //dma_interrupt_enable(channel, DMA_INT_HTF);
+
+
     if(config->memory_inc)
         dma_memory_increase_enable(channel);
     if(config->periph_inc)
@@ -77,7 +82,15 @@ uint8_t hdl_dma_sw_triger(hdl_dma_t *h, hdl_dma_channel_t channel){
 }
 /* Get DMA channel status */
 hdl_dma_status_e hdl_dma_status(hdl_dma_t *h, hdl_dma_channel_t channel){
-    return 0;
+    hdl_dma_status_e rez = HDL_DMA_STATUS_NONE;
+    if((DMA_CHCTL(channel) & (1 << 0)) && dma_flag_get(channel, DMA_FLAG_HTF) == RESET)
+        rez = HDL_DMA_STATUS_HALF_TRANSFER;
+    if((DMA_CHCTL(channel) & (1 << 0)) && dma_flag_get(channel, DMA_FLAG_FTF) == RESET)
+        rez = HDL_DMA_STATUS_FULL_TRANSFER;
+    if((DMA_CHCTL(channel) & (1 << 0)) && dma_flag_get(channel, DMA_FLAG_ERR) == RESET)
+        rez = HDL_DMA_STATUS_ERROR_TRANSFER;
+    
+    return rez;
 }
 /* Get DMA transfer counter value */
 uint32_t hdl_dma_counter(hdl_dma_t *h, hdl_dma_channel_t channel){

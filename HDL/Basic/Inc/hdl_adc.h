@@ -4,11 +4,17 @@
 #if defined ( GD32E23X ) || defined ( GD32F103VG )
 
 #define EVENT_ADC_PRIVATE_SIZE  (4)
-
+#define ADC_PRIVATE_FIELD_SIZE  (8)
 /* 
 *   TODO: oversampling don`t support, discontinuos operation mode don`t support, single operation don`t support,
 *   conversion result threshold monitor function don`t support 
 */
+typedef enum {
+    HDL_ADC_STATUS_INIT_FAILED = 0,
+    HDL_ADC_STATUS_WAITING_START_TRIGGER,
+    HDL_ADC_STATUS_DATA_READY,
+    HDL_ADC_STATUS_ONGOING,
+} hdl_adc_status_e;
 
 typedef enum {
     ADC_OPERATION_MODE_SINGLE_SCAN,    /* Single SCAN, user must launched every conversion with some triger */
@@ -131,6 +137,7 @@ typedef enum {
 
 typedef struct{
     hdl_module_t module;
+    uint8_t __private[ADC_PRIVATE_FIELD_SIZE];
     hdl_dma_channel_t dma_channel;
     hdl_adc_triger_e start_triger;
     hdl_adc_operation_mode_e mode;
@@ -145,7 +152,9 @@ typedef struct{
 #define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
 /* Initialization */
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable);
-uint8_t hdl_adc_start(hdl_adc_t *hdl_adc, void *buff);
+hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff);
+hdl_adc_status_e hdl_adc_status(hdl_adc_t *hdl_adc);
+
 #endif
 
 #endif

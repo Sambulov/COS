@@ -67,17 +67,32 @@ uint8_t hdl_dma_config(hdl_dma_t *h, hdl_dma_config_t *config, hdl_dma_channel_t
     return HDL_TRUE;
 }
 
-/* Software triger for starting transfer */
-uint8_t hdl_dma_sw_triger(hdl_dma_t *h, hdl_dma_channel_t channel){
-    if (_gd_dma_get_conversion_status(channel) == GD_DMA_CONVERSION_COMPLETE){
-        dma_channel_enable(channel);
-        return HDL_TRUE;
-    }
-    return HDL_FALSE;
+/* Enable DMA channel */
+uint8_t hdl_dma_channel_enable(hdl_dma_t *h, hdl_dma_channel_t channel){
+    dma_channel_enable(channel);
+    return HDL_TRUE;
 }
+
+/* Disable DMA channel */
+uint8_t hdl_dma_channel_disable(hdl_dma_t *h, hdl_dma_channel_t channel){
+    dma_channel_disable(channel);
+    return HDL_TRUE;
+}
+
+
 /* Get DMA channel status */
 hdl_dma_status_e hdl_dma_status(hdl_dma_t *h, hdl_dma_channel_t channel){
-    return 0;
+    hdl_dma_status_e rez = HDL_DMA_STATUS_NONE;
+    if((DMA_CHCTL(channel) & (1 << 0)) == SET)
+        rez |= HDL_DMA_STATUS_CHANNEL_ENABLE;
+    if(dma_flag_get(channel, DMA_FLAG_HTF) == SET)
+        rez |= HDL_DMA_STATUS_HALF_TRANSFER;
+    if(dma_flag_get(channel, DMA_FLAG_FTF) == SET)
+        rez |= HDL_DMA_STATUS_FULL_TRANSFER;
+    if(dma_flag_get(channel, DMA_FLAG_ERR) == RESET)
+        rez |= HDL_DMA_STATUS_ERROR_TRANSFER;
+    
+    return rez;
 }
 /* Get DMA transfer counter value */
 uint32_t hdl_dma_counter(hdl_dma_t *h, hdl_dma_channel_t channel){

@@ -10,8 +10,9 @@
 *   conversion result threshold monitor function don`t support 
 */
 typedef enum {
-    HDL_ADC_STATUS_FAILED = 0,
-    HDL_ADC_STATUS_OK,
+    HDL_ADC_STATUS_INIT_FAILED = 0,
+    HDL_ADC_STATUS_WAITING_START_TRIGGER,
+    HDL_ADC_STATUS_DATA_READY,
     HDL_ADC_STATUS_ONGOING,
 } hdl_adc_status_e;
 

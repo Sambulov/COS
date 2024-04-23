@@ -29,17 +29,35 @@ void test() {
     cooperative_scheduler(false);
   }
 
-  hdl_adc_start(&mod_adc, adc_raw);
+  
 
   while (1) {
     cooperative_scheduler(false);
 
-     hdl_adc_start(&mod_adc, adc_raw);
-     hdl_adc_start(&mod_adc, adc_raw);
-    hdl_adc_status(&mod_adc);
+    /* This code will be launched ony one time*/
+    if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)
+      hdl_adc_start(&mod_adc, adc_raw);
+
+    /* There data is ready */
+    if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_DATA_READY)
+      hdl_adc_start(&mod_adc, adc_raw);
+
+    /* This code checked and launched adc */
+    if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_DATA_READY || hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)
+    {
+      hdl_adc_start(&mod_adc, adc_raw);
+      /* There data is ready */
+    }
+      
+    /* Also you can use only this function */
+    if(hdl_adc_start(&mod_adc, adc_raw) == HDL_ADC_STATUS_DATA_READY)
+    {
+      /* There data is ready */
+    }
+
+    
     if (TIME_ELAPSED(time_stamp_ms, 1000, hdl_timer_get(&mod_timer_ms)))
     {
-         //hdl_adc_start(&mod_adc, adc_raw);
         __NOP();
     }
   }

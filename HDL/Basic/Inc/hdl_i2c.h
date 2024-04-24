@@ -5,7 +5,7 @@
 #define HDL_I2C_PRV_SIZE                    48
 #define HDL_I2C_TRANSACTION_PRV_SIZE        28
 
-#if defined ( GD32E23X ) || defined ( GD32F103VG )
+#if defined ( GD32E23X ) || defined ( GD32F103VG ) || defined ( GD32F450 )
   #define HDL_I2C_HAL_PRV_SIZE                16
 
   typedef struct {

@@ -90,72 +90,72 @@ void USART1_IRQHandler()                { _call_isr(USART1_IRQn, __ic->interrupt
 void I2C0_ER_IRQHandler()               { _call_isr(I2C0_ER_IRQn, __ic->interrupts, 0); }
 void I2C1_ER_IRQHandler()               { _call_isr(I2C1_ER_IRQn, __ic->interrupts, 0); }
 
-void * g_pfnVectors[0x40] __attribute__ ((section (".isr_vector"), used)) = {
-  &_estack,
-  &Reset_Handler,
-  &nmi_handler,
-  &hard_fault_handler,
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  ((void *)0),
-  &svc_handler,
-  ((void *)0),
-  ((void *)0),
-  &pend_sv_handler,
-  &systick_handler,
-  &WWDGT_IRQHandler,                    /* IRQ0 */ 
-  &LVD_IRQHandler,                      /* IRQ1 */
-  &RTC_IRQHandler,                      /* IRQ2 */
-  &FMC_IRQHandler,                      /* IRQ3 */
-  &RCU_IRQHandler,                      /* IRQ4 */
-  &EXTI0_1_IRQHandler,                  /* IRQ5 */
-  &EXTI2_3_IRQHandler,                  /* IRQ6 */
-  &EXTI4_15_IRQHandler,                 /* IRQ7 */
-  &irq_n_handler,                       /* IRQ8 */
-  &DMA_Channel0_IRQHandler,             /* IRQ9 */
-  &DMA_Channel1_2_IRQHandler,           /* IRQ10 */
-  &DMA_Channel3_4_IRQHandler,           /* IRQ11 */
-  &ADC_CMP_IRQHandler,                  /* IRQ12 */
-  &TIMER0_BRK_UP_TRG_COM_IRQHandler,    /* IRQ13 */
-  &TIMER0_Channel_IRQHandler,           /* IRQ14 */
-  &irq_n_handler,                       /* IRQ15 */
-  &TIMER2_IRQHandler,                   /* IRQ16 */
-  &TIMER5_IRQHandler,                   /* IRQ17 */
-  &irq_n_handler,                       /* IRQ18 */
-  &TIMER13_IRQHandler,                  /* IRQ19 */
-  &TIMER14_IRQHandler,                  /* IRQ21 */
-  &TIMER15_IRQHandler,                  /* IRQ22 */
-  &TIMER16_IRQHandler,                  /* IRQ23 */
-  &I2C0_EV_IRQHandler,                  /* IRQ24 */
-  &I2C1_EV_IRQHandler,                  /* IRQ25 */
-  &SPI0_IRQHandler,                     /* IRQ26 */
-  &SPI1_IRQHandler,                     /* IRQ27 */
-  &USART0_IRQHandler,                   /* IRQ28 */
-  &USART1_IRQHandler,                   /* IRQ29 */
-  &irq_n_handler,                       /* IRQ30 */
-  &irq_n_handler,                       /* IRQ31 */
-  &irq_n_handler,                       /* IRQ32 */
-  &I2C0_ER_IRQHandler,                  /* IRQ33 */
-  &irq_n_handler,                       /* IRQ34 */
-  &I2C1_ER_IRQHandler,                  /* IRQ35 */
-  &irq_n_handler,                       /* IRQ36 */
-  &irq_n_handler,                       /* IRQ37 */
-  &irq_n_handler,                       /* IRQ38 */
-  &irq_n_handler,                       /* IRQ39 */
-  &irq_n_handler,                       /* IRQ40 */
-  &irq_n_handler,                       /* IRQ41 */
-  &irq_n_handler,                       /* IRQ42 */
-  &irq_n_handler,                       /* IRQ43 */
-  &irq_n_handler,                       /* IRQ44 */
-  &irq_n_handler,                       /* IRQ45 */
-  &irq_n_handler,                       /* IRQ46 */
-  &irq_n_handler,                       /* IRQ47 */
-  &irq_n_handler,                       /* IRQ48 */
-};
+// void * g_pfnVectors[0x40] __attribute__ ((section (".isr_vector"), used)) = {
+//   &_estack,
+//   &Reset_Handler,
+//   &nmi_handler,
+//   &hard_fault_handler,
+//   ((void *)0),
+//   ((void *)0),
+//   ((void *)0),
+//   ((void *)0),
+//   ((void *)0),
+//   ((void *)0),
+//   ((void *)0),
+//   &svc_handler,
+//   ((void *)0),
+//   ((void *)0),
+//   &pend_sv_handler,
+//   &systick_handler,
+//   &WWDGT_IRQHandler,                    /* IRQ0 */ 
+//   &LVD_IRQHandler,                      /* IRQ1 */
+//   &RTC_IRQHandler,                      /* IRQ2 */
+//   &FMC_IRQHandler,                      /* IRQ3 */
+//   &RCU_IRQHandler,                      /* IRQ4 */
+//   &EXTI0_1_IRQHandler,                  /* IRQ5 */
+//   &EXTI2_3_IRQHandler,                  /* IRQ6 */
+//   &EXTI4_15_IRQHandler,                 /* IRQ7 */
+//   &irq_n_handler,                       /* IRQ8 */
+//   &DMA_Channel0_IRQHandler,             /* IRQ9 */
+//   &DMA_Channel1_2_IRQHandler,           /* IRQ10 */
+//   &DMA_Channel3_4_IRQHandler,           /* IRQ11 */
+//   &ADC_CMP_IRQHandler,                  /* IRQ12 */
+//   &TIMER0_BRK_UP_TRG_COM_IRQHandler,    /* IRQ13 */
+//   &TIMER0_Channel_IRQHandler,           /* IRQ14 */
+//   &irq_n_handler,                       /* IRQ15 */
+//   &TIMER2_IRQHandler,                   /* IRQ16 */
+//   &TIMER5_IRQHandler,                   /* IRQ17 */
+//   &irq_n_handler,                       /* IRQ18 */
+//   &TIMER13_IRQHandler,                  /* IRQ19 */
+//   &TIMER14_IRQHandler,                  /* IRQ21 */
+//   &TIMER15_IRQHandler,                  /* IRQ22 */
+//   &TIMER16_IRQHandler,                  /* IRQ23 */
+//   &I2C0_EV_IRQHandler,                  /* IRQ24 */
+//   &I2C1_EV_IRQHandler,                  /* IRQ25 */
+//   &SPI0_IRQHandler,                     /* IRQ26 */
+//   &SPI1_IRQHandler,                     /* IRQ27 */
+//   &USART0_IRQHandler,                   /* IRQ28 */
+//   &USART1_IRQHandler,                   /* IRQ29 */
+//   &irq_n_handler,                       /* IRQ30 */
+//   &irq_n_handler,                       /* IRQ31 */
+//   &irq_n_handler,                       /* IRQ32 */
+//   &I2C0_ER_IRQHandler,                  /* IRQ33 */
+//   &irq_n_handler,                       /* IRQ34 */
+//   &I2C1_ER_IRQHandler,                  /* IRQ35 */
+//   &irq_n_handler,                       /* IRQ36 */
+//   &irq_n_handler,                       /* IRQ37 */
+//   &irq_n_handler,                       /* IRQ38 */
+//   &irq_n_handler,                       /* IRQ39 */
+//   &irq_n_handler,                       /* IRQ40 */
+//   &irq_n_handler,                       /* IRQ41 */
+//   &irq_n_handler,                       /* IRQ42 */
+//   &irq_n_handler,                       /* IRQ43 */
+//   &irq_n_handler,                       /* IRQ44 */
+//   &irq_n_handler,                       /* IRQ45 */
+//   &irq_n_handler,                       /* IRQ46 */
+//   &irq_n_handler,                       /* IRQ47 */
+//   &irq_n_handler,                       /* IRQ48 */
+// };
 
 // __attribute__((naked)) void switch_to_psp(void) {
 //   // change PSP

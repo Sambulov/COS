@@ -1,7 +1,7 @@
 #ifndef HDL_ADC_H_
 #define HDL_ADC_H_
 
-#if defined ( GD32E23X ) || defined ( GD32F103VG )
+#if defined ( GD32E23X ) || defined ( GD32F103VG ) || defined ( GD32F450 )
 
 #define EVENT_ADC_PRIVATE_SIZE  (4)
 #define ADC_PRIVATE_FIELD_SIZE  (8)
@@ -36,6 +36,7 @@ typedef enum {
     HDL_ADC_CHANNEL_17 = ADC_CHANNEL_17,
 } hdl_adc_channel_e;
 
+#if defined ( GD32E23X )
 /* Time sampling for channel  */
 typedef enum{
     HDL_ADC_CHANNEL_SAMPLE_TIME_1P5 = ADC_SAMPLETIME_1POINT5,     /* 12.5 CK_ADC cycles (const value for 12-bit adc conversion) + 1.5 CK_ADC cycles*/
@@ -48,7 +49,6 @@ typedef enum{
     HDL_ADC_CHANNEL_SAMPLE_TIME_239P5 = ADC_SAMPLETIME_239POINT5, /* 12.5 CK_ADC cycles (const value for 12-bit adc conversion) + 239.5 CK_ADC cycles*/
 } hdl_adc_channel_sample_time_e;
 
-#if defined ( GD32E23X )
 typedef enum {
     HDL_ADC_RESOLUTION_12BIT = ADC_RESOLUTION_12B,
     HDL_ADC_RESOLUTION_10BIT = ADC_RESOLUTION_10B,
@@ -74,6 +74,17 @@ typedef enum {
     /* This triger can launch regular and inserted channel conversion */
     HDL_ADC_TRIGER_SOFTWARE = ADC_EXTTRIG_REGULAR_NONE,
 } hdl_adc_triger_e;
+#elif defined ( GD32F450 )
+
+/* Triger for starting conversion */
+typedef enum {
+    /* This triger can launch only regular channel conversion */
+    HDL_ADC_TRIGER_FOR_REGULAR_CHANNEL_TIMER0_CH0 = 0,
+} hdl_adc_triger_e;
+
+typedef enum{
+    HDL_ADC_CHANNEL_SAMPLE_TIME_1P5 = 0,     /* 12.5 CK_ADC cycles (const value for 12-bit adc conversion) + 1.5 CK_ADC cycles*/
+} hdl_adc_channel_sample_time_e;
 #else
 typedef enum {
     /* This triger can launch only regular channel conversion */

@@ -138,7 +138,7 @@ uint16_t adc_value[2];
 
 void main() {
 
-  test();
+  //test();
   /* test complete? */
   asm("bkpt 255");
   for(;;);

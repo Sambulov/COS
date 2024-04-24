@@ -31,7 +31,7 @@ typedef struct {
 
 _Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_nvic_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
 
-extern void *_estack;
+extern void *__stack_end__;
 extern void *_sidata, *_sdata, *_edata;
 extern void *_sbss, *_ebss;
 
@@ -252,7 +252,7 @@ void USBFS_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ67_USBFS, __ic->
 #endif /* GD32F10X_CL */
 
 void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
-  &_estack,
+  &__stack_end__,
   &Reset_Handler,
   &NMI_Handler,
   &HardFault_Handler,
@@ -587,41 +587,41 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   /* TODO: */
   if(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
-    FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->flash_latency;
+    //FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->flash_latency;
     return HDL_MODULE_INIT_OK;
   }
-  FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
+  //FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
   return HDL_MODULE_DEINIT_OK;
 }
 
 void _hdl_exti_request(hdl_interrupt_controller_t *ic) {
-  if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK)) {
-    hdl_nvic_exti_t **extis = ic->exti_lines;
-    if(extis != NULL) {
-      while (*extis != NULL) {
-        uint8_t exti_no = 31 - __CLZ((*extis)->line);
-        if(exti_no <= 15) { /* if GPIO exti lines */
-          volatile uint32_t *src_reg = (uint32_t *)(AFIO_EXTISS0 + (exti_no & (~0x03UL)));
-          /* set exti source */
-          HDL_REG_MODIFY(*src_reg, 0x0FUL << (exti_no & 0x03UL), ((uint32_t)((*extis)->source)) << (exti_no & 0x03UL));
-        } /* other lines from internal modules are fixed */
-        if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
-          EXTI_FTEN |= (*extis)->line;
-        }
-        else {
-          EXTI_FTEN &= ~((*extis)->line);
-        }
-        if((*extis)->trigger & HDL_EXTI_TRIGGER_RISING) {
-          EXTI_RTEN |= (*extis)->line;
-        }
-        else {
-          EXTI_RTEN &= ~((*extis)->line);
-        }
-        EXTI_EVEN |= (*extis)->line;
-        extis++;
-      }
-    }
-  }
+  // if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK)) {
+  //   hdl_nvic_exti_t **extis = ic->exti_lines;
+  //   if(extis != NULL) {
+  //     while (*extis != NULL) {
+  //       uint8_t exti_no = 31 - __CLZ((*extis)->line);
+  //       if(exti_no <= 15) { /* if GPIO exti lines */
+  //         volatile uint32_t *src_reg = (uint32_t *)(AFIO_EXTISS0 + (exti_no & (~0x03UL)));
+  //         /* set exti source */
+  //         HDL_REG_MODIFY(*src_reg, 0x0FUL << (exti_no & 0x03UL), ((uint32_t)((*extis)->source)) << (exti_no & 0x03UL));
+  //       } /* other lines from internal modules are fixed */
+  //       if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
+  //         EXTI_FTEN |= (*extis)->line;
+  //       }
+  //       else {
+  //         EXTI_FTEN &= ~((*extis)->line);
+  //       }
+  //       if((*extis)->trigger & HDL_EXTI_TRIGGER_RISING) {
+  //         EXTI_RTEN |= (*extis)->line;
+  //       }
+  //       else {
+  //         EXTI_RTEN &= ~((*extis)->line);
+  //       }
+  //       EXTI_EVEN |= (*extis)->line;
+  //       extis++;
+  //     }
+  //   }
+  // }
 }
 
 hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
@@ -650,85 +650,85 @@ hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
 }
 
 static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_private_t **isr) {
-  hdl_nvic_exti_t **extis = ic->exti_lines;
-  if(extis == NULL) return;
-  hdl_exti_line_t exti_lines_int_en = 0;
-  switch ((*isr)->irq_type) {
-    case HDL_NVIC_IRQ6_EXTI0:
-      exti_lines_int_en = HDL_EXTI_LINE_0;
-      break;
-    case HDL_NVIC_IRQ7_EXTI1:
-      exti_lines_int_en = HDL_EXTI_LINE_1;
-      break;
-    case HDL_NVIC_IRQ8_EXTI2:
-      exti_lines_int_en = HDL_EXTI_LINE_2;
-      break;
-    case HDL_NVIC_IRQ9_EXTI3:
-      exti_lines_int_en = HDL_EXTI_LINE_3;
-      break;
-    case HDL_NVIC_IRQ10_EXTI4:
-      exti_lines_int_en = HDL_EXTI_LINE_4;
-      break;
-    case HDL_NVIC_IRQ23_EXTI5_9:
-      exti_lines_int_en = EXTI_LINES_5_9;
-      break;
-    case HDL_NVIC_IRQ40_EXTI10_15:
-      exti_lines_int_en = EXTI_LINES_10_15;
-      break;    
-    default:
-      return;
-  }
-  while ((*extis != NULL) && (exti_lines_int_en)) {
-    if((exti_lines_int_en & ((*extis)->line)) &&
-       ((*extis)->mode == HDL_EXTI_MODE_INTERRUPT)) {
-      EXTI_INTEN |= (*extis)->line;
-    }
-    exti_lines_int_en &= ~((*extis)->line);
-  }
+  // hdl_nvic_exti_t **extis = ic->exti_lines;
+  // if(extis == NULL) return;
+  // hdl_exti_line_t exti_lines_int_en = 0;
+  // switch ((*isr)->irq_type) {
+  //   case HDL_NVIC_IRQ6_EXTI0:
+  //     exti_lines_int_en = HDL_EXTI_LINE_0;
+  //     break;
+  //   case HDL_NVIC_IRQ7_EXTI1:
+  //     exti_lines_int_en = HDL_EXTI_LINE_1;
+  //     break;
+  //   case HDL_NVIC_IRQ8_EXTI2:
+  //     exti_lines_int_en = HDL_EXTI_LINE_2;
+  //     break;
+  //   case HDL_NVIC_IRQ9_EXTI3:
+  //     exti_lines_int_en = HDL_EXTI_LINE_3;
+  //     break;
+  //   case HDL_NVIC_IRQ10_EXTI4:
+  //     exti_lines_int_en = HDL_EXTI_LINE_4;
+  //     break;
+  //   case HDL_NVIC_IRQ23_EXTI5_9:
+  //     exti_lines_int_en = EXTI_LINES_5_9;
+  //     break;
+  //   case HDL_NVIC_IRQ40_EXTI10_15:
+  //     exti_lines_int_en = EXTI_LINES_10_15;
+  //     break;    
+  //   default:
+  //     return;
+  // }
+  // while ((*extis != NULL) && (exti_lines_int_en)) {
+  //   if((exti_lines_int_en & ((*extis)->line)) &&
+  //      ((*extis)->mode == HDL_EXTI_MODE_INTERRUPT)) {
+  //     EXTI_INTEN |= (*extis)->line;
+  //   }
+  //   exti_lines_int_en &= ~((*extis)->line);
+  // }
 }
 
 uint8_t hdl_interrupt_request(hdl_nvic_t *ic, hdl_nvic_irq_n_t irq, event_handler_t handler, void *context) {
-  if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->interrupts == NULL) || (handler == NULL))
-    return HDL_FALSE;
-  hdl_nvic_interrupt_private_t **isr = (hdl_nvic_interrupt_private_t **)ic->interrupts;
-  while ((isr != NULL) && (*isr)->irq_type != irq) isr++;
-  if(isr == NULL) return HDL_FALSE;
-  (*isr)->handler = handler;
-  (*isr)->handler_context = context;
-  uint8_t prio = (((*isr)->priority_group << (8U - ic->prio_bits)) | 
-                  ((*isr)->priority & (0xFF >> ic->prio_bits)) & 
-                  0xFFUL);
-  volatile uint8_t *ipr = ((*isr)->irq_type < 0)? &(SCB->SHP[((*isr)->irq_type & 0xFUL) - 4UL]):
-                                                    &(NVIC->IP[(*isr)->irq_type]);
-  /* set priority for interrupt */
-  *ipr = prio;
-  /* interrupt enable */
-  if((*isr)->irq_type < 0) {
-    switch ((*isr)->irq_type) {
-      case SysTick_IRQn:
-        SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;                  /* Enable SysTick IRQ */
-        break;
-      case PendSV_IRQn:
-        // TODO: enable if possible, ;
-        break;
-      case SVCall_IRQn:
-        // TODO: enable if possible, ;
-        break;
-      case HardFault_IRQn:
-        // TODO: enable if possible, ;
-        break;
-      case NonMaskableInt_IRQn:
-        // TODO: enable if possible, ;
-        break;
-      default:
-        return HDL_FALSE;
-    }
-  }
-  else {
-    _hdl_nvic_exti_interrupt_enable(ic, isr);
-    NVIC_EnableIRQ((*isr)->irq_type);
-  }
-  return HDL_TRUE;
+  // if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->interrupts == NULL) || (handler == NULL))
+  //   return HDL_FALSE;
+  // hdl_nvic_interrupt_private_t **isr = (hdl_nvic_interrupt_private_t **)ic->interrupts;
+  // while ((isr != NULL) && (*isr)->irq_type != irq) isr++;
+  // if(isr == NULL) return HDL_FALSE;
+  // (*isr)->handler = handler;
+  // (*isr)->handler_context = context;
+  // uint8_t prio = (((*isr)->priority_group << (8U - ic->prio_bits)) | 
+  //                 ((*isr)->priority & (0xFF >> ic->prio_bits)) & 
+  //                 0xFFUL);
+  // volatile uint8_t *ipr = ((*isr)->irq_type < 0)? &(SCB->SHP[((*isr)->irq_type & 0xFUL) - 4UL]):
+  //                                                   &(NVIC->IP[(*isr)->irq_type]);
+  // /* set priority for interrupt */
+  // *ipr = prio;
+  // /* interrupt enable */
+  // if((*isr)->irq_type < 0) {
+  //   switch ((*isr)->irq_type) {
+  //     case SysTick_IRQn:
+  //       SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;                  /* Enable SysTick IRQ */
+  //       break;
+  //     case PendSV_IRQn:
+  //       // TODO: enable if possible, ;
+  //       break;
+  //     case SVCall_IRQn:
+  //       // TODO: enable if possible, ;
+  //       break;
+  //     case HardFault_IRQn:
+  //       // TODO: enable if possible, ;
+  //       break;
+  //     case NonMaskableInt_IRQn:
+  //       // TODO: enable if possible, ;
+  //       break;
+  //     default:
+  //       return HDL_FALSE;
+  //   }
+  // }
+  // else {
+  //   _hdl_nvic_exti_interrupt_enable(ic, isr);
+  //   NVIC_EnableIRQ((*isr)->irq_type);
+  // }
+  // return HDL_TRUE;
 }
 
 void hdl_interrupt_sw_trigger(hdl_nvic_irq_n_t interrupt) {

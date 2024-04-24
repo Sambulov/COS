@@ -1,0 +1,7 @@
+si 1
+speed 1000
+device GD32F450ZI
+erase
+loadfile build/bmc.hex 0
+R
+exit

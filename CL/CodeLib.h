@@ -43,6 +43,7 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #define va_arg(v,l)            __builtin_va_arg(v,l)
 
 #include "Macros.h"
+#include "ClMath.h"
 #include "LinkedList.h"
 #include "CooperativeMultitasking.h"
 #include "MachineState.h"

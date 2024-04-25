@@ -30,18 +30,6 @@ static const uint32_t gd_rcu_pll_prescaler_array[] = {INVAID_VALUE, RCU_PLL_PRED
     RCU_PLL_MUL23, RCU_PLL_MUL24, RCU_PLL_MUL25, RCU_PLL_MUL26, RCU_PLL_MUL27, RCU_PLL_MUL28, RCU_PLL_MUL29,
     RCU_PLL_MUL30, RCU_PLL_MUL31, RCU_PLL_MUL32};
 
-static void _clock_calc(hdl_clock_t *this, hdl_clock_t *source, int32_t mulldiv_factor) {
-  if(mulldiv_factor > 0) {
-    this->freq = source->freq * mulldiv_factor;
-    this->div = source->div;
-  }
-  else {
-    this->freq = source->freq ;
-    this->div = source->div * (-mulldiv_factor);
-  }
-  /* TODO: Normilize */
-}
-
 /*!
     \brief          Set system source
     \brief          System source can be CK_PLL, IRC8M, HXTAL
@@ -116,7 +104,7 @@ hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {
     else {
       return HDL_MODULE_INIT_FAILED;
     }
-    _clock_calc((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_clock, 1);
+    clock_calc_mul(hdl_prescaler, hdl_clock);
     return HDL_MODULE_INIT_OK;
   }
   else {
@@ -364,7 +352,7 @@ hdl_module_state_t hdl_clock_selector_rtc(void *desc, uint8_t enable) {
     else {
       return HDL_MODULE_INIT_FAILED;
     }
-    _clock_calc((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_clock, -frequency_prescaler);
+    clock_calc_div(hdl_prescaler, hdl_clock);
     return HDL_MODULE_INIT_OK;
   }
   else {
@@ -412,7 +400,7 @@ hdl_module_state_t hdl_clock_selector_pll(void *desc, uint8_t enable) {
     else {
       return HDL_MODULE_INIT_FAILED;
     }
-    _clock_calc((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_clock, 1);
+    clock_calc_mul(hdl_prescaler, hdl_clock);
     return HDL_MODULE_INIT_OK;
   }
   else {
@@ -451,7 +439,7 @@ hdl_module_state_t hdl_clock_pll_prescaler(void *desc, uint8_t enable) {
       return HDL_MODULE_INIT_FAILED;
     /* Calling HAL function */
     rcu_hxtal_prediv_config(register_bit_field_value);
-    _clock_calc((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_clock, -prescaler_value);
+    clock_calc_div(hdl_prescaler, hdl_clock);
     return HDL_MODULE_INIT_OK;
   }
   else {
@@ -488,7 +476,7 @@ hdl_module_state_t hdl_clock_pll_mul(void *desc, uint8_t enable) {
       return HDL_MODULE_INIT_FAILED;
     RCU_CFG0 &= ~RCU_CFG0_PLLMF;
     RCU_CFG0 |= register_bit_field_value;
-    _clock_calc((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_clock, multiply_coefficient);
+    clock_calc_mul(hdl_prescaler, hdl_clock);
     return HDL_MODULE_INIT_OK;
   }
   else {
@@ -543,7 +531,7 @@ hdl_module_state_t hdl_clock_ahb(void *desc, uint8_t enable) {
       return HDL_MODULE_INIT_FAILED;
     /* Calling HAL function */
     rcu_ahb_clock_config(register_bit_field_value);
-    _clock_calc((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_clock, -prescaler_value);
+    clock_calc_div(hdl_prescaler, hdl_clock);
     return HDL_MODULE_INIT_OK;
   }
   else {
@@ -590,7 +578,7 @@ hdl_module_state_t hdl_clock_apb1(void *desc, uint8_t enable) {
       return HDL_MODULE_INIT_FAILED;
 
     rcu_apb1_clock_config(register_bit_field_value);
-    _clock_calc((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_clock, -prescaler_value);
+    clock_calc_div(hdl_prescaler, hdl_clock);
     return HDL_MODULE_INIT_OK;
   }
   else {
@@ -634,7 +622,7 @@ hdl_module_state_t hdl_clock_apb2(void *desc, uint8_t enable) {
     else
       return HDL_MODULE_INIT_FAILED;
     rcu_apb2_clock_config(register_bit_field_value);
-    _clock_calc((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_clock, -prescaler_value);
+    clock_calc_div(hdl_prescaler, hdl_clock);
     return HDL_MODULE_INIT_OK;
   }
   else {

@@ -47,6 +47,16 @@
             }
         },
         {
+            "name": "DebugGD32F450ZI",
+            "displayName": "Debug GD32F450ZI",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_3500"
+            }
+        },
+        {
             "name": "ReleaseNUM463KG",
             "displayName": "Release NUM463KG",
             "generator": "Ninja",
@@ -84,6 +94,16 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "BOARD": "USPD"
+            }
+        },
+        {
+            "name": "ReleaseGD32F450ZI",
+            "displayName": "Release GD32F450ZI",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_3500"
             }
         },
         {
@@ -129,6 +149,12 @@
             "description": "",
             "displayName": "J-Link Debug GD32F103",
             "configurePreset": "DebugGD32F103"
+        },
+        {
+            "name": "DebugGD32F450ZI",
+            "description": "",
+            "displayName": "J-Link Debug GD32F450ZI",
+            "configurePreset": "DebugGD32F450ZI"      
         }
     ]
 }

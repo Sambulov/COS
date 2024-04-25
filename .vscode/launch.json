@@ -176,5 +176,30 @@
 			//	"samplesPerSecond": 4
 			//},
 		},
+		{
+			"name": "Debug JLink GD32F450ZI",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"executable": "./build/bmc.elf",
+			"windows": {
+				"serverpath": "JLinkGDBServerCL.exe",
+			},
+			"linux": {
+				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
+				"gdbPath": "/usr/bin/gdb-multiarch"
+			},
+			"runToEntryPoint": "main",
+			//"showDevDebugOutput": "raw",
+			"servertype": "jlink",
+			"interface": "swd",
+			"device": "GD32F450ZI",
+			"svdFile": "./MCU/GD32F450ZI/Res/mcu.svd",
+			"preLaunchTask": "J-Link Flash GD32F450ZI",
+			//"liveWatch": {
+			//	"enabled": true,
+			//	"samplesPerSecond": 4
+			//},
+		},
     ]
 }

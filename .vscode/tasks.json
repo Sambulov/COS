@@ -172,5 +172,29 @@
 			"detail": "Erase",
 			"group": "build"
 		},
+		{
+			"label": "J-Link Flash GD32F450ZI",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/GD32F450ZI/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/GD32F450ZI/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase GD32F450ZI",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/GD32F450ZI/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/GD32F450ZI/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
     ]
 }

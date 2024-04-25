@@ -64,7 +64,7 @@ hdl_module_state_t hdl_clock_hxtal_prescaler(void *desc, uint8_t enable) {
       HDL_REG_CLEAR(RCU_CFG0, RCU_CFG0_PREDV0);
     else
       HDL_REG_SET(RCU_CFG0, RCU_CFG0_PREDV0);
-    clock_calc_div(hdl_prescaler, (hdl_clock_t *)hdl_prescaler->module.dependencies[0]);
+    hdl_clock_calc_div((hdl_clock_t *)hdl_prescaler, (hdl_clock_t *)hdl_prescaler->module.dependencies[0], hdl_prescaler->muldiv_factor);
     return HDL_MODULE_INIT_OK;
   }
   else {
@@ -89,21 +89,19 @@ hdl_module_state_t hdl_clock_pll2(void *desc, uint8_t enable) {
 
 hdl_module_state_t hdl_clock_selector_pll(void *desc, uint8_t enable) {
   if (enable) {
-    hdl_clock_prescaler_t *clock = (hdl_clock_prescaler_t *)desc;
+    hdl_clock_t *clock = (hdl_clock_t *)desc;
     if (clock->module.dependencies == NULL || 
         clock->module.dependencies[0] == NULL)
       return HDL_MODULE_INIT_FAILED;
     hdl_clock_t *clock_src = (hdl_clock_t *)clock->module.dependencies[0];
     if(clock_src->module.init == &hdl_clock_hxtal_prescaler) {
       HDL_REG_SET(RCU_CFG0, RCU_PLLSRC_HXTAL);
-      clock->freq = clock_src->freq;
-      clock->div = clock_src->div;
+      hdl_clock_calc_div((hdl_clock_t *)clock, clock_src, 1);
     }
     else if(clock_src->module.init == &hdl_clock_irc8m) {
       RCU_CFG0 &= ~(RCU_CFG0_PLLSEL);
       RCU_CFG0 |= (RCU_PLLSRC_IRC8M_DIV2);
-      clock->freq = clock_src->freq / 2;
-      clock->div = clock_src->div;
+      hdl_clock_calc_div((hdl_clock_t *)clock, clock_src, 2);
     }
     else {
       return HDL_MODULE_INIT_FAILED;
@@ -123,8 +121,8 @@ hdl_module_state_t hdl_clock_pll(void *desc, uint8_t enable) {
     hdl_clock_prescaler_t *hdl_prescaler = (hdl_clock_prescaler_t *)desc;
     if (hdl_prescaler->module.dependencies == NULL || hdl_prescaler->module.dependencies[0] == NULL) break;
     hdl_clock_t *clock_src = (hdl_clock_t *)hdl_prescaler->module.dependencies[0];
-    clock_calc_mul(hdl_prescaler, clock_src);
-    if((hdl_prescaler->freq / hdl_prescaler->div) > PLL_MAX_FREQ) break;
+    hdl_clock_calc_mul((hdl_clock_t *)hdl_prescaler, clock_src, hdl_prescaler->muldiv_factor);
+    if(hdl_get_clock((hdl_clock_t *)hdl_prescaler) > PLL_MAX_FREQ) break;
     uint32_t pll_cnf = hdl_prescaler->muldiv_factor;
     if((pll_cnf < 2) || (pll_cnf > 32)) break;
     pll_cnf -= (pll_cnf > 15)? 1: 2;
@@ -155,8 +153,7 @@ hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {
         hdl_clock->module.dependencies[1] == NULL)
       return HDL_MODULE_INIT_FAILED;
     hdl_clock_t *hdl_clock_src = (hdl_clock_t *)hdl_clock->module.dependencies[1];
-    hdl_clock->freq = hdl_clock_src->freq;
-    hdl_clock->div = hdl_clock_src->div;
+    hdl_clock_calc_div((hdl_clock_t *)hdl_clock, hdl_clock_src, 1);
     if(hdl_clock_src->module.init == &hdl_clock_pll) {
       return _hdl_clock_system_switch(RCU_CKSYSSRC_PLL);
     }
@@ -182,8 +179,8 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_prescaler_t *hdl_prescale
   hdl_clock_t *clock_src = (hdl_clock_t *)hdl_prescaler->module.dependencies[0];
   if(clock_src->module.init != base_clock)
     return HDL_MODULE_INIT_FAILED;
-  clock_calc_div(hdl_prescaler, clock_src);
-  if((hdl_prescaler->freq/hdl_prescaler->div) > check_frec)
+  hdl_clock_calc_div((hdl_clock_t *)hdl_prescaler, clock_src, hdl_prescaler->muldiv_factor);
+  if(hdl_get_clock((hdl_clock_t *)hdl_prescaler) > check_frec)
     return HDL_MODULE_INIT_FAILED;
   uint32_t div_cnf = 31 - __CLZ(hdl_prescaler->muldiv_factor);
   if (div_cnf)

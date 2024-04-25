@@ -1,7 +1,7 @@
 #include "hdl.h"
 #include "CodeLib.h"
 
-static void clock_calc(hdl_clock_prescaler_t *presc, hdl_clock_t *source, int32_t mulldiv_factor) {
+static void clock_calc(hdl_clock_t *presc, hdl_clock_t *source, int32_t mulldiv_factor) {
   presc->div = source->div;
   presc->freq = source->freq;
   if(mulldiv_factor > 1) { /* mul */
@@ -22,12 +22,18 @@ static void clock_calc(hdl_clock_prescaler_t *presc, hdl_clock_t *source, int32_
   }
 }
 
-void clock_calc_mul(hdl_clock_prescaler_t *presc, hdl_clock_t *source) {
+void hdl_clock_calc_mul(hdl_clock_t *presc, hdl_clock_t *source, int32_t factor) {
   if((presc != NULL) && (source != NULL))
-    clock_calc(presc, source, presc->muldiv_factor);
+    clock_calc(presc, source, factor);
 }
 
-void clock_calc_div(hdl_clock_prescaler_t *presc, hdl_clock_t *source) {
+void hdl_clock_calc_div(hdl_clock_t *presc, hdl_clock_t *source, int32_t factor) {
   if((presc != NULL) && (source != NULL))
-    clock_calc(presc, source, -presc->muldiv_factor);
+    clock_calc(presc, source, -factor);
+}
+
+float hdl_get_clock(hdl_clock_t *clock) {
+  if(clock != NULL)
+    return clock->freq / clock->div;
+  return 0;
 }

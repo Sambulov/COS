@@ -16,8 +16,10 @@ typedef struct {
   uint32_t muldiv_factor;         /* Prescale value or multiply coefficient */
 } hdl_clock_prescaler_t;
 
-void clock_calc_mul(hdl_clock_prescaler_t *presc, hdl_clock_t *source);
-void clock_calc_div(hdl_clock_prescaler_t *presc, hdl_clock_t *source);
+void hdl_clock_calc_mul(hdl_clock_t *presc, hdl_clock_t *source, int32_t factor);
+void hdl_clock_calc_div(hdl_clock_t *presc, hdl_clock_t *source, int32_t factor);
+
+float hdl_get_clock(hdl_clock_t *clock);
 
 #endif // HDL_CLK_SOURCE_H_
 

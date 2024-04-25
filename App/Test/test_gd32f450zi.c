@@ -2,8 +2,72 @@
 #include "CodeLib.h"
 
 #if defined( GD32F450 )
+
+  #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
+
+ void SysTick_Event(uint32_t event, void *sender, void *context){
+  __NOP();
+ }
+
+
+  hdl_core_t mod_sys_core = {
+    .module.init = &hdl_core,
+    .module.dependencies = NULL,
+    .module.reg = (void *)SCB_BASE,
+    .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
+    /* TODO: ... */
+  };
+
+  hdl_nvic_interrupt_t mod_irq_systick = {
+    .irq_type = HDL_NVIC_EXCEPTION_SysTick,
+    .priority = 0,
+    .priority_group = 0,
+  };
+
+  hdl_nvic_interrupt_t mod_irq_exti_0_1 = {
+    .irq_type = HDL_NVIC_IRQ40_EXTI10_15,
+    .priority = 0,
+    .priority_group = 1,
+  };
+
+  hdl_nvic_exti_t mod_nvic_exti_line_0 = {
+    .line = HDL_EXTI_LINE_13,
+    .mode = HDL_EXTI_MODE_INTERRUPT,
+    .source = HDL_EXTI_SOURCE_PE,
+    .trigger = HDL_EXTI_TRIGGER_FALLING
+  };
+
+  hdl_nvic_t mod_nvic = {
+    .module.init = &hdl_nvic,
+    //.module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
+    .module.reg = NVIC,
+    .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
+    .irq_latency = 0, /* TODO: define static assert */
+    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1),
+    .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0)
+  };
+
+
+
 void test() {
     SystemInit();
+
+    hdl_enable(&mod_sys_core.module);
+    hdl_enable(&mod_nvic.module);
+
+  while (!hdl_init_complete()) {
+    cooperative_scheduler(false);
+  }
+  
+  SysTick_Config(200000);
+  
+  hdl_interrupt_request(&mod_nvic, HDL_NVIC_EXCEPTION_SysTick, &SysTick_Event, NULL);
+  while (1)
+  {
+    cooperative_scheduler(false);
+  }
+  
+
     // rcu_periph_clock_enable(RCU_GPIOF);
     // gpio_af_set(GPIOF, GPIO_AF_0, GPIO_PIN_13);
     // gpio_mode_set(GPIOF, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO_PIN_13);

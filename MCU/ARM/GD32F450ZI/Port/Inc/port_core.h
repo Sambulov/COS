@@ -255,6 +255,8 @@ typedef enum {
   HDL_EXTI_SOURCE_PE = 0b0100,
   HDL_EXTI_SOURCE_PF = 0b0101,
   HDL_EXTI_SOURCE_PG = 0b0110,
+  HDL_EXTI_SOURCE_PH = 0b0111,
+  HDL_EXTI_SOURCE_PI = 0b1000,
 } hdl_exti_source_t;
 
 typedef enum {

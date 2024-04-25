@@ -684,6 +684,7 @@ static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_p
       EXTI_INTEN |= (*extis)->line;
     }
     exti_lines_int_en &= ~((*extis)->line);
+    extis++;
   }
 }
 

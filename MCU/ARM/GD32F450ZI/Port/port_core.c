@@ -75,11 +75,11 @@ void TAMPER_STAMP_IRQHandler()  { _call_isr(HDL_NVIC_IRQ2_TAMPER_STAMP, __ic->in
 void RTC_WKUP_IRQHandler()  { _call_isr( HDL_NVIC_IRQ3_RTC_WKUP, __ic->interrupts, 0); }
 void FMC_IRQHandler()  { _call_isr( HDL_NVIC_IRQ4_FMC, __ic->interrupts, 0); }
 void RCU_CTC_IRQHandler()  { _call_isr( HDL_NVIC_IRQ5_RCU_CTC, __ic->interrupts, 0); }
-void EXTI0_IRQHandler()  { _call_isr( HDL_NVIC_IRQ6_EXTI0, __ic->interrupts, 0); }
-void EXTI1_IRQHandler()  { _call_isr( HDL_NVIC_IRQ7_EXTI1, __ic->interrupts, 0); }
-void EXTI2_IRQHandler()  { _call_isr( HDL_NVIC_IRQ8_EXTI2, __ic->interrupts, 0); }
-void EXTI3_IRQHandler()  { _call_isr( HDL_NVIC_IRQ9_EXTI3, __ic->interrupts, 0); }
-void EXTI4_IRQHandler()  { _call_isr( HDL_NVIC_IRQ10_EXTI4, __ic->interrupts, 0); }
+void EXTI0_IRQHandler()  { _call_isr( HDL_NVIC_IRQ6_EXTI0, __ic->interrupts, 0); hdl_exti_clear_pending(EXTI_0); }
+void EXTI1_IRQHandler()  { _call_isr( HDL_NVIC_IRQ7_EXTI1, __ic->interrupts, 0); hdl_exti_clear_pending(EXTI_1); }
+void EXTI2_IRQHandler()  { _call_isr( HDL_NVIC_IRQ8_EXTI2, __ic->interrupts, 0); hdl_exti_clear_pending(EXTI_2); }
+void EXTI3_IRQHandler()  { _call_isr( HDL_NVIC_IRQ9_EXTI3, __ic->interrupts, 0); hdl_exti_clear_pending(EXTI_3); }
+void EXTI4_IRQHandler()  { _call_isr( HDL_NVIC_IRQ10_EXTI4, __ic->interrupts, 0); hdl_exti_clear_pending(EXTI_4); }
 void DMA0_Channel0_IRQHandler()  { _call_isr( HDL_NVIC_IRQ11_DMA0_Channel0, __ic->interrupts, 0); }
 void DMA0_Channel1_IRQHandler()  { _call_isr( HDL_NVIC_IRQ12_DMA0_Channel1, __ic->interrupts, 0); }
 void DMA0_Channel2_IRQHandler()  { _call_isr( HDL_NVIC_IRQ13_DMA0_Channel2, __ic->interrupts, 0); }
@@ -92,7 +92,7 @@ void CAN0_TX_IRQHandler()  { _call_isr( HDL_NVIC_IRQ19_CAN0_TX, __ic->interrupts
 void CAN0_RX0_IRQHandler()  { _call_isr( HDL_NVIC_IRQ20_CAN0_RX0, __ic->interrupts, 0); }
 void CAN0_RX1_IRQHandler()  { _call_isr( HDL_NVIC_IRQ21_CAN0_RX1, __ic->interrupts, 0); }
 void CAN0_EWMC_IRQHandler()  { _call_isr( HDL_NVIC_IRQ22_CAN0_EWMC, __ic->interrupts, 0); }
-void EXTI5_9_IRQHandler()  { _call_isr( HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, 0); }
+void EXTI5_9_IRQHandler()  { _call_isr( HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, 0); hdl_exti_clear_pending(EXTI_LINES_5_9); }
 void TIMER0_BRK_TIMER8_IRQHandler()  { _call_isr( HDL_NVIC_IRQ24_TIMER0_BRK_TIMER8, __ic->interrupts, 0); }
 void TIMER0_UP_TIMER9_IRQHandler()  { _call_isr( HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, __ic->interrupts, 0); }
 void TIMER0_TRG_CMT_TIMER10_IRQHandler()  { _call_isr( HDL_NVIC_IRQ26_TIMER0_TRG_CMT_TIMER10, __ic->interrupts, 0); }
@@ -109,7 +109,7 @@ void SPI1_IRQHandler()  { _call_isr( HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); 
 void USART0_IRQHandler()  { _call_isr( HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); }
 void USART1_IRQHandler()  { _call_isr( HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); }
 void USART2_IRQHandler()  { _call_isr( HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); }
-void EXTI10_15_IRQHandler()  { _call_isr( HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, 0); }
+void EXTI10_15_IRQHandler()  { _call_isr( HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, 0); hdl_exti_clear_pending(EXTI_LINES_10_15); }
 void RTC_Alarm_IRQHandler()  { _call_isr( HDL_NVIC_IRQ41_RTC_Alarm, __ic->interrupts, 0); }
 void USBFS_WKUP_IRQHandler()  { _call_isr( HDL_NVIC_IRQ42_USBFS_WKUP, __ic->interrupts, 0); }
 void TIMER7_BRK_TIMER11_IRQHandler()  { _call_isr( HDL_NVIC_IRQ43_TIMER7_BRK_TIMER11, __ic->interrupts, 0); }
@@ -526,31 +526,29 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
 }
 
 void _hdl_exti_request(hdl_interrupt_controller_t *ic) {
-  if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK)) {
-    hdl_nvic_exti_t **extis = ic->exti_lines;
-    if(extis != NULL) {
-      while (*extis != NULL) {
-        uint8_t exti_no = 31 - __CLZ((*extis)->line);
-        if(exti_no <= 15) { /* if GPIO exti lines */
-          volatile uint32_t *src_reg = (uint32_t *)(SYSCFG + (exti_no & (~0x03UL)));
-          /* set exti source */
-          HDL_REG_MODIFY(*src_reg, 0x0FUL << (exti_no & 0x03UL), ((uint32_t)((*extis)->source)) << (exti_no & 0x03UL));
-        } /* other lines from internal modules are fixed */
-        if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
-          EXTI_FTEN |= (*extis)->line;
-        }
-        else {
-          EXTI_FTEN &= ~((*extis)->line);
-        }
-        if((*extis)->trigger & HDL_EXTI_TRIGGER_RISING) {
-          EXTI_RTEN |= (*extis)->line;
-        }
-        else {
-          EXTI_RTEN &= ~((*extis)->line);
-        }
-        EXTI_EVEN |= (*extis)->line;
-        extis++;
+  hdl_nvic_exti_t **extis = ic->exti_lines;
+  if(extis != NULL) {
+    while (*extis != NULL) {
+      uint8_t exti_no = 31 - __CLZ((*extis)->line);
+      if(exti_no <= 15) { /* if GPIO exti lines */
+        volatile uint32_t *src_reg = (uint32_t *)(SYSCFG + (exti_no & (~0x03UL)));
+        /* set exti source */
+        HDL_REG_MODIFY(*src_reg, 0x0FUL << (exti_no & 0x03UL), ((uint32_t)((*extis)->source)) << (exti_no & 0x03UL));
+      } /* other lines from internal modules are fixed */
+      if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
+        EXTI_FTEN |= (*extis)->line;
       }
+      else {
+        EXTI_FTEN &= ~((*extis)->line);
+      }
+      if((*extis)->trigger & HDL_EXTI_TRIGGER_RISING) {
+        EXTI_RTEN |= (*extis)->line;
+      }
+      else {
+        EXTI_RTEN &= ~((*extis)->line);
+      }
+      EXTI_EVEN |= (*extis)->line;
+      extis++;
     }
   }
 }
@@ -615,6 +613,7 @@ static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_p
       EXTI_INTEN |= (*extis)->line;
     }
     exti_lines_int_en &= ~((*extis)->line);
+    extis++;
   }
 }
 

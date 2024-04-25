@@ -9,6 +9,10 @@
   __NOP();
  }
 
+  void Exti_Event(uint32_t event, void *sender, void *context){
+  __NOP();
+ }
+
 
   hdl_core_t mod_sys_core = {
     .module.init = &hdl_core,
@@ -24,14 +28,14 @@
     .priority_group = 0,
   };
 
-  hdl_nvic_interrupt_t mod_irq_exti_0_1 = {
+  hdl_nvic_interrupt_t mod_irq_exti_10_15 = {
     .irq_type = HDL_NVIC_IRQ40_EXTI10_15,
     .priority = 0,
     .priority_group = 1,
   };
 
-  hdl_nvic_exti_t mod_nvic_exti_line_0 = {
-    .line = HDL_EXTI_LINE_13,
+  hdl_nvic_exti_t mod_nvic_exti_line_14 = {
+    .line = HDL_EXTI_LINE_14,
     .mode = HDL_EXTI_MODE_INTERRUPT,
     .source = HDL_EXTI_SOURCE_PE,
     .trigger = HDL_EXTI_TRIGGER_FALLING
@@ -43,10 +47,27 @@
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .irq_latency = 0, /* TODO: define static assert */
-    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1),
-    .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0)
+    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_10_15),
+    .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_14)
   };
 
+hdl_gpio_port_t hdl_gpio_port_e = {
+  .init = &hdl_gpio_port,
+  .dependencies = NULL,
+  .reg = (void *)GPIOE,
+};
+
+hdl_gpio_mode_t gpio_input_np = {
+    .type = GPIO_MODE_INPUT,
+    .pull = GPIO_PUPD_NONE,
+};
+
+hdl_gpio_pin_t pin_pe14 = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_e),
+    .module.reg = (void *)GPIO_PIN_14,
+    .mode = &gpio_input_np
+};
 
 
 void test() {
@@ -54,16 +75,26 @@ void test() {
 
     hdl_enable(&mod_sys_core.module);
     hdl_enable(&mod_nvic.module);
+    hdl_enable(&pin_pe1.module);
 
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
   
   SysTick_Config(200000);
-  
+
+  rcu_periph_clock_enable(RCU_GPIOE);
+  gpio_af_set(GPIOE, GPIO_AF_0, GPIO_PIN_13);
+  gpio_mode_set(GPIOE, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO_PIN_13);
+
+
   hdl_interrupt_request(&mod_nvic, HDL_NVIC_EXCEPTION_SysTick, &SysTick_Event, NULL);
+  hdl_interrupt_request(&mod_nvic, HDL_NVIC_IRQ40_EXTI10_15, &Exti_Event, NULL);
   while (1)
   {
+    // if(hdl_gpio_read(&pin_pe13) == HDL_GPIO_LOW)
+    //   __NOP();
+
     cooperative_scheduler(false);
   }
   

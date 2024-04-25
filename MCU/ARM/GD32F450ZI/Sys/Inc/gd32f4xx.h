@@ -110,6 +110,7 @@ typedef enum IRQn
 {
     /* cortex-M4 processor exceptions numbers */
     NonMaskableInt_IRQn          = -14,    /*!< 2 non maskable interrupt                                 */
+    HardFault_IRQn               = -13,    /*!< hardfault interrupt                                      */
     MemoryManagement_IRQn        = -12,    /*!< 4 cortex-M4 memory management interrupt                  */
     BusFault_IRQn                = -11,    /*!< 5 cortex-M4 bus fault interrupt                          */
     UsageFault_IRQn              = -10,    /*!< 6 cortex-M4 usage fault interrupt                        */

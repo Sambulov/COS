@@ -213,7 +213,7 @@ hdl_module_state_t hdl_clock_apb1(void *desc, uint8_t enable) {
   if (enable) {
     return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 10, 12, APB1_MAX_FREQ, &hdl_clock_ahb);
   }
-  rcu_apb1_clock_config(RCU_AHB_CKSYS_DIV512);
+  rcu_apb1_clock_config(RCU_APB1_CKAHB_DIV16);
   return HDL_MODULE_DEINIT_OK;
 }
 
@@ -221,7 +221,7 @@ hdl_module_state_t hdl_clock_apb2(void *desc, uint8_t enable) {
   if (enable) {
     return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 13, 15, APB2_MAX_FREQ, &hdl_clock_ahb);
   }
-  rcu_apb2_clock_config(RCU_AHB_CKSYS_DIV512);
+  rcu_apb2_clock_config(RCU_APB2_CKAHB_DIV16);
   return HDL_MODULE_DEINIT_OK;
 }
 

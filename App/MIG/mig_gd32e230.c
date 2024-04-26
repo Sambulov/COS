@@ -46,7 +46,7 @@
   };
 
   hdl_nvic_interrupt_t mod_irq_8 = {
-    .irq_type = HDL_NVIC_IRQ8,
+    .irq_type = HDL_NVIC_IRQ7_EXTI4_15,
     .priority = 0,
     .priority_group = 2,
   };
@@ -58,14 +58,23 @@
     .trigger = HDL_EXTI_TRIGGER_FALLING
   };
 
+    hdl_nvic_exti_t mod_nvic_exti_line_8 = {
+    .line = HDL_EXTI_LINE_8,
+    .mode = HDL_EXTI_MODE_INTERRUPT,
+    .source = HDL_EXTI_SOURCE_PB,
+    .trigger = HDL_EXTI_TRIGGER_RISING
+  };
+
+
+
   hdl_nvic_t mod_nvic = {
     .module.init = &hdl_nvic,
-    //.module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
+    .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .irq_latency = 0, /* TODO: define static assert */
     .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_8),
-    .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0)
+    .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8)
   };
 
   /**************************************************************

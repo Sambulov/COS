@@ -588,8 +588,10 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   if(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->flash_latency;
+    rcu_periph_clock_enable(RCU_AF);
     return HDL_MODULE_INIT_OK;
   }
+  rcu_periph_clock_disable(RCU_AF);
   FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
   return HDL_MODULE_DEINIT_OK;
 }
@@ -601,9 +603,7 @@ void _hdl_exti_request(hdl_interrupt_controller_t *ic) {
       while (*extis != NULL) {
         uint8_t exti_no = 31 - __CLZ((*extis)->line);
         if(exti_no <= 15) { /* if GPIO exti lines */
-          volatile uint32_t *src_reg = (uint32_t *)(AFIO_EXTISS0 + (exti_no & (~0x03UL)));
-          /* set exti source */
-          HDL_REG_MODIFY(*src_reg, 0x0FUL << (exti_no & 0x03UL), ((uint32_t)((*extis)->source)) << (exti_no & 0x03UL));
+          gpio_exti_source_select((*extis)->source, exti_no);
         } /* other lines from internal modules are fixed */
         if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
           EXTI_FTEN |= (*extis)->line;

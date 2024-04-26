@@ -98,5 +98,3 @@ hdl_dma_status_e hdl_dma_status(hdl_dma_t *h, hdl_dma_channel_t channel){
 uint32_t hdl_dma_counter(hdl_dma_t *h, hdl_dma_channel_t channel){
     return dma_transfer_number_get(channel);
 }
-/* Subscribe to IRQ */
-uint8_t hdl_dma_subscribe(hdl_dma_t *h, hdl_dma_event_t *event);

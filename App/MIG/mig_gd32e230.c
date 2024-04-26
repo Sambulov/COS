@@ -123,7 +123,7 @@
    *  PLL prescaler
    *************************************************************/
   hdl_clock_prescaler_t mod_clock_pll_prescaler = {
-    .module.init = &hdl_clock_pll_prescaler,
+    .module.init = &hdl_clock_hxtal_prescaler,
     .module.dependencies = hdl_module_dependencies(&mod_clock_hxtal.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_HXTAL_2_PLLSEL_PREDIV,
@@ -144,7 +144,7 @@
    *  PLL multiply factor
    *************************************************************/
   hdl_clock_prescaler_t mod_clock_pll_mul = {
-    .module.init = &hdl_clock_pll_mul,
+    .module.init = &hdl_clock_pll,
     .module.dependencies = hdl_module_dependencies(&mod_clock_pll_selector.module),
     .module.reg = (void *)RCU,
     .muldiv_factor = HDL_PLLMUL,

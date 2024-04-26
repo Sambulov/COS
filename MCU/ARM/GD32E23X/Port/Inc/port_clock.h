@@ -15,17 +15,13 @@ hdl_module_state_t hdl_clock_lxtal(void *desc, uint8_t enable);
 hdl_module_state_t hdl_clock_irc40k(void *desc, uint8_t enable);
 hdl_module_state_t hdl_clock_irc28m(void *desc, uint8_t enable);
 
-/* pll prescaler(after HXTAL) */
-hdl_module_state_t hdl_clock_pll_prescaler(void *desc, uint8_t enable);
-
-/* system clock selector */
-hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable);
+hdl_module_state_t hdl_clock_hxtal_prescaler(void *desc, uint8_t enable);
 
 /* pll selector (irc8m/2 | hdl_clock_pll_prescaler) */
 hdl_module_state_t hdl_clock_selector_pll(void *desc, uint8_t enable);
+hdl_module_state_t hdl_clock_pll(void *desc, uint8_t enable);
 
-/* pll multiply coefficient */
-hdl_module_state_t hdl_clock_pll_mul(void *desc, uint8_t enable);
+hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable);
 
 /* RTC selector */  
 hdl_module_state_t hdl_clock_selector_rtc(void *desc, uint8_t enable);

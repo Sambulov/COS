@@ -141,8 +141,8 @@ hdl_module_state_t hdl_clock_pll(void *desc, uint8_t enable) {
 static hdl_module_state_t _hdl_clock_system_switch(uint32_t src) {
   rcu_system_clock_source_config(src);
   uint32_t stb_cnt = CK_SYS_STARTUP_TIMEOUT;
-  while((RCU_SCSS_PLL != (RCU_CFG0 & RCU_CFG0_SCSS)) && stb_cnt--) ;
-  return (RCU_SCSS_PLL != (RCU_CFG0 & RCU_CFG0_SCSS))? HDL_MODULE_INIT_FAILED: HDL_MODULE_INIT_OK;
+  while((src != (RCU_CFG0 & RCU_CFG0_SCSS)) && stb_cnt--) ;
+  return (src != (RCU_CFG0 & RCU_CFG0_SCSS))? HDL_MODULE_INIT_FAILED: HDL_MODULE_INIT_OK;
 }
 
 hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {
@@ -170,8 +170,8 @@ hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {
 }
 
 static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_prescaler_t *hdl_prescaler, 
-                                              uint32_t en_bit, uint32_t offset, 
-                                              uint32_t check_frec, void *base_clock) {
+                                              uint32_t bit_from, uint32_t bit_to, 
+                                              uint32_t check_frec, hdl_module_initializer_t base_clock) {
   if ((hdl_prescaler->muldiv_factor == 0) || 
     (hdl_prescaler->module.dependencies == NULL) || 
     (hdl_prescaler->module.dependencies[0] == NULL))
@@ -184,15 +184,14 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_prescaler_t *hdl_prescale
     return HDL_MODULE_INIT_FAILED;
   uint32_t div_cnf = 31 - __CLZ(hdl_prescaler->muldiv_factor);
   if (div_cnf)
-    div_cnf = (div_cnf - 1) | en_bit;
-  HDL_REG_MODIFY(RCU_CFG0, RCU_CFG0_AHBPSC, div_cnf << offset);
-
+    div_cnf = ((div_cnf - 1) << bit_from) | (1UL << bit_to);
+  HDL_REG_MODIFY(RCU_CFG0, BITS(bit_from, bit_to), div_cnf);
   return HDL_MODULE_INIT_OK;
 }
 
 hdl_module_state_t hdl_clock_ahb(void *desc, uint8_t enable) {
   if (enable) {
-    return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 8, 4, MAX_SYS_CLOCK, &hdl_clock_system);
+    return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 4, 7, MAX_SYS_CLOCK, &hdl_clock_system);
   }
   rcu_ahb_clock_config(RCU_AHB_CKSYS_DIV512);
   return HDL_MODULE_DEINIT_OK;
@@ -200,7 +199,7 @@ hdl_module_state_t hdl_clock_ahb(void *desc, uint8_t enable) {
 
 hdl_module_state_t hdl_clock_apb1(void *desc, uint8_t enable) {
   if (enable) {
-    return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 4, 8, APB1_MAX_FREQ, &hdl_clock_ahb);
+    return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 8, 10, APB1_MAX_FREQ, &hdl_clock_ahb);
   }
   rcu_apb1_clock_config(RCU_AHB_CKSYS_DIV512);
   return HDL_MODULE_DEINIT_OK;
@@ -208,7 +207,7 @@ hdl_module_state_t hdl_clock_apb1(void *desc, uint8_t enable) {
 
 hdl_module_state_t hdl_clock_apb2(void *desc, uint8_t enable) {
   if (enable) {
-    return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 4, 11, MAX_SYS_CLOCK, &hdl_clock_ahb);
+    return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 11, 13, MAX_SYS_CLOCK, &hdl_clock_ahb);
   }
   rcu_apb2_clock_config(RCU_AHB_CKSYS_DIV512);
   return HDL_MODULE_DEINIT_OK;

@@ -1,7 +1,36 @@
 #include "app.h"
 #include "CodeLib.h"
 
+
+//#define TEST_CLOCK
+
+
 #if defined ( GD32E23X )
+
+#ifdef TEST_CLOCK
+extern hdl_gpio_pin_t mod_gpo_carrier_pwr_on;
+extern hdl_clock_counter_t mod_systick_counter;
+
+
+void test() {
+  hdl_enable(&mod_systick_counter.module);
+  hdl_enable(&mod_gpo_carrier_pwr_on.module);
+  
+  while (!hdl_init_complete()) {
+    cooperative_scheduler(false);
+  }
+
+  while (1)
+  {
+    if(hdl_clock_counter_get_count(&mod_systick_counter) >= 1){
+        hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
+    }
+  }
+  
+
+}
+
+#else
 
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
@@ -62,10 +91,9 @@ hdl_gpio_pin_t pin_pb8 = {
 uint16_t adc_raw[2];
 void test() {
   static uint32_t time_stamp_ms = 0;
-
+  hdl_enable(&mod_adc.module);
   hdl_enable(&mod_gpio_adc_channel_3v3.module);
   hdl_enable(&mod_gpio_adc_channel_1v5.module);
-  hdl_enable(&mod_adc.module);
   hdl_enable(&mod_timer_ms.module);
   hdl_enable(&mod_nvic.module);
   hdl_enable(&pin_pa0.module);
@@ -81,33 +109,35 @@ void test() {
     cooperative_scheduler(false);
 
     /* This code will be launched ony one time*/
-    // if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)
-    //   hdl_adc_start(&mod_adc, adc_raw);
+    if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)
+      hdl_adc_start(&mod_adc);
 
-    // /* There data is ready */
-    // if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_DATA_READY)
-    //   hdl_adc_start(&mod_adc, adc_raw);
+    /* There data is ready */
+    if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_DATA_READY)
+      hdl_adc_start(&mod_adc);
 
-    // /* This code checked and launched adc */
-    // if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_DATA_READY || hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)
-    // {
-    //   hdl_adc_start(&mod_adc, adc_raw);
-    //   /* There data is ready */
-    // }
+    /* This code checked and launched adc */
+    if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_DATA_READY || hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)
+    {
+      hdl_adc_start(&mod_adc);
+      /* There data is ready */
+    }
       
-    // /* Also you can use only this function */
-    // if(hdl_adc_start(&mod_adc, adc_raw) == HDL_ADC_STATUS_DATA_READY)
-    // {
-    //   /* There data is ready */
-    // }
-
+    /* Also you can use only this function */
+    if(hdl_adc_start(&mod_adc) == HDL_ADC_STATUS_DATA_READY)
+    {
+      /* There data is ready */
+    }
+    hdl_adc_get_data(&mod_adc, HDL_ADC_CHANNEL_3, &adc_raw[0]);
+    hdl_adc_get_data(&mod_adc, HDL_ADC_CHANNEL_7, &adc_raw[1]);
     
-    // if (TIME_ELAPSED(time_stamp_ms, 1000, hdl_timer_get(&mod_timer_ms)))
-    // {
-    //     __NOP();
-    // }
+    if (TIME_ELAPSED(time_stamp_ms, 1000, hdl_timer_get(&mod_timer_ms)))
+    {
+        __NOP();
+    }
   }
 
 }
+#endif
 
 #endif

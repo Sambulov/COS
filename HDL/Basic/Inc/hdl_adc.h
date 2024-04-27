@@ -22,7 +22,8 @@ typedef enum {
 
 /* Initialization */
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable);
-hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff);
+hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc);
+hdl_adc_status_e hdl_adc_get_data(hdl_adc_t *hdl_adc, hdl_adc_channel_e channel, uint16_t *output_data);
 hdl_adc_status_e hdl_adc_status(hdl_adc_t *hdl_adc);
 
 

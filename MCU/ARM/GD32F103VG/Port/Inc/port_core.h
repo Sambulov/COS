@@ -322,7 +322,6 @@ typedef struct {
   uint32_t prio_bits;
   hdl_nvic_interrupt_t **interrupts;
   hdl_nvic_exti_t **exti_lines;
-  uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
 } hdl_nvic_t;
 
 typedef struct{

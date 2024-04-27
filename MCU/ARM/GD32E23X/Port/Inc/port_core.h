@@ -9,7 +9,7 @@ typedef enum {
   HDL_NVIC_EXCEPTION_HF                = HardFault_IRQn,             /*!< hardfault interrupt                                      */
   HDL_NVIC_EXCEPTION_SVC               = SVCall_IRQn,                /*!< sv call interrupt                                        */
   HDL_NVIC_EXCEPTION_PSV               = PendSV_IRQn,                /*!< pend sv interrupt                                        */
-  HDL_NVIC_EXCEPTION_SisTick           = SysTick_IRQn,               /*!< system tick interrupt                                    */
+  HDL_NVIC_EXCEPTION_SysTick           = SysTick_IRQn,               /*!< system tick interrupt                                    */
   /* interruput numbers */
   HDL_NVIC_IRQ0_WWDGT                  = WWDGT_IRQn,                 /*!< window watchdog timer interrupt                          */
   HDL_NVIC_IRQ1_LVD                    = LVD_IRQn,                   /*!< LVD through EXTI line detect interrupt                   */

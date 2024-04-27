@@ -15,6 +15,11 @@ typedef enum {
 } hdl_adc_status_e;
 
 #define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
+//#define hdl_adc_sources(...) .source = (hdl_adc_source_t *[]){__VA_ARGS__, NULL}, .buf = (uint16_t [sizeof({(hdl_adc_source_t *[]){__VA_ARGS__, NULL}})/sizeof(hdl_adc_source_t *)]){}
+
+#define hdl_adc_src(...)  .sources = hdl_adc_sources(__VA_ARGS__),\
+                          .buf = (uint16_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
+
 /* Initialization */
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable);
 hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff);

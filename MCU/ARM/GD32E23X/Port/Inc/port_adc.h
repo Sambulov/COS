@@ -89,6 +89,7 @@ typedef struct{
     hdl_adc_data_alignment_t data_alignment;
     uint32_t init_timeout;
     hdl_adc_source_t **sources;               /* max amount 15 */
+    uint16_t *buf;
 } hdl_adc_t;
 
 #endif

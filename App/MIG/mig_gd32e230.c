@@ -28,7 +28,7 @@
   };
 
   hdl_nvic_interrupt_t mod_irq_systick = {
-    .irq_type = HDL_NVIC_EXCEPTION_SisTick,
+    .irq_type = HDL_NVIC_EXCEPTION_SysTick,
     .priority = 0,
     .priority_group = 0,
   };
@@ -132,12 +132,11 @@
   /**************************************************************
    *  Selector PLL source second rang (HXTAL or IRC8M)
    **************************************************************/
-  hdl_clock_prescaler_t mod_clock_pll_selector = {
+  hdl_clock_t mod_clock_pll_selector = {
     .module.init = &hdl_clock_selector_pll,
     /* If source IRC8M before oscillator there is prescaler 2, this logic realized inside driver */
     .module.dependencies = hdl_module_dependencies(&HDL_PLL_MUL_CLOCK.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = 1,
+    .module.reg = (void *)RCU
   };
 
   /**************************************************************
@@ -233,7 +232,7 @@
     .module.init = hdl_timer,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
-    .reload_iterrupt = HDL_NVIC_EXCEPTION_SisTick,
+    .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
     .val = 0
   };
 
@@ -260,15 +259,19 @@
   hdl_adc_t mod_adc = {
     .module.init = &hdl_adc,
     .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_timer_ms.module, &mod_dma.module),
-    .module.reg = (void*)ADC_BASE,
+    .module.reg = (void*)ADC,
     .dma_channel = DMA_CH0,
     .start_triger = HDL_ADC_TRIGER_SOFTWARE,
     .mode = ADC_OPERATION_MODE_CONTINUOS_SCAN,
     .resolution = HDL_ADC_RESOLUTION_12BIT,
     .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
     .init_timeout = 3000,
-    .sources = hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0),
+    hdl_adc_src(&mod_adc_source_1, &mod_adc_source_0)
+    //.sources = hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0),
+    //.buf = (uint16_t [sizeof(hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0))/sizeof(hdl_adc_source_t *)]){},
   };
+
+
 
   hdl_gpio_port_t hdl_gpio_port_a = {
     .init = &hdl_gpio_port,

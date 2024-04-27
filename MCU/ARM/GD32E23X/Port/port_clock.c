@@ -124,7 +124,7 @@ hdl_module_state_t hdl_clock_pll(void *desc, uint8_t enable) {
     uint32_t pll_cnf = hdl_prescaler->muldiv_factor;
     if((pll_cnf < 2) || (pll_cnf > 32)) break;
     pll_cnf -= (pll_cnf > 15)? 1: 2;
-    pll_cnf = ((pll_cnf & 0x0F) << 18) | ((pll_cnf & 0x10) << 27);
+    pll_cnf = ((pll_cnf & 0x0F) << 18) | ((pll_cnf & 0x10) << (27 - 4));
     HDL_REG_MODIFY(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF4), pll_cnf);
     if(_hdl_clock_osc_en((hdl_clock_t *)desc, RCU_PLL_CK, RCU_FLAG_PLLSTB, PLL_STARTUP_TIMEOUT) != HDL_MODULE_INIT_OK) {
       rcu_osci_off(RCU_PLL_CK);

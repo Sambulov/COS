@@ -8,6 +8,7 @@ hdl_module_state_t hdl_clock_irc40k(void *desc, uint8_t enable);
 
 hdl_module_state_t hdl_clock_hxtal_prescaler(void *desc, uint8_t enable);
 
+hdl_module_state_t hdl_clock_selector_pll(void *desc, uint8_t enable);
 hdl_module_state_t hdl_clock_pll(void *desc, uint8_t enable);
 
 #ifdef GD32F10X_CL

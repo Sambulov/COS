@@ -11,7 +11,8 @@ typedef enum {
 typedef struct 
 {
     uint32_t time_stamp;            
-    uint8_t empty[2];
+    uint8_t empty;
+    uint8_t channel_amount;
     uint8_t 
     flag_get_time           : 1,    
     flag_delay_after_start  : 1,
@@ -92,6 +93,12 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
     if(enable) {
         switch (private->state_machine){
             case GD_ADC_STATE_MACHINE_DISABLE: {
+                private->flag_delay_after_start = 0;
+                private->flag_enable_calibrate = 0;
+                private->flag_reset_calibrate = 0;
+                private->flag_get_time = 0;
+                private->channel_amount = 0;
+
                 rcu_periph_clock_enable(RCU_ADC);
                 adc_special_function_config(ADC_SCAN_MODE, ENABLE);
                 if(hdl_adc->mode == ADC_OPERATION_MODE_CONTINUOS_SCAN)
@@ -105,8 +112,9 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
                     adc_channel_source++;
                     channel_element_number++;
                 }
+                private->channel_amount = channel_element_number;
                 /* routine sequence lenght */
-                adc_channel_length_config(ADC_REGULAR_CHANNEL, channel_element_number);
+                adc_channel_length_config(ADC_REGULAR_CHANNEL, private->channel_amount);
                 //adc_discontinuous_mode_config(ADC_REGULAR_CHANNEL, channel_element_number);
                 adc_data_alignment_config(hdl_adc->data_alignment);
                 adc_resolution_config((uint32_t)hdl_adc->resolution);
@@ -115,10 +123,6 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
                 adc_external_trigger_source_config(ADC_REGULAR_CHANNEL, hdl_adc->start_triger);
                 adc_enable();
                 private->state_machine = GD_ADC_STATE_MACHINE_CALIBRATE;
-                private->flag_get_time = 0;
-                private->flag_delay_after_start = 0;
-                private->flag_enable_calibrate = 0;
-                private->flag_reset_calibrate = 0;
             }
             case GD_ADC_STATE_MACHINE_CALIBRATE: {
                 hdl_module_state_t res = _gd_adc_calibrate(hdl_timer, private, hdl_adc->init_timeout);
@@ -192,10 +196,10 @@ hdl_adc_status_e hdl_adc_status(hdl_adc_t *hdl_adc){
       \retval         HDL_ADC_STATUS_DATA_READY - data ready to read
       \retval         HDL_ADC_STATUS_ONGOING - adc conversion isn`t completed
  */
-hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff){
+hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc){
     gd_adc_private_t *private = NULL;
     hdl_dma_t* hdl_dma = NULL;
-    if(hdl_adc == NULL || buff == NULL)
+    if(hdl_adc == NULL)
         return HDL_ADC_STATUS_INIT_FAILED;
     private = (gd_adc_private_t *)hdl_adc->__private;
     hdl_dma = (hdl_dma_t *)hdl_adc->module.dependencies[2];
@@ -205,15 +209,8 @@ hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff){
     if(hdl_adc->mode == ADC_OPERATION_MODE_CONTINUOS_SCAN){
         /* In continues mode we have to start triger for adc only one time, if DMA was turn off */
         if(adc_status == HDL_ADC_STATUS_WAITING_START_TRIGGER) {
-            /* pointer points to the first element in the array */
-            hdl_adc_source_t **adc_channel_source = hdl_adc->sources;
-            int16_t channel_element_number = 0;
-            while (*adc_channel_source != NULL){
-                adc_channel_source++;
-                channel_element_number++;
-            }
             hdl_dma_config_t config;
-            _gd_adc_dma_stuct_fill(&config, buff, channel_element_number);
+            _gd_adc_dma_stuct_fill(&config, hdl_adc->buf, private->channel_amount);
             hdl_dma_config(hdl_dma, &config, hdl_adc->dma_channel);
             /* TODO: if channel == 1 */
             /* TODO: if channel !=0 || !=1  return FALSE*/
@@ -231,15 +228,8 @@ hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff){
     /* In single scan mode we have to start trigger for adc after DMA transfer, and if DMA was turn off */
     else if(hdl_adc->mode == ADC_OPERATION_MODE_SINGLE_SCAN){
         if(adc_status == HDL_ADC_STATUS_WAITING_START_TRIGGER || adc_status == HDL_ADC_STATUS_DATA_READY) {
-            /* pointer points to the first element in the array */
-            hdl_adc_source_t **adc_channel_source = hdl_adc->sources;
-            int16_t channel_element_number = 0;
-            while (*adc_channel_source != NULL){
-                adc_channel_source++;
-                channel_element_number++;
-            }
             hdl_dma_config_t config;
-            _gd_adc_dma_stuct_fill(&config, buff, channel_element_number);
+            _gd_adc_dma_stuct_fill(&config, hdl_adc->buf, private->channel_amount);
             hdl_dma_config(hdl_dma, &config, hdl_adc->dma_channel);
             /* TODO: if channel == 1 */
             /* TODO: if channel !=0 || !=1  return FALSE*/
@@ -257,4 +247,38 @@ hdl_adc_status_e hdl_adc_start(hdl_adc_t *hdl_adc, void *buff){
     else
         return HDL_ADC_STATUS_INIT_FAILED;
 }
+
+hdl_adc_status_e hdl_adc_get_data(hdl_adc_t *hdl_adc, hdl_adc_channel_e channel, uint16_t *output_data){
+    gd_adc_private_t *private = NULL;
+    hdl_dma_t* hdl_dma = NULL;
+    if(hdl_adc == NULL)
+        return HDL_ADC_STATUS_INIT_FAILED;
+    private = (gd_adc_private_t *)hdl_adc->__private;
+    hdl_dma = (hdl_dma_t *)hdl_adc->module.dependencies[2];
+    if (private->state_machine != GD_ADC_STATE_MACHINE_OK)
+        return HDL_ADC_STATUS_INIT_FAILED;
+
+    hdl_adc_status_e adc_status = hdl_adc_status(hdl_adc);
+    if(adc_status == HDL_ADC_STATUS_DATA_READY || adc_status == HDL_ADC_STATUS_ONGOING){
+        /* Find corresponding adc channel in the array of adc channels  */
+        hdl_adc_source_t **adc_channel_source = hdl_adc->sources;
+        int16_t channel_element_index = 0;
+        uint8_t channelIsFounded = 0;
+        while (*adc_channel_source != NULL) {
+            if((*adc_channel_source)->channel_number == channel){
+                channelIsFounded = 1;
+                break;
+            }
+            adc_channel_source++;
+            channel_element_index++;
+        }
+        if (channelIsFounded){
+            *output_data = hdl_adc->buf[channel_element_index];
+            return HDL_ADC_STATUS_DATA_READY;
+        }
+        else
+            return HDL_ADC_STATUS_INIT_FAILED;
+    }
+}
+
 

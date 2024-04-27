@@ -137,10 +137,12 @@ hdl_module_state_t hdl_clock_pll(void *desc, uint8_t enable) {
 }
 
 static hdl_module_state_t _hdl_clock_system_switch(uint32_t src) {
+  /* Register start pos 2 bit */
+  static const uint32_t rcu_cfg0_scss_shift = 2;
   rcu_system_clock_source_config(src);
   uint32_t stb_cnt = CK_SYS_STARTUP_TIMEOUT;
-  while((src != (RCU_CFG0 & RCU_CFG0_SCSS)) && stb_cnt--) ;
-  return (src != (RCU_CFG0 & RCU_CFG0_SCSS))? HDL_MODULE_INIT_FAILED: HDL_MODULE_INIT_OK;
+  while((src != ((RCU_CFG0 & RCU_CFG0_SCSS) >> rcu_cfg0_scss_shift)) && stb_cnt--);
+  return (src != ((RCU_CFG0 & RCU_CFG0_SCSS) >> rcu_cfg0_scss_shift)) ? HDL_MODULE_INIT_FAILED: HDL_MODULE_INIT_OK;
 }
 
 hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {

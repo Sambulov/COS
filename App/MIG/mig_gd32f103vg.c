@@ -4,18 +4,18 @@
 
 #include "bldl.h"
 
-#define TEST_NO 5
+#define TEST_NO 7
 /* 
   1  - pll by hxtal/2, sys clock 108MHz SysTick          | w
   2  - pll by hxtal/2, sys clock 72MHz  SysTick          | w
   3  - pll by hxtal/1, sys clock 108MHz SysTick          | w
   4  - pll by irc8m/2, sys clock 108MHz SysTick          | w
   5  - pll by irc8m/2, sys clock 72MHz  SysTick          | w
-  6  - pll by irc8m/2, sys clock 108MHz TIMER0           | x
-  7  - pll by irc8m/2, sys clock 108MHz APB2/2 TIMER0*2  | x
+  6  - pll by irc8m/2, sys clock 36MHz TIMER0            | w
+  7  - pll by irc8m/2, sys clock 36MHz APB2/2 TIMER0*2   | w
   8  - pll by irc8m/2, sys clock 108MHz APB2/16 TIMER0*2 | w
-  9  - pll by irc8m/2, sys clock 108MHz APB1/16 TIMER1*2 | x
-  10 - pll by irc8m/2, sys clock 52MHz  APB1/1 TIMER1*1  | x
+  9  - pll by irc8m/2, sys clock 108MHz APB1/16 TIMER1*2 | w
+  10 - pll by irc8m/2, sys clock 52MHz  APB1/1 TIMER1*1  | w
   11 - pll by irc8m/2, sys clock 52MHz  APB1/2 TIMER1*2  | w
 */
 
@@ -78,18 +78,18 @@
 
 #if TEST_NO == 6
   #define HDL_HXTAL_2_PLLSEL_PREDIV    2
-  #define HDL_PLLMUL                   27
+  #define HDL_PLLMUL                   9
   #define HDL_PLL_MUL_CLOCK            mod_clock_irc8m
-  #define MS_TIMER_RELOAD_VAL          108000-1
+  #define MS_TIMER_RELOAD_VAL          36000-1
   #define HDL_APB1_PREDIV              2
   #define HDL_APB2_PREDIV              1
 #endif
 
 #if TEST_NO == 7
   #define HDL_HXTAL_2_PLLSEL_PREDIV    2
-  #define HDL_PLLMUL                   27
+  #define HDL_PLLMUL                   9
   #define HDL_PLL_MUL_CLOCK            mod_clock_irc8m
-  #define MS_TIMER_RELOAD_VAL          108000-1
+  #define MS_TIMER_RELOAD_VAL          36000-1
   #define HDL_APB1_PREDIV              2
   #define HDL_APB2_PREDIV              2
 #endif

@@ -51,8 +51,8 @@ static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs, uint32
     }
   }
   //If you get stuck here, your code is missing a handler for some interrupt.
-	asm("bkpt 255");
-  for(;;) ;
+	//asm("bkpt 255");
+  //for(;;) ;
 }
 
 void irq_n_handler();

@@ -4,6 +4,8 @@
 
 #include "bldl.h"
 
+#if defined ( USPD )
+
 #define TEST_NO 7
 /* 
   1  - pll by hxtal/2, sys clock 108MHz SysTick          | w
@@ -329,8 +331,6 @@ hdl_gpio_mode_t mod_gpio_mode_output_pp = {
   .ospeed = GPIO_OSPEED_2MHZ,
   .type = GPIO_MODE_OUT_PP
 };
-
-#if defined ( USPD )
 
 hdl_gpio_pin_t mod_gpio_a15_led1 = {
   .module.init = &hdl_gpio_pin,

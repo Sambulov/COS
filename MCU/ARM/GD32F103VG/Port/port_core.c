@@ -167,12 +167,15 @@ void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic
 void TIMER0_BRK_TIMER8_IRQHandler()     { _call_isr(HDL_NVIC_IRQ24_TIMER0_BRK_TIMER8, __ic->interrupts, 0); } /* IRQ24 */
 void TIMER0_UP_TIMER9_IRQHandler() { 
   _call_isr(HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, __ic->interrupts, 0);
-  TIMER_INTF(TIMER0)&=~TIMER_INTF_UPIF;
-  TIMER_INTF(TIMER9)&=~TIMER_INTF_UPIF;
+  TIMER_INTF(TIMER0) &= ~TIMER_INTF_UPIF;
+  TIMER_INTF(TIMER9) &= ~TIMER_INTF_UPIF;
 } /* IRQ25 */
 void TIMER0_TRG_CMT_TIMER10_IRQHandler(){ _call_isr(HDL_NVIC_IRQ26_TIMER0_TRG_CMT_TIMER10, __ic->interrupts, 0); } /* IRQ26 */
 void TIMER0_Channel_IRQHandler()        { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
-void TIMER1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0); } /* IRQ28 */
+void TIMER1_IRQHandler() {
+  _call_isr(HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0);
+  TIMER_INTF(TIMER1) &= ~TIMER_INTF_UPIF;
+} /* IRQ28 */
 void TIMER2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
 void TIMER3_IRQHandler()                { _call_isr(HDL_NVIC_IRQ30_TIMER3, __ic->interrupts, 0); } /* IRQ30 */
 void I2C0_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */

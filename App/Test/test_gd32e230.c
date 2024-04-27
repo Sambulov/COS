@@ -1,7 +1,36 @@
 #include "app.h"
 #include "CodeLib.h"
 
+
+//#define TEST_CLOCK
+
+
 #if defined ( GD32E23X )
+
+#ifdef TEST_CLOCK
+extern hdl_gpio_pin_t mod_gpo_carrier_pwr_on;
+extern hdl_clock_counter_t mod_systick_counter;
+
+
+void test() {
+  hdl_enable(&mod_systick_counter.module);
+  hdl_enable(&mod_gpo_carrier_pwr_on.module);
+  
+  while (!hdl_init_complete()) {
+    cooperative_scheduler(false);
+  }
+
+  while (1)
+  {
+    if(hdl_clock_counter_get_count(&mod_systick_counter) >= 1){
+        hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
+    }
+  }
+  
+
+}
+
+#else
 
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
@@ -109,5 +138,6 @@ void test() {
   }
 
 }
+#endif
 
 #endif

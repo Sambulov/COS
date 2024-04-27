@@ -6,6 +6,52 @@
 
 #if defined ( ATB_RK3568J_SMC_R1 )
 
+
+
+
+// #define TEST_NO 7
+
+// /* 
+//   1  - pll by hxtal/2, sys clock 108MHz SysTick          | w
+//   2  - pll by hxtal/2, sys clock 72MHz  SysTick          | w
+//   3  - pll by hxtal/1, sys clock 108MHz SysTick          | w
+//   4  - pll by irc8m/2, sys clock 108MHz SysTick          | w
+//   5  - pll by irc8m/2, sys clock 72MHz  SysTick          | w
+//   6  - pll by irc8m/2, sys clock 36MHz TIMER0            | w
+//   7  - pll by irc8m/2, sys clock 36MHz APB2/2 TIMER0*2   | w
+//   8  - pll by irc8m/2, sys clock 108MHz APB2/16 TIMER0*2 | w
+//   9  - pll by irc8m/2, sys clock 108MHz APB1/16 TIMER1*2 | w
+//   10 - pll by irc8m/2, sys clock 52MHz  APB1/1 TIMER1*1  | w
+//   11 - pll by irc8m/2, sys clock 52MHz  APB1/2 TIMER1*2  | w
+// */
+
+
+//#define TEST_CLOCK
+//#define TEST_CLOCK_NO 1
+
+#ifdef TEST_CLOCK
+/*
+* 1 - ahb by ck_pll, pll mf 2, hxtal predv 1, sys_clock 32Mhz, SysTick counter_reload 32000
+*/
+
+#if TEST_CLOCK_NO == 1
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               1
+  #define HDL_APB1_PREDIV              1
+  #define HDL_APB2_PREDIV              1
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  32000 - 1 
+#endif
+
+#else
+
   #define HDL_HXTAL_CLOCK              16000000
   #define HDL_LXTAL_CLOCK              32768
   #define HDL_HXTAL_2_PLLSEL_PREDIV    2
@@ -17,6 +63,10 @@
   #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
   #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
 
+  #define HDL_SYSTICK_COUNTER_RELOAD  32000 - 1 
+
+#endif
+
   #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
   hdl_core_t mod_sys_core = {
@@ -27,6 +77,9 @@
     /* TODO: ... */
   };
 
+  /**************************************************************
+   *  NVIC, IRQ, EXTI
+   *************************************************************/
   hdl_nvic_interrupt_t mod_irq_systick = {
     .irq_type = HDL_NVIC_EXCEPTION_SysTick,
     .priority = 0,
@@ -58,14 +111,12 @@
     .trigger = HDL_EXTI_TRIGGER_FALLING
   };
 
-    hdl_nvic_exti_t mod_nvic_exti_line_8 = {
-    .line = HDL_EXTI_LINE_8,
-    .mode = HDL_EXTI_MODE_INTERRUPT,
-    .source = HDL_EXTI_SOURCE_PB,
-    .trigger = HDL_EXTI_TRIGGER_RISING
-  };
-
-
+  hdl_nvic_exti_t mod_nvic_exti_line_8 = {
+  .line = HDL_EXTI_LINE_8,
+  .mode = HDL_EXTI_MODE_INTERRUPT,
+  .source = HDL_EXTI_SOURCE_PB,
+  .trigger = HDL_EXTI_TRIGGER_RISING
+};
 
   hdl_nvic_t mod_nvic = {
     .module.init = &hdl_nvic,
@@ -225,7 +276,7 @@
     .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)SysTick,
     .diction = HDL_DOWN_COUNTER,
-    .counter_reload = 72000 - 1
+    .counter_reload = HDL_SYSTICK_COUNTER_RELOAD
   };
 
   hdl_timer_t mod_timer_ms = {
@@ -270,8 +321,6 @@
     //.sources = hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0),
     //.buf = (uint16_t [sizeof(hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0))/sizeof(hdl_adc_source_t *)]){},
   };
-
-
 
   hdl_gpio_port_t hdl_gpio_port_a = {
     .init = &hdl_gpio_port,

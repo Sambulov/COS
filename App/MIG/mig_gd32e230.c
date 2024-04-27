@@ -26,12 +26,14 @@
 // */
 
 
-//#define TEST_CLOCK
-//#define TEST_CLOCK_NO 1
+#define TEST_CLOCK
+#define TEST_CLOCK_NO 3
 
 #ifdef TEST_CLOCK
 /*
-* 1 - ahb by ck_pll, pll mf 2, hxtal predv 1, sys_clock 32Mhz, SysTick counter_reload 32000
+* 1 - pll by hxtal/1, sys clock 32MHz, AHB/1, APB/1, APB2/1 | W
+* 2 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB/1, APB2/1 | W
+* 2 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB/2, APB2/1 | W                     
 */
 
 #if TEST_CLOCK_NO == 1
@@ -47,7 +49,49 @@
   #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
   #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
 
-  #define HDL_SYSTICK_COUNTER_RELOAD  32000 - 1 
+  #define HDL_SYSTICK_COUNTER_RELOAD  32000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   32000 - 1                  /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   32000 - 1                  /* Clocked by APB 1 */
+
+#endif
+
+/* RETRY */
+#if TEST_CLOCK_NO == 2
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              1
+  #define HDL_APB2_PREDIV              1
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   16000 - 1                   /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 1 */
+
+#endif
+
+#if TEST_CLOCK_NO == 3
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              1
+  #define HDL_APB2_PREDIV              2
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   8000 - 1                   /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 1 */
+
 #endif
 
 #else
@@ -82,6 +126,16 @@
    *************************************************************/
   hdl_nvic_interrupt_t mod_irq_systick = {
     .irq_type = HDL_NVIC_EXCEPTION_SysTick,
+    .priority = 0,
+    .priority_group = 0,
+  };
+    hdl_nvic_interrupt_t mod_irq_timer0 = {
+    .irq_type = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
+    .priority = 0,
+    .priority_group = 0,
+  };
+    hdl_nvic_interrupt_t mod_irq_timer2 = {
+    .irq_type = HDL_NVIC_IRQ16_TIMER2,
     .priority = 0,
     .priority_group = 0,
   };
@@ -124,7 +178,7 @@
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .irq_latency = 0, /* TODO: define static assert */
-    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_8),
+    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_8, &mod_irq_timer0, &mod_irq_timer2),
     .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8)
   };
 
@@ -256,19 +310,29 @@
     .module.reg = (void*)DMA_BASE,
   };
 
-  hdl_clock_prescaler_t mod_clock_timer0 = {
-    .module.init = NULL,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = 72,
-  };
+  // hdl_clock_prescaler_t mod_clock_timer0 = {
+  //   .module.init = NULL,
+  //   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  //   .module.reg = (void *)RCU,
+  //   .muldiv_factor = 72,
+  // };
+
+
 
   hdl_clock_counter_t mod_timer0_counter = {
     .module.init = &hdl_clock_counter,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_timer0.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module),
     .module.reg = (void *)TIMER0,
     .diction = HDL_UP_COUNTER,
-    .counter_reload = 1000 - 1
+    .counter_reload = HDL_TIMER0_COUNTER_RELOAD
+  };
+
+    hdl_clock_counter_t mod_timer2_counter = {
+    .module.init = &hdl_clock_counter,
+    .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module),
+    .module.reg = (void *)TIMER2,
+    .diction = HDL_UP_COUNTER,
+    .counter_reload = HDL_TIMER2_COUNTER_RELOAD
   };
 
   hdl_clock_counter_t mod_systick_counter = {
@@ -284,6 +348,20 @@
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
     .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
+    .val = 0
+  };
+  hdl_timer_t mod_timer0_ms = {
+    .module.init = hdl_timer,
+    .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
+    .module.reg = NULL,
+    .reload_iterrupt = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
+    .val = 0
+  };
+  hdl_timer_t mod_timer2_ms = {
+    .module.init = hdl_timer,
+    .module.dependencies = hdl_module_dependencies(&mod_timer2_counter.module, &mod_nvic.module),
+    .module.reg = NULL,
+    .reload_iterrupt = HDL_NVIC_IRQ16_TIMER2,
     .val = 0
   };
 

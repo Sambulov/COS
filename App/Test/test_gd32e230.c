@@ -2,32 +2,48 @@
 #include "CodeLib.h"
 
 
-//#define TEST_CLOCK
+#define TEST_CLOCK
 
 
 #if defined ( GD32E23X )
 
 #ifdef TEST_CLOCK
-extern hdl_gpio_pin_t mod_gpo_carrier_pwr_on;
-extern hdl_clock_counter_t mod_systick_counter;
 
+extern hdl_gpio_pin_t mod_gpo_carrier_pwr_on;
+extern hdl_timer_t mod_timer0_ms;
+extern hdl_timer_t mod_timer2_ms;
 
 void test() {
-  hdl_enable(&mod_systick_counter.module);
+  static uint32_t time_stamp_sys_ms = 0;
+  static uint32_t time_stamp_timer0_ms = 0;
+  static uint32_t time_stamp_timer2_ms = 0;
+
+  hdl_enable(&mod_timer_ms.module);
   hdl_enable(&mod_gpo_carrier_pwr_on.module);
-  
+  hdl_enable(&mod_timer0_ms.module);
+  hdl_enable(&mod_timer2_ms.module);
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
 
   while (1)
   {
-    if(hdl_clock_counter_get_count(&mod_systick_counter) >= 1){
-        hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
-    }
-  }
-  
+    
+    // if (TIME_ELAPSED(time_stamp_sys_ms, 1, hdl_timer_get(&mod_timer_ms))){
+    //   time_stamp_sys_ms = hdl_timer_get(&mod_timer_ms);
+    //   hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
+    // }
 
+    if (TIME_ELAPSED(time_stamp_timer0_ms, 1, hdl_timer_get(&mod_timer0_ms))){
+      time_stamp_timer0_ms = hdl_timer_get(&mod_timer0_ms);
+      hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
+    }
+
+    // if (TIME_ELAPSED(time_stamp_timer2_ms, 1, hdl_timer_get(&mod_timer2_ms))){
+    //   time_stamp_timer2_ms = hdl_timer_get(&mod_timer2_ms);
+    //   hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
+    // }
+  }
 }
 
 #else

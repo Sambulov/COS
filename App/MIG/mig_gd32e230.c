@@ -27,16 +27,27 @@
 
 
 #define TEST_CLOCK
-#define TEST_CLOCK_NO 3
+#define TEST_CLOCK_NUM 10
 
 #ifdef TEST_CLOCK
 /*
-* 1 - pll by hxtal/1, sys clock 32MHz, AHB/1, APB/1, APB2/1 | W
-* 2 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB/1, APB2/1 | W
-* 2 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB/2, APB2/1 | W                     
+* 1 - pll by hxtal/1, sys clock 32MHz, AHB/1, APB1/1, APB2/1  | W
+*                       APB 2 TEST
+* 2 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/1, APB2/1  | W
+* 3 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/1, APB2/2  | W
+* 4 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/1, APB2/4  | W
+* 5 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/1, APB2/8  | W
+* 6 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/1, APB2/16 | W
+*                       APB 1 TEST
+* 7 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/2, APB2/1  | W
+* 8 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/4, APB2/1  | W
+* 9 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/8, APB2/1  | W          
+* 10 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/16, APB2/1  | W
+*                       AHB TEST
+* 2 - pll by hxtal/1, sys clock 32MHz, AHB/2, APB1/1, APB2/1  | W            
 */
 
-#if TEST_CLOCK_NO == 1
+#if TEST_CLOCK_NUM == 1
 
   #define HDL_HXTAL_CLOCK              16000000
   #define HDL_LXTAL_CLOCK              32768
@@ -56,7 +67,7 @@
 #endif
 
 /* RETRY */
-#if TEST_CLOCK_NO == 2
+#if TEST_CLOCK_NUM == 2
 
   #define HDL_HXTAL_CLOCK              16000000
   #define HDL_LXTAL_CLOCK              32768
@@ -70,12 +81,12 @@
   #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
 
   #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
-  #define HDL_TIMER0_COUNTER_RELOAD   16000 - 1                   /* Clocked by APB 2 */
+  #define HDL_TIMER0_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 2 */
   #define HDL_TIMER2_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 1 */
 
 #endif
 
-#if TEST_CLOCK_NO == 3
+#if TEST_CLOCK_NUM == 3
 
   #define HDL_HXTAL_CLOCK              16000000
   #define HDL_LXTAL_CLOCK              32768
@@ -83,7 +94,26 @@
   #define HDL_PLLMUL                   2
   #define HDL_AHB_PREDIV               2
   #define HDL_APB1_PREDIV              1
-  #define HDL_APB2_PREDIV              2
+  #define HDL_APB2_PREDIV              2                         /* Can be 1, 2, 4, 8, 16 */                    
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 1 */
+
+#endif
+
+#if TEST_CLOCK_NUM == 4
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              1
+  #define HDL_APB2_PREDIV              4                         /* Can be 1, 2, 4, 8, 16 */                    
   #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
   #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
   #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
@@ -91,6 +121,120 @@
   #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
   #define HDL_TIMER0_COUNTER_RELOAD   8000 - 1                   /* Clocked by APB 2 */
   #define HDL_TIMER2_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 1 */
+
+#endif
+
+#if TEST_CLOCK_NUM == 5
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              1
+  #define HDL_APB2_PREDIV              8                         /* Can be 1, 2, 4, 8, 16 */                    
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   4000 - 1                   /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 1 */
+
+#endif
+
+#if TEST_CLOCK_NUM == 6
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              1
+  #define HDL_APB2_PREDIV              16                         /* Can be 1, 2, 4, 8, 16 */                    
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   2000 - 1                   /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 1 */
+
+#endif
+
+#if TEST_CLOCK_NUM == 7
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              2                         /* Can be 1, 2, 4, 8, 16 */
+  #define HDL_APB2_PREDIV              1                         /* Can be 1, 2, 4, 8, 16 */                    
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 1 */
+
+#endif
+
+#if TEST_CLOCK_NUM == 8
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              4                         /* Can be 1, 2, 4, 8, 16 */
+  #define HDL_APB2_PREDIV              1                         /* Can be 1, 2, 4, 8, 16 */                    
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   8000 - 1                   /* Clocked by APB 1 */
+
+#endif
+
+#if TEST_CLOCK_NUM == 9
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              8                         /* Can be 1, 2, 4, 8, 16 */
+  #define HDL_APB2_PREDIV              1                         /* Can be 1, 2, 4, 8, 16 */                    
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   4000 - 1                   /* Clocked by APB 1 */
+
+#endif
+
+#if TEST_CLOCK_NUM == 10
+
+  #define HDL_HXTAL_CLOCK              16000000
+  #define HDL_LXTAL_CLOCK              32768
+  #define HDL_HXTAL_2_PLLSEL_PREDIV    1
+  #define HDL_PLLMUL                   2
+  #define HDL_AHB_PREDIV               2
+  #define HDL_APB1_PREDIV              16                         /* Can be 1, 2, 4, 8, 16 */
+  #define HDL_APB2_PREDIV              1                         /* Can be 1, 2, 4, 8, 16 */                    
+  #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
+  #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+
+  #define HDL_SYSTICK_COUNTER_RELOAD  16000 - 1                  /* Clocked by AHB   */
+  #define HDL_TIMER0_COUNTER_RELOAD   16000 - 1                  /* Clocked by APB 2 */
+  #define HDL_TIMER2_COUNTER_RELOAD   2000 - 1                   /* Clocked by APB 1 */
 
 #endif
 

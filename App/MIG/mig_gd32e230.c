@@ -317,9 +317,7 @@
     .resolution = HDL_ADC_RESOLUTION_12BIT,
     .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
     .init_timeout = 3000,
-    hdl_adc_src(&mod_adc_source_1, &mod_adc_source_0)
-    //.sources = hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0),
-    //.buf = (uint16_t [sizeof(hdl_adc_sources(&mod_adc_source_1, &mod_adc_source_0))/sizeof(hdl_adc_source_t *)]){},
+    .sources = hdl_adc_src(&mod_adc_source_1, &mod_adc_source_0),
   };
 
   hdl_gpio_port_t hdl_gpio_port_a = {

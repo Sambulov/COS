@@ -14,7 +14,6 @@ typedef struct {
 
 typedef struct{
     hdl_module_t module;
-    hdl_dma_channel_t dma_channel;
     hdl_adc_resolution_e resolution;
     hdl_adc_data_alignment_t data_alignment;
     uint32_t init_timeout;

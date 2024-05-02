@@ -322,11 +322,8 @@ hdl_dma_channel_t mod_adc_dma_ch = {
 
   hdl_adc_t mod_adc = {
     .module.init = &hdl_adc,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_timer_ms.module, &mod_dma.module),
+    .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_timer_ms.module, &mod_adc_dma_ch.module),
     .module.reg = (void*)ADC,
-    .dma_channel = DMA_CH0,
-    //.start_triger = HDL_ADC_TRIGER_SOFTWARE,
-    //.mode = ADC_OPERATION_MODE_CONTINUOS_SCAN,
     .resolution = HDL_ADC_RESOLUTION_12BIT,
     .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
     .init_timeout = 3000,

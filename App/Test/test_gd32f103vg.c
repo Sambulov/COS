@@ -19,6 +19,8 @@ extern hdl_gpio_pin_t mod_gpio_d6_led11;
 extern hdl_gpio_pin_t mod_gpio_d7_led12;
 extern hdl_clock_counter_t mod_timer0_counter;
 
+extern hdl_dma_channel_t mod_m2m_dma_ch;
+
 hdl_module_t my_module = {
   .init = NULL,
   .dependencies = hdl_module_dependencies(&mod_nvic.module, &mod_timer_ms.module, &mod_gpio_a15_led1.module,
@@ -31,11 +33,18 @@ hdl_module_t my_module = {
   .reg = NULL
 };
 
+uint32_t arr[10]={1,2,3,4,5,0,0,0,0,0};
+
 void test() {
   hdl_enable(&my_module);
+  hdl_enable(&mod_m2m_dma_ch.module);
+
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
+
+  hdl_dma_run(&mod_m2m_dma_ch, (uint32_t)&arr[0], (uint32_t)&arr[5], 5);
+
   uint32_t i = 0;
   uint32_t timer = hdl_timer_get(&mod_timer_ms);
   uint32_t led_switch_mask = -1;

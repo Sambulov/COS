@@ -31,7 +31,7 @@ hdl_dma_status_e hdl_dma_status(hdl_dma_channel_t *channel) {
   hdl_dma_status_e rez = HDL_DMA_STATUS_NONE;
   hdl_dma_t *dma = _hdl_get_dma(channel);
   if(dma != NULL) {
-    if((DMA_CHCTL(channel) & (1 << 0)) == SET)
+    if((DMA_CHCTL(dma_ch_no(channel)) & (1 << 0)) == SET)
       rez |= HDL_DMA_STATUS_CHANNEL_ENABLE;
     if(dma_flag_get(dma_ch_no(channel), DMA_FLAG_HTF) == SET)
       rez |= HDL_DMA_STATUS_HALF_TRANSFER;
@@ -73,8 +73,8 @@ uint8_t hdl_dma_run(hdl_dma_channel_t *channel, uint32_t periph_addr, uint32_t m
     dma_memory_address_config(dma_ch_no(channel), memory_addr);
     dma_transfer_number_config(dma_ch_no(channel), amount);
     dma_priority_config(dma_ch_no(channel), channel->priority);
-    dma_memory_width_config(dma_ch_no(channel), channel->memory_width);
-    dma_periph_width_config(dma_ch_no(channel), channel->periph_width);
+    dma_memory_width_config(dma_ch_no(channel), CHCTL_MWIDTH(channel->memory_width));
+    dma_periph_width_config(dma_ch_no(channel), CHCTL_PWIDTH(channel->memory_width));
     if(channel->memory_inc)
         dma_memory_increase_enable(dma_ch_no(channel));
     if(channel->periph_inc)

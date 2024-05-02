@@ -20,9 +20,9 @@ typedef enum {
 } hdl_dma_increment_e;
 
 typedef enum {
-    HDL_DMA_SIZE_OF_MEMORY_8_BIT = DMA_MEMORY_WIDTH_8BIT,   /* 8 bit size of memory transfer */
-    HDL_DMA_SIZE_OF_MEMORY_16_BIT = DMA_MEMORY_WIDTH_16BIT,  /* 16 bit size of memory transfer */
-    HDL_DMA_SIZE_OF_MEMORY_32_BIT = DMA_MEMORY_WIDTH_32BIT,  /* 32 bit size of memory transfer */
+    HDL_DMA_SIZE_OF_MEMORY_8_BIT  = 0,
+    HDL_DMA_SIZE_OF_MEMORY_16_BIT = 1,
+    HDL_DMA_SIZE_OF_MEMORY_32_BIT = 2,
 } hdl_dma_size_of_memory_e;
 
 typedef dma_channel_enum hdl_dma_channel_number_t;

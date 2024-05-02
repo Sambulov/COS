@@ -29,20 +29,20 @@ void test() {
   while (1)
   {
     
-    // if (TIME_ELAPSED(time_stamp_sys_ms, 1, hdl_timer_get(&mod_timer_ms))){
-    //   time_stamp_sys_ms = hdl_timer_get(&mod_timer_ms);
-    //   hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
-    // }
-
-    // if (TIME_ELAPSED(time_stamp_timer0_ms, 1, hdl_timer_get(&mod_timer0_ms))){
-    //   time_stamp_timer0_ms = hdl_timer_get(&mod_timer0_ms);
-    //   hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
-    // }
-
-    if (TIME_ELAPSED(time_stamp_timer2_ms, 1, hdl_timer_get(&mod_timer2_ms))){
-      time_stamp_timer2_ms = hdl_timer_get(&mod_timer2_ms);
+    if (TIME_ELAPSED(time_stamp_sys_ms, 1000, hdl_timer_get(&mod_timer_ms))){
+      time_stamp_sys_ms += 1000;
       hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
     }
+
+    // if (TIME_ELAPSED(time_stamp_timer0_ms, 1000, hdl_timer_get(&mod_timer0_ms))){
+    //   time_stamp_timer0_ms += 1000;
+    //   hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
+    // }
+
+    // if (TIME_ELAPSED(time_stamp_timer2_ms, 1000, hdl_timer_get(&mod_timer2_ms))){
+    //   time_stamp_timer2_ms += 1000;
+    //   hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
+    // }
   }
 }
 

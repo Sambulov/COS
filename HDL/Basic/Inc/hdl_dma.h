@@ -2,7 +2,6 @@
 #define HDL_DMA_H_
 
 #define DMA_PRIVATE_SIZE  (4)
-#define EVENT_DMA_PRIVATE_SIZE  (4)
 
 typedef enum {
     HDL_DMA_DIRECTION_P2M,  /* DMA direction peripheral to memory */
@@ -21,40 +20,28 @@ typedef enum {
 } hdl_dma_increment_e;
 
 typedef enum {
-    HDL_DMA_SIZE_OF_MEMORY_8_BIT,   /* 8 bit size of memory transfer */
-    HDL_DMA_SIZE_OF_MEMORY_16_BIT,  /* 16 bit size of memory transfer */
-    HDL_DMA_SIZE_OF_MEMORY_32_BIT,  /* 32 bit size of memory transfer */
+    HDL_DMA_SIZE_OF_MEMORY_8_BIT = DMA_MEMORY_WIDTH_8BIT,   /* 8 bit size of memory transfer */
+    HDL_DMA_SIZE_OF_MEMORY_16_BIT = DMA_MEMORY_WIDTH_16BIT,  /* 16 bit size of memory transfer */
+    HDL_DMA_SIZE_OF_MEMORY_32_BIT = DMA_MEMORY_WIDTH_32BIT,  /* 32 bit size of memory transfer */
 } hdl_dma_size_of_memory_e;
 
-typedef dma_channel_enum hdl_dma_channel_t;
+typedef dma_channel_enum hdl_dma_channel_number_t;
 
 typedef struct {
-    uint8_t __private[EVENT_DMA_PRIVATE_SIZE];
-    hdl_dma_channel_t channel;
-    event_handler_t transfer_full;
-    event_handler_t transfer_half;
-    event_handler_t transfer_error;
-} hdl_dma_event_t;
-
-typedef struct {
-    hdl_module_t module;
-    uint8_t __private[DMA_PRIVATE_SIZE];
+  hdl_module_t module;
+  uint8_t __private[DMA_PRIVATE_SIZE];
 } hdl_dma_t;
 
-typedef struct{
-    /* Tranfer mode, size, address */
-    uint32_t periph_addr;                  /* peripheral base address or source addrees, when DMA direction memory to memory */
-    hdl_dma_size_of_memory_e periph_width; /* HDL_DMA_SIZE_OF_MEMORY_8_BIT, HDL_DMA_SIZE_OF_MEMORY_16_BIT, HDL_DMA_SIZE_OF_MEMORY_32_BIT */
-    uint32_t memory_addr;                  /* memory base address or destination, when DMA direction memory to memory */
-    hdl_dma_size_of_memory_e memory_width; /* HDL_DMA_SIZE_OF_MEMORY_8_BIT, HDL_DMA_SIZE_OF_MEMORY_16_BIT, HDL_DMA_SIZE_OF_MEMORY_32_BIT */
-    uint32_t amount;                       /* amount transfers */
-    uint32_t priority;                     /* channel priority level */
-    hdl_dma_increment_e periph_inc;        /* HDL_DMA_INCREMENT_OFF, HDL_DMA_INCREMENT_ON */
-    hdl_dma_increment_e memory_inc;        /* HDL_DMA_INCREMENT_OFF, HDL_DMA_INCREMENT_ON */
-    hdl_dma_direction_e direction;         /* HDL_DMA_DIRECTION_P2M, HDL_DMA_DIRECTION_M2P, HDL_DMA_DIRECTION_M2M */
-    /* DMA mode */
-    hdl_dma_mode_e dma_mode;                /* HDL_DMA_MODE_SINGLE_CONVERSION, HDL_DMA_MODE_CIRCULAR_CONVERSION */
-} hdl_dma_config_t;
+typedef struct {
+  hdl_module_t module;                   /* Depends on dma module*/
+  hdl_dma_size_of_memory_e periph_width;
+  hdl_dma_size_of_memory_e memory_width;
+  hdl_dma_increment_e periph_inc;        /* HDL_DMA_INCREMENT_OFF, HDL_DMA_INCREMENT_ON */
+  hdl_dma_increment_e memory_inc;        /* HDL_DMA_INCREMENT_OFF, HDL_DMA_INCREMENT_ON */
+  hdl_dma_direction_e direction;         /* HDL_DMA_DIRECTION_P2M, HDL_DMA_DIRECTION_M2P, HDL_DMA_DIRECTION_M2M */
+  hdl_dma_mode_e mode;                   /* HDL_DMA_MODE_SINGLE_CONVERSION, HDL_DMA_MODE_CIRCULAR_CONVERSION */
+  uint32_t priority;                     /* channel priority level */
+} hdl_dma_channel_t;
 
 typedef enum {
     HDL_DMA_STATUS_NONE = (0),
@@ -64,65 +51,12 @@ typedef enum {
     HDL_DMA_STATUS_CHANNEL_ENABLE = (8)
 } hdl_dma_status_e;
 
-/*!
-    \brief          DMA initialization and deinitialization
-    \param[in]      desc - can be casting to hdl_dma_t*
-    \param[in]      enable
-      \arg            0 - diable
-      \arg            other - enable
-    \return 
-      \retval         HDL_MODULE_INIT_FAILED
-      \retval         HDL_MODULE_INIT_OK
-      \retval         HDL_MODULE_DEINIT_OK
- */
 hdl_module_state_t hdl_dma(void *desc, uint8_t enable);
+hdl_module_state_t hdl_dma_ch(void *desc, uint8_t enable);
 
-/*!
-    \brief          Config DMA channel
-    \note           After that DMA will be waiting start trigger for starting transfer
-    \param[in]      dma - DMA handler
-    \param[in]      config - config struct
-    \param[in]      channel - channel number
-    \return         
-      \retval         HDL_TRUE - OK
-      \retval         HDL_FALSE - ERROR
- */
-uint8_t hdl_dma_config(hdl_dma_t *dma, hdl_dma_config_t *config, hdl_dma_channel_t channel);
-
-/*!
-    \brief          Enable DMA channel
-    \param[in]      dma - DMA handler
-    \param[in]      channel - DMA channel
-    \return         
-      \retval         HDL_TRUE - OK
-      \retval         HDL_FALSE - ERROR
- */
-uint8_t hdl_dma_channel_enable(hdl_dma_t *dma, hdl_dma_channel_t channel);
-
-/*!
-    \brief          Disable DMA channel
-    \param[in]      dma - DMA handler
-    \param[in]      channel - DMA channel
-    \return         
-      \retval         HDL_TRUE - OK
-      \retval         HDL_FALSE - ERROR
- */
-uint8_t hdl_dma_channel_disable(hdl_dma_t *dma, hdl_dma_channel_t channel);
-/*!
-    \brief          Get DMA channel status
-    \param[in]      dma - DMA handler
-    \param[in]      channel - DMA channel
-    \return         hdl_dma_status_e
- */
-hdl_dma_status_e hdl_dma_status(hdl_dma_t *dma, hdl_dma_channel_t channel);
-
-/*!
-    \brief          Get DMA transfer counter value
-    \param[in]      dma - DMA handler
-    \param[in]      channel - DMA channel
-    \return         Counter value
- */
-uint32_t hdl_dma_counter(hdl_dma_t *dma, hdl_dma_channel_t channel);
+uint8_t hdl_dma_run(hdl_dma_channel_t *channel, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount);
+hdl_dma_status_e hdl_dma_status(hdl_dma_channel_t *channel);
+uint32_t hdl_dma_get_counter(hdl_dma_channel_t *channel);
 
 
 #if defined ( GD32E23X )

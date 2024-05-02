@@ -1,23 +1,5 @@
 #include "hdl_portable.h"
 
-typedef enum{
-    GD_DMA_CONVERSION_PROCEEDING,
-    GD_DMA_CONVERSION_COMPLETE,
-} gd_dma_coversion_status_e;
-
-static const uint32_t gd_dma_memory_width_array[] = {DMA_MEMORY_WIDTH_8BIT, DMA_MEMORY_WIDTH_16BIT, DMA_MEMORY_WIDTH_32BIT};
-static const uint32_t gd_dma_peripheral_width_array[] = {DMA_PERIPHERAL_WIDTH_8BIT, DMA_PERIPHERAL_WIDTH_16BIT, DMA_PERIPHERAL_WIDTH_32BIT};
-
-static gd_dma_coversion_status_e _gd_dma_get_conversion_status(uint32_t channel);
-
-/* Get DMA conversion status */
-static gd_dma_coversion_status_e _gd_dma_get_conversion_status(uint32_t channel){
-    if((DMA_CHCTL(channel) & (1 << 0)) && dma_flag_get(channel, DMA_FLAG_FTF) == RESET)
-        return GD_DMA_CONVERSION_PROCEEDING;
-    else
-        return GD_DMA_CONVERSION_COMPLETE;
-}
-
 /* DMA initialization and deinitialization */
 hdl_module_state_t hdl_dma(void *desc, uint8_t enable){
     hdl_dma_t *hdl_dma = NULL;
@@ -35,66 +17,82 @@ hdl_module_state_t hdl_dma(void *desc, uint8_t enable){
     }
 }
 
-/* Config DMA channel */
-uint8_t hdl_dma_config(hdl_dma_t *h, hdl_dma_config_t *config, hdl_dma_channel_t channel)
-{
-    dma_deinit(channel);
-    dma_periph_address_config(channel, config->periph_addr);
-    dma_memory_address_config(channel, config->memory_addr);
-    dma_transfer_number_config(channel, config->amount);
-    dma_priority_config(channel, config->priority);
-    dma_memory_width_config(channel, gd_dma_memory_width_array[config->memory_width]);
-    dma_periph_width_config(channel, gd_dma_peripheral_width_array[config->periph_width]);
-    if(config->memory_inc)
-        dma_memory_increase_enable(channel);
-    if(config->periph_inc)
-        dma_periph_increase_enable(channel);
-    if(config->direction == HDL_DMA_DIRECTION_P2M)
-        dma_transfer_direction_config(channel, DMA_PERIPHERAL_TO_MEMORY);
-    else if(config->direction == HDL_DMA_DIRECTION_M2P)
-        dma_transfer_direction_config(channel, DMA_MEMORY_TO_PERIPHERAL);
-    else if(config->direction == HDL_DMA_DIRECTION_M2M)
+static hdl_dma_t *_hdl_get_dma(hdl_dma_channel_t *channel) {
+  if((channel != NULL) && (channel->module.dependencies != NULL) &&
+     (channel->module.dependencies[0] != NULL)) {
+    return (hdl_dma_t *)channel->module.dependencies[0];
+  }
+  return NULL;
+}
+
+hdl_dma_status_e hdl_dma_status(hdl_dma_channel_t *channel) {
+  hdl_dma_status_e rez = HDL_DMA_STATUS_NONE;
+  hdl_dma_t *dma = _hdl_get_dma(channel);
+  if(dma != NULL) {
+    if((DMA_CHCTL(channel) & (1 << 0)) == SET)
+      rez |= HDL_DMA_STATUS_CHANNEL_ENABLE;
+    if(dma_flag_get((dma_channel_enum)channel->module.reg, DMA_FLAG_HTF) == SET)
+      rez |= HDL_DMA_STATUS_HALF_TRANSFER;
+    if(dma_flag_get((dma_channel_enum)channel->module.reg, DMA_FLAG_FTF) == SET)
+      rez |= HDL_DMA_STATUS_FULL_TRANSFER;
+    if(dma_flag_get((dma_channel_enum)channel->module.reg, DMA_FLAG_ERR) == RESET)
+      rez |= HDL_DMA_STATUS_ERROR_TRANSFER;
+  }
+  return rez;
+}
+
+/* Get DMA transfer counter value */
+uint32_t hdl_dma_counter(hdl_dma_channel_t *channel) {
+  hdl_dma_t *dma = _hdl_get_dma(channel);
+  if(dma != NULL)
+    return dma_transfer_number_get((dma_channel_enum)channel->module.reg);
+  return 0;
+}
+
+hdl_module_state_t hdl_dma_ch(void *desc, uint8_t enable) {
+  hdl_dma_channel_t *channel = (hdl_dma_channel_t *)desc;
+  hdl_dma_t *dma = _hdl_get_dma(channel);
+  if(dma != NULL) {
+    if(enable) {
+      dma_channel_enable((dma_channel_enum)channel->module.reg);
+      return HDL_MODULE_INIT_OK;
+    }
+    dma_deinit((dma_channel_enum)channel->module.reg);
+    dma_channel_disable((dma_channel_enum)channel->module.reg);
+  }
+  return HDL_MODULE_DEINIT_OK;
+}
+
+uint8_t hdl_dma_run(hdl_dma_channel_t *channel, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount) {
+  hdl_dma_t *dma = _hdl_get_dma(channel);
+  if(dma != NULL) {
+    dma_deinit((dma_channel_enum)channel->module.reg);
+    dma_periph_address_config((dma_channel_enum)channel->module.reg, periph_addr);
+    dma_memory_address_config((dma_channel_enum)channel->module.reg, memory_addr);
+    dma_transfer_number_config((dma_channel_enum)channel->module.reg, amount);
+    dma_priority_config((dma_channel_enum)channel->module.reg, channel->priority);
+    dma_memory_width_config((dma_channel_enum)channel->module.reg, channel->memory_width);
+    dma_periph_width_config((dma_channel_enum)channel->module.reg, channel->periph_width);
+    if(channel->memory_inc)
+        dma_memory_increase_enable((dma_channel_enum)channel->module.reg);
+    if(channel->periph_inc)
+        dma_periph_increase_enable((dma_channel_enum)channel->module.reg);
+    if(channel->direction == HDL_DMA_DIRECTION_P2M)
+        dma_transfer_direction_config((dma_channel_enum)channel->module.reg, DMA_PERIPHERAL_TO_MEMORY);
+    else if(channel->direction == HDL_DMA_DIRECTION_M2P)
+        dma_transfer_direction_config((dma_channel_enum)channel->module.reg, DMA_MEMORY_TO_PERIPHERAL);
+    else if(channel->direction == HDL_DMA_DIRECTION_M2M)
     {
         /* In this case source address it is peripheral address, destiantion address it is memory address */
-        dma_transfer_direction_config(channel, DMA_PERIPHERAL_TO_MEMORY);
-        dma_memory_to_memory_enable(channel);
+        dma_transfer_direction_config((dma_channel_enum)channel->module.reg, DMA_PERIPHERAL_TO_MEMORY);
+        dma_memory_to_memory_enable((dma_channel_enum)channel->module.reg);
     }
-    if (config->dma_mode == HDL_DMA_MODE_SINGLE)
-        dma_circulation_disable(channel);
+    if (channel->mode == HDL_DMA_MODE_SINGLE)
+        dma_circulation_disable((dma_channel_enum)channel->module.reg);
     else
-        dma_circulation_enable(channel);
-    
+        dma_circulation_enable((dma_channel_enum)channel->module.reg);
     return HDL_TRUE;
+  }
+  return HDL_FALSE;
 }
 
-/* Enable DMA channel */
-uint8_t hdl_dma_channel_enable(hdl_dma_t *h, hdl_dma_channel_t channel){
-    dma_channel_enable(channel);
-    return HDL_TRUE;
-}
-
-/* Disable DMA channel */
-uint8_t hdl_dma_channel_disable(hdl_dma_t *h, hdl_dma_channel_t channel){
-    dma_channel_disable(channel);
-    return HDL_TRUE;
-}
-
-
-/* Get DMA channel status */
-hdl_dma_status_e hdl_dma_status(hdl_dma_t *h, hdl_dma_channel_t channel){
-    hdl_dma_status_e rez = HDL_DMA_STATUS_NONE;
-    if((DMA_CHCTL(channel) & (1 << 0)) == SET)
-        rez |= HDL_DMA_STATUS_CHANNEL_ENABLE;
-    if(dma_flag_get(channel, DMA_FLAG_HTF) == SET)
-        rez |= HDL_DMA_STATUS_HALF_TRANSFER;
-    if(dma_flag_get(channel, DMA_FLAG_FTF) == SET)
-        rez |= HDL_DMA_STATUS_FULL_TRANSFER;
-    if(dma_flag_get(channel, DMA_FLAG_ERR) == RESET)
-        rez |= HDL_DMA_STATUS_ERROR_TRANSFER;
-    
-    return rez;
-}
-/* Get DMA transfer counter value */
-uint32_t hdl_dma_counter(hdl_dma_t *h, hdl_dma_channel_t channel){
-    return dma_transfer_number_get(channel);
-}

@@ -44,6 +44,8 @@ extern hdl_timer_t mod_timer_ms;
 extern hdl_adc_source_t mod_adc_source_0;
 extern hdl_adc_source_t mod_adc_source_1;
 
+extern  hdl_dma_channel_t mod_m2m_dma_ch;
+
  void SysTick_Event(uint32_t event, void *sender, void *context){
   __NOP();
  }
@@ -88,6 +90,8 @@ hdl_gpio_pin_t pin_pb8 = {
     .mode = &gpio_input_np
 };
 
+uint32_t arr1[10]={1,2,3,4,5};
+
 
 uint32_t adc_raw[2];
 void test() {
@@ -99,12 +103,16 @@ void test() {
   hdl_enable(&mod_nvic.module);
   hdl_enable(&pin_pa0.module);
   hdl_enable(&pin_pb8.module);
-  
+  hdl_enable(&mod_m2m_dma_ch.module);
+
+
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
   hdl_interrupt_request(&mod_nvic, HDL_NVIC_IRQ5_EXTI0_1, &Exti_Event, NULL);
   hdl_interrupt_request(&mod_nvic, HDL_NVIC_IRQ7_EXTI4_15, &Exti_8_Event, NULL);
+
+  hdl_dma_run(&mod_m2m_dma_ch, (uint32_t)&arr1[0], (uint32_t)&arr1[5], 20);
 
   while (1) {
     cooperative_scheduler(false);

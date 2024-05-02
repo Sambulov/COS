@@ -41,8 +41,9 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   if(enable) {
     switch (hdl_adc->state_machine){
       case GD_ADC_STATE_MACHINE_INITIAL: {
+        
         rcu_periph_clock_enable(RCU_ADC);
-        //adc_special_function_config(ADC_SCAN_MODE, ENABLE);
+        adc_special_function_config(ADC_SCAN_MODE, ENABLE);
         adc_special_function_config(ADC_CONTINUOUS_MODE, ENABLE);
         hdl_adc_source_t **adc_source = hdl_adc->sources;
         hdl_adc->channels_count = 0;
@@ -57,20 +58,24 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         adc_external_trigger_config(ADC_REGULAR_CHANNEL, ENABLE);
         adc_external_trigger_source_config(ADC_REGULAR_CHANNEL, ADC_EXTTRIG_REGULAR_NONE);
         adc_enable();
+        //         for(uint16_t i = 0; i < adc_short_delay_after_start; i++)
+        //     __NOP();
         /* There must be 14 CK_ADC tact */
         ADC_CTL1 |= (uint32_t)ADC_CTL1_RSTCLB;
+        while ((ADC_CTL1 & ADC_CTL1_RSTCLB));
+        ADC_CTL1 |= ADC_CTL1_CLB;
         hdl_adc->time_stamp = hdl_timer_get(timer);
         hdl_adc->state_machine = GD_ADC_STATE_MACHINE_CALIBRATION;
       }
       case GD_ADC_STATE_MACHINE_CALIBRATION:
-        if ((ADC_CTL1 & ADC_CTL1_RSTCLB)){
+        if (ADC_CTL1 & ADC_CTL1_CLB) {
           if (TIME_ELAPSED(hdl_adc->time_stamp, hdl_adc->init_timeout, hdl_timer_get(timer)))
             return HDL_MODULE_INIT_FAILED;
           return HDL_MODULE_INIT_ONGOING;
         }
       case GD_ADC_STATE_MACHINE_RUN:
         adc_dma_mode_enable();
-        hdl_dma_run(dma, (uint32_t)ADC_RDATA, (uint32_t)hdl_adc->values, (uint32_t)hdl_adc->channels_count);
+        hdl_dma_run(dma, (uint32_t)&ADC_RDATA, (uint32_t)hdl_adc->values, (uint32_t)hdl_adc->channels_count);
         adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
         hdl_adc->state_machine = GD_ADC_STATE_MACHINE_WORKING;        
       case GD_ADC_STATE_MACHINE_WORKING:

@@ -203,6 +203,9 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_prescaler_t *hdl_prescale
 
 hdl_module_state_t hdl_clock_ahb(void *desc, uint8_t enable) {
   if (enable) {
+    hdl_clock_prescaler_t *prescaler = (hdl_clock_prescaler_t *)desc;
+    if(prescaler->muldiv_factor >= 64)
+      prescaler->muldiv_factor >>= 1;
     return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 4, 7, MAX_SYS_CLOCK, &hdl_clock_system);
   }
   rcu_ahb_clock_config(RCU_AHB_CKSYS_DIV512);

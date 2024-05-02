@@ -73,9 +73,15 @@ void DMA_Channel0_IRQHandler()          { _call_isr(DMA_Channel0_IRQn, __ic->int
 void DMA_Channel1_2_IRQHandler()        { _call_isr(DMA_Channel1_2_IRQn, __ic->interrupts, 0); }
 void DMA_Channel3_4_IRQHandler()        { _call_isr(DMA_Channel3_4_IRQn, __ic->interrupts, 0); }
 void ADC_CMP_IRQHandler()               { _call_isr(ADC_CMP_IRQn, __ic->interrupts, 0); }
-void TIMER0_BRK_UP_TRG_COM_IRQHandler() { _call_isr(TIMER0_BRK_UP_TRG_COM_IRQn, __ic->interrupts, 0); }
+void TIMER0_BRK_UP_TRG_COM_IRQHandler() {
+  _call_isr(TIMER0_BRK_UP_TRG_COM_IRQn, __ic->interrupts, 0);
+  TIMER_INTF(TIMER0) &= ~TIMER_INTF_UPIF;
+}
 void TIMER0_Channel_IRQHandler()        { _call_isr(TIMER0_Channel_IRQn, __ic->interrupts, 0); }
-void TIMER2_IRQHandler()                { _call_isr(TIMER2_IRQn, __ic->interrupts, 0); }
+void TIMER2_IRQHandler() {
+  _call_isr(TIMER2_IRQn, __ic->interrupts, 0);
+  TIMER_INTF(TIMER2) &= ~TIMER_INTF_UPIF;
+}
 void TIMER5_IRQHandler()                { _call_isr(TIMER5_IRQn, __ic->interrupts, 0); }
 void TIMER13_IRQHandler()               { _call_isr(TIMER13_IRQn, __ic->interrupts, 0); }
 void TIMER14_IRQHandler()               { _call_isr(TIMER14_IRQn, __ic->interrupts, 0); }

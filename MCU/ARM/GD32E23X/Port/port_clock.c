@@ -71,20 +71,6 @@ hdl_module_state_t hdl_clock_hxtal_prescaler(void *desc, uint8_t enable) {
   }
 }
 
-#ifdef GD32F10X_CL
-hdl_module_state_t hdl_clock_pll1(void *desc, uint8_t enable) {
-  if(enable)
-    return _hdl_clock_osc_en((hdl_clock_t *)desc, RCU_PLL1_CK, RCU_FLAG_PLL1STB, PLL1_STARTUP_TIMEOUT);
-  return HDL_MODULE_DEINIT_OK;
-}
-
-hdl_module_state_t hdl_clock_pll2(void *desc, uint8_t enable) {
-  if(enable)
-    return _hdl_clock_osc_en((hdl_clock_t *)desc, RCU_PLL2_CK, RCU_FLAG_PLL2STB, PLL2_STARTUP_TIMEOUT);
-  return HDL_MODULE_DEINIT_OK;
-}
-#endif /* GD32F10X_CL */
-
 hdl_module_state_t hdl_clock_selector_pll(void *desc, uint8_t enable) {
   if (enable) {
     hdl_clock_t *clock = (hdl_clock_t *)desc;
@@ -191,6 +177,10 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_prescaler_t *hdl_prescale
 
 hdl_module_state_t hdl_clock_ahb(void *desc, uint8_t enable) {
   if (enable) {
+    hdl_clock_prescaler_t *prescaler = (hdl_clock_prescaler_t *)desc;
+    if(prescaler->muldiv_factor >= 64)
+      prescaler->muldiv_factor >>= 1;
+
     return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 4, 7, MAX_SYS_CLOCK, &hdl_clock_system);
   }
   rcu_ahb_clock_config(RCU_AHB_CKSYS_DIV512);

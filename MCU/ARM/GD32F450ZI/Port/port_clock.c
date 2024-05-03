@@ -2,7 +2,7 @@
 #include "Macros.h"
 
 #define IRC48M_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
-#define CK_SYS_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
+//#define CK_SYS_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
 #define IRC32K_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
 #define LXTAL_STARTUP_TIMEOUT     ((uint32_t)0xFFFF)
 #define CK_SYS_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
@@ -108,6 +108,7 @@ hdl_module_state_t hdl_clock_selector_pll_vco(void *desc, uint8_t enable) {
 }
 
 hdl_module_state_t hdl_clock_pll_n(void *desc, uint8_t enable) {
+  return HDL_MODULE_INIT_OK;
   hdl_clock_prescaler_t *hdl_prescaler = (hdl_clock_prescaler_t *)desc;
   if(enable) {
     uint32_t ss_modulation_inc = 0U;
@@ -153,6 +154,7 @@ hdl_module_state_t hdl_clock_pll_q(void *desc, uint8_t enable) {
 static hdl_module_state_t _hdl_clock_system_switch(uint32_t src) {
   rcu_system_clock_source_config(src);
   uint32_t stb_cnt = CK_SYS_STARTUP_TIMEOUT;
+  src <<= 2;
   while((src != (RCU_CFG0 & RCU_CFG0_SCSS)) && stb_cnt--) ;
   return (src != (RCU_CFG0 & RCU_CFG0_SCSS))? HDL_MODULE_INIT_FAILED: HDL_MODULE_INIT_OK;
 }
@@ -167,6 +169,31 @@ hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {
     hdl_clock_t *hdl_clock_src = (hdl_clock_t *)hdl_clock->module.dependencies[1];
     hdl_clock_calc_div(hdl_clock, hdl_clock_src, 1);
     if(hdl_clock_src->module.init == &hdl_clock_pll_p) {
+      RCU_APB1EN |= RCU_APB1EN_PMUEN;
+      PMU_CTL |= PMU_CTL_LDOVS;
+      /* enable PLL */
+      RCU_CTL |= RCU_CTL_PLLEN;
+      /* wait until PLL is stable */
+      while(0U == (RCU_CTL & RCU_CTL_PLLSTB)){
+      }
+      /* Enable the high-drive to extend the clock frequency to 240 Mhz */
+      PMU_CTL |= PMU_CTL_HDEN;
+      while(0U == (PMU_CS & PMU_CS_HDRF)){
+      }
+      /* select the high-drive mode */
+      PMU_CTL |= PMU_CTL_HDS;
+      while(0U == (PMU_CS & PMU_CS_HDSRF)){
+      } 
+      RCU_PLL = (25U | (480U << 6U) | (((2U >> 1U) - 1U) << 16U) |
+                (RCU_PLLSRC_HXTAL) | (10U << 24U));
+
+          /* select PLL as system clock */
+    RCU_CFG0 &= ~RCU_CFG0_SCS;
+    RCU_CFG0 |= RCU_CKSYSSRC_PLLP;
+
+    /* wait until PLL is selected as system clock */
+    while(0U == (RCU_CFG0 & RCU_SCSS_PLLP)){
+    }
       return _hdl_clock_system_switch(RCU_CKSYSSRC_PLLP);
     }
     else if(hdl_clock_src->module.init == &hdl_clock_hxtal) {

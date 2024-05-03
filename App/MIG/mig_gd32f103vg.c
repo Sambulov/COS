@@ -6,7 +6,7 @@
 
 #if defined ( USPD )
 
-#define TEST_NO 7
+#define TEST_NO 1
 /* 
   1  - pll by hxtal/2, sys clock 108MHz SysTick          | w
   2  - pll by hxtal/2, sys clock 72MHz  SysTick          | w
@@ -40,6 +40,7 @@
   #define MS_TIMER_RELOAD_VAL          108000-1
   #define HDL_APB1_PREDIV              2
   #define HDL_APB2_PREDIV              1
+  #define HDL_ADC_PREDIV               8
 #endif
 
 #if TEST_NO == 2
@@ -370,7 +371,7 @@ hdl_gpio_port_t mod_gpio_d = {
 hdl_gpio_port_t mod_gpio_e = {
   .init = &hdl_gpio_port,
   .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
-  .reg = (void *)GPIOD,
+  .reg = (void *)GPIOE,
   .dependencies = NULL
 };
 
@@ -825,43 +826,45 @@ hdl_adc_t mod_adc = {
   .module.reg = (void*)ADC0,
   .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
   .init_timeout = 3000,
-  .sources = hdl_adc_src(&mod_adc_source_1, &mod_adc_source_0),
+  .sources = hdl_adc_src(&mod_adc_source_0, &mod_adc_source_1, &mod_adc_source_2, &mod_adc_source_3),
+};
+
+hdl_plc_port_config_t mod_ain_default_cnf = {
+  .desc = (ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_HW_ANALOG | ATB_IO_PORT_SW_RAW_ADC),
+  .default_output = 0,
+  .default_option = 0
 };
 
 bldl_uspd_ain_port_t mod_uspd_ai_port0 = {
   .module.init = &bldl_uspd_ain_port,
   .module.reg = (void *)&mod_adc_source_0,
-  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_e12_ai0_pu.module,
+  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a0_ai0.module, &mod_gpio_e12_ai0_pu.module,
                                                  &mod_gpio_e13_ai0_pd.module, &mod_gpio_e14_ai0_csh.module),
-  .desc = (ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_HW_ANALOG | ATB_IO_PORT_SW_RAW_ADC),
-  .output = HDL_GPIO_HIGH,
+  .default_config = &mod_ain_default_cnf
 };
 
 bldl_uspd_ain_port_t mod_uspd_ai_port1 = {
   .module.init = &bldl_uspd_ain_port,
   .module.reg = (void *)&mod_adc_source_1,
-  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_e9_ai1_pu.module,
+  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a1_ai1.module, &mod_gpio_e9_ai1_pu.module,
                                                  &mod_gpio_e10_ai1_pd.module, &mod_gpio_e11_ai1_csh.module),
-  .desc = (ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_HW_ANALOG | ATB_IO_PORT_SW_RAW_ADC),
-  .output = HDL_GPIO_HIGH,
+  .default_config = &mod_ain_default_cnf
 };
 
 bldl_uspd_ain_port_t mod_uspd_ai_port2 = {
   .module.init = &bldl_uspd_ain_port,
   .module.reg = (void *)&mod_adc_source_2,
-  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_b2_ai2_pu.module,
+  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a2_ai2.module, &mod_gpio_b2_ai2_pu.module,
                                                  &mod_gpio_e7_ai2_pd.module, &mod_gpio_e8_ai2_csh.module),
-  .desc = (ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_HW_ANALOG | ATB_IO_PORT_SW_RAW_ADC),
-  .output = HDL_GPIO_HIGH,
+  .default_config = &mod_ain_default_cnf
 };
 
 bldl_uspd_ain_port_t mod_uspd_ai_port3 = {
   .module.init = &bldl_uspd_ain_port,
   .module.reg = (void *)&mod_adc_source_3,
-  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_c5_ai3_pu.module,
+  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a3_ai3.module, &mod_gpio_c5_ai3_pu.module,
                                                  &mod_gpio_b0_ai3_pd.module, &mod_gpio_b1_ai3_csh.module),
-  .desc = (ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_HW_ANALOG | ATB_IO_PORT_SW_RAW_ADC),
-  .output = HDL_GPIO_HIGH,
+  .default_config = &mod_ain_default_cnf
 };
 
 #endif

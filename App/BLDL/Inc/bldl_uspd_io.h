@@ -8,10 +8,12 @@
 typedef hdl_plc_port_t bldl_uspd_discrete_port_t;
 
 /* USPD analog input port depends on:
+- adc;
 - analog input pin;
 - discrete output pin (active high) pull up control;
 - discrete output pin (active high) pull down control;
 - discrete output pin (active high) current shunt control;
+set module.reg to adc source
 */
 typedef hdl_plc_port_t bldl_uspd_ain_port_t;
 

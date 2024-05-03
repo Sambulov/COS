@@ -142,7 +142,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "GD32F103VG",
-			"svdFile": "${workspaceFolder}/MCU/ARM/GD32F103VG/Res/mcu.svd",
+			"svdFile": "./MCU/ARM/GD32F103VG/Res/mcu.svd",
 			"preLaunchTask": "J-Link Flash GD32F103VG",
 			//"liveWatch": {
 			//	"enabled": true,

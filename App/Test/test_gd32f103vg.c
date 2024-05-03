@@ -3,23 +3,18 @@
 
 #if defined ( GD32F103VG )
 
+#include "mig_uspd.h"
+
 extern hdl_nvic_t mod_nvic;
 extern hdl_timer_t mod_timer_ms;
-extern hdl_gpio_pin_t mod_gpio_a15_led1;
-extern hdl_gpio_pin_t mod_gpio_c10_led2;
-extern hdl_gpio_pin_t mod_gpio_c11_led3;
-extern hdl_gpio_pin_t mod_gpio_c12_led4;
-extern hdl_gpio_pin_t mod_gpio_d0_led5;
-extern hdl_gpio_pin_t mod_gpio_d1_led6;
-extern hdl_gpio_pin_t mod_gpio_d2_led7;
-extern hdl_gpio_pin_t mod_gpio_d3_led8;
-extern hdl_gpio_pin_t mod_gpio_d4_led9;
-extern hdl_gpio_pin_t mod_gpio_d5_led10;
-extern hdl_gpio_pin_t mod_gpio_d6_led11;
-extern hdl_gpio_pin_t mod_gpio_d7_led12;
 extern hdl_clock_counter_t mod_timer0_counter;
-
 extern hdl_dma_channel_t mod_m2m_dma_ch;
+
+extern hdl_adc_source_t mod_adc_source_0;
+extern hdl_adc_source_t mod_adc_source_1;
+extern hdl_adc_source_t mod_adc_source_2;
+extern hdl_adc_source_t mod_adc_source_3;
+extern hdl_adc_t mod_adc; 
 
 hdl_module_t my_module = {
   .init = NULL,
@@ -29,9 +24,17 @@ hdl_module_t my_module = {
                                           &mod_gpio_d1_led6.module, &mod_gpio_d2_led7.module,
                                           &mod_gpio_d3_led8.module, &mod_gpio_d4_led9.module,
                                           &mod_gpio_d5_led10.module, &mod_gpio_d6_led11.module,
-                                          &mod_gpio_d7_led12.module),
+                                          &mod_gpio_d7_led12.module, &mod_uspd_od_port1.module,
+                                          &mod_uspd_od_port2.module, &mod_uspd_od_port3.module,
+                                          &mod_uspd_od_port4.module, &mod_uspd_od_port5.module,
+                                          &mod_uspd_od_port6.module, &mod_uspd_od_port7.module,
+                                          &mod_uspd_od_port8.module, &mod_uspd_ai_port0.module,
+                                          &mod_uspd_ai_port1.module, &mod_uspd_ai_port2.module,
+                                          &mod_uspd_ai_port3.module),
   .reg = NULL
 };
+
+
 
 uint32_t arr[10]={1,2,3,4,5,0,0,0,0,0};
 
@@ -49,20 +52,10 @@ void test() {
   uint32_t timer = hdl_timer_get(&mod_timer_ms);
   uint32_t led_switch_mask = -1;
 
-  // hdl_gpio_write(&mod_gpio_a15_led1, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_c10_led2, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_c11_led3, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_c12_led4, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_d0_led5, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_d1_led6, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_d2_led7, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_d3_led8, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_d4_led9, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_d5_led10, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_d6_led11, HDL_GPIO_HIGH);
-  // hdl_gpio_write(&mod_gpio_d7_led12, HDL_GPIO_HIGH);
-
   while (1) {
+    for(int i = 0; i < 4; i++) {
+      arr[i] = mod_adc.values[i];
+    }
     volatile uint32_t x = hdl_clock_counter_get_count(&mod_timer0_counter);
     cooperative_scheduler(false);
     if(((timer + 50) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 1)) {

@@ -139,7 +139,8 @@ typedef union {
 
 typedef struct {
   hdl_plc_port_descriptor_t desc;
-  hdl_plc_port_value_t default_value;
+  hdl_plc_port_value_t default_output;
+  hdl_plc_port_value_t default_option;
 } hdl_plc_port_config_t;
 
 #define IN    /* Data flow from PLC IO extender to host */
@@ -148,7 +149,7 @@ typedef struct {
 
 typedef struct {
   hdl_module_t module;
-  hdl_plc_port_config_t default_config;
+  hdl_plc_port_config_t *default_config;
   INOUT hdl_plc_port_descriptor_t desc;
   IN hdl_plc_port_value_t input;
   OUT hdl_plc_port_value_t output;

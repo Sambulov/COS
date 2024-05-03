@@ -50,10 +50,10 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   if(enable) {
     switch (hdl_adc->state_machine){
       case GD_ADC_STATE_MACHINE_INITIAL: {
-        
         rcu_periph_clock_enable(rcu);
         adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_SCAN_MODE, ENABLE);
         adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_CONTINUOUS_MODE, ENABLE);
+        adc_dma_mode_enable((uint32_t)hdl_adc->module.reg);
         hdl_adc_source_t **adc_source = hdl_adc->sources;
         hdl_adc->channels_count = 0;
         while (*adc_source != NULL) {
@@ -63,7 +63,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         }
         adc_channel_length_config((uint32_t)hdl_adc->module.reg, ADC_REGULAR_CHANNEL, hdl_adc->channels_count);
         adc_data_alignment_config((uint32_t)hdl_adc->module.reg, hdl_adc->data_alignment);
-        //adc_resolution_config((uint32_t)hdl_adc->resolution);
+        //adc_resolution_config((uint32_t)hdl_adc->module.reg, (uint32_t)hdl_adc->resolution);
         adc_external_trigger_config((uint32_t)hdl_adc->module.reg, ADC_REGULAR_CHANNEL, ENABLE);
         adc_external_trigger_source_config((uint32_t)hdl_adc->module.reg, ADC_REGULAR_CHANNEL, ADC0_1_2_EXTTRIG_REGULAR_NONE);
         adc_enable((uint32_t)hdl_adc->module.reg);
@@ -83,7 +83,6 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
           return HDL_MODULE_INIT_ONGOING;
         }
       case GD_ADC_STATE_MACHINE_RUN:
-        adc_dma_mode_enable((uint32_t)hdl_adc->module.reg);
         hdl_dma_run(dma, (uint32_t)&ADC_RDATA((uint32_t)hdl_adc->module.reg), (uint32_t)hdl_adc->values, (uint32_t)hdl_adc->channels_count);
         adc_software_trigger_enable((uint32_t)hdl_adc->module.reg, ADC_REGULAR_CHANNEL);
         hdl_adc->state_machine = GD_ADC_STATE_MACHINE_WORKING;        

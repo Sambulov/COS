@@ -75,23 +75,24 @@ uint8_t hdl_dma_run(hdl_dma_channel_t *channel, uint32_t periph_addr, uint32_t m
   if(dma != NULL) {
     dma_deinit((uint32_t)dma->module.reg, dma_ch_no(channel));
     dma_periph_address_config((uint32_t)dma->module.reg, dma_ch_no(channel), periph_addr);
-    dma_memory_address_config((uint32_t)dma->module.reg, dma_ch_no(channel), memory_addr, DMA_MEMORY_0);
+    dma_memory_address_config((uint32_t)dma->module.reg, dma_ch_no(channel), DMA_MEMORY_0,  memory_addr);
     dma_transfer_number_config((uint32_t)dma->module.reg, dma_ch_no(channel), amount);
     dma_priority_config((uint32_t)dma->module.reg, dma_ch_no(channel), channel->priority);
     dma_memory_width_config((uint32_t)dma->module.reg, dma_ch_no(channel), CHCTL_MWIDTH(channel->memory_width));
     dma_periph_width_config((uint32_t)dma->module.reg, dma_ch_no(channel), CHCTL_PWIDTH(channel->periph_width));
     if(channel->memory_inc)
-        dma_memory_increase_enable((uint32_t)dma->module.reg, dma_ch_no(channel));
+      dma_memory_address_generation_config((uint32_t)dma->module.reg, dma_ch_no(channel), DMA_MEMORY_INCREASE_ENABLE);
     if(channel->periph_inc)
-        dma_periph_increase_enable((uint32_t)dma->module.reg, dma_ch_no(channel));
+      dma_peripheral_address_generation_config((uint32_t)dma->module.reg, dma_ch_no(channel), DMA_PERIPH_INCREASE_ENABLE);
     if(channel->direction == HDL_DMA_DIRECTION_P2M)
         dma_transfer_direction_config((uint32_t)dma->module.reg, dma_ch_no(channel), DMA_PERIPH_TO_MEMORY);
     else if(channel->direction == HDL_DMA_DIRECTION_M2P)
         dma_transfer_direction_config((uint32_t)dma->module.reg, dma_ch_no(channel), DMA_MEMORY_TO_PERIPH);
-    else if(channel->direction == HDL_DMA_DIRECTION_M2M) {
+    else if(channel->direction == HDL_DMA_DIRECTION_M2M)
+    {
         /* In this case source address it is peripheral address, destiantion address it is memory address */
         dma_transfer_direction_config((uint32_t)dma->module.reg, dma_ch_no(channel), DMA_MEMORY_TO_MEMORY);
-        dma_memory_to_memory_enable((uint32_t)dma->module.reg, dma_ch_no(channel));
+        //dma_memory_to_memory_enable((uint32_t)dma->module.reg, dma_ch_no(channel));
     }
     if (channel->mode == HDL_DMA_MODE_SINGLE)
         dma_circulation_disable((uint32_t)dma->module.reg, dma_ch_no(channel));

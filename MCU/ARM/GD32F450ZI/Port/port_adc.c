@@ -39,10 +39,13 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   rcu_periph_enum rcu;
   switch ((uint32_t)hdl_adc->module.reg) {
     case ADC0:
+      rcu = RCU_ADC0;
       break;
     case ADC1:
+      rcu = RCU_ADC1;
       break;
     case ADC2:
+      rcu = RCU_ADC2;
       break;
     default:
       return HDL_MODULE_INIT_FAILED;

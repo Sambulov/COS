@@ -17,6 +17,7 @@
 #include "bldl_som_boot_lock.h"
 #include "bldl_som_boot_select.h"
 #include "bldl_som_state.h"
+#include "bldl_uspd_io.h"
 
 #endif
 

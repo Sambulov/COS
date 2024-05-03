@@ -14,6 +14,7 @@
 #endif /* GD32F10X_CL */
 
 #define MAX_SYS_CLOCK             108000000UL
+#define MAX_ADC_CLOCK             14000000UL
 #define PLL_MAX_FREQ              MAX_SYS_CLOCK
 #define APB1_MAX_FREQ             60000000UL
 
@@ -214,5 +215,25 @@ hdl_module_state_t hdl_clock_apb2(void *desc, uint8_t enable) {
     return _hdl_bus_clock_cnf((hdl_clock_prescaler_t *)desc, 11, 13, MAX_SYS_CLOCK, &hdl_clock_ahb);
   }
   rcu_apb2_clock_config(RCU_APB2_CKAHB_DIV16);
+  return HDL_MODULE_DEINIT_OK;
+}
+
+hdl_module_state_t hdl_clock_adc(void *desc, uint8_t enable) {
+  while (enable) {
+    hdl_clock_prescaler_t *hdl_prescaler = (hdl_clock_prescaler_t *)desc;
+    if (hdl_prescaler->module.dependencies == NULL || hdl_prescaler->module.dependencies[0] == NULL) break;
+    hdl_clock_t *clock_src = (hdl_clock_t *)hdl_prescaler->module.dependencies[0];
+    if(clock_src->module.init != &hdl_clock_apb2) break;
+    hdl_clock_calc_div((hdl_clock_t *)hdl_prescaler, clock_src, hdl_prescaler->muldiv_factor);
+    if(hdl_get_clock((hdl_clock_t *)hdl_prescaler) > MAX_ADC_CLOCK) break;
+    uint32_t adc_cnf = hdl_prescaler->muldiv_factor;
+    if((adc_cnf & 1) != 0) break;
+    adc_cnf = (adc_cnf >> 1) - 1;
+    if((adc_cnf > 8) || (adc_cnf == 5) || (adc_cnf == 7)) break;
+    adc_cnf = ((adc_cnf & 0x03) << 14) | ((adc_cnf & 0x4) << (28 - 2));
+    HDL_REG_MODIFY(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4), adc_cnf);
+    return HDL_MODULE_INIT_OK;
+  }
+  HDL_REG_CLEAR(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4));
   return HDL_MODULE_DEINIT_OK;
 }

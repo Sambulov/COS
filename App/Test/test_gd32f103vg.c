@@ -49,18 +49,18 @@ void test() {
   uint32_t timer = hdl_timer_get(&mod_timer_ms);
   uint32_t led_switch_mask = -1;
 
-  hdl_gpio_write(&mod_gpio_a15_led1, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_c10_led2, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_c11_led3, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_c12_led4, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_d0_led5, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_d1_led6, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_d2_led7, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_d3_led8, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_d4_led9, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_d5_led10, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_d6_led11, HDL_GPIO_HIGH);
-  hdl_gpio_write(&mod_gpio_d7_led12, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_a15_led1, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_c10_led2, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_c11_led3, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_c12_led4, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_d0_led5, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_d1_led6, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_d2_led7, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_d3_led8, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_d4_led9, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_d5_led10, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_d6_led11, HDL_GPIO_HIGH);
+  // hdl_gpio_write(&mod_gpio_d7_led12, HDL_GPIO_HIGH);
 
   while (1) {
     volatile uint32_t x = hdl_clock_counter_get_count(&mod_timer0_counter);

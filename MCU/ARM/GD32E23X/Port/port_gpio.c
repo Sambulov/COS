@@ -40,6 +40,7 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
     return HDL_MODULE_INIT_FAILED;
   /* gpio_port it`s GPIOx(x = A,B,C) */
   uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
+  gpio_bit_write(gpio_port, (uint32_t)gpio->module.reg, (gpio->inactive_default == HDL_GPIO_LOW) ? RESET : SET);
   if(enable) {
     gpio_af_set(gpio_port, gpio->mode->af, (uint32_t)gpio->module.reg);
     gpio_mode_set(gpio_port, gpio->mode->type, gpio->mode->pull, (uint32_t)gpio->module.reg);

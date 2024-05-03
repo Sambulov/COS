@@ -169,8 +169,10 @@ hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {
     hdl_clock_t *hdl_clock_src = (hdl_clock_t *)hdl_clock->module.dependencies[1];
     hdl_clock_calc_div(hdl_clock, hdl_clock_src, 1);
     if(hdl_clock_src->module.init == &hdl_clock_pll_p) {
-      RCU_APB1EN |= RCU_APB1EN_PMUEN;
+      /* Enable the high-drive to extend the clock frequency to 240 Mhz */
       PMU_CTL |= PMU_CTL_LDOVS;
+      //_hdl_clock_osc_en();
+      return _hdl_clock_osc_en((hdl_clock_t *)desc, RCU_PLL_CK, RCU_FLAG_IRC48MSTB, IRC48M_STARTUP_TIMEOUT);
       /* enable PLL */
       RCU_CTL |= RCU_CTL_PLLEN;
       /* wait until PLL is stable */

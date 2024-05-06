@@ -26,11 +26,13 @@
 #define HDL_HXTAL_CLOCK                   20000000
 #define HDL_PLL_MUL_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc16m, mod_clock_hxtal */
 #define HDL_SYS_CLOCK                     mod_clock_pll_p_prescaler     /* Can be clocked by: mod_clock_pll_p_prescaler, mod_clock_hxtal, mod_clock_irc16m */
-#define HDL_PLL_VCO_PRESCALER             20                             /* Can be 2, 3 .. 63 */
+#define HDL_PLL_VCO_PRESCALER             20                            /* Can be 2, 3 .. 63 */
 #define HDL_PLL_N_MULTIPLY                64                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
 #define HDL_PLL_P_PRESCALER               2                             /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
 #define HDL_PLL_Q_PRESCALER               2                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
 #define HDL_AHB_PRESCALER                 1                             /* Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
+#define HDL_APB1_PRESCALER                2                             /* Can be 1, 2, 4, 8, 16 */
+#define HDL_APB2_PRESCALER                2                             /* Can be 1, 2, 4, 8, 16 */
 
 hdl_core_t mod_sys_core = {
   .module.init = &hdl_core,
@@ -47,6 +49,17 @@ hdl_nvic_interrupt_t mod_irq_systick = {
   .priority = 0,
   .priority_group = 0,
 };
+hdl_nvic_interrupt_t mod_irq_timer0 = {
+  .irq_type = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
+  .priority = 0,
+  .priority_group = 1,
+};
+hdl_nvic_interrupt_t mod_irq_timer1 = {
+  .irq_type = HDL_NVIC_IRQ28_TIMER1,
+  .priority = 0,
+  .priority_group = 2,
+};
+
 hdl_nvic_interrupt_t mod_irq_exti_0 = {
   .irq_type = HDL_NVIC_IRQ6_EXTI0,
   .priority = 0,
@@ -69,7 +82,7 @@ hdl_nvic_t mod_nvic = {
   .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
   .module.reg = NVIC,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0),
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_0),
   .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0)
 };
 /***********************************************************
@@ -126,31 +139,70 @@ hdl_clock_prescaler_t mod_clock_sys_clock = {
   .muldiv_factor = HDL_PLL_Q_PRESCALER,
 };
 hdl_clock_prescaler_t mod_clock_ahb = {
-  .module.init = &hdl_clock_system,
+  .module.init = &hdl_clock_ahb,
   .module.dependencies = hdl_module_dependencies(&mod_clock_sys_clock.module),
   .module.reg = (void *)RCU,
   .muldiv_factor = HDL_AHB_PRESCALER,
+};
+hdl_clock_prescaler_t mod_clock_apb1 = {
+  .module.init = &hdl_clock_apb1,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .module.reg = (void *)RCU,
+  .muldiv_factor = HDL_APB1_PRESCALER,
+};
+hdl_clock_prescaler_t mod_clock_apb2 = {
+  .module.init = &hdl_clock_apb2,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .module.reg = (void *)RCU,
+  .muldiv_factor = HDL_APB2_PRESCALER,
 };
 
 /***********************************************************
  *                          COUNTER
 ***********************************************************/
-  hdl_clock_counter_t mod_systick_counter = {
-    .module.init = &hdl_clock_counter,
-    //.module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),  // add ahb
-    .module.dependencies =  NULL,
-    .module.reg = (void *)SysTick,
-    .diction = HDL_DOWN_COUNTER,
-    .counter_reload = 32000 -1
+hdl_clock_counter_t mod_systick_counter = {
+  .module.init = &hdl_clock_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),  // add ahb
+  .module.reg = (void *)SysTick,
+  .diction = HDL_DOWN_COUNTER,
+  .counter_reload = 32000 - 1,
+};
+hdl_clock_counter_t mod_timer0_counter = {
+  .module.init = &hdl_clock_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module), // add ahb
+  .module.reg = (void *)TIMER0,
+  .diction = HDL_DOWN_COUNTER,
+  .counter_reload = 16000 - 1,
   };
-/***********************************************************
- *                          TIMER
-***********************************************************/
-  hdl_timer_t mod_timer_ms = {
+  hdl_clock_counter_t mod_timer1_counter = {
+  .module.init = &hdl_clock_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module), // add ahb
+  .module.reg = (void *)TIMER1,
+  .diction = HDL_DOWN_COUNTER,
+  .counter_reload = 16000 - 1,
+  };
+  /***********************************************************
+   *                          TIMER
+   ***********************************************************/
+  hdl_timer_t mod_systick_timer_ms = {
     .module.init = hdl_timer,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
     .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
+    .val = 0
+  };
+    hdl_timer_t mod_timer0_ms = {
+    .module.init = hdl_timer,
+    .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
+    .module.reg = NULL,
+    .reload_iterrupt = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
+    .val = 0
+  };
+    hdl_timer_t mod_timer1_ms = {
+    .module.init = hdl_timer,
+    .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
+    .module.reg = NULL,
+    .reload_iterrupt = HDL_NVIC_IRQ28_TIMER1,
     .val = 0
   };
 /***********************************************************

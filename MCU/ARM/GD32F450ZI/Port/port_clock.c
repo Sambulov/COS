@@ -2,16 +2,58 @@
 #include "Macros.h"
 
 #define IRC48M_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
-//#define CK_SYS_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
 #define IRC32K_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
 #define LXTAL_STARTUP_TIMEOUT     ((uint32_t)0xFFFF)
 #define CK_SYS_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
 #define PLL_STARTUP_TIMEOUT       ((uint32_t)0xFFFF)
+#define PMU_STARTUP_TIMEOUT       ((uint32_t)0xFFFF)
 
 #define MAX_SYS_CLOCK             240000000UL
 #define PLL_MAX_FREQ              MAX_SYS_CLOCK
 #define APB1_MAX_FREQ             120000000UL
 #define APB2_MAX_FREQ             60000000UL
+
+/*!
+    \brief      get flag state
+    \param[in]  flag:
+      \arg        PMU_FLAG_WAKEUP: wakeup flag
+      \arg        PMU_FLAG_STANDBY: standby flag
+      \arg        PMU_FLAG_LVD: lvd flag
+      \arg        PMU_FLAG_BLDORF: backup SRAM LDO ready flag
+      \arg        PMU_FLAG_LDOVSRF: LDO voltage select ready flag
+      \arg        PMU_FLAG_HDRF: high-driver ready flag
+      \arg        PMU_FLAG_HDSRF: high-driver switch ready flag
+      \arg        PMU_FLAG_LDRF: low-driver mode ready flag
+    \retval     HDL_MODULE_INIT_FAILED
+    \retval     HDL_MODULE_INIT_OK
+*/
+static hdl_module_state_t _hdl_power_manager_wait_stable(uint32_t pmu_flag){
+  uint32_t stb_timer = PMU_STARTUP_TIMEOUT;
+  FlagStatus osci_statable = RESET;
+  while ((RESET == osci_statable) && (stb_timer--))
+    osci_statable = pmu_flag_get(pmu_flag);
+  if (osci_statable == RESET)
+    return HDL_MODULE_INIT_FAILED;
+  return HDL_MODULE_INIT_OK;
+}
+/* TODO: This function have to be in other module */
+static hdl_module_state_t _hdl_power_manager_high_frequency(uint8_t enable){
+  if(enable){
+      /* Enable the high-drive to extend the clock frequency to 240 Mhz */
+      PMU_CTL |= PMU_CTL_LDOVS;
+      /* Enable the high-drive to extend the clock frequency to 240 Mhz */
+      PMU_CTL |= PMU_CTL_HDEN;
+      if(_hdl_power_manager_wait_stable(PMU_FLAG_HDRF) != HDL_MODULE_INIT_OK)
+        return HDL_MODULE_INIT_FAILED;
+      /* select the high-drive mode */
+      PMU_CTL |= PMU_CTL_HDS;
+      if(_hdl_power_manager_wait_stable(PMU_CS_HDSRF) != HDL_MODULE_INIT_OK)
+        return HDL_MODULE_INIT_FAILED;
+      return HDL_MODULE_INIT_OK;
+  }
+  PMU_CTL &= ~(PMU_CTL_LDOVS | PMU_CTL_HDEN | PMU_CTL_HDS);
+  return HDL_MODULE_DEINIT_OK;
+}
 
 static hdl_module_state_t _hdl_clock_osc_en(hdl_clock_t* hdl_clock, rcu_osci_type_enum osc, rcu_flag_enum stb_flag, uint32_t timeout) {
   rcu_osci_on(osc); /* Turn on oscillator */
@@ -108,7 +150,6 @@ hdl_module_state_t hdl_clock_selector_pll_vco(void *desc, uint8_t enable) {
 }
 
 hdl_module_state_t hdl_clock_pll_n(void *desc, uint8_t enable) {
-  return HDL_MODULE_INIT_OK;
   hdl_clock_prescaler_t *hdl_prescaler = (hdl_clock_prescaler_t *)desc;
   if(enable) {
     uint32_t ss_modulation_inc = 0U;
@@ -122,7 +163,8 @@ hdl_module_state_t hdl_clock_pll_n(void *desc, uint8_t enable) {
         }
     }
     if(CHECK_PLL_N_VALID(hdl_prescaler->muldiv_factor, ss_modulation_inc))
-      return _hdl_clock_pll_init(hdl_prescaler, -1, (hdl_prescaler->muldiv_factor << 6), 6, 14, &hdl_clock_selector_pll_vco);
+      if(_hdl_clock_pll_init(hdl_prescaler, -1, (hdl_prescaler->muldiv_factor << 6), 6, 14, &hdl_clock_selector_pll_vco) == HDL_MODULE_INIT_OK)
+        return _hdl_clock_osc_en((hdl_clock_t *)desc, RCU_PLL_CK, RCU_FLAG_PLLSTB, PLL_STARTUP_TIMEOUT);
   }
   HDL_REG_MODIFY(RCU_PLL, RCU_PLL_PLLN, RCU_PLLN_MUL_MIN << 6);
   return HDL_MODULE_DEINIT_OK;
@@ -169,33 +211,7 @@ hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {
     hdl_clock_t *hdl_clock_src = (hdl_clock_t *)hdl_clock->module.dependencies[1];
     hdl_clock_calc_div(hdl_clock, hdl_clock_src, 1);
     if(hdl_clock_src->module.init == &hdl_clock_pll_p) {
-      /* Enable the high-drive to extend the clock frequency to 240 Mhz */
-      PMU_CTL |= PMU_CTL_LDOVS;
-      //_hdl_clock_osc_en();
-      return _hdl_clock_osc_en((hdl_clock_t *)desc, RCU_PLL_CK, RCU_FLAG_IRC48MSTB, IRC48M_STARTUP_TIMEOUT);
-      /* enable PLL */
-      RCU_CTL |= RCU_CTL_PLLEN;
-      /* wait until PLL is stable */
-      while(0U == (RCU_CTL & RCU_CTL_PLLSTB)){
-      }
-      /* Enable the high-drive to extend the clock frequency to 240 Mhz */
-      PMU_CTL |= PMU_CTL_HDEN;
-      while(0U == (PMU_CS & PMU_CS_HDRF)){
-      }
-      /* select the high-drive mode */
-      PMU_CTL |= PMU_CTL_HDS;
-      while(0U == (PMU_CS & PMU_CS_HDSRF)){
-      } 
-      RCU_PLL = (25U | (480U << 6U) | (((2U >> 1U) - 1U) << 16U) |
-                (RCU_PLLSRC_HXTAL) | (10U << 24U));
-
-          /* select PLL as system clock */
-    RCU_CFG0 &= ~RCU_CFG0_SCS;
-    RCU_CFG0 |= RCU_CKSYSSRC_PLLP;
-
-    /* wait until PLL is selected as system clock */
-    while(0U == (RCU_CFG0 & RCU_SCSS_PLLP)){
-    }
+      _hdl_power_manager_high_frequency(enable);
       return _hdl_clock_system_switch(RCU_CKSYSSRC_PLLP);
     }
     else if(hdl_clock_src->module.init == &hdl_clock_hxtal) {
@@ -206,6 +222,7 @@ hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable) {
     }
     /* TODO: config clock mon */
   }
+  _hdl_power_manager_high_frequency(0);
   /* TODO: switch to irc8 */
   return HDL_MODULE_DEINIT_OK;
 }

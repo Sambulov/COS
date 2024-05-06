@@ -30,9 +30,9 @@
 #define HDL_PLL_N_MULTIPLY                64                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
 #define HDL_PLL_P_PRESCALER               2                             /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
 #define HDL_PLL_Q_PRESCALER               2                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
-#define HDL_AHB_PRESCALER                 1                             /* Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
-#define HDL_APB1_PRESCALER                2                             /* Can be 1, 2, 4, 8, 16 */
-#define HDL_APB2_PRESCALER                2                             /* Can be 1, 2, 4, 8, 16 */
+#define HDL_AHB_PRESCALER                 1                             /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
+#define HDL_APB1_PRESCALER                2                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB2_PRESCALER                2                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
 hdl_core_t mod_sys_core = {
   .module.init = &hdl_core,
@@ -208,14 +208,23 @@ hdl_clock_counter_t mod_timer0_counter = {
 /***********************************************************
  *                          GPIO PORT
 ***********************************************************/
+hdl_gpio_port_t hdl_gpio_port_a = {
+  .init = &hdl_gpio_port,
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .reg = (void *)GPIOA,
+};
 hdl_gpio_port_t hdl_gpio_port_c = {
   .init = &hdl_gpio_port,
-  .dependencies = NULL, // add ahb
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .reg = (void *)GPIOC,
 };
+
 /***********************************************************
- *                          GPIO PIN
+ *                          GPIO
 ***********************************************************/
+/**************************************
+ *            GPIO MODE
+***************************************/
 hdl_gpio_mode_t hdl_gpio_mode_input_floating = {
     .type = GPIO_MODE_INPUT,
     .pull = GPIO_PUPD_NONE,
@@ -231,7 +240,12 @@ hdl_gpio_mode_t hdl_gpio_mode_analog = {
     .pull = GPIO_PUPD_NONE,
     .ospeed = GPIO_OSPEED_2MHZ,
 };
-
+/***********************************************************
+ *                          GPIO PIN
+***********************************************************/
+/***********************************************************
+ *                          LED
+***********************************************************/
 hdl_gpio_pin_t mod_led_0_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
@@ -294,4 +308,101 @@ hdl_gpio_pin_t mod_led_2_2 = {
   .module.reg = (void *)GPIO_PIN_8,
   .mode = &hdl_gpio_mode_output_no_pull,
 };
+/***********************************************************
+ *                    ANALOG PIN
+***********************************************************/
+hdl_gpio_pin_t mod_adc_in0 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .module.reg = (void *)GPIO_PIN_0,
+  .mode = &hdl_gpio_mode_analog,
+};
+hdl_gpio_pin_t mod_adc_in1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .module.reg = (void *)GPIO_PIN_1,
+  .mode = &hdl_gpio_mode_analog,
+};
+hdl_gpio_pin_t mod_adc_in2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .module.reg = (void *)GPIO_PIN_2,
+  .mode = &hdl_gpio_mode_analog,
+};
+hdl_gpio_pin_t mod_adc_in3 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .module.reg = (void *)GPIO_PIN_3,
+  .mode = &hdl_gpio_mode_analog,
+};
+hdl_gpio_pin_t mod_adc_in4 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .module.reg = (void *)GPIO_PIN_4,
+  .mode = &hdl_gpio_mode_analog,
+};
+hdl_gpio_pin_t mod_adc_in5 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .module.reg = (void *)GPIO_PIN_5,
+  .mode = &hdl_gpio_mode_analog,
+};
+/***********************************************************
+ *                          DMA
+***********************************************************/
+hdl_dma_t mod_dma = {
+  .module.init = &hdl_dma,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .module.reg = (void*)DMA1,
+};
+hdl_dma_channel_t mod_adc_dma_ch = {
+  .module.init = &hdl_dma_ch,
+  .module.dependencies = hdl_module_dependencies(&mod_dma.module),
+  .module.reg = (void*)DMA_CH0,
+  .direction = HDL_DMA_DIRECTION_P2M,
+  .memory_inc = HDL_DMA_INCREMENT_ON,
+  .memory_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT,
+  .periph_inc = HDL_DMA_INCREMENT_OFF,
+  .periph_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT,
+  .mode = HDL_DMA_MODE_CIRCULAR,
+  .priority = 0
+};
+/**************************************************************
+ *  ADC
+ *************************************************************/
+hdl_adc_source_t mod_adc_source_0 = {
+    .channel = HDL_ADC_CHANNEL_0,
+    .sample_time = HDL_ADC_SAMPLETIME_3,
+};
+hdl_adc_source_t mod_adc_source_1 = {
+    .channel = HDL_ADC_CHANNEL_1,
+    .sample_time = HDL_ADC_SAMPLETIME_3,
+};
+hdl_adc_source_t mod_adc_source_2 = {
+    .channel = HDL_ADC_CHANNEL_2,
+    .sample_time = HDL_ADC_SAMPLETIME_3,
+};
+hdl_adc_source_t mod_adc_source_3 = {
+    .channel = HDL_ADC_CHANNEL_3,
+    .sample_time = HDL_ADC_SAMPLETIME_3,
+};
+hdl_adc_source_t mod_adc_source_4 = {
+    .channel = HDL_ADC_CHANNEL_4,
+    .sample_time = HDL_ADC_SAMPLETIME_3,
+};
+hdl_adc_source_t mod_adc_source_5 = {
+    .channel = HDL_ADC_CHANNEL_5,
+    .sample_time = HDL_ADC_SAMPLETIME_3,
+};
+hdl_adc_t mod_adc = {
+    .module.init = &hdl_adc,
+    .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module),
+    .module.reg = (void *)ADC0,
+    .resolution = HDL_ADC_RESOLUTION_12BIT,
+    .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
+    .init_timeout = 3000,
+    .sources = hdl_adc_src(&mod_adc_source_1, &mod_adc_source_0, &mod_adc_source_2, &mod_adc_source_3, &mod_adc_source_4, &mod_adc_source_5),
+};
+
+
 #endif

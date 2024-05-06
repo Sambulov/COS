@@ -79,13 +79,13 @@ typedef struct{
     hdl_adc_data_alignment_t data_alignment;
     uint32_t init_timeout;
     hdl_adc_source_t **sources;               /* max amount 15 */
-    uint32_t *values;
+    uint16_t *values;
     uint8_t __private[HDL_ADC_PRIVATE_FIELD_SIZE];
 } hdl_adc_t;
 
 #define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
 
 #define hdl_adc_src(...)  hdl_adc_sources(__VA_ARGS__),\
-                          .values = (uint32_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
+                          .values = (uint16_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
 
 #endif

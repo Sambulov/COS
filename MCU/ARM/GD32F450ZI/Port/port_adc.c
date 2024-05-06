@@ -94,7 +94,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
           return HDL_MODULE_INIT_ONGOING;
         }
       case GD_ADC_STATE_MACHINE_RUN:
-        //adc_dma_mode_enable();
+        adc_dma_mode_enable((uint32_t)hdl_adc->module.reg);
         hdl_dma_run(dma, (uint32_t)&ADC_RDATA((uint32_t)hdl_adc->module.reg), (uint32_t)hdl_adc->values, (uint32_t)hdl_adc->channels_count);
         adc_software_trigger_enable((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL);
         hdl_adc->state_machine = GD_ADC_STATE_MACHINE_WORKING;        

@@ -19,7 +19,7 @@ typedef struct {
   uint32_t bLeft;
 } SchedulerArg_t;
 
-LinkedList_t workList = libNULL;
+static LinkedList_t workList = libNULL;
 
 void vCoroutineAddStatic(CoroutineDescStatic_t *pcCoRBuffer, CoroutineHandler_t pfHandler, void* pxArg) {
   IWorker_t *worker = (IWorker_t *)pcCoRBuffer;

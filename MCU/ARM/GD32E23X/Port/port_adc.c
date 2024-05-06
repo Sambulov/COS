@@ -55,8 +55,8 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         adc_channel_length_config(ADC_REGULAR_CHANNEL, hdl_adc->channels_count);
         adc_data_alignment_config(hdl_adc->data_alignment);
         adc_resolution_config((uint32_t)hdl_adc->resolution);
-        //adc_external_trigger_config(ADC_REGULAR_CHANNEL, ENABLE);
-        //adc_external_trigger_source_config(ADC_REGULAR_CHANNEL, ADC_EXTTRIG_REGULAR_NONE);
+        adc_external_trigger_config(ADC_REGULAR_CHANNEL, ENABLE);
+        adc_external_trigger_source_config(ADC_REGULAR_CHANNEL, ADC_EXTTRIG_REGULAR_NONE);
         adc_enable();
         //         for(uint16_t i = 0; i < adc_short_delay_after_start; i++)
         //     __NOP();

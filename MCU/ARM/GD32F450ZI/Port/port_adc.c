@@ -39,10 +39,13 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   rcu_periph_enum rcu;
   switch ((uint32_t)hdl_adc->module.reg) {
     case ADC0:
+      rcu = RCU_ADC0;
       break;
     case ADC1:
+      rcu = RCU_ADC1;
       break;
     case ADC2:
+      rcu = RCU_ADC2;
       break;
     default:
       return HDL_MODULE_INIT_FAILED;
@@ -52,14 +55,15 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   if(enable) {
     switch (hdl_adc->state_machine){
       case GD_ADC_STATE_MACHINE_INITIAL: {
-        
         rcu_periph_clock_enable(rcu);
+        adc_sync_mode_config(ADC_SYNC_MODE_INDEPENDENT);
         adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_SCAN_MODE, ENABLE);
         adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_CONTINUOUS_MODE, ENABLE);
         hdl_adc_source_t **adc_source = hdl_adc->sources;
         hdl_adc->channels_count = 0;
         while (*adc_source != NULL) {
-          adc_regular_channel_config(hdl_adc->channels_count, (uint8_t)(*adc_source)->channel, (uint32_t)(*adc_source)->sample_time);
+          adc_routine_channel_config((uint32_t)hdl_adc->module.reg, hdl_adc->channels_count, (uint8_t)(*adc_source)->channel, (uint32_t)(*adc_source)->sample_time);
+          //adc_regular_channel_config(hdl_adc->channels_count, (uint8_t)(*adc_source)->channel, (uint32_t)(*adc_source)->sample_time);
           adc_source++;
           hdl_adc->values[hdl_adc->channels_count++] = HDL_ADC_INVALID_VALUE;
         }
@@ -68,11 +72,16 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         adc_resolution_config((uint32_t)hdl_adc->module.reg, (uint32_t)hdl_adc->resolution);
         //adc_external_trigger_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, ENABLE);
         //adc_external_trigger_source_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, ADC_EXTTRIG_REGULAR_NONE);
+        adc_external_trigger_source_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, ADC_EXTTRIG_ROUTINE_T0_CH0); 
+        adc_external_trigger_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, EXTERNAL_TRIGGER_DISABLE);
+        adc_dma_request_after_last_enable((uint32_t)hdl_adc->module.reg);
         adc_enable((uint32_t)hdl_adc->module.reg);
-        //         for(uint16_t i = 0; i < adc_short_delay_after_start; i++)
-        //     __NOP();
         /* There must be 14 CK_ADC tact */
+        for(uint16_t i = 0; i < 10 * 14; i++)
+          __NOP();
+        
         ADC_CTL1((uint32_t)hdl_adc->module.reg) |= (uint32_t)ADC_CTL1_RSTCLB;
+        /* TODO: Should amend */
         while ((ADC_CTL1((uint32_t)hdl_adc->module.reg) & ADC_CTL1_RSTCLB));
         ADC_CTL1((uint32_t)hdl_adc->module.reg) |= ADC_CTL1_CLB;
         hdl_adc->time_stamp = hdl_timer_get(timer);
@@ -85,7 +94,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
           return HDL_MODULE_INIT_ONGOING;
         }
       case GD_ADC_STATE_MACHINE_RUN:
-        adc_dma_mode_enable();
+        //adc_dma_mode_enable();
         hdl_dma_run(dma, (uint32_t)&ADC_RDATA((uint32_t)hdl_adc->module.reg), (uint32_t)hdl_adc->values, (uint32_t)hdl_adc->channels_count);
         adc_software_trigger_enable((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL);
         hdl_adc->state_machine = GD_ADC_STATE_MACHINE_WORKING;        

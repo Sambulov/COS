@@ -94,10 +94,17 @@ void CAN0_RX1_IRQHandler()  { _call_isr( HDL_NVIC_IRQ21_CAN0_RX1, __ic->interrup
 void CAN0_EWMC_IRQHandler()  { _call_isr( HDL_NVIC_IRQ22_CAN0_EWMC, __ic->interrupts, 0); }
 void EXTI5_9_IRQHandler()  { _call_isr( HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, 0); hdl_exti_clear_pending(EXTI_LINES_5_9); }
 void TIMER0_BRK_TIMER8_IRQHandler()  { _call_isr( HDL_NVIC_IRQ24_TIMER0_BRK_TIMER8, __ic->interrupts, 0); }
-void TIMER0_UP_TIMER9_IRQHandler()  { _call_isr( HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, __ic->interrupts, 0); }
+void TIMER0_UP_TIMER9_IRQHandler() {
+  _call_isr(HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, __ic->interrupts, 0);
+  TIMER_INTF(TIMER0) &= ~TIMER_INTF_UPIF;
+  TIMER_INTF(TIMER9) &= ~TIMER_INTF_UPIF;
+}
 void TIMER0_TRG_CMT_TIMER10_IRQHandler()  { _call_isr( HDL_NVIC_IRQ26_TIMER0_TRG_CMT_TIMER10, __ic->interrupts, 0); }
 void TIMER0_Channel_IRQHandler()  { _call_isr( HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); }
-void TIMER1_IRQHandler()  { _call_isr( HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0); }
+void TIMER1_IRQHandler(){
+  _call_isr(HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0);
+  TIMER_INTF(TIMER1) &= ~TIMER_INTF_UPIF;
+}
 void TIMER2_IRQHandler()  { _call_isr( HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); }
 void TIMER3_IRQHandler()  { _call_isr( HDL_NVIC_IRQ30_TIMER3, __ic->interrupts, 0); }
 void I2C0_EV_IRQHandler()  { _call_isr( HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); }
@@ -519,6 +526,7 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   if(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     rcu_periph_clock_enable(RCU_SYSCFG);
+    rcu_periph_clock_enable(RCU_PMU);
     //FMC_WS = (FMC_WS & (~FMC_WC_WSCNT)) | core->flash_latency;
     return HDL_MODULE_INIT_OK;
   }

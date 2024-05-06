@@ -22,4 +22,6 @@ hdl_module_state_t hdl_clock_ahb(void *desc, uint8_t enable);
 hdl_module_state_t hdl_clock_apb1(void *desc, uint8_t enable);
 hdl_module_state_t hdl_clock_apb2(void *desc, uint8_t enable);
 
+hdl_module_state_t hdl_clock_adc(void *desc, uint8_t enable);
+
 #endif /* PORT_CLOCK_H_ */

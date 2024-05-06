@@ -47,6 +47,7 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable) {
   if (gpio->mode == NULL || gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
     return HDL_MODULE_INIT_FAILED;
   uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
+  gpio_bit_write(gpio_port, (uint32_t)gpio->module.reg, (gpio->inactive_default == HDL_GPIO_LOW) ? RESET : SET);
   if(enable) {
     volatile uint32_t *afio_pcf0 = (uint32_t *)(AFIO + 0x4U);
     if((gpio_port == GPIOB) && ((uint32_t)gpio->module.reg == GPIO_PIN_4)) {

@@ -6,7 +6,7 @@
 
 #if defined ( USPD )
 
-#define TEST_NO 7
+#define TEST_NO 1
 /* 
   1  - pll by hxtal/2, sys clock 108MHz SysTick          | w
   2  - pll by hxtal/2, sys clock 72MHz  SysTick          | w
@@ -40,6 +40,7 @@
   #define MS_TIMER_RELOAD_VAL          108000-1
   #define HDL_APB1_PREDIV              2
   #define HDL_APB2_PREDIV              1
+  #define HDL_ADC_PREDIV               8
 #endif
 
 #if TEST_NO == 2
@@ -94,6 +95,7 @@
   #define MS_TIMER_RELOAD_VAL          36000-1
   #define HDL_APB1_PREDIV              2
   #define HDL_APB2_PREDIV              2
+  #define HDL_ADC_PREDIV               4
 #endif
 
 #if TEST_NO == 8
@@ -249,6 +251,13 @@
     .muldiv_factor = HDL_APB2_PREDIV,
   };
 
+  hdl_clock_prescaler_t mod_clock_adc = {
+    .module.init = &hdl_clock_adc,
+    .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module),
+    .module.reg = (void *)RCU,
+    .muldiv_factor = HDL_ADC_PREDIV,
+  };
+
   hdl_clock_counter_t mod_systick_counter = {
     .module.init = &hdl_clock_counter,
     .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
@@ -359,93 +368,503 @@ hdl_gpio_port_t mod_gpio_d = {
   .dependencies = NULL
 };
 
+hdl_gpio_port_t mod_gpio_e = {
+  .init = &hdl_gpio_port,
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .reg = (void *)GPIOE,
+  .dependencies = NULL
+};
+
 hdl_gpio_mode_t mod_gpio_mode_output_pp = {
   .ospeed = GPIO_OSPEED_2MHZ,
   .type = GPIO_MODE_OUT_PP
+};
+
+hdl_gpio_mode_t mod_gpio_mode_input_np = {
+  .type = GPIO_MODE_IN_FLOATING
+};
+
+hdl_gpio_mode_t mod_gpio_mode_input_analog = {
+  .type = GPIO_MODE_AIN
 };
 
 hdl_gpio_pin_t mod_gpio_a15_led1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_a),
   .module.reg = (void *)GPIO_PIN_15,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_c10_led2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_c),
   .module.reg = (void *)GPIO_PIN_10,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_c11_led3 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_c),
   .module.reg = (void *)GPIO_PIN_11,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_c12_led4 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_c),
   .module.reg = (void *)GPIO_PIN_12,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_d0_led5 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
   .module.reg = (void *)GPIO_PIN_0,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_d1_led6 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
   .module.reg = (void *)GPIO_PIN_1,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_d2_led7 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
   .module.reg = (void *)GPIO_PIN_2,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_d3_led8 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
   .module.reg = (void *)GPIO_PIN_3,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_d4_led9 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
   .module.reg = (void *)GPIO_PIN_4,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_d5_led10 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
   .module.reg = (void *)GPIO_PIN_5,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_d6_led11 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
   .module.reg = (void *)GPIO_PIN_6,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
 };
 
 hdl_gpio_pin_t mod_gpio_d7_led12 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
   .module.reg = (void *)GPIO_PIN_7,
-  .mode = &mod_gpio_mode_output_pp
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_e15_do8 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_15,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_b13_do7 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b),
+  .module.reg = (void *)GPIO_PIN_13,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_b15_do6 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b),
+  .module.reg = (void *)GPIO_PIN_15,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_d9_do5 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
+  .module.reg = (void *)GPIO_PIN_9,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_d11_do4 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
+  .module.reg = (void *)GPIO_PIN_11,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_d13_do3 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
+  .module.reg = (void *)GPIO_PIN_13,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_d15_do2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
+  .module.reg = (void *)GPIO_PIN_15,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_c7_do1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c),
+  .module.reg = (void *)GPIO_PIN_7,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_b12_di8 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b),
+  .module.reg = (void *)GPIO_PIN_12,
+  .mode = &mod_gpio_mode_input_np,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_b14_di7 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b),
+  .module.reg = (void *)GPIO_PIN_14,
+  .mode = &mod_gpio_mode_input_np,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_d8_di6 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
+  .module.reg = (void *)GPIO_PIN_8,
+  .mode = &mod_gpio_mode_input_np,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_d10_di5 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
+  .module.reg = (void *)GPIO_PIN_10,
+  .mode = &mod_gpio_mode_input_np,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_d12_di4 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
+  .module.reg = (void *)GPIO_PIN_12,
+  .mode = &mod_gpio_mode_input_np,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_d14_di3 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d),
+  .module.reg = (void *)GPIO_PIN_14,
+  .mode = &mod_gpio_mode_input_np,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_c6_di2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c),
+  .module.reg = (void *)GPIO_PIN_6,
+  .mode = &mod_gpio_mode_input_np,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_c8_di1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c),
+  .module.reg = (void *)GPIO_PIN_8,
+  .mode = &mod_gpio_mode_input_np,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+bldl_uspd_discrete_port_t mod_uspd_od_port1 = {
+  .module.init = &bldl_uspd_discrete_port,
+  .module.reg = (void *)1,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c8_di1.module, &mod_gpio_c7_do1.module),
+  .desc = ATB_IO_PORT_DO_OD,
+  .output = HDL_GPIO_HIGH,
+};
+
+bldl_uspd_discrete_port_t mod_uspd_od_port2 = {
+  .module.init = &bldl_uspd_discrete_port,
+  .module.reg = (void *)2,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c6_di2.module, &mod_gpio_d15_do2.module),
+  .desc = ATB_IO_PORT_DO_OD,
+  .output = HDL_GPIO_HIGH,
+};
+
+bldl_uspd_discrete_port_t mod_uspd_od_port3 = {
+  .module.init = &bldl_uspd_discrete_port,
+  .module.reg = (void *)3,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d14_di3.module, &mod_gpio_d13_do3.module),
+  .desc = ATB_IO_PORT_DO_OD,
+  .output = HDL_GPIO_HIGH,
+};
+
+bldl_uspd_discrete_port_t mod_uspd_od_port4 = {
+  .module.init = &bldl_uspd_discrete_port,
+  .module.reg = (void *)4,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d12_di4.module, &mod_gpio_d11_do4.module),
+  .desc = ATB_IO_PORT_DO_OD,
+  .output = HDL_GPIO_HIGH,
+};
+
+bldl_uspd_discrete_port_t mod_uspd_od_port5 = {
+  .module.init = &bldl_uspd_discrete_port,
+  .module.reg = (void *)5,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d10_di5.module, &mod_gpio_d9_do5.module),
+  .desc = ATB_IO_PORT_DO_OD,
+  .output = HDL_GPIO_HIGH,
+};
+
+bldl_uspd_discrete_port_t mod_uspd_od_port6 = {
+  .module.init = &bldl_uspd_discrete_port,
+  .module.reg = (void *)6,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d8_di6.module, &mod_gpio_b15_do6.module),
+  .desc = ATB_IO_PORT_DO_OD,
+  .output = HDL_GPIO_HIGH,
+};
+
+bldl_uspd_discrete_port_t mod_uspd_od_port7 = {
+  .module.init = &bldl_uspd_discrete_port,
+  .module.reg = (void *)7,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b14_di7.module, &mod_gpio_b13_do7.module),
+  .desc = ATB_IO_PORT_DO_OD,
+  .output = HDL_GPIO_HIGH,
+};
+
+bldl_uspd_discrete_port_t mod_uspd_od_port8 = {
+  .module.init = &bldl_uspd_discrete_port,
+  .module.reg = (void *)8,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b12_di8.module, &mod_gpio_e15_do8.module),
+  .desc = ATB_IO_PORT_DO_OD,
+  .output = HDL_GPIO_HIGH,
+};
+
+hdl_gpio_pin_t mod_gpio_a0_ai0 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_a),
+  .module.reg = (void *)GPIO_PIN_0,
+  .mode = &mod_gpio_mode_input_analog
+};
+
+hdl_gpio_pin_t mod_gpio_a1_ai1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_a),
+  .module.reg = (void *)GPIO_PIN_1,
+  .mode = &mod_gpio_mode_input_analog
+};
+
+hdl_gpio_pin_t mod_gpio_a2_ai2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_a),
+  .module.reg = (void *)GPIO_PIN_2,
+  .mode = &mod_gpio_mode_input_analog
+};
+
+hdl_gpio_pin_t mod_gpio_a3_ai3 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_a),
+  .module.reg = (void *)GPIO_PIN_3,
+  .mode = &mod_gpio_mode_input_analog  
+};
+
+hdl_gpio_pin_t mod_gpio_e12_ai0_pu = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_12,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_e9_ai1_pu = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_9,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_b2_ai2_pu = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b),
+  .module.reg = (void *)GPIO_PIN_2,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_c5_ai3_pu = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c),
+  .module.reg = (void *)GPIO_PIN_5,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW  
+};
+
+hdl_gpio_pin_t mod_gpio_e14_ai0_csh = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_14,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_e11_ai1_csh = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_11,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_e8_ai2_csh = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_8,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_b1_ai3_csh = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b),
+  .module.reg = (void *)GPIO_PIN_1,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW 
+};
+
+hdl_gpio_pin_t mod_gpio_e13_ai0_pd = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_13,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_e10_ai1_pd = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_10,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_e7_ai2_pd = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
+  .module.reg = (void *)GPIO_PIN_7,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_gpio_pin_t mod_gpio_b0_ai3_pd = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_b),
+  .module.reg = (void *)GPIO_PIN_0,
+  .mode = &mod_gpio_mode_output_pp,
+  .inactive_default = HDL_GPIO_LOW
+};
+
+hdl_adc_source_t mod_adc_source_0 = {
+  .channel = HDL_ADC_CHANNEL_0,
+  .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+};
+
+hdl_adc_source_t mod_adc_source_1 = {
+  .channel = HDL_ADC_CHANNEL_1,
+  .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+};
+
+hdl_adc_source_t mod_adc_source_2 = {
+  .channel = HDL_ADC_CHANNEL_2,
+  .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+};
+
+hdl_adc_source_t mod_adc_source_3 = {
+  .channel = HDL_ADC_CHANNEL_3,
+  .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
+};
+
+hdl_adc_t mod_adc = {
+  .module.init = &hdl_adc,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_adc.module, &mod_timer_ms.module, &mod_adc_dma_ch.module),
+  .module.reg = (void*)ADC0,
+  .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
+  .init_timeout = 3000,
+  .sources = hdl_adc_src(&mod_adc_source_0, &mod_adc_source_1, &mod_adc_source_2, &mod_adc_source_3),
+};
+
+hdl_plc_port_config_t mod_ain_default_cnf = {
+  .desc = (ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_HW_ANALOG | ATB_IO_PORT_SW_RAW_ADC),
+  .default_output = 0,
+  .default_option = 0
+};
+
+bldl_uspd_ain_port_t mod_uspd_ai_port0 = {
+  .module.init = &bldl_uspd_ain_port,
+  .module.reg = (void *)&mod_adc_source_0,
+  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a0_ai0.module, &mod_gpio_e12_ai0_pu.module,
+                                                 &mod_gpio_e13_ai0_pd.module, &mod_gpio_e14_ai0_csh.module),
+  .default_config = &mod_ain_default_cnf
+};
+
+bldl_uspd_ain_port_t mod_uspd_ai_port1 = {
+  .module.init = &bldl_uspd_ain_port,
+  .module.reg = (void *)&mod_adc_source_1,
+  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a1_ai1.module, &mod_gpio_e9_ai1_pu.module,
+                                                 &mod_gpio_e10_ai1_pd.module, &mod_gpio_e11_ai1_csh.module),
+  .default_config = &mod_ain_default_cnf
+};
+
+bldl_uspd_ain_port_t mod_uspd_ai_port2 = {
+  .module.init = &bldl_uspd_ain_port,
+  .module.reg = (void *)&mod_adc_source_2,
+  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a2_ai2.module, &mod_gpio_b2_ai2_pu.module,
+                                                 &mod_gpio_e7_ai2_pd.module, &mod_gpio_e8_ai2_csh.module),
+  .default_config = &mod_ain_default_cnf
+};
+
+bldl_uspd_ain_port_t mod_uspd_ai_port3 = {
+  .module.init = &bldl_uspd_ain_port,
+  .module.reg = (void *)&mod_adc_source_3,
+  .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a3_ai3.module, &mod_gpio_c5_ai3_pu.module,
+                                                 &mod_gpio_b0_ai3_pd.module, &mod_gpio_b1_ai3_csh.module),
+  .default_config = &mod_ain_default_cnf
 };
 
 #endif

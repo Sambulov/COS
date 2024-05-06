@@ -37,13 +37,13 @@ typedef enum {
 
   /* ========================================= */
   /* HW configuration flags mask */
-    ATB_IO_PORT_HW_CONFIG          = 0x0000FFF0,
+    ATB_IO_PORT_HW_CONFIG        = 0x0000FFF0,
 
   /* | ATB_IO_PORT_HW_DIRECTION | 1(output)      | 0(input)  |
      |--------------------------+----------------+-----------|
      | ATB_IO_PORT_HW_MODE      ||||||||||||||||||||||||||||||
      |        0                 | push-pull      | latch min |
-     |        1                 | open collector | latch max |
+     |        1                 | open drain     | latch max |
   */
   ATB_IO_PORT_HW_DIRECTION       = 0x00001000,
   ATB_IO_PORT_HW_MODE            = 0x00002000,
@@ -51,21 +51,28 @@ typedef enum {
   /* Port mode, discrete - 0, analog - 1 */
   ATB_IO_PORT_HW_ANALOG          = 0x00008000,
   
+  /* Enable weak pull down */
+  ATB_IO_PORT_HW_PULL_DOWN_WEAK    = 0x00000100,
+  
+  /* Enable strong pull down */
+  ATB_IO_PORT_HW_PULL_DOWN_STRONG  = 0x00000200,
+  
   /* Enable weak pull up */
-  ATB_IO_PORT_HW_PULL_UP_WEAK    = 0x00000100,
+  ATB_IO_PORT_HW_PULL_UP_WEAK    = 0x00000400,
   
   /* Enable strong pull up */
-  ATB_IO_PORT_HW_PULL_UP_STRONG  = 0x00000200,
+  ATB_IO_PORT_HW_PULL_UP_STRONG  = 0x00000800,
   
   /* Enable voltage divider */
-  ATB_IO_PORT_HW_VOLTAGE_DIVIDER = 0x00000400,
+  ATB_IO_PORT_HW_VOLTAGE_DIVIDER = 0x00000010,
   
   /* Enable current shunt */
-  ATB_IO_PORT_HW_CURRENT_SHUNT   = 0x00000800,
+  ATB_IO_PORT_HW_CURRENT_SHUNT   = 0x00000020,
   
   /* ... */
   ATB_IO_PORT_HW_OUTPUT          = ATB_IO_PORT_HW_DIRECTION,
   ATB_IO_PORT_HW_INPUT           = 0x00000000,
+  
 /* ========================================= */
 
   /* SW configuration */
@@ -112,6 +119,8 @@ typedef enum {
   ATB_IO_PORT_DI_FREQ = ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_HW_VOLTAGE_DIVIDER | ATB_IO_PORT_SW_FREQUENCY,
   /* Discrete output */
   ATB_IO_PORT_DO = ATB_IO_PORT_HW_OUTPUT | ATB_IO_PORT_SW_DISCRETE,
+  /* Discrete output open drain */
+  ATB_IO_PORT_DO_OD = ATB_IO_PORT_HW_OUTPUT | ATB_IO_PORT_HW_MODE | ATB_IO_PORT_SW_DISCRETE,
   /* Analog output voltage 0-10V */
   ATB_IO_PORT_AO_0_10V = ATB_IO_PORT_HW_OUTPUT | ATB_IO_PORT_HW_ANALOG | ATB_IO_PORT_SW_VOLTAGE,
   /* Analog output current 0-20mA */
@@ -121,39 +130,41 @@ typedef enum {
   ATB_IO_PORT_BUTTON = ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_OP_LATCH_MODE | ATB_IO_PORT_HW_PULL_UP_STRONG | ATB_IO_PORT_SW_DISCRETE,
   /* ... */
 
-} AtbPortDescriptor_t;
+} hdl_plc_port_descriptor_t;
 
 typedef union {
-  float rValue;
-  uint32_t ulValue;
-} AtbPortValue_t;
+  float r_alue;
+  uint32_t ul_value;
+} hdl_plc_port_value_t;
 
 typedef struct {
-  AtbPortDescriptor_t ePortDesc;
-  AtbPortValue_t xDefault;
-} AtbIOPortConfig_t;
+  hdl_plc_port_descriptor_t desc;
+  hdl_plc_port_value_t default_output;
+  hdl_plc_port_value_t default_option;
+} hdl_plc_port_config_t;
 
-#define ATB_IO_PORTS_COUNT    8 /* Specified to hardware */
-
-/* EEPROM mapping */ 
-typedef struct {
-  uint32_t ulReserved; /* Reserved for future use */
-  uint32_t ulPortsCount; 
-  AtbIOPortConfig_t aePorts[ATB_IO_PORTS_COUNT];
-} AtbIOConfig_t;
-
-#define IN    /* Data flow from MPC USPD to host */
-#define OUT   /* Data flow from host to MPC USPD */
+#define IN    /* Data flow from PLC IO extender to host */
+#define OUT   /* Data flow from host to PLC IO extender */
 #define INOUT /* Bidirectional fields */
 
 typedef struct {
-  INOUT AtbPortDescriptor_t ePortDesc;
-  IN AtbPortValue_t xInput;
-  OUT AtbPortValue_t xOutput;
-  OUT AtbPortValue_t xOption;
-} AtbIOPort_t;
+  hdl_module_t module;
+  hdl_plc_port_config_t *default_config;
+  INOUT hdl_plc_port_descriptor_t desc;
+  IN hdl_plc_port_value_t input;
+  OUT hdl_plc_port_value_t output;
+  OUT hdl_plc_port_value_t option;
+} hdl_plc_port_t;
 
+//#define ATB_IO_PORTS_COUNT    8 /* Specified to hardware */
+/* EEPROM mapping */ 
+// typedef struct {
+//   uint32_t reserved; /* Reserved for future use default 0xFFFFFFFF */
+//   uint32_t ports_count; 
+//   hdl_plc_port_config_t ports[ATB_IO_PORTS_COUNT];
+// } hdl_plc_io_config_t;
 /* MCU ports mapping */
-extern AtbIOPort_t axIOPortRegisterMap[ATB_IO_PORTS_COUNT];
+//extern hdl_plc_port_t plc_io_registers[ATB_IO_PORTS_COUNT];
+//hdl_module_state_t hdl_plc_port(void *desc, uint8_t enable);
 
 #endif // _ATB_UIO_H_

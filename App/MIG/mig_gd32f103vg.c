@@ -484,6 +484,84 @@ hdl_gpio_pin_t mod_gpio_d7_led12 = {
   .inactive_default = HDL_GPIO_HIGH
 };
 
+hdl_plc_port_config_t mod_uspd_port_default_cnf_led = {
+  .desc = (PLC_IO_PORT_DO_OD),
+  .default_output = HDL_GPIO_LOW,
+  .default_option = 0
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port1 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_a15_led1.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port2 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c10_led2.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port3 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c11_led3.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port4 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_c12_led4.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port5 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d0_led5.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port6 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d1_led6.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port7 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d2_led7.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port8 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d3_led8.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port9 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d4_led9.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port10 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d5_led10.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port11 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d6_led11.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
+bldl_uspd_led_port_t mod_uspd_led_port12 = {
+  .module.init = &bldl_uspd_led_port,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_d7_led12.module),
+  .default_config = &mod_uspd_port_default_cnf_led
+};
+
 hdl_gpio_pin_t mod_gpio_e15_do8 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_e),
@@ -612,11 +690,17 @@ hdl_gpio_pin_t mod_gpio_c8_di1 = {
   .inactive_default = HDL_GPIO_HIGH
 };
 
+hdl_plc_port_config_t mod_uspd_port_default_cnf_do = {
+  .desc = (PLC_IO_PORT_DO_OD),
+  .default_output = HDL_GPIO_LOW,
+  .default_option = 0
+};
+
 bldl_uspd_discrete_port_t mod_uspd_od_port1 = {
   .module.init = &bldl_uspd_discrete_port,
   .module.reg = (void *)1,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_c8_di1.module, &mod_gpio_c7_do1.module),
-  .desc = ATB_IO_PORT_DO_OD,
+  .default_config = &mod_uspd_port_default_cnf_do,
   .output = HDL_GPIO_HIGH,
 };
 
@@ -624,7 +708,7 @@ bldl_uspd_discrete_port_t mod_uspd_od_port2 = {
   .module.init = &bldl_uspd_discrete_port,
   .module.reg = (void *)2,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_c6_di2.module, &mod_gpio_d15_do2.module),
-  .desc = ATB_IO_PORT_DO_OD,
+  .default_config = &mod_uspd_port_default_cnf_do,
   .output = HDL_GPIO_HIGH,
 };
 
@@ -632,7 +716,7 @@ bldl_uspd_discrete_port_t mod_uspd_od_port3 = {
   .module.init = &bldl_uspd_discrete_port,
   .module.reg = (void *)3,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d14_di3.module, &mod_gpio_d13_do3.module),
-  .desc = ATB_IO_PORT_DO_OD,
+  .default_config = &mod_uspd_port_default_cnf_do,
   .output = HDL_GPIO_HIGH,
 };
 
@@ -640,7 +724,7 @@ bldl_uspd_discrete_port_t mod_uspd_od_port4 = {
   .module.init = &bldl_uspd_discrete_port,
   .module.reg = (void *)4,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d12_di4.module, &mod_gpio_d11_do4.module),
-  .desc = ATB_IO_PORT_DO_OD,
+  .default_config = &mod_uspd_port_default_cnf_do,
   .output = HDL_GPIO_HIGH,
 };
 
@@ -648,7 +732,7 @@ bldl_uspd_discrete_port_t mod_uspd_od_port5 = {
   .module.init = &bldl_uspd_discrete_port,
   .module.reg = (void *)5,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d10_di5.module, &mod_gpio_d9_do5.module),
-  .desc = ATB_IO_PORT_DO_OD,
+  .default_config = &mod_uspd_port_default_cnf_do,
   .output = HDL_GPIO_HIGH,
 };
 
@@ -656,7 +740,7 @@ bldl_uspd_discrete_port_t mod_uspd_od_port6 = {
   .module.init = &bldl_uspd_discrete_port,
   .module.reg = (void *)6,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_d8_di6.module, &mod_gpio_b15_do6.module),
-  .desc = ATB_IO_PORT_DO_OD,
+  .default_config = &mod_uspd_port_default_cnf_do,
   .output = HDL_GPIO_HIGH,
 };
 
@@ -664,7 +748,7 @@ bldl_uspd_discrete_port_t mod_uspd_od_port7 = {
   .module.init = &bldl_uspd_discrete_port,
   .module.reg = (void *)7,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_b14_di7.module, &mod_gpio_b13_do7.module),
-  .desc = ATB_IO_PORT_DO_OD,
+  .default_config = &mod_uspd_port_default_cnf_do,
   .output = HDL_GPIO_HIGH,
 };
 
@@ -672,7 +756,7 @@ bldl_uspd_discrete_port_t mod_uspd_od_port8 = {
   .module.init = &bldl_uspd_discrete_port,
   .module.reg = (void *)8,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_b12_di8.module, &mod_gpio_e15_do8.module),
-  .desc = ATB_IO_PORT_DO_OD,
+  .default_config = &mod_uspd_port_default_cnf_do,
   .output = HDL_GPIO_HIGH,
 };
 
@@ -829,8 +913,8 @@ hdl_adc_t mod_adc = {
   .sources = hdl_adc_src(&mod_adc_source_0, &mod_adc_source_1, &mod_adc_source_2, &mod_adc_source_3),
 };
 
-hdl_plc_port_config_t mod_ain_default_cnf = {
-  .desc = (ATB_IO_PORT_HW_INPUT | ATB_IO_PORT_HW_ANALOG | ATB_IO_PORT_SW_RAW_ADC),
+hdl_plc_port_config_t mod_uspd_port_default_cnf_ain = {
+  .desc = (PLC_IO_PORT_HW_INPUT | PLC_IO_PORT_HW_ANALOG | PLC_IO_PORT_SW_RAW_ADC),
   .default_output = 0,
   .default_option = 0
 };
@@ -840,7 +924,7 @@ bldl_uspd_ain_port_t mod_uspd_ai_port0 = {
   .module.reg = (void *)&mod_adc_source_0,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a0_ai0.module, &mod_gpio_e12_ai0_pu.module,
                                                  &mod_gpio_e13_ai0_pd.module, &mod_gpio_e14_ai0_csh.module),
-  .default_config = &mod_ain_default_cnf
+  .default_config = &mod_uspd_port_default_cnf_ain
 };
 
 bldl_uspd_ain_port_t mod_uspd_ai_port1 = {
@@ -848,7 +932,7 @@ bldl_uspd_ain_port_t mod_uspd_ai_port1 = {
   .module.reg = (void *)&mod_adc_source_1,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a1_ai1.module, &mod_gpio_e9_ai1_pu.module,
                                                  &mod_gpio_e10_ai1_pd.module, &mod_gpio_e11_ai1_csh.module),
-  .default_config = &mod_ain_default_cnf
+  .default_config = &mod_uspd_port_default_cnf_ain
 };
 
 bldl_uspd_ain_port_t mod_uspd_ai_port2 = {
@@ -856,7 +940,7 @@ bldl_uspd_ain_port_t mod_uspd_ai_port2 = {
   .module.reg = (void *)&mod_adc_source_2,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a2_ai2.module, &mod_gpio_b2_ai2_pu.module,
                                                  &mod_gpio_e7_ai2_pd.module, &mod_gpio_e8_ai2_csh.module),
-  .default_config = &mod_ain_default_cnf
+  .default_config = &mod_uspd_port_default_cnf_ain
 };
 
 bldl_uspd_ain_port_t mod_uspd_ai_port3 = {
@@ -864,7 +948,19 @@ bldl_uspd_ain_port_t mod_uspd_ai_port3 = {
   .module.reg = (void *)&mod_adc_source_3,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module, &mod_gpio_a3_ai3.module, &mod_gpio_c5_ai3_pu.module,
                                                  &mod_gpio_b0_ai3_pd.module, &mod_gpio_b1_ai3_csh.module),
-  .default_config = &mod_ain_default_cnf
+  .default_config = &mod_uspd_port_default_cnf_ain
+};
+
+bldl_uspd_port_expander_t mod_uspd_port_expander = {
+  .init = &bldl_uspd_port_expander,
+  .dependencies = hdl_module_dependencies(&mod_uspd_led_port1.module, &mod_uspd_led_port2.module, &mod_uspd_led_port3.module,
+                                          &mod_uspd_led_port4.module, &mod_uspd_led_port5.module, &mod_uspd_led_port6.module,
+                                          &mod_uspd_led_port7.module, &mod_uspd_led_port8.module, &mod_uspd_led_port9.module,
+                                          &mod_uspd_led_port10.module, &mod_uspd_led_port11.module, &mod_uspd_led_port12.module, 
+                                          &mod_uspd_od_port1.module, &mod_uspd_od_port2.module, &mod_uspd_od_port3.module, 
+                                          &mod_uspd_od_port4.module, &mod_uspd_od_port5.module, &mod_uspd_od_port6.module, 
+                                          &mod_uspd_od_port7.module, &mod_uspd_od_port8.module, &mod_uspd_ai_port0.module, 
+                                          &mod_uspd_ai_port1.module, &mod_uspd_ai_port2.module, &mod_uspd_ai_port3.module)
 };
 
 #endif

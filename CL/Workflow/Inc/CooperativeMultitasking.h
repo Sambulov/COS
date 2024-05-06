@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#define CO_ROUTINE_DESC_SIZE  SIZE_ALIGN4(28)
+#define CO_ROUTINE_DESC_SIZE  28
 
 typedef struct {
     uint8_t dummy[CO_ROUTINE_DESC_SIZE];

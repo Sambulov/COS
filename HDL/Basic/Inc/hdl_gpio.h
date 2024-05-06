@@ -20,6 +20,7 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable);
 hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable);
 
 hdl_gpio_state hdl_gpio_read(const hdl_gpio_pin_t *gpio);
+hdl_gpio_state hdl_gpio_read_output(const hdl_gpio_pin_t *gpio);
 void hdl_gpio_write(const hdl_gpio_pin_t *gpio, const hdl_gpio_state state);
 void hdl_gpio_toggle(const hdl_gpio_pin_t *gpio);
 

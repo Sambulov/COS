@@ -1,6 +1,8 @@
 #include "bldl.h"
 #include "CooperativeMultitasking.h"
 
+#ifdef USPD
+
 static void _bldl_uspd_set_default(hdl_plc_port_t *port) {
   port->desc = port->default_config->desc | PLC_IO_PORT_OP_RESET_CONFIG;
   port->output.ul_value = port->default_config->default_output.ul_value;
@@ -127,3 +129,5 @@ hdl_module_state_t bldl_uspd_port_expander(void *desc, uint8_t enable) {
   coroutine_cancel(&expander_task);
   return HDL_MODULE_DEINIT_OK;
 }
+
+#endif

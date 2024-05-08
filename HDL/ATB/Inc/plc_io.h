@@ -132,15 +132,11 @@ typedef enum {
 
 } hdl_plc_port_descriptor_t;
 
-typedef union {
-  float r_alue;
-  uint32_t ul_value;
-} hdl_plc_port_value_t;
 
 typedef struct {
   hdl_plc_port_descriptor_t desc;
-  hdl_plc_port_value_t default_output;
-  hdl_plc_port_value_t default_option;
+  uint32_t default_output;
+  uint32_t default_option;
 } hdl_plc_port_config_t;
 
 #define IN    /* Data flow from PLC IO extender to host */
@@ -151,9 +147,9 @@ typedef struct {
   hdl_module_t module;
   hdl_plc_port_config_t *default_config;
   INOUT hdl_plc_port_descriptor_t desc;
-  IN hdl_plc_port_value_t input;
-  OUT hdl_plc_port_value_t output;
-  OUT hdl_plc_port_value_t option;
+  IN uint32_t input;
+  OUT uint32_t output;
+  OUT uint32_t option;
 } hdl_plc_port_t;
 
 //#define PLC_IO_PORTS_COUNT    8 /* Specified to hardware */

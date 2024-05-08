@@ -12,12 +12,21 @@
 #define SMARCV2P1
 
 
-#ifdef SMARCV2P1
+#ifdef USPD
 
 #include "bldl_som_boot_lock.h"
 #include "bldl_som_boot_select.h"
 #include "bldl_som_state.h"
 #include "bldl_uspd_io.h"
+
+#endif
+
+#ifdef ATB_3500
+
+#include "bldl_som_boot_lock.h"
+#include "bldl_som_boot_select.h"
+#include "bldl_som_state.h"
+#include "bldl_atb3500_io.h"
 
 #endif
 

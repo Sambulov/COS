@@ -40,7 +40,26 @@ extern hdl_adc_source_t mod_adc_source_3;
 extern hdl_adc_source_t mod_adc_source_4;
 extern hdl_adc_source_t mod_adc_source_5;
 extern hdl_adc_t mod_adc;
-extern bldl_uspd_port_expander_t mod_uspd_port_expander;
+
+extern bldl_atb3500_led_port_t mod_atb3500_led_0_0;
+extern bldl_atb3500_led_port_t mod_atb3500_led_0_1;
+extern bldl_atb3500_led_port_t mod_atb3500_led_0_2;
+extern bldl_atb3500_led_port_t mod_atb3500_led_1_0;
+extern bldl_atb3500_led_port_t mod_atb3500_led_1_1;
+extern bldl_atb3500_led_port_t mod_atb3500_led_1_2;
+extern bldl_atb3500_led_port_t mod_atb3500_led_2_0;
+extern bldl_atb3500_led_port_t mod_atb3500_led_2_1;
+extern bldl_atb3500_led_port_t mod_atb3500_led_2_2;
+
+extern bldl_atb3500_ain_port_t mod_atb3500_ai_ch0;
+extern bldl_atb3500_ain_port_t mod_atb3500_ai_ch1;
+extern bldl_atb3500_ain_port_t mod_atb3500_ai_ch2;
+extern bldl_atb3500_ain_port_t mod_atb3500_ai_ch3;
+extern bldl_atb3500_ain_port_t mod_atb3500_ai_ch4;
+extern bldl_atb3500_ain_port_t mod_atb3500_ai_ch5;
+
+extern bldl_atb3500_port_expander_t mod_atb3500_port_expander;
+
 
 hdl_module_t my_module = {
   .init = NULL,
@@ -53,37 +72,40 @@ hdl_module_t my_module = {
   .reg = NULL
 };
 
+static uint32_t time_stamp_ms = 0;
+static uint32_t adc_raw[6];
 
 void test() {
   hdl_enable(&my_module);
-  hdl_enable(&mod_uspd_port_expander);
+  hdl_enable(&mod_atb3500_port_expander);
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
-
   while (1)
   {
-    static uint32_t time_stamp_ms = 0;
-    static uint32_t adc_raw[6];
-
+    cooperative_scheduler(false);
     if(TIME_ELAPSED(time_stamp_ms, 1000, hdl_timer_get(&mod_systick_timer_ms))){
       time_stamp_ms += 1000;
-      hdl_gpio_toggle(&mod_do_led_0_0);
-      hdl_gpio_toggle(&mod_do_led_0_1);
-      hdl_gpio_toggle(&mod_do_led_0_2);
-      hdl_gpio_toggle(&mod_do_led_1_0);
-      hdl_gpio_toggle(&mod_do_led_1_1);
-      hdl_gpio_toggle(&mod_do_led_1_2);
-      hdl_gpio_toggle(&mod_do_led_2_0);
-      hdl_gpio_toggle(&mod_do_led_2_1);
-      hdl_gpio_toggle(&mod_do_led_2_2);
 
-      adc_raw[0] = hdl_adc_get_data(&mod_adc, &mod_adc_source_0);
-      adc_raw[1] = hdl_adc_get_data(&mod_adc, &mod_adc_source_1);
-      adc_raw[2] = hdl_adc_get_data(&mod_adc, &mod_adc_source_2);
-      adc_raw[3] = hdl_adc_get_data(&mod_adc, &mod_adc_source_3);
-      adc_raw[4] = hdl_adc_get_data(&mod_adc, &mod_adc_source_4);
-      adc_raw[5] = hdl_adc_get_data(&mod_adc, &mod_adc_source_5);
+      mod_atb3500_led_0_0.output ^=1;
+      mod_atb3500_led_0_1.output ^=1;
+      mod_atb3500_led_0_2.output ^=1;
+
+      mod_atb3500_led_1_0.output ^=1;
+      mod_atb3500_led_1_1.output ^=1;
+      mod_atb3500_led_1_2.output ^=1;
+
+      mod_atb3500_led_2_0.output ^=1;
+      mod_atb3500_led_2_1.output ^=1;
+      mod_atb3500_led_2_2.output ^=1;
+
+
+      adc_raw[0] = mod_atb3500_ai_ch0.input;
+      adc_raw[1] = mod_atb3500_ai_ch1.input;
+      adc_raw[2] = mod_atb3500_ai_ch2.input;
+      adc_raw[3] = mod_atb3500_ai_ch3.input;
+      adc_raw[4] = mod_atb3500_ai_ch4.input;
+      adc_raw[5] = mod_atb3500_ai_ch5.input;
     }
   }
 }

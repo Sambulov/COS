@@ -499,7 +499,7 @@ hdl_adc_t mod_adc = {
     .resolution = HDL_ADC_RESOLUTION_12BIT,
     .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
     .init_timeout = 3000,
-    .sources = hdl_adc_src(&mod_adc_source_1, &mod_adc_source_0, &mod_adc_source_2, &mod_adc_source_3, &mod_adc_source_4, &mod_adc_source_5),
+    .sources = hdl_adc_src(&mod_adc_source_0, &mod_adc_source_1, &mod_adc_source_2, &mod_adc_source_3, &mod_adc_source_4, &mod_adc_source_5),
 };
 /***********************************************************
  *                     UNIVERSAL PORT
@@ -507,174 +507,174 @@ hdl_adc_t mod_adc = {
 /***********************************
  *     UNIVERSAL MODE
 ***********************************/
-hdl_plc_port_config_t mod_uspd_port_default_cnf_led = {
+hdl_plc_port_config_t mod_atb3500_port_default_cnf_led = {
   .desc = (PLC_IO_PORT_DO),
   .default_output = HDL_GPIO_LOW,
   .default_option = 0
 };
-hdl_plc_port_config_t mod_uspd_port_default_cnf_do = {
+hdl_plc_port_config_t mod_atb3500_port_default_cnf_do = {
   .desc = (PLC_IO_PORT_DO),
   .default_output = HDL_GPIO_LOW,
   .default_option = 0
 };
-hdl_plc_port_config_t mod_uspd_port_default_cnf_di = {
-  .desc = (PLC_IO_PORT_DI),
+hdl_plc_port_config_t mod_atb3500_port_default_cnf_di = {
+  .desc = PLC_IO_PORT_HW_INPUT | PLC_IO_PORT_SW_DISCRETE,
   .default_output = HDL_GPIO_LOW,
   .default_option = 0
 };
-hdl_plc_port_config_t mod_uspd_port_default_cnf_ain = {
+hdl_plc_port_config_t mod_atb3500_port_default_cnf_ain = {
   .desc = (PLC_IO_PORT_HW_ANALOG | PLC_IO_PORT_SW_RAW_ADC),
-  .default_output = 0,
+  .default_output = HDL_GPIO_LOW,
   .default_option = 0
 };
 /***********************************************************
  *                   UNIVERSAL DIGITAL OUTPUT
 ***********************************************************/
-bldl_uspd_discrete_port_t mod_uspd_do_relay1 = {
-  .module.init = &bldl_uspd_discrete_port,
+bldl_atb3500_do_port_t mod_atb3500_do_relay1 = {
+  .module.init = &bldl_atb3500_do_port,
   .module.reg = (void *)1,
   .module.dependencies = hdl_module_dependencies(&mod_do_relay1.module),
-  .default_config = &mod_uspd_port_default_cnf_do,
+  .default_config = &mod_atb3500_port_default_cnf_do,
   .output = HDL_GPIO_LOW,
 };
-bldl_uspd_discrete_port_t mod_uspd_do_relay2 = {
-  .module.init = &bldl_uspd_discrete_port,
+bldl_atb3500_do_port_t mod_atb3500_do_relay2 = {
+  .module.init = &bldl_atb3500_do_port,
   .module.reg = (void *)1,
   .module.dependencies = hdl_module_dependencies(&mod_do_relay2.module),
-  .default_config = &mod_uspd_port_default_cnf_do,
+  .default_config = &mod_atb3500_port_default_cnf_do,
   .output = HDL_GPIO_LOW,
 };
-bldl_uspd_discrete_port_t mod_uspd_do_external_output_1 = {
-  .module.init = &bldl_uspd_discrete_port,
+bldl_atb3500_do_port_t mod_atb3500_do_external_output_1 = {
+  .module.init = &bldl_atb3500_do_port,
   .module.reg = (void *)1,
   .module.dependencies = hdl_module_dependencies(&mod_do_external_output_1.module),
-  .default_config = &mod_uspd_port_default_cnf_do,
+  .default_config = &mod_atb3500_port_default_cnf_do,
   .output = HDL_GPIO_LOW,
 };
-bldl_uspd_discrete_port_t mod_uspd_do_external_output_2 = {
-  .module.init = &bldl_uspd_discrete_port,
+bldl_atb3500_do_port_t mod_atb3500_do_external_output_2 = {
+  .module.init = &bldl_atb3500_do_port,
   .module.reg = (void *)1,
   .module.dependencies = hdl_module_dependencies(&mod_do_external_output_2.module),
-  .default_config = &mod_uspd_port_default_cnf_do,
+  .default_config = &mod_atb3500_port_default_cnf_do,
   .output = HDL_GPIO_LOW,
 };
-bldl_uspd_discrete_port_t mod_uspd_do_pci_switch = {
-  .module.init = &bldl_uspd_discrete_port,
+bldl_atb3500_do_port_t mod_atb3500_do_pci_switch = {
+  .module.init = &bldl_atb3500_do_port,
   .module.reg = (void *)1,
   .module.dependencies = hdl_module_dependencies(&mod_do_pci_switch.module),
-  .default_config = &mod_uspd_port_default_cnf_do,
+  .default_config = &mod_atb3500_port_default_cnf_do,
   .output = HDL_GPIO_LOW,
 };
 /***********************************************************
  *                     UNIVERSAL DIGITAL INPUT
 ***********************************************************/
-bldl_uspd_discrete_port_t mod_uspd_di_external_irq_1 = {
-  .module.init = &bldl_uspd_discrete_port,
+bldl_atb3500_di_port_t mod_atb3500_di_external_irq_1 = {
+  .module.init = &bldl_atb3500_di_port,
   .module.reg = (void *)1,
   .module.dependencies = hdl_module_dependencies(&mod_di_external_periph_irq_1.module),
-  .default_config = &mod_uspd_port_default_cnf_di,
+  .default_config = &mod_atb3500_port_default_cnf_di,
   .output = HDL_GPIO_LOW,
 };
-bldl_uspd_discrete_port_t mod_uspd_di_external_irq_2 = {
-  .module.init = &bldl_uspd_discrete_port,
+bldl_atb3500_di_port_t mod_atb3500_di_external_irq_2 = {
+  .module.init = &bldl_atb3500_di_port,
   .module.reg = (void *)1,
   .module.dependencies = hdl_module_dependencies(&mod_di_external_periph_irq_2.module),
-  .default_config = &mod_uspd_port_default_cnf_di,
+  .default_config = &mod_atb3500_port_default_cnf_di,
   .output = HDL_GPIO_LOW,
 };
 /***********************************************************
  *                     UNIVERSAL LED
 ***********************************************************/
-bldl_uspd_led_port_t mod_uspd_led_0_0 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_0_0 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_0_0.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
-bldl_uspd_led_port_t mod_uspd_led_0_1 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_0_1 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_0_1.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
-bldl_uspd_led_port_t mod_uspd_led_0_2 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_0_2 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_0_2.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
-bldl_uspd_led_port_t mod_uspd_led_1_0 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_1_0 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_1_0.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
-bldl_uspd_led_port_t mod_uspd_led_1_1 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_1_1 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_1_1.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
-bldl_uspd_led_port_t mod_uspd_led_1_2 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_1_2 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_1_2.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
-bldl_uspd_led_port_t mod_uspd_led_2_0 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_2_0 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_2_0.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
-bldl_uspd_led_port_t mod_uspd_led_2_1 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_2_1 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_2_1.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
-bldl_uspd_led_port_t mod_uspd_led_2_2 = {
-  .module.init = &bldl_uspd_led_port,
+bldl_atb3500_led_port_t mod_atb3500_led_2_2 = {
+  .module.init = &bldl_atb3500_led_port,
   .module.dependencies = hdl_module_dependencies(&mod_do_led_2_2.module),
-  .default_config = &mod_uspd_port_default_cnf_led
+  .default_config = &mod_atb3500_port_default_cnf_led
 };
 /***********************************************************
  *                  UNIVERSAL ANALOG INPUT
 ***********************************************************/
-bldl_uspd_ain_port_t mod_uspd_ai_ch0 = {
-  .module.init = &bldl_uspd_ain_port,
+bldl_atb3500_ain_port_t mod_atb3500_ai_ch0 = {
+  .module.init = &bldl_atb3500_ain_port,
   .module.reg = (void *)&mod_adc_source_0,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module),
-  .default_config = &mod_uspd_port_default_cnf_ain
+  .default_config = &mod_atb3500_port_default_cnf_ain
 };
-bldl_uspd_ain_port_t mod_uspd_ai_ch1 = {
-  .module.init = &bldl_uspd_ain_port,
+bldl_atb3500_ain_port_t mod_atb3500_ai_ch1 = {
+  .module.init = &bldl_atb3500_ain_port,
   .module.reg = (void *)&mod_adc_source_1,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module),
-  .default_config = &mod_uspd_port_default_cnf_ain
+  .default_config = &mod_atb3500_port_default_cnf_ain
 };
-bldl_uspd_ain_port_t mod_uspd_ai_ch2 = {
-  .module.init = &bldl_uspd_ain_port,
+bldl_atb3500_ain_port_t mod_atb3500_ai_ch2 = {
+  .module.init = &bldl_atb3500_ain_port,
   .module.reg = (void *)&mod_adc_source_2,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module),
-  .default_config = &mod_uspd_port_default_cnf_ain
+  .default_config = &mod_atb3500_port_default_cnf_ain
 };
-bldl_uspd_ain_port_t mod_uspd_ai_ch3 = {
-  .module.init = &bldl_uspd_ain_port,
+bldl_atb3500_ain_port_t mod_atb3500_ai_ch3 = {
+  .module.init = &bldl_atb3500_ain_port,
   .module.reg = (void *)&mod_adc_source_3,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module),
-  .default_config = &mod_uspd_port_default_cnf_ain
+  .default_config = &mod_atb3500_port_default_cnf_ain
 };
-bldl_uspd_ain_port_t mod_uspd_ai_ch4 = {
-  .module.init = &bldl_uspd_ain_port,
+bldl_atb3500_ain_port_t mod_atb3500_ai_ch4 = {
+  .module.init = &bldl_atb3500_ain_port,
   .module.reg = (void *)&mod_adc_source_4,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module),
-  .default_config = &mod_uspd_port_default_cnf_ain
+  .default_config = &mod_atb3500_port_default_cnf_ain
 };
-bldl_uspd_ain_port_t mod_uspd_ai_ch5 = {
-  .module.init = &bldl_uspd_ain_port,
+bldl_atb3500_ain_port_t mod_atb3500_ai_ch5 = {
+  .module.init = &bldl_atb3500_ain_port,
   .module.reg = (void *)&mod_adc_source_5,
   .module.dependencies = hdl_module_dependencies(&mod_adc.module),
-  .default_config = &mod_uspd_port_default_cnf_ain
+  .default_config = &mod_atb3500_port_default_cnf_ain
 };
-bldl_uspd_port_expander_t mod_uspd_port_expander = {
-    .init = &bldl_uspd_port_expander,
-    .dependencies = hdl_module_dependencies(&mod_uspd_do_relay1.module, &mod_uspd_do_relay2.module,
-        &mod_uspd_do_external_output_1.module, &mod_uspd_do_external_output_2.module, &mod_uspd_do_pci_switch.module, 
-        &mod_uspd_di_external_irq_1.module, &mod_uspd_di_external_irq_1.module, &mod_uspd_led_0_0.module, &mod_uspd_led_0_1.module,
-        &mod_uspd_led_0_2.module, &mod_uspd_led_1_0.module, &mod_uspd_led_1_1.module, &mod_uspd_led_1_2.module,
-        &mod_uspd_led_2_0.module, &mod_uspd_led_2_1.module, &mod_uspd_led_2_2.module, &mod_uspd_ai_ch0.module, 
-        &mod_uspd_ai_ch1.module, &mod_uspd_ai_ch2.module, &mod_uspd_ai_ch3.module, &mod_uspd_ai_ch4.module, &mod_uspd_ai_ch5.module)};
+bldl_atb3500_port_expander_t mod_atb3500_port_expander = {
+    .init = &bldl_atb3500_port_expander,
+    .dependencies = hdl_module_dependencies(&mod_atb3500_do_relay1.module, &mod_atb3500_do_relay2.module,
+        &mod_atb3500_do_external_output_1.module, &mod_atb3500_do_external_output_2.module, &mod_atb3500_do_pci_switch.module, 
+        &mod_atb3500_di_external_irq_1.module, &mod_atb3500_di_external_irq_1.module, &mod_atb3500_led_0_0.module, &mod_atb3500_led_0_1.module,
+        &mod_atb3500_led_0_2.module, &mod_atb3500_led_1_0.module, &mod_atb3500_led_1_1.module, &mod_atb3500_led_1_2.module,
+        &mod_atb3500_led_2_0.module, &mod_atb3500_led_2_1.module, &mod_atb3500_led_2_2.module, &mod_atb3500_ai_ch0.module, 
+        &mod_atb3500_ai_ch1.module, &mod_atb3500_ai_ch2.module, &mod_atb3500_ai_ch3.module, &mod_atb3500_ai_ch4.module, &mod_atb3500_ai_ch5.module)};
 #endif

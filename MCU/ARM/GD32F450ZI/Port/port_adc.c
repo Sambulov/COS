@@ -18,7 +18,7 @@ typedef struct{
     hdl_adc_data_alignment_t data_alignment;
     uint32_t init_timeout;
     hdl_adc_source_t **sources;               /* max amount 15 */
-    uint32_t *values;
+    uint16_t *values;
     uint32_t time_stamp;
     gd_adc_state_machine_e state_machine;      /* gd_adc_state_machine_e */
     uint8_t channels_count;
@@ -65,7 +65,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
           adc_routine_channel_config((uint32_t)hdl_adc->module.reg, hdl_adc->channels_count, (uint8_t)(*adc_source)->channel, (uint32_t)(*adc_source)->sample_time);
           //adc_regular_channel_config(hdl_adc->channels_count, (uint8_t)(*adc_source)->channel, (uint32_t)(*adc_source)->sample_time);
           adc_source++;
-          hdl_adc->values[hdl_adc->channels_count++] = HDL_ADC_INVALID_VALUE;
+          hdl_adc->values[hdl_adc->channels_count++] = (uint16_t)HDL_ADC_INVALID_VALUE;
         }
         adc_channel_length_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, hdl_adc->channels_count);
         adc_data_alignment_config((uint32_t)hdl_adc->module.reg, hdl_adc->data_alignment);

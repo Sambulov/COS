@@ -73,6 +73,7 @@ typedef enum {
   HDL_ADC_DATA_ALIGN_LEFT = ADC_DATAALIGN_LEFT
 } hdl_adc_data_alignment_t;
 
+/* TODO: Amend  uint16_t values to uint32_t values */
 typedef struct{
     hdl_module_t module;
     hdl_adc_resolution_e resolution;

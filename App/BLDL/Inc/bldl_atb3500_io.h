@@ -1,33 +1,31 @@
-#ifndef BLDL_USPD_IO_H_
-#define BLDL_USPD_IO_H_
+#ifndef BLDL_atb3500_IO_H_
+#define BLDL_atb3500_IO_H_
 
-/* USPD discrete open draine port depends on:
-- gpio input pin (direct);
-- gpio output pin (inverse);
+/* atb3500 digital input:
+- gpio pin (direct);
 */
-typedef hdl_plc_port_t bldl_uspd_discrete_port_t;
-
-/* USPD analog input port depends on:
+typedef hdl_plc_port_t bldl_atb3500_di_port_t;
+/* atb3500 digital otput:
+- gpio pin (direct);
+*/
+typedef hdl_plc_port_t bldl_atb3500_do_port_t;
+/* atb3500 analog input port depends on:
 - adc;
-- analog input pin;
-- discrete output pin (active high) pull up control;
-- discrete output pin (active high) pull down control;
-- discrete output pin (active high) current shunt control;
 set module.reg to adc source
 */
-typedef hdl_plc_port_t bldl_uspd_ain_port_t;
-
-/* USPD led port depends on discrete output pin(active low)
+typedef hdl_plc_port_t bldl_atb3500_ain_port_t;
+/* atb3500 led port depends on: 
+- discrete output pin(active high)
 */
-typedef hdl_plc_port_t bldl_uspd_led_port_t;
-
-/* USPD port expander depends on all plc ports
+typedef hdl_plc_port_t bldl_atb3500_led_port_t;
+/* atb3500 port expander depends on all plc ports
 */
-typedef hdl_module_t bldl_uspd_port_expander_t;
+typedef hdl_module_t bldl_atb3500_port_expander_t;
 
-hdl_module_state_t bldl_uspd_led_port(void *desc, uint8_t enable);
-hdl_module_state_t bldl_uspd_discrete_port(void *desc, uint8_t enable);
-hdl_module_state_t bldl_uspd_ain_port(void *desc, uint8_t enable);
-hdl_module_state_t bldl_uspd_port_expander(void *desc, uint8_t enable);
+hdl_module_state_t bldl_atb3500_led_port(void *desc, uint8_t enable);
+hdl_module_state_t bldl_atb3500_di_port(void *desc, uint8_t enable);
+hdl_module_state_t bldl_atb3500_do_port(void *desc, uint8_t enable);
+hdl_module_state_t bldl_atb3500_ain_port(void *desc, uint8_t enable);
+hdl_module_state_t bldl_atb3500_port_expander(void *desc, uint8_t enable);
 
-#endif // BLDL_USPD_IO_H_
+#endif // BLDL_atb3500_IO_H_

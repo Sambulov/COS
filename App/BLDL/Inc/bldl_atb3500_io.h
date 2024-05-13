@@ -1,5 +1,5 @@
-#ifndef BLDL_atb3500_IO_H_
-#define BLDL_atb3500_IO_H_
+#ifndef BLDL_ATB3500_IO_H_
+#define BLDL_ATB3500_IO_H_
 
 /* atb3500 digital input:
 - gpio pin (direct);

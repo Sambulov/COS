@@ -141,6 +141,8 @@ if (CORE STREQUAL "ARM")
       "${CMAKE_SOURCE_DIR}/CL/DataStructures/Inc"
       "${CMAKE_SOURCE_DIR}/CL/Workflow/Inc"
       "${CMAKE_SOURCE_DIR}/CL/Math/Inc"
+      "${CMAKE_SOURCE_DIR}/CL/Transceiver"
+      "${CMAKE_SOURCE_DIR}/CL/Transceiver/Transceiver_protocol/Inc"
       "${CMAKE_SOURCE_DIR}/HDL"
       "${CMAKE_SOURCE_DIR}/HDL/Basic/Inc"
       "${CMAKE_SOURCE_DIR}/HDL/ATB/Inc"

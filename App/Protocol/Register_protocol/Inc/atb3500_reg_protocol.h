@@ -1,7 +1,7 @@
-#ifndef BLDL_COMMON_PROTOCOL
-#define BLDL_COMMON_PROTOCOL
+#ifndef ATB3500_REG_PROTOCOL_H_
+#define ATB3500_REG_PROTOCOL_H_
 
-#include "cl_transceiver_protocol.h"
+#include "cl_transceiver_reg_protocol.h"
 
 typedef enum {
     BLDL_COMMON_PROTOCOL_SM_INITAL,
@@ -51,6 +51,6 @@ typedef struct
     uint32_t (*read_reg)(uint8_t address);
 } bldl_context_4byte_cmd_register_t;
 
-void common_protocol_worker(cl_protocol_transceiver_h *h);
+void common_protocol_worker(cl_reg_protocol_transceiver_h *h);
 
 #endif

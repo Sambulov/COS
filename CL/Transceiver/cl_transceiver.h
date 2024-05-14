@@ -3,6 +3,7 @@
 */
 #ifndef CL_TRANSCEIVER_H_
 #define CL_TRANSCEIVER_H_
+
 #include "stdint.h"
 
 typedef int32_t(*ProtoXferCallback_t)(void *pxProtoDescriptor, uint8_t *pucData, uint16_t usCount);

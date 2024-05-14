@@ -3,6 +3,7 @@
 
 #include "bldl.h"
 #include "modules.h"
+#include "app_protocol.h"
 
 void test();
 

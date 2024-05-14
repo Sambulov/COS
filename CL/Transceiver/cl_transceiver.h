@@ -5,6 +5,7 @@
 #define CL_TRANSCEIVER_H_
 
 #include "stdint.h"
+#include "stddef.h"
 
 typedef int32_t(*ProtoXferCallback_t)(void *pxProtoDescriptor, uint8_t *pucData, uint16_t usCount);
 typedef int32_t(*ProtoInfoHandler_t)(void *pxProtoDescriptor);

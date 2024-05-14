@@ -7,9 +7,10 @@
 #include "cl_transceiver.h"
 
 
+
 typedef struct {
-    void *context;  /* see BLDL protocol */
     uint8_t cmd; /* cmd value */
+    void *context;  /* see BLDL protocol */
     ProtoXferCallback_t command_transfer;
 } cl_protocol_command_t;
 
@@ -19,5 +20,7 @@ typedef struct {
     uint8_t state_machine; /* initial, command, error */
     uint8_t cmd;           /* current command number */
 } cl_protocol_transceiver_h;
+
+#define cl_protocol_add_command(...) ((cl_protocol_command_t *[]){__VA_ARGS__, NULL})
 
 #endif

@@ -5,8 +5,6 @@
 #ifndef CL_TRANSCEIVER_REG_PROTOCOL_H_
 #define CL_TRANSCEIVER_REG_PROTOCOL_H_
 
-#include "cl_transceiver.h"
-
 typedef enum {
     CL_REG_PROTOCOL_SM_WAITING_CMD,
     CL_REG_PROTOCOL_SM_COMMAND_PROC,

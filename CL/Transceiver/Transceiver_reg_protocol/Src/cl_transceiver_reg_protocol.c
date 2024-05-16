@@ -1,4 +1,5 @@
-#include "cl_transceiver_reg_protocol.h"
+#include "CodeLib.h"
+#include "stddef.h"
 
 /* Write register 1 */
 #define TEST_1 

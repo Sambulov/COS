@@ -1,8 +1,6 @@
 #ifndef ATB3500_REG_PROTOCOL_H_
 #define ATB3500_REG_PROTOCOL_H_
 
-#include "cl_transceiver_reg_protocol.h"
-
 /* Protocol */
 /*
 * Byte amount [ 1 ] [   1   ] [  1  ] [   4    ]

@@ -3,7 +3,7 @@
 
 #ifdef SMARCV2P1
 
-#include "atb3500_reg_protocol.h"
+//#include "atb3500_reg_protocol.h"
 
 #endif
 

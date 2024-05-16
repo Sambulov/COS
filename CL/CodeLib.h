@@ -48,6 +48,7 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #include "CooperativeMultitasking.h"
 #include "MachineState.h"
 #include "Transceiver.h"
+#include "cl_transceiver_reg_protocol.h"
 
 #ifdef __cplusplus
 }

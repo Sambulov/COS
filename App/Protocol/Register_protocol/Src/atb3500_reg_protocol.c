@@ -1,4 +1,6 @@
+#include "CodeLib.h"
 #include "atb3500_reg_protocol.h"
+#include "stddef.h"
 
 #define REG_ADDRESS_1        (uint8_t)1
 

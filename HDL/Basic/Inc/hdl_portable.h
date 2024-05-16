@@ -21,6 +21,8 @@
 #include "hdl_clock_counter.h"
 #include "hdl_timer.h"
 #include "hdl_gpio.h"
-//#include "hdl_i2c.h"
+#include "hdl_spi.h"
+#include "hdl_i2c.h"
+#include "hdl_uart.h"
 
 #endif // HDL_PORTABLE_H_

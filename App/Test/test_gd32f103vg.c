@@ -40,55 +40,55 @@ void test() {
     volatile uint32_t x = hdl_clock_counter_get_count(&mod_timer0_counter);
     cooperative_scheduler(false);
     if(((timer + 50) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 1)) {
-      mod_uspd_led_port1.output.ul_value = !(mod_uspd_led_port1.output.ul_value);
-      mod_uspd_led_port2.output.ul_value = !(mod_uspd_led_port2.output.ul_value);
+      mod_uspd_led_port1.output = !(mod_uspd_led_port1.output);
+      mod_uspd_led_port2.output = !(mod_uspd_led_port2.output);
       //hdl_gpio_toggle(&mod_gpio_a15_led1);
       //hdl_gpio_toggle(&mod_gpio_c10_led2);
       led_switch_mask &= ~1;
     }
     if(((timer + 100) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 2)) {
-      mod_uspd_led_port3.output.ul_value = !(mod_uspd_led_port3.output.ul_value);
+      mod_uspd_led_port3.output = !(mod_uspd_led_port3.output);
       //hdl_gpio_toggle(&mod_gpio_c11_led3);
       led_switch_mask &= ~2;
     }
     if(((timer + 150) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 4)) {
-      mod_uspd_led_port4.output.ul_value = !(mod_uspd_led_port4.output.ul_value);
+      mod_uspd_led_port4.output = !(mod_uspd_led_port4.output);
       //hdl_gpio_toggle(&mod_gpio_c12_led4);
       led_switch_mask &= ~4;
     }
     if(((timer + 200) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 8)) {
-      mod_uspd_led_port5.output.ul_value = !(mod_uspd_led_port5.output.ul_value);
+      mod_uspd_led_port5.output = !(mod_uspd_led_port5.output);
       //hdl_gpio_toggle(&mod_gpio_d0_led5);
       led_switch_mask &= ~8;
     }
     if(((timer + 250) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 16)) {
-      mod_uspd_led_port6.output.ul_value = !(mod_uspd_led_port6.output.ul_value);
+      mod_uspd_led_port6.output = !(mod_uspd_led_port6.output);
       //hdl_gpio_toggle(&mod_gpio_d1_led6);
       led_switch_mask &= ~16;
     }
     if(((timer + 300) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 32)) {
-      mod_uspd_led_port7.output.ul_value = !(mod_uspd_led_port7.output.ul_value);
+      mod_uspd_led_port7.output = !(mod_uspd_led_port7.output);
       //hdl_gpio_toggle(&mod_gpio_d2_led7);
       led_switch_mask &= ~32;
     }
     if(((timer + 350) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 64)) {
-      mod_uspd_led_port8.output.ul_value = !(mod_uspd_led_port8.output.ul_value);
+      mod_uspd_led_port8.output = !(mod_uspd_led_port8.output);
       //hdl_gpio_toggle(&mod_gpio_d3_led8);
       led_switch_mask &= ~64;
     }
     if(((timer + 400) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 128)) {
-      mod_uspd_led_port9.output.ul_value = !(mod_uspd_led_port9.output.ul_value);
+      mod_uspd_led_port9.output = !(mod_uspd_led_port9.output);
       //hdl_gpio_toggle(&mod_gpio_d4_led9);
       led_switch_mask &= ~128;
     }
     if(((timer + 450) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 256)) {
-      mod_uspd_led_port10.output.ul_value = !(mod_uspd_led_port10.output.ul_value);
+      mod_uspd_led_port10.output = !(mod_uspd_led_port10.output);
       //hdl_gpio_toggle(&mod_gpio_d5_led10);
       led_switch_mask &= ~256;
     }
     if(((timer + 500) == hdl_timer_get(&mod_timer_ms)) && (led_switch_mask & 512)) {
-      mod_uspd_led_port11.output.ul_value = !(mod_uspd_led_port11.output.ul_value);
-      mod_uspd_led_port12.output.ul_value = !(mod_uspd_led_port12.output.ul_value);
+      mod_uspd_led_port11.output = !(mod_uspd_led_port11.output);
+      mod_uspd_led_port12.output = !(mod_uspd_led_port12.output);
       //hdl_gpio_toggle(&mod_gpio_d6_led11);
       //hdl_gpio_toggle(&mod_gpio_d7_led12);
       timer += 500;

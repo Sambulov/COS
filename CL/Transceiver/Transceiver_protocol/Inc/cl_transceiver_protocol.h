@@ -4,7 +4,7 @@
 #ifndef CL_TRANSCEIVER_PROTOCOL_H_
 #define CL_TRANSCEIVER_PROTOCOL_H_
 
-#include "cl_transceiver.h"
+#include "Transceiver.h"
 
 
 typedef struct {

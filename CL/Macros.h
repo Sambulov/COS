@@ -8,6 +8,9 @@
 #define HDL_REG_CLEAR(reg, bits)                (reg = ((reg) & ~(bits)))
 #define HDL_REG_SET(reg, bits)                  (reg = ((reg) |  (bits)))
 
+#define MIN(A, B)                               ((A < B)? (A): (B))
+#define MAX(A, B)                               ((A < B)? (A): (B))
+
 #define TIME_ELAPSED(timestamp, delay, now) ((uint32_t)(now - timestamp) >= (uint32_t)(delay))
 
 #endif //CODE_LIB_MACROS_H_INCLUDED

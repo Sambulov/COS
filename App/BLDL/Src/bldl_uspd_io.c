@@ -5,14 +5,14 @@
 
 static void _bldl_uspd_set_default(hdl_plc_port_t *port) {
   port->desc = port->default_config->desc | PLC_IO_PORT_OP_RESET_CONFIG;
-  port->output.ul_value = port->default_config->default_output.ul_value;
-  port->option.ul_value = port->default_config->default_option.ul_value;
+  port->output = port->default_config->default_output;
+  port->option = port->default_config->default_option;
 }
 
 static void _bldl_uspd_analog_update(hdl_plc_port_t *port) {
   if(port->desc & PLC_IO_PORT_OP_RESET_CONFIG) {
     hdl_plc_port_descriptor_t hw_unsupported = port->desc &
-      (PLC_IO_PORT_HW_ANALOG | PLC_IO_PORT_HW_PULL_DOWN_STRONG | PLC_IO_PORT_HW_PULL_UP_WEAK |
+      (PLC_IO_PORT_HW_PULL_DOWN_STRONG | PLC_IO_PORT_HW_PULL_UP_WEAK |
       PLC_IO_PORT_HW_VOLTAGE_DIVIDER);
     hdl_plc_port_descriptor_t sw_unsupported = (port->desc & PLC_IO_PORT_SW_CONFIG);
     sw_unsupported = (sw_unsupported != PLC_IO_PORT_SW_VOLTAGE) && (sw_unsupported != PLC_IO_PORT_SW_CURRENT);
@@ -30,7 +30,7 @@ static void _bldl_uspd_analog_update(hdl_plc_port_t *port) {
     hdl_gpio_write(shunt, (port->desc & PLC_IO_PORT_HW_CURRENT_SHUNT)? !shunt->inactive_default: pullup->inactive_default);
     uint32_t value = hdl_adc_get_data((hdl_adc_t *)port->module.dependencies[0], (hdl_adc_source_t *)port->module.reg);
     /* TODO: apply convertation */
-    port->input.ul_value = value;
+    port->input = value;
   }
 }
 
@@ -50,8 +50,8 @@ static void _bldl_uspd_discrete_update(bldl_uspd_discrete_port_t *port) {
   if(!(port->desc & PLC_IO_PORT_STATUS_HARD_ERROR)) {
     hdl_gpio_pin_t *input = (hdl_gpio_pin_t *)port->module.dependencies[0];
     hdl_gpio_pin_t *output = (hdl_gpio_pin_t *)port->module.dependencies[1];
-    port->input.ul_value = (uint32_t)hdl_gpio_read(input);
-    hdl_gpio_write(output, port->output.ul_value);
+    port->input = (uint32_t)hdl_gpio_read(input);
+    hdl_gpio_write(output, port->output);
   }
 }
 
@@ -70,8 +70,8 @@ static void _bldl_uspd_led_update(bldl_uspd_led_port_t *port) {
   }
   if(!(port->desc & PLC_IO_PORT_STATUS_HARD_ERROR)) {
     hdl_gpio_pin_t *led = (hdl_gpio_pin_t *)*(port->module.dependencies);
-    port->input.ul_value = (uint32_t)hdl_gpio_read(led);
-    hdl_gpio_write(led, port->output.ul_value);
+    port->input = hdl_gpio_read(led);
+    hdl_gpio_write(led, port->output);
   }
 }
 

@@ -486,8 +486,8 @@ hdl_gpio_pin_t mod_gpio_d7_led12 = {
 
 hdl_plc_port_config_t mod_uspd_port_default_cnf_led = {
   .desc = (PLC_IO_PORT_DO_OD),
-  .default_output.ul_value = HDL_GPIO_HIGH,
-  .default_option.ul_value = 0
+  .default_output = HDL_GPIO_HIGH,
+  .default_option = 0
 };
 
 bldl_uspd_led_port_t mod_uspd_led_port1 = {
@@ -692,8 +692,8 @@ hdl_gpio_pin_t mod_gpio_c8_di1 = {
 
 hdl_plc_port_config_t mod_uspd_port_default_cnf_do = {
   .desc = (PLC_IO_PORT_DO_OD),
-  .default_output.ul_value = HDL_GPIO_LOW,
-  .default_option.ul_value = 0
+  .default_output = HDL_GPIO_LOW,
+  .default_option = 0
 };
 
 bldl_uspd_discrete_port_t mod_uspd_od_port1 = {
@@ -915,8 +915,8 @@ hdl_adc_t mod_adc = {
 
 hdl_plc_port_config_t mod_uspd_port_default_cnf_ain = {
   .desc = (PLC_IO_PORT_HW_INPUT | PLC_IO_PORT_HW_ANALOG | PLC_IO_PORT_SW_RAW_ADC),
-  .default_output.ul_value = 0,
-  .default_option.ul_value = 0
+  .default_output = 0,
+  .default_option = 0
 };
 
 bldl_uspd_ain_port_t mod_uspd_ai_port0 = {

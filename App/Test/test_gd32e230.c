@@ -1,7 +1,7 @@
 #include "app.h"
 #include "CodeLib.h"
-#include "cl_transceiver_protocol.h"
-
+#include "cl_transceiver_reg_protocol.h"
+#include "app_protocol.h"
 //#define TEST_CLOCK
 
 
@@ -61,6 +61,7 @@ extern hdl_adc_source_t mod_adc_source_0;
 extern hdl_adc_source_t mod_adc_source_1;
 
 extern  hdl_dma_channel_t mod_m2m_dma_ch;
+extern cl_reg_protocol_transceiver_h spi_slave;
 
  void SysTick_Event(uint32_t event, void *sender, void *context){
   __NOP();
@@ -132,7 +133,8 @@ void test() {
 
   while (1) {
     cooperative_scheduler(false);
-
+     
+    cl_protocol_transceiver_worker(&spi_slave);
     /* This code will be launched ony one time*/
     // if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)
     //   hdl_adc_start(&mod_adc);

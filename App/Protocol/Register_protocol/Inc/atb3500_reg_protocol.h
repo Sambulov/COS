@@ -10,8 +10,6 @@
 #define REG_PROTOCOL_AMOUNT_ADDRESS_BYTE            ((int16_t) 1)
 #define REG_PROTOCOL_AMOUNT_REGISTER_BYTE           ((int16_t) 4)
 
-
-
 /* Register mood */
 typedef enum {
     REG_PROTOCOL_ATB3500_CMD_READ_4_BYTE = (uint8_t)1,
@@ -35,17 +33,18 @@ typedef enum {
 typedef struct {
     reg_protocol_state_machine_e state_machine;
     uint32_t reg_address; /* buffer for saving register adrress */
-    int16_t cnt_addres;     /* buffer for saving rx bytes counter */
-    uint32_t reg_value;  /* buffer for saving new reg value */
-    int32_t (*read_reg)(uint32_t *data, uint8_t address, reg_protocol_atb3500_read_write_reg_e option);
+    int16_t cnt_addres;   /* buffer for saving rx bytes counter corresponding address */
+    uint32_t reg_value;   /* buffer for saving new reg value */
+    int32_t (*read_reg)(uint32_t *data, uint32_t address, reg_protocol_atb3500_read_write_reg_e option);
 } reg_protocol_atb3500_read_reg_contex_t;
 
 typedef struct {
     reg_protocol_state_machine_e state_machine;
-    uint8_t reg_address; /* buffer for saving register adrress */
-    uint8_t cnt; /* buffer for saving byte transfer */
-    uint32_t reg_value;  /* buffer for saving new reg value */
-    int32_t (*write_reg)(uint32_t *data, uint8_t address, reg_protocol_atb3500_read_write_reg_e option);
+    uint32_t reg_address;  /* buffer for saving register adrress */
+    int16_t cnt_addres;    /* buffer for saving rx bytes counter corresponding address */
+    uint32_t reg_value;    /* buffer for saving new reg value */
+    int16_t cnt_reg_value; /* buffer for saving rx bytes counter corresponding reg value */
+    int32_t (*write_reg)(uint32_t *data, uint32_t address, reg_protocol_atb3500_read_write_reg_e option);
 } reg_protocol_atb3500_write_reg_contex_t;
 
 

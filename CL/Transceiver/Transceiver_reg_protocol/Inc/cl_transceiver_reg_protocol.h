@@ -8,7 +8,6 @@
 typedef enum {
     CL_REG_PROTOCOL_SM_WAITING_CMD,
     CL_REG_PROTOCOL_SM_COMMAND_PROC,
-//    CL_REG_PROTOCOL_SM_COMMAND_COMPLETED,
     CL_REG_PROTOCOL_SM_ERROR,
 } cl_reg_protocol_state_machine_e;
 
@@ -50,7 +49,7 @@ typedef struct {
 
 int32_t cl_protocol_reg_tx_data_callback(void *context_base, uint8_t *data, uint16_t len);
 int32_t cl_protocol_reg_rx_data_callback(void *context_base, uint8_t *data, uint16_t len);
-int32_t cl_protocol_reg_end_of_transaction_callback(void *context_base);
+void cl_protocol_reg_end_of_transaction_callback(void *context_base);
 void cl_protocol_transceiver_worker(cl_reg_protocol_transceiver_h *h);
 
 #endif

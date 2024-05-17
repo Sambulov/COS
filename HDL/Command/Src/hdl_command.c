@@ -1,6 +1,4 @@
-#include "CodeLib.h"
-#include "stddef.h"
-
+#include "hdl.h"
 /* Write register 1 */
 //#define TEST_1 
 /* Unsuppoted cmd */ 
@@ -8,7 +6,7 @@
 /* Unsuppoted reg address */ 
 //#define TEST_3
 /* Read register 1 */
-#define TEST_4 
+//#define TEST_4 
 
 
 cl_reg_protocol_command_t *_reg_protocol_find_command(cl_reg_protocol_transceiver_h *h, uint8_t command) {

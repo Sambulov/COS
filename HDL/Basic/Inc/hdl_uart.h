@@ -2,7 +2,7 @@
 #define HDL_UART_H_
 
 #include "port_uart.h"
-#include "Transceiver.h"
+#include "hdl_transceiver.h"
 
 /* Initialization */
 hdl_module_state_t hdl_uart(void *desc, uint8_t enable);

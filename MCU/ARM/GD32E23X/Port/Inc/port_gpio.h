@@ -10,7 +10,7 @@ typedef struct {
   const uint32_t pull;      // GPIO_PUPD_NONE, GPIO_PUPD_PULLUP, GPIO_PUPD_PULLDOWN.
   const uint32_t type;      // GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_AF, GPIO_MODE_ANALOG.
   const uint32_t otype;     // GPIO_OTYPE_PP, GPIO_OTYPE_OD.
-  const uint32_t ospeed;    // GPIO_OSPEED_2MHZ, GPIO_OSPEED_25MHZ, GPIO_OSPEED_50MHZ, GPIO_OSPEED_MAX.
+  const uint32_t ospeed;    // GPIO_OSPEED_2MHZ, GPIO_OSPEED_10MHZ, GPIO_OSPEED_50MHZ
 } hdl_gpio_mode_t;
 
 #endif // PORT_GPIO_H_

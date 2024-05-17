@@ -38,7 +38,7 @@ typedef struct {
 } cl_reg_protocol_command_t;
 
 typedef struct {
-    TransceiverHandler_t *transceiver_handler; /* transceiver interface */
+    hdl_transceiver_t *transceiver_handler; /* transceiver interface */
     cl_reg_protocol_command_t **cmd_array;
     /* Private */
     cl_reg_protocol_state_machine_e state_machine;

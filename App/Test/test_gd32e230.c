@@ -1,7 +1,5 @@
 #include "app.h"
 #include "CodeLib.h"
-#include "cl_transceiver_reg_protocol.h"
-#include "app_protocol.h"
 //#define TEST_CLOCK
 
 
@@ -59,6 +57,7 @@ extern hdl_timer_t mod_timer_ms;
 extern hdl_timer_t mod_timer_ms;
 extern hdl_adc_source_t mod_adc_source_0;
 extern hdl_adc_source_t mod_adc_source_1;
+extern hdl_clock_prescaler_t mod_clock_apb2;
 
 extern  hdl_dma_channel_t mod_m2m_dma_ch;
 extern cl_reg_protocol_transceiver_h spi_slave;
@@ -107,6 +106,47 @@ hdl_gpio_pin_t pin_pb8 = {
     .mode = &gpio_input_np
 };
 
+hdl_gpio_mode_t hdl_gpio_mode_uart_0_tx = {
+  .af = GPIO_AF_1,
+  .pull = GPIO_PUPD_NONE,
+  .type = GPIO_MODE_AF,
+  .otype = GPIO_OTYPE_PP,
+  .ospeed = GPIO_OSPEED_10MHZ
+};
+hdl_gpio_mode_t hdl_gpio_mode_uart_0_rx = {
+  .af = GPIO_AF_1,
+  .pull = GPIO_PUPD_NONE,
+  .type = GPIO_MODE_AF,
+  .otype = GPIO_OTYPE_PP,
+  .ospeed = GPIO_OSPEED_10MHZ
+};
+
+
+hdl_gpio_pin_t hdl_gpio_pin_uart_0_tx = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
+  .module.reg = (void *)GPIO_PIN_9,
+  .mode = &hdl_gpio_mode_uart_0_tx,
+};
+hdl_gpio_pin_t hdl_gpio_pin_uart_0_rx = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
+  .module.reg = (void *)GPIO_PIN_10,
+  .mode = &hdl_gpio_mode_uart_0_rx,
+};
+
+hdl_uart_t hdl_uart_0 = {
+  .module.init = &hdl_uart,
+  .module.reg = (void *)USART0,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_pin_uart_0_rx.module, &hdl_gpio_pin_uart_0_tx.module,
+   &mod_clock_apb2.module, &mod_nvic.module, &mod_timer_ms.module),
+  .iterrupt = HDL_NVIC_IRQ27_USART0,
+  .baudrate = 115200,
+  .parity = HDL_UART_PARITY_NONE,
+  .stop_bits = HDL_UART_STOP_1BIT,
+  .word_len = HDL_UART_WORD_LEN_8BIT,
+};
+
 uint32_t arr1[10]={1,2,3,4,5};
 
 
@@ -121,6 +161,7 @@ void test() {
   hdl_enable(&pin_pa0.module);
   hdl_enable(&pin_pb8.module);
   hdl_enable(&mod_m2m_dma_ch.module);
+  hdl_enable(&hdl_uart_0.module);
 
 
   while (!hdl_init_complete()) {
@@ -130,11 +171,12 @@ void test() {
   hdl_interrupt_request(&mod_nvic, HDL_NVIC_IRQ7_EXTI4_15, &Exti_8_Event, NULL);
 
   hdl_dma_run(&mod_m2m_dma_ch, (uint32_t)&arr1[0], (uint32_t)&arr1[5], 20);
+  hdl_uart_set_transceiver(&hdl_uart_0, spi_slave.transceiver_handler);
 
   while (1) {
     cooperative_scheduler(false);
      
-    cl_protocol_transceiver_worker(&spi_slave);
+    //cl_protocol_transceiver_worker(&spi_slave);
     /* This code will be launched ony one time*/
     // if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)
     //   hdl_adc_start(&mod_adc);

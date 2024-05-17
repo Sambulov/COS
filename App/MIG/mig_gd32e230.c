@@ -704,6 +704,12 @@
     .priority = 0,
     .priority_group = 2,
   };
+  hdl_nvic_interrupt_t mod_irq_usart_0 = {
+    .irq_type = HDL_NVIC_IRQ27_USART0,
+    .priority = 0,
+    .priority_group = 0,
+  };
+
 
   hdl_nvic_exti_t mod_nvic_exti_line_0 = {
     .line = HDL_EXTI_LINE_0,
@@ -725,7 +731,8 @@
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .irq_latency = 0, /* TODO: define static assert */
-    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_8, &mod_irq_timer0, &mod_irq_timer2),
+    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_8,
+     &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0),
     .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8)
   };
 

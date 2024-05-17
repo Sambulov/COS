@@ -23,9 +23,8 @@ extern "C" {
 
 
 #include "hdl_portable.h"
-#include "hdl_i2c.h"
+#include "hdl_command.h"
 #include "hdl_button.h"
-
 #include "RK809.h"
 #include "plc_io.h"
 #ifdef __cplusplus

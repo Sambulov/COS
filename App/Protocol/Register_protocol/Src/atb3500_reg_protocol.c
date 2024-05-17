@@ -1,6 +1,5 @@
 #include "CodeLib.h"
-#include "atb3500_reg_protocol.h"
-#include "stddef.h"
+#include "app.h"
 
 #define REG_ADDRESS_1        (uint32_t)1
 
@@ -256,10 +255,10 @@ cl_reg_protocol_command_t reg_protocol_atb3500_cmd_write_4_byte_reg = {
     .end_of_transaction_callback = &reg_protocol_atb3500_cmd_write_end_of_transaction_callback,
 };
 
-TransceiverHandler_t spi_slave_trasceiver = {
-    .pfRxDataCallback = &cl_protocol_reg_rx_data_callback,
-    .pfTxEmptyCallback = &cl_protocol_reg_tx_data_callback,
-    .pfEndOfTransactionCallback = &cl_protocol_reg_end_of_transaction_callback,
+hdl_transceiver_t spi_slave_trasceiver = {
+    .rx_data = &cl_protocol_reg_rx_data_callback,
+    .tx_empty = &cl_protocol_reg_tx_data_callback,
+    .end_of_transmission = &cl_protocol_reg_end_of_transaction_callback,
 };
 
 cl_reg_protocol_transceiver_h spi_slave = {

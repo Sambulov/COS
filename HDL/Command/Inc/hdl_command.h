@@ -42,7 +42,7 @@ typedef struct {
     cl_reg_protocol_command_t **cmd_array;
     /* Private */
     cl_reg_protocol_state_machine_e state_machine;
-    uint8_t current_cmd;           /* Current handling command  */
+    cl_reg_protocol_command_t *current_cmd;           /* Current handling command  */
 } cl_reg_protocol_transceiver_h;
 
 #define cl_reg_protocol_add_command(...) ((cl_reg_protocol_command_t *[]){__VA_ARGS__, NULL})
@@ -50,6 +50,5 @@ typedef struct {
 int32_t cl_protocol_reg_tx_data_callback(void *context_base, uint8_t *data, uint16_t len);
 int32_t cl_protocol_reg_rx_data_callback(void *context_base, uint8_t *data, uint16_t len);
 void cl_protocol_reg_end_of_transaction_callback(void *context_base);
-void cl_protocol_transceiver_worker(cl_reg_protocol_transceiver_h *h);
 
 #endif

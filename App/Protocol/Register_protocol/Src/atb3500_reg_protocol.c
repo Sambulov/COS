@@ -2,6 +2,15 @@
 #include "app.h"
 
 #define REG_ADDRESS_1        (uint32_t)1
+#define REG_ADDRESS_2        (uint32_t)2
+#define REG_ADDRESS_3        (uint32_t)3
+#define REG_ADDRESS_4        (uint32_t)4
+#define REG_ADDRESS_5        (uint32_t)5
+#define REG_ADDRESS_6        (uint32_t)6
+#define REG_ADDRESS_7        (uint32_t)7
+#define REG_ADDRESS_8        (uint32_t)8
+#define REG_ADDRESS_9        (uint32_t)9
+#define REG_ADDRESS_10        (uint32_t)10
 
 /*!
     \brief          Mapping register address with value
@@ -20,9 +29,35 @@ int32_t write_read(uint32_t *reg_value, uint32_t address, reg_protocol_atb3500_r
         switch (address)
         {
         case REG_ADDRESS_1:
-            *reg_value = 0xAABBCCDD;
+            *reg_value = 0x1ABBCCDD;
             break;
-        
+        case REG_ADDRESS_2:
+            *reg_value = 0x2ABBCCDD;
+            break;
+        case REG_ADDRESS_3:
+            *reg_value = 0x3ABBCCDD;
+            break;
+        case REG_ADDRESS_4:
+            *reg_value = 0x4ABBCCDD;
+            break;
+        case REG_ADDRESS_5:
+            *reg_value = 0x5ABBCCDD;
+            break;
+        case REG_ADDRESS_6:
+            *reg_value = 0x6ABBCCDD;
+            break;
+        case REG_ADDRESS_7:
+            *reg_value = 0x7ABBCCDD;
+            break;
+        case REG_ADDRESS_8:
+            *reg_value = 0x8ABBCCDD;
+            break;
+        case REG_ADDRESS_9:
+            *reg_value = 0x9ABBCCDD;
+            break;
+        case REG_ADDRESS_10:
+            *reg_value = 0xAABBCCDD;
+            break;        
         default:
             return 1;
             break;
@@ -92,7 +127,7 @@ int32_t reg_protocol_atb3500_cmd_read_rx_data_callback(void* context_base, uint8
                 }
                     break;
                 default:
-                    return amount_of_processed_bytes;
+                    return amount_of_processed_bytes + count;
                     break;
             }
         }
@@ -212,7 +247,7 @@ int32_t reg_protocol_atb3500_cmd_write_rx_data_callback(void* context_base, uint
                     break;
                 default:
                     /* Skip this data */
-                    return amount_of_processed_bytes;
+                    return amount_of_processed_bytes + count;
                     break;
             }
         }
@@ -255,15 +290,19 @@ cl_reg_protocol_command_t reg_protocol_atb3500_cmd_write_4_byte_reg = {
     .end_of_transaction_callback = &reg_protocol_atb3500_cmd_write_end_of_transaction_callback,
 };
 
+extern cl_reg_protocol_transceiver_h spi_slave;
+
 hdl_transceiver_t spi_slave_trasceiver = {
     .rx_data = &cl_protocol_reg_rx_data_callback,
     .tx_empty = &cl_protocol_reg_tx_data_callback,
     .end_of_transmission = &cl_protocol_reg_end_of_transaction_callback,
+    .proto_context = &spi_slave,
 };
 
 cl_reg_protocol_transceiver_h spi_slave = {
     .transceiver_handler = &spi_slave_trasceiver,
     .cmd_array = cl_reg_protocol_add_command(&reg_protocol_atb3500_cmd_read_4_byte_reg, &reg_protocol_atb3500_cmd_write_4_byte_reg),
+    .state_machine = 0,
 };
 
 

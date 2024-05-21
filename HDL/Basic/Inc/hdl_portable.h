@@ -25,5 +25,6 @@
 #include "hdl_spi.h"
 #include "hdl_i2c.h"
 #include "hdl_uart.h"
+#include "hdl_basic_isr_buffer.h"
 
 #endif // HDL_PORTABLE_H_

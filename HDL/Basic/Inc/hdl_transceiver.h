@@ -1,5 +1,5 @@
-#ifndef CL_TRANSCEIVER_H_
-#define CL_TRANSCEIVER_H_
+#ifndef TRANSCEIVER_H_
+#define TRANSCEIVER_H_
 
 typedef int32_t(*hdl_transceiver_xfer_cb_t)(void *pxProtoDescriptor, uint8_t *pucData, uint16_t usCount);
 typedef int32_t(*hdl_transceiver_get_size_cb_t)(void *pxProtoDescriptor);

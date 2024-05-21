@@ -47,6 +47,7 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #include "LinkedList.h"
 #include "CooperativeMultitasking.h"
 #include "MachineState.h"
+#include "SimpleCircularBuffer.h"
 
 #ifdef __cplusplus
 }

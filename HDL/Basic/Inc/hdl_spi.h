@@ -1,9 +1,8 @@
 #ifndef HDL_SPI_H_
 #define HDL_SPI_H_
 
-//#include "port_spi.h"
-
-#define HDL_SPI_MESSAGE_PRV_SIZE           16
+#include "port_spi.h"
+#include "hdl_transceiver.h"
 
 typedef enum {
   HDL_SPI_TRANSACTION_UNKNOWN     = 0x00,
@@ -17,26 +16,22 @@ typedef enum {
 } hdl_spi_message_state_t;
 
 typedef struct {
-  hdl_module_t module;
-} hdl_spi_t;
-
-typedef struct {
-  hdl_module_t module;
-} hdl_spi_channel_t;
-
-typedef struct {
   uint8_t __private[HDL_SPI_MESSAGE_PRV_SIZE];
-  uint32_t address;
   uint8_t *tx_buffer;
   uint8_t *rx_buffer;
+  uint32_t tx_len;
   uint32_t rx_skip;
-  uint32_t message_len;
+  uint32_t rx_take;
 } hdl_spi_message_t;
 
 /* Initialization */
-hdl_module_state_t hdl_spi(void *desc, uint8_t enable);
-hdl_module_state_t hdl_spi_channel(void *desc, uint8_t enable);
+hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable);
 
-void hdl_spi_client_enqueue_message(hdl_spi_channel_t *spi_ch, hdl_spi_message_t *message);
+hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable);
+hdl_module_state_t hdl_spi_ch(void *desc, uint8_t enable);
+hdl_spi_message_state_t hdl_spi_client_xfer(hdl_spi_ch_t *spi_ch, hdl_spi_message_t *message);
+hdl_spi_message_state_t hdl_spi_message_get_state(hdl_spi_message_t *message);
+
+void hdl_spi_server_set_transceiver(hdl_spi_ch_t *spi, hdl_transceiver_t *transceiver);
 
 #endif /* HDL_SPI_H_ */

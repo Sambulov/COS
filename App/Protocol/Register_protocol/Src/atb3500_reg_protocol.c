@@ -84,46 +84,63 @@ int32_t write_read(uint32_t *reg_value, uint32_t address, reg_protocol_atb3500_r
 /*********************************************************************************************
  * Description command: REG_PROTOCOL_ATB3500_READ_REG
 **********************************************************************************************/
-static void _reset_field_read_reg_context(reg_protocol_atb3500_read_reg_contex_t *user_context) {
-    if (user_context != NULL) {
-        user_context->cnt_addres = 0;
-        user_context->reg_value = 0;
-        user_context->reg_address = 0;
+static void _reset_field_read_reg_context(reg_protocol_atb3500_read_reg_contex_t *context) {
+    if (context != NULL) {
+        context->cnt_addres = 0;
+        context->cnt_reg_value = 0;
+        context->reg_value = 0;
+        context->reg_address = 0;
+        context->request_len = 0;
     }
 }
 
 int32_t reg_protocol_atb3500_cmd_read_rx_data_callback(void* context_base, uint8_t *data, uint16_t count) {
-    cl_reg_protocol_context_base_t *context = (cl_reg_protocol_context_base_t *)context_base;
-    reg_protocol_atb3500_read_reg_contex_t *user_context = (reg_protocol_atb3500_read_reg_contex_t *)context->user_context;       
+    reg_protocol_atb3500_read_reg_contex_t *context = (reg_protocol_atb3500_read_reg_contex_t *)context_base;  
     int32_t amount_of_processed_bytes = 0;
     uint8_t *p_tmp = NULL;
     if(context_base != NULL || count == 0) {  
         while (count != 0) {
-            switch (user_context->state_machine) {
+            switch (context->state_machine) {
                 case REG_PROTOCOL_SM_COMPLETED:
                 case REG_PROTOCOL_SM_INITIAL: {
-                    _reset_field_read_reg_context(user_context);
-                    user_context->state_machine = REG_PROTOCOL_SM_WAITING_ADDRESS;
+                    _reset_field_read_reg_context(context);
+                    context->state_machine = REG_PROTOCOL_SM_WAITING_ADDRESS;
                 }
                     break;
                 case REG_PROTOCOL_SM_WAITING_ADDRESS: { 
                     /* Write data into register_address */
-                    if(user_context->cnt_addres < REG_PROTOCOL_AMOUNT_ADDRESS_BYTE) {
-                        p_tmp = (uint8_t *)&user_context->reg_address;
-                        p_tmp[user_context->cnt_addres] = data[amount_of_processed_bytes];
-                        user_context->cnt_addres++;
+                    if(context->cnt_addres < REG_PROTOCOL_ADDRESS_SIZE) {
+                        p_tmp = (uint8_t *)&context->reg_address;
+                        p_tmp[context->cnt_addres] = data[amount_of_processed_bytes];
+                        context->cnt_addres++;
                         amount_of_processed_bytes++;
                         count--;
                     }
-                    if(user_context->cnt_addres == REG_PROTOCOL_AMOUNT_ADDRESS_BYTE)
-                        user_context->state_machine = REG_PROTOCOL_SM_WRITE_REQUEST;
-                    else if(user_context->cnt_addres > REG_PROTOCOL_AMOUNT_ADDRESS_BYTE)
-                        user_context->state_machine = REG_PROTOCOL_SM_ERROR;
+                    if(context->cnt_addres == REG_PROTOCOL_ADDRESS_SIZE)
+                        context->state_machine = REG_PROTOCOL_SM_WAITING_LEN;
+                    else if(context->cnt_addres > REG_PROTOCOL_ADDRESS_SIZE)
+                        context->state_machine = REG_PROTOCOL_SM_ERROR;
+                }
+                    break;
+                case REG_PROTOCOL_SM_WAITING_LEN : {
+                    if (context->cnt_request_len < REG_PROTOCOL_LEN_SIZE) {
+                        p_tmp = (uint8_t *)&context->request_len;
+                        p_tmp[context->cnt_request_len] = data[amount_of_processed_bytes];
+                        context->cnt_request_len++;
+                        amount_of_processed_bytes++;
+                        count--;
+                    }
+                    if(context->cnt_request_len == REG_PROTOCOL_LEN_SIZE) {
+                        context->state_machine = REG_PROTOCOL_SM_WRITE_REQUEST;
+                    }
+                    else if(context->cnt_request_len > REG_PROTOCOL_LEN_SIZE)
+                        context->state_machine = REG_PROTOCOL_SM_ERROR;
                 }
                     break;
                 case REG_PROTOCOL_SM_WRITE_REQUEST: {
                     /* Skip this data */
-                    return amount_of_processed_bytes + count;
+                    context->state_machine = REG_PROTOCOL_SM_INITIAL;
+                    break;
                 }
                     break;
                 default:
@@ -136,28 +153,33 @@ int32_t reg_protocol_atb3500_cmd_read_rx_data_callback(void* context_base, uint8
 }
 
 int32_t reg_protocol_atb3500_cmd_read_tx_data_callback(void *context_base, uint8_t *data, uint16_t max_available_bytes) {
-    cl_reg_protocol_context_base_t *context = (cl_reg_protocol_context_base_t *)context_base;
-    reg_protocol_atb3500_read_reg_contex_t *user_context = (reg_protocol_atb3500_read_reg_contex_t *)context->user_context;
+    reg_protocol_atb3500_read_reg_contex_t *context = (reg_protocol_atb3500_read_reg_contex_t *)context_base;
     int16_t available_bytes = (int16_t)max_available_bytes;
-    int32_t index = 0;
+    int32_t amount = 0;
     uint8_t *p_tmp = NULL;
-    if(context_base != NULL) {
-        switch (user_context->state_machine) {
+    if(context_base != NULL || max_available_bytes == 0) {
+        switch (context->state_machine) {
             case REG_PROTOCOL_SM_WRITE_REQUEST: {
-                while (available_bytes >= REG_PROTOCOL_AMOUNT_REGISTER_BYTE) {
-                    /* Mapping register address with register value */
-                    if(user_context->read_reg(&user_context->reg_value, user_context->reg_address, REG_PROTOCOL_ATB3500_READ_REG)){
-                        user_context->state_machine = REG_PROTOCOL_SM_ERROR;
+                while (available_bytes--) {
+                    if(context->cnt_reg_value == 0) {
+                        /* Mapping register address with register value */
+                        if(context->read_reg(&context->reg_value, context->reg_address, REG_PROTOCOL_ATB3500_READ_REG)){
+                            context->state_machine = REG_PROTOCOL_SM_ERROR;
+                        }
+                        else {
+                            context->reg_address++;
+                            context->cnt_reg_value = REG_PROTOCOL_REGISTER_SIZE;
+                        }
+                    }
+                    if(context->cnt_reg_value != 0) {
+                        *data = context->reg_value;
+                        data++;
+                        amount++;
+                        context->cnt_reg_value--;
+                        context->reg_value >>= 8;
+                    }
+                    else
                         break;
-                    }
-                    /* Update tx buffer */
-                    p_tmp = (uint8_t *)&user_context->reg_value;
-                    for(int32_t i = 0; i < REG_PROTOCOL_AMOUNT_REGISTER_BYTE; i++) {
-                        data[index] = p_tmp[i];
-                        index++;
-                        available_bytes--;
-                    }
-                    user_context->reg_address++;
                 }
             }
                 break;
@@ -165,28 +187,47 @@ int32_t reg_protocol_atb3500_cmd_read_tx_data_callback(void *context_base, uint8
                 break;
         }
     }
-    return index;
+    return amount;
 }
 
-int32_t reg_protocol_atb3500_cmd_read_end_of_transaction_callback(void *context_base) {
+void reg_protocol_atb3500_cmd_read_end_of_transaction_callback(void *context_base) {
     if (context_base != NULL) {
-        cl_reg_protocol_context_base_t *context = (cl_reg_protocol_context_base_t *)context_base;
-        reg_protocol_atb3500_read_reg_contex_t *user_context = (reg_protocol_atb3500_read_reg_contex_t *)context->user_context;
-        _reset_field_read_reg_context(user_context);
-        user_context->state_machine = REG_PROTOCOL_SM_COMPLETED;
-        context->state = CL_REG_CONTEXT_SM_COMPLETED;
+        reg_protocol_atb3500_read_reg_contex_t *context = (reg_protocol_atb3500_read_reg_contex_t *)context_base;
+        _reset_field_read_reg_context(context);
+        context->state_machine = REG_PROTOCOL_SM_COMPLETED;
     }
+}
+int32_t reg_protocol_atb3500_cmd_read_rx_available_callback(void *context_base) {
+    return 0xffff;
+}
+
+int32_t reg_protocol_atb3500_cmd_read_tx_available_callback(void *context_base) {
+    reg_protocol_atb3500_read_reg_contex_t *context = (reg_protocol_atb3500_read_reg_contex_t *)context_base;
+    uint8_t *p_tmp = NULL;
+    int32_t amount = 0;
+    uint32_t tmp_reg;
+    if (context_base != NULL) {
+        if (context->state_machine == REG_PROTOCOL_SM_WRITE_REQUEST) {
+            amount = context->cnt_reg_value;
+            if (context->cnt_reg_value == 0) {
+                /* Mapping register address with register value */
+                if (!context->read_reg(&tmp_reg, context->reg_address, REG_PROTOCOL_ATB3500_READ_REG))
+                    amount = REG_PROTOCOL_REGISTER_SIZE;
+            }
+        }
+    }
+    return amount;
 }
 
 /*********************************************************************************************
  * Description command: REG_PROTOCOL_ATB3500_WRITE_REG
 **********************************************************************************************/
-static void _reset_field_write_reg_context(reg_protocol_atb3500_write_reg_contex_t *user_context) {
-    if (user_context != NULL) {
-        user_context->cnt_addres = 0;
-        user_context->cnt_reg_value = 0;
-        user_context->reg_value = 0;
-        user_context->reg_address = 0;
+static void _reset_field_write_reg_context(reg_protocol_atb3500_write_reg_contex_t *context) {
+    if (context != NULL) {
+        context->cnt_addres = 0;
+        context->cnt_reg_value = 0;
+        context->reg_value = 0;
+        context->reg_address = 0;
     }
 }
 
@@ -195,54 +236,53 @@ int32_t reg_protocol_atb3500_cmd_write_tx_data_callback(void *context_base, uint
 }
 
 int32_t reg_protocol_atb3500_cmd_write_rx_data_callback(void* context_base, uint8_t *data, uint16_t count) {
-    cl_reg_protocol_context_base_t *context = (cl_reg_protocol_context_base_t *)context_base;
-    reg_protocol_atb3500_write_reg_contex_t *user_context = (reg_protocol_atb3500_write_reg_contex_t *)context->user_context;       
+    reg_protocol_atb3500_write_reg_contex_t *context = (reg_protocol_atb3500_write_reg_contex_t *)context_base;
     int32_t amount_of_processed_bytes = 0;
     uint8_t *p_tmp = NULL;
-    if(context_base != NULL || count == 0) {  
+    if(context != NULL || count == 0) {  
         while (count != 0) {
-            switch (user_context->state_machine) {
+            switch (context->state_machine) {
                 case REG_PROTOCOL_SM_COMPLETED:
                 case REG_PROTOCOL_SM_INITIAL: {
-                    _reset_field_write_reg_context(user_context);
-                    user_context->state_machine = REG_PROTOCOL_SM_WAITING_ADDRESS;
+                    _reset_field_write_reg_context(context);
+                    context->state_machine = REG_PROTOCOL_SM_WAITING_ADDRESS;
                 }
                     break;
                 case REG_PROTOCOL_SM_WAITING_ADDRESS: { 
                     /* Write data into register_address */
-                    if(user_context->cnt_addres < REG_PROTOCOL_AMOUNT_ADDRESS_BYTE) {
-                        p_tmp = (uint8_t *)&user_context->reg_address;
-                        p_tmp[user_context->cnt_addres] = data[amount_of_processed_bytes];
-                        user_context->cnt_addres++;
+                    if(context->cnt_addres < REG_PROTOCOL_ADDRESS_SIZE) {
+                        p_tmp = (uint8_t *)&context->reg_address;
+                        p_tmp[context->cnt_addres] = data[amount_of_processed_bytes];
+                        context->cnt_addres++;
                         amount_of_processed_bytes++;
                         count--;
                     }
 
-                    if(user_context->cnt_addres == REG_PROTOCOL_AMOUNT_ADDRESS_BYTE)
-                        user_context->state_machine = REG_PROTOCOL_SM_WAITING_REGISTER;
-                    else if(user_context->cnt_addres > REG_PROTOCOL_AMOUNT_ADDRESS_BYTE)
-                        user_context->state_machine = REG_PROTOCOL_SM_ERROR;
+                    if(context->cnt_addres == REG_PROTOCOL_ADDRESS_SIZE)
+                        context->state_machine = REG_PROTOCOL_SM_WAITING_REGISTER;
+                    else if(context->cnt_addres > REG_PROTOCOL_ADDRESS_SIZE)
+                        context->state_machine = REG_PROTOCOL_SM_ERROR;
                 }
                     break;
                 case REG_PROTOCOL_SM_WAITING_REGISTER: {
                     /* Write data into register value */
-                    if(user_context->cnt_reg_value < REG_PROTOCOL_AMOUNT_REGISTER_BYTE) {
-                        p_tmp = (uint8_t *)&user_context->reg_value;
-                        p_tmp[user_context->cnt_reg_value] = data[amount_of_processed_bytes];
-                        user_context->cnt_reg_value++;
+                    if(context->cnt_reg_value < REG_PROTOCOL_REGISTER_SIZE) {
+                        p_tmp = (uint8_t *)&context->reg_value;
+                        p_tmp[context->cnt_reg_value] = data[amount_of_processed_bytes];
+                        context->cnt_reg_value++;
                         amount_of_processed_bytes++;
                         count--;
                     }
-                    if(user_context->cnt_reg_value == REG_PROTOCOL_AMOUNT_REGISTER_BYTE) {
-                        user_context->cnt_reg_value = 0;
-                        if(user_context->write_reg(&user_context->reg_value, user_context->reg_address, REG_PROTOCOL_ATB3500_WRITE_REG)) {
-                            user_context->state_machine = REG_PROTOCOL_SM_ERROR;
+                    if(context->cnt_reg_value == REG_PROTOCOL_REGISTER_SIZE) {
+                        context->cnt_reg_value = 0;
+                        if(context->write_reg(&context->reg_value, context->reg_address, REG_PROTOCOL_ATB3500_WRITE_REG)) {
+                            context->state_machine = REG_PROTOCOL_SM_ERROR;
                             break;
                         }
-                        user_context->reg_address++;
+                        context->reg_address++;
                     }
-                    else if(user_context->cnt_reg_value > REG_PROTOCOL_AMOUNT_REGISTER_BYTE)
-                        user_context->state_machine = REG_PROTOCOL_SM_ERROR;
+                    else if(context->cnt_reg_value > REG_PROTOCOL_REGISTER_SIZE)
+                        context->state_machine = REG_PROTOCOL_SM_ERROR;
                 }
                     break;
                 default:
@@ -255,15 +295,22 @@ int32_t reg_protocol_atb3500_cmd_write_rx_data_callback(void* context_base, uint
     return amount_of_processed_bytes;
 }
 
-int32_t reg_protocol_atb3500_cmd_write_end_of_transaction_callback(void *context_base) {
+void reg_protocol_atb3500_cmd_write_end_of_transaction_callback(void *context_base) {
     if (context_base != NULL) {
-        cl_reg_protocol_context_base_t *context = (cl_reg_protocol_context_base_t *)context_base;
-        reg_protocol_atb3500_write_reg_contex_t *user_context = (reg_protocol_atb3500_write_reg_contex_t *)context->user_context;
-        _reset_field_write_reg_context(user_context);
-        user_context->state_machine = REG_PROTOCOL_SM_COMPLETED;
-        context->state = CL_REG_CONTEXT_SM_COMPLETED;
+        reg_protocol_atb3500_write_reg_contex_t *context = (reg_protocol_atb3500_write_reg_contex_t *)context_base;
+        _reset_field_write_reg_context(context);
+        context->state_machine = REG_PROTOCOL_SM_COMPLETED;
     }
 }
+
+int32_t reg_protocol_atb3500_cmd_write_rx_available_callback(void *context_base) {
+    return 0xffff;
+}
+
+int32_t reg_protocol_atb3500_cmd_write_tx_available_callback(void *context_base) {
+    return 0;
+}
+
 /*********************************************************************************************
  * Binding
 **********************************************************************************************/
@@ -275,34 +322,28 @@ reg_protocol_atb3500_write_reg_contex_t reg_protocol_atb3500_write_reg_context =
     .write_reg = &write_read,
 };
 
-cl_reg_protocol_command_t reg_protocol_atb3500_cmd_read_4_byte_reg = {
-    .context_base.user_context = &reg_protocol_atb3500_read_reg_context,
+hdl_user_command_t reg_protocol_atb3500_cmd_read_4_byte_reg = {
     .unique_user_cmd = REG_PROTOCOL_ATB3500_CMD_READ_4_BYTE,
-    .rx_data_callback = &reg_protocol_atb3500_cmd_read_rx_data_callback,
-    .tx_data_callback = &reg_protocol_atb3500_cmd_read_tx_data_callback,
-    .end_of_transaction_callback = &reg_protocol_atb3500_cmd_read_end_of_transaction_callback,
+    .command_transceiver.proto_context = &reg_protocol_atb3500_read_reg_context,
+    .command_transceiver.end_of_transmission = &reg_protocol_atb3500_cmd_read_end_of_transaction_callback,
+    .command_transceiver.rx_available = &reg_protocol_atb3500_cmd_read_rx_available_callback,
+    .command_transceiver.rx_data = &reg_protocol_atb3500_cmd_read_rx_data_callback,
+    .command_transceiver.tx_available = &reg_protocol_atb3500_cmd_read_tx_available_callback,
+    .command_transceiver.tx_empty = &reg_protocol_atb3500_cmd_read_tx_data_callback,
 };
-cl_reg_protocol_command_t reg_protocol_atb3500_cmd_write_4_byte_reg = {
-    .context_base.user_context = &reg_protocol_atb3500_write_reg_context,
+hdl_user_command_t reg_protocol_atb3500_cmd_write_4_byte_reg = {
     .unique_user_cmd = REG_PROTOCOL_ATB3500_CMD_WRITE_4_BYTE,
-    .rx_data_callback = &reg_protocol_atb3500_cmd_write_rx_data_callback,
-    .tx_data_callback = &reg_protocol_atb3500_cmd_write_tx_data_callback,
-    .end_of_transaction_callback = &reg_protocol_atb3500_cmd_write_end_of_transaction_callback,
+    .command_transceiver.proto_context =&reg_protocol_atb3500_write_reg_context,
+    .command_transceiver.end_of_transmission = &reg_protocol_atb3500_cmd_write_end_of_transaction_callback,
+    .command_transceiver.rx_available = &reg_protocol_atb3500_cmd_write_rx_available_callback,
+    .command_transceiver.rx_data = &reg_protocol_atb3500_cmd_write_rx_data_callback,
+    .command_transceiver.tx_available = &reg_protocol_atb3500_cmd_write_tx_available_callback,
+    .command_transceiver.tx_empty = &reg_protocol_atb3500_cmd_write_tx_data_callback,
 };
 
-extern cl_reg_protocol_transceiver_h spi_slave;
 
-hdl_transceiver_t spi_slave_trasceiver = {
-    .rx_data = &cl_protocol_reg_rx_data_callback,
-    .tx_empty = &cl_protocol_reg_tx_data_callback,
-    .end_of_transmission = &cl_protocol_reg_end_of_transaction_callback,
-    .proto_context = &spi_slave,
-};
-
-cl_reg_protocol_transceiver_h spi_slave = {
-    .transceiver_handler = &spi_slave_trasceiver,
-    .cmd_array = cl_reg_protocol_add_command(&reg_protocol_atb3500_cmd_read_4_byte_reg, &reg_protocol_atb3500_cmd_write_4_byte_reg),
-    .state_machine = 0,
+hdl_command_t spi_slave = {
+    .cmd_array = hdl_commands(&reg_protocol_atb3500_cmd_read_4_byte_reg, &reg_protocol_atb3500_cmd_write_4_byte_reg),
 };
 
 

@@ -26,7 +26,7 @@ _Static_assert(sizeof(hdl_uart_private_t) == sizeof(hdl_uart_t), "In port_uart.h
 
 static void _uart_handler(linked_list_item_t *uart_item, void *arg) {
   hdl_uart_private_t *uart = linked_list_get_object(hdl_uart_private_t, uart_item);
-  if(uart->transceiver != NULL) {
+  if((uart->transceiver != NULL) && !(USART_CTL0((uint32_t)uart->module.reg) & USART_CTL0_TBEIE)) {
     uint8_t wl = (USART_CTL0((uint32_t)uart->module.reg) & USART_CTL0_WL)? 2: 1;
     if((uart->transceiver->tx_available != NULL) && (uart->transceiver->tx_empty != NULL) && 
        (uart->transceiver->tx_available(uart->transceiver->proto_context) >= wl)) {
@@ -64,8 +64,7 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
       USART_CTL0((uint32_t)uart->module.reg) |= USART_CTL0_IDLEIE;
       uint8_t wl = (USART_CTL0((uint32_t)uart->module.reg) & USART_CTL0_WL)? 2: 1;
       if((uart->transceiver != NULL) && (uart->transceiver->rx_available != NULL) && (uart->transceiver->rx_data != NULL)) {
-        if(uart->transceiver->rx_available(uart->transceiver->proto_context) >= wl) {
-          data <<= (8 * (wl & 1)); //?? check
+        if(uart->transceiver->rx_available(uart->transceiver->proto_context) >= wl) {          
           uart->transceiver->rx_data(uart->transceiver->proto_context, (uint8_t *)&data, wl);
         }
       }
@@ -77,8 +76,7 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
       if((uart->transceiver != NULL) && (uart->transceiver->tx_available != NULL) && (uart->transceiver->tx_empty != NULL)) {
         if(uart->transceiver->tx_available(uart->transceiver->proto_context) >= wl) {
           uint16_t data;
-          uart->transceiver->rx_data(uart->transceiver->proto_context, (uint8_t *)&data, wl);
-          data >>= (8 * (wl & 1)); //?? check
+          uart->transceiver->tx_empty(uart->transceiver->proto_context, (uint8_t *)&data, wl);
           USART_TDATA((uint32_t)uart->module.reg) = data;
           USART_CTL0((uint32_t)uart->module.reg) |= USART_CTL0_TBEIE;
         }

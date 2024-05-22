@@ -7,8 +7,9 @@
 * Read 4 byte [CMD] [ADDRESS] [DUMMY] [REGISTER] [STOP CONDITIONAL]
 */
 
-#define REG_PROTOCOL_AMOUNT_ADDRESS_BYTE            ((int16_t) 1)
-#define REG_PROTOCOL_AMOUNT_REGISTER_BYTE           ((int16_t) 4)
+#define REG_PROTOCOL_ADDRESS_SIZE            ((int16_t) 1)
+#define REG_PROTOCOL_LEN_SIZE                ((int16_t) 2)
+#define REG_PROTOCOL_REGISTER_SIZE           ((int16_t) 4)
 
 /* Register mood */
 typedef enum {
@@ -24,6 +25,7 @@ typedef enum {
 typedef enum {
     REG_PROTOCOL_SM_INITIAL,
     REG_PROTOCOL_SM_WAITING_ADDRESS,
+    REG_PROTOCOL_SM_WAITING_LEN,
     REG_PROTOCOL_SM_WAITING_REGISTER,
     REG_PROTOCOL_SM_WRITE_REQUEST,
     REG_PROTOCOL_SM_COMPLETED,
@@ -33,8 +35,11 @@ typedef enum {
 typedef struct {
     reg_protocol_state_machine_e state_machine;
     uint32_t reg_address; /* buffer for saving register adrress */
+    uint16_t request_len;
+    int16_t cnt_request_len;
     int16_t cnt_addres;   /* buffer for saving rx bytes counter corresponding address */
     uint32_t reg_value;   /* buffer for saving new reg value */
+    int16_t cnt_reg_value;
     int32_t (*read_reg)(uint32_t *data, uint32_t address, reg_protocol_atb3500_read_write_reg_e option);
 } reg_protocol_atb3500_read_reg_contex_t;
 

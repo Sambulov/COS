@@ -60,7 +60,7 @@ extern hdl_adc_source_t mod_adc_source_1;
 extern hdl_clock_prescaler_t mod_clock_apb2;
 
 extern  hdl_dma_channel_t mod_m2m_dma_ch;
-extern cl_reg_protocol_transceiver_h spi_slave;
+extern hdl_command_t spi_slave;
 
  void SysTick_Event(uint32_t event, void *sender, void *context){
   __NOP();
@@ -171,7 +171,8 @@ void test() {
   hdl_interrupt_request(&mod_nvic, HDL_NVIC_IRQ7_EXTI4_15, &Exti_8_Event, NULL);
 
   hdl_dma_run(&mod_m2m_dma_ch, (uint32_t)&arr1[0], (uint32_t)&arr1[5], 20);
-  hdl_uart_set_transceiver(&hdl_uart_0, spi_slave.transceiver_handler);
+
+  hdl_uart_set_transceiver(&hdl_uart_0, hdl_command_get_transiver(&spi_slave));
 
   while (1) {
     cooperative_scheduler(false);

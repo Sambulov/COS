@@ -9,12 +9,6 @@ typedef struct {
   event_handler_t handler;
 } hdl_nvic_interrupt_private_t;
 
-typedef struct {
-  hdl_module_t module;
-  uint32_t prio_bits;
-  hdl_nvic_interrupt_private_t **interrupts;
-} hdl_nvic_private_t;
-
 #define hdl_exti_clear_pending(exti_line)       (EXTI_PD |= exti_line)
 
 #define EXTI_LINES_ALL_POSSIBLE   EXTI_0  | EXTI_1  | EXTI_2  |  EXTI_3 | \
@@ -38,7 +32,7 @@ extern void *_sbss, *_ebss;
 //void SystemInit();
 void __libc_init_array();
 void main();
-hdl_nvic_private_t *__ic = NULL;
+hdl_nvic_t *__ic = NULL;
 
 static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs, uint32_t event) {
   if(isrs != NULL) {
@@ -637,7 +631,7 @@ hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
     /* TODO: NVIC_SetPriorityGrouping  */
     nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0);
     //SYSCFG_CPU_IRQ_LAT = nvic->irq_latency;
-    __ic = (hdl_nvic_private_t *)desc;
+    __ic = (hdl_nvic_t *)desc;
     /* TODO: fing wokaround to save context for interrupt vector */
     _hdl_exti_request(nvic);
     return HDL_MODULE_INIT_OK;

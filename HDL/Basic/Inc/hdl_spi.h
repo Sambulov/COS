@@ -29,9 +29,9 @@ hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable);
 
 hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable);
 hdl_module_state_t hdl_spi_ch(void *desc, uint8_t enable);
-hdl_spi_message_state_t hdl_spi_client_xfer(hdl_spi_ch_t *spi_ch, hdl_spi_message_t *message);
+//hdl_spi_message_state_t hdl_spi_client_xfer(hdl_spi_ch_t *spi_ch, hdl_spi_message_t *message);
 hdl_spi_message_state_t hdl_spi_message_get_state(hdl_spi_message_t *message);
 
-void hdl_spi_server_set_transceiver(hdl_spi_ch_t *spi, hdl_transceiver_t *transceiver);
+void hdl_spi_server_set_transceiver(hdl_spi_server_t *spi, hdl_transceiver_t *transceiver);
 
 #endif /* HDL_SPI_H_ */

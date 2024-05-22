@@ -79,3 +79,27 @@ hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_i
   }
   return NULL;
 }
+
+uint16_t hdl_isr_buffer_read(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t lenght) {
+  hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)desc;
+  uint16_t available = scb_available(&buf->rx_buf);
+  lenght = MIN(lenght, available);
+  available = lenght;
+  while (available--) {
+    *data = scb_pop(&buf->rx_buf);
+    data++;
+  }
+  return lenght;
+}
+
+uint16_t hdl_isr_buffer_write(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t lenght) {
+  hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)desc;
+  uint16_t available = scb_available_free(&buf->tx_buf);
+  lenght = MIN(lenght, available);
+  available = lenght;
+  while (available--) {
+    scb_push(&buf->tx_buf, *data);
+    data++;
+  }
+  return lenght;
+}

@@ -14,6 +14,8 @@ typedef struct {
   uint16_t tx_buffer_size;    
 } hdl_isr_buffer_congig_t;
 
+uint16_t hdl_isr_buffer_read(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t lenght);
+uint16_t hdl_isr_buffer_write(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t lenght);
 hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_isr_buffer_congig_t *cnf);
 
 #endif /* TRANSCEIVER_BUFFER_H_ */

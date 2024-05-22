@@ -27,7 +27,7 @@
 
 
 #define TEST_CLOCK
-#define TEST_CLOCK_NUM 30
+#define TEST_CLOCK_NUM 1
 
 #ifdef TEST_CLOCK
 /*
@@ -75,7 +75,7 @@
   #define HDL_HXTAL_CLOCK              16000000
   #define HDL_LXTAL_CLOCK              32768
   #define HDL_HXTAL_2_PLLSEL_PREDIV    1
-  #define HDL_PLLMUL                   2
+  #define HDL_PLLMUL                   4
   #define HDL_AHB_PREDIV               1
   #define HDL_APB1_PREDIV              1
   #define HDL_APB2_PREDIV              1
@@ -699,13 +699,18 @@
     .priority_group = 0,
   };
 
-  hdl_nvic_interrupt_t mod_irq_8 = {
+  hdl_nvic_interrupt_t mod_irq_exti_4_15 = {
     .irq_type = HDL_NVIC_IRQ7_EXTI4_15,
     .priority = 0,
-    .priority_group = 2,
+    .priority_group = 0,
   };
   hdl_nvic_interrupt_t mod_irq_usart_0 = {
     .irq_type = HDL_NVIC_IRQ27_USART0,
+    .priority = 0,
+    .priority_group = 0,
+  };
+  hdl_nvic_interrupt_t mod_irq_spi_0 = {
+    .irq_type = HDL_NVIC_IRQ25_SPI0,
     .priority = 0,
     .priority_group = 0,
   };
@@ -725,15 +730,22 @@
   .trigger = HDL_EXTI_TRIGGER_RISING
 };
 
+  hdl_nvic_exti_t mod_nvic_exti_line_15 = {
+  .line = HDL_EXTI_LINE_15,
+  .mode = HDL_EXTI_MODE_INTERRUPT,
+  .source = HDL_EXTI_SOURCE_PA,
+  .trigger = HDL_EXTI_TRIGGER_FALLING
+};
+
   hdl_nvic_t mod_nvic = {
     .module.init = &hdl_nvic,
     .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .irq_latency = 0, /* TODO: define static assert */
-    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_8,
-     &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0),
-    .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8)
+    .interrupts = hdl_interrupts(&mod_irq_systick,/* &mod_irq_exti_0_1, &mod_irq_exti_2_3, */&mod_irq_exti_4_15,
+     &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0),
+    .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8, &mod_nvic_exti_line_15)
   };
 
   /**************************************************************

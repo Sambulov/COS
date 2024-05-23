@@ -34,11 +34,11 @@ void __libc_init_array();
 void main();
 hdl_nvic_t *__ic = NULL;
 
-static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_private_t **isrs, uint32_t event) {
+static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_t **isrs, uint32_t event) {
   if(isrs != NULL) {
     while (*isrs != NULL) {
       if((*isrs)->irq_type == irq) {
-        (*isrs)->handler(event, __ic, (*isrs)->handler_context);
+        ((hdl_nvic_interrupt_private_t *)*isrs)->handler(event, __ic, ((hdl_nvic_interrupt_private_t *)*isrs)->handler_context);
         return;
       }
       isrs++;

@@ -68,10 +68,20 @@ extern  hdl_dma_channel_t mod_m2m_dma_ch;
   void Exti_Event(uint32_t event, void *sender, void *context){
   __NOP();
  }
-   void Exti_8_Event(uint32_t event, void *sender, void *context){
-  __NOP();
+ void Exti_8_Event(uint32_t event, void *sender, void *context) {
+   static int8_t cnt = 0;
+   static uint32_t a;
+   if (event & GPIO_PIN_15) {
+    gpio_bit_toggle(GPIOB, GPIO_PIN_1);
+     for(uint16_t i = 0; i < 10000; i++);
+     if (gpio_input_bit_get(GPIOA, GPIO_PIN_15) == RESET)
+       cnt++;
+     else
+       cnt--;
+   }
+   a = SysTick->VAL;
+   __NOP();
  }
-
 
 hdl_gpio_port_t hdl_gpio_port_a1 = {
   .init = &hdl_gpio_port,
@@ -124,7 +134,8 @@ hdl_gpio_pin_t gpio_pin_spi_cs = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
     .module.reg = (void *)GPIO_PIN_15,
-    .mode = &gpio_input_np
+    .mode = &gpio_spi_mode,
+    .inactive_default = HDL_GPIO_LOW,
 };
 
 hdl_gpio_pin_t pin_pa0 = {
@@ -216,6 +227,7 @@ void test() {
   //hdl_enable(&mod_gpio_adc_channel_1v5.module);
   hdl_enable(&mod_timer_ms.module);
   hdl_enable(&mod_nvic.module);
+  hdl_enable(&mod_gpo_carrier_pwr_on.module);
   //hdl_enable(&pin_pa0.module);
   //hdl_enable(&pin_pb8.module);
   //hdl_enable(&mod_m2m_dma_ch.module);
@@ -242,10 +254,10 @@ void test() {
   while (1) {
     cooperative_scheduler(false);
 
-    uint8_t data;
-    if (hdl_isr_buffer_read(&uart_isr_buffer, &data, 1)) {
-      hdl_isr_buffer_write(&uart_isr_buffer, &data, 1);
-    }
+    // uint8_t data;
+    // if (hdl_isr_buffer_read(&uart_isr_buffer, &data, 1)) {
+    //   hdl_isr_buffer_write(&uart_isr_buffer, &data, 1);
+    // }
     //cl_protocol_transceiver_worker(&spi_slave);
     /* This code will be launched ony one time*/
     // if(hdl_adc_status(&mod_adc) == HDL_ADC_STATUS_WAITING_START_TRIGGER)

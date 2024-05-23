@@ -650,11 +650,11 @@ hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
-static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_private_t **isr) {
+static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_private_t *isr) {
   hdl_nvic_exti_t **extis = ic->exti_lines;
   if(extis == NULL) return;
   hdl_exti_line_t exti_lines_int_en = 0;
-  switch ((*isr)->irq_type) {
+  switch (isr->irq_type) {
     case HDL_NVIC_IRQ6_EXTI0:
       exti_lines_int_en = HDL_EXTI_LINE_0;
       break;
@@ -727,7 +727,7 @@ uint8_t hdl_interrupt_request(hdl_nvic_t *ic, hdl_nvic_irq_n_t irq, event_handle
     }
   }
   else {
-    _hdl_nvic_exti_interrupt_enable(ic, isr);
+    _hdl_nvic_exti_interrupt_enable(ic, *isr);
     NVIC_EnableIRQ((*isr)->irq_type);
   }
   return HDL_TRUE;

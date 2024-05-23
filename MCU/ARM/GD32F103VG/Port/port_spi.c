@@ -35,12 +35,11 @@ typedef struct {
 
 typedef enum {
   NoError = 0,
-  FrameError = SPI_STAT_FERR,
   OverRunError = SPI_STAT_RXORERR,
   ConfigError = SPI_STAT_CONFERR,
   CrcError = SPI_STAT_CRCERR,
   UnderRunError = SPI_STAT_TXURERR,
-  StateMask = FrameError | OverRunError | ConfigError | CrcError | UnderRunError,
+  StateMask = OverRunError | ConfigError | CrcError | UnderRunError,
 } spi_error_t;
 
 _Static_assert(sizeof(hdl_spi_server_private_t) == sizeof(hdl_spi_server_t), "In port_spi.h data structure size of hdl_spi_server_t doesn't match, check SPI_SERVER_PRIVATE_SIZE");
@@ -52,7 +51,7 @@ static void _rst_spi_status (hdl_spi_server_private_t *spi) {
   __IO uint32_t tmpreg = SPI_DATA((uint32_t)spi->module.reg);
 	tmpreg = SPI_STAT((uint32_t)spi->module.reg);
   SPI_CTL0((uint32_t)spi->module.reg) = SPI_CTL0((uint32_t)spi->module.reg);
-  SPI_STAT((uint32_t)spi->module.reg) &= ~(SPI_STAT_CRCERR | SPI_STAT_FERR);
+  SPI_STAT((uint32_t)spi->module.reg) &= ~(SPI_STAT_CRCERR);
 	(void)tmpreg;
 }
 
@@ -147,6 +146,7 @@ hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable) {
   switch ((uint32_t)spi->module.reg) {
     case SPI0: rcu = RCU_SPI0; break;
     case SPI1: rcu = RCU_SPI1; break;
+    case SPI2: rcu = RCU_SPI2; break;
     default: return HDL_MODULE_INIT_FAILED;
   }
   spi_i2s_deinit((uint32_t)spi->module.reg);

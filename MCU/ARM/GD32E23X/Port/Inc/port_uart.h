@@ -2,7 +2,7 @@
 #define PORT_UART_H_
 
 
-#define UART_PRIVATE_SIZE           20
+#define UART_PRIVATE_SIZE           44
 
 typedef enum{
   HDL_UART_WORD_LEN_8BIT = USART_WL_8BIT,

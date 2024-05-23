@@ -4,6 +4,7 @@
 typedef struct {
   hdl_module_t module;
   hdl_nvic_irq_n_t reload_iterrupt;
+  hdl_delegate_t reload_isr;
   uint32_t val;
 }hdl_timer_t;
 

@@ -2,7 +2,7 @@
 #ifndef PORT_CORE_H_
 #define PORT_CORE_H_
 
-#define HDL_INTERRUPT_PRV_SIZE       9
+#define HDL_INTERRUPT_PRV_SIZE       4
 
 typedef enum {
   HDL_NVIC_EXCEPTION_NMI               = NonMaskableInt_IRQn,        /*!< non maskable interrupt                                   */

@@ -13,7 +13,7 @@
 #include __MCU_HAL_HDR__
 
 #include "hdl_transceiver.h"
-#include "hdl_callback.h"
+#include "hdl_event.h"
 #include "hdl_module.h"
 #include "hdl_core.h"
 #include "hdl_clock.h"

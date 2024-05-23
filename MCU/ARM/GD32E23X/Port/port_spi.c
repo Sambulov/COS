@@ -10,6 +10,8 @@ typedef struct {
   hdl_nvic_irq_n_t spi_iterrupt;
   hdl_nvic_irq_n_t nss_iterrupt; /* if HDL_SPI_CS_SOFT in HDL_SPI_SERVER mode */
   /* private */
+  hdl_delegate_t spi_isr;
+  hdl_delegate_t nss_isr;
   hdl_transceiver_t *transceiver;
   __linked_list_object__;
 } hdl_spi_server_private_t;
@@ -166,9 +168,13 @@ hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable) {
     SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_RBNEIE | SPI_CTL1_TBEIE | SPI_CTL1_ERRIE;
     //SPI_CTL0((uint32_t)spi->module.reg) |= SPI_CTL0_SWNSS; 
     spi->transceiver = NULL;
+    spi->nss_isr.context = desc;
+    spi->nss_isr.handler = &event_spi_nss;
+    spi->spi_isr.context = desc;
+    spi->spi_isr.handler = &event_spi_isr;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->module.dependencies[5];
-    hdl_interrupt_request(ic, spi->spi_iterrupt, &event_spi_isr, desc);
-    hdl_interrupt_request(ic, spi->nss_iterrupt, &event_spi_nss, desc);
+    hdl_interrupt_request(ic, spi->spi_iterrupt, &spi->spi_isr);
+    hdl_interrupt_request(ic, spi->nss_iterrupt, &spi->nss_isr);
     /* todo: enable interrupts */
     spi_enable((uint32_t)spi->module.reg);
     return HDL_MODULE_INIT_OK;

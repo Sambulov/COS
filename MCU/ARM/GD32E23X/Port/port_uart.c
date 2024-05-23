@@ -18,6 +18,7 @@ typedef struct {
   hdl_uart_parity_t parity;
   hdl_uart_stop_bits_t stop_bits;
   /* private */
+  hdl_delegate_t uart_isr;
   hdl_transceiver_t *transceiver;
   __linked_list_object__;
 } hdl_uart_private_t;
@@ -141,7 +142,10 @@ hdl_module_state_t hdl_uart(void *desc, uint8_t enable) {
     coroutine_add_static(&uart_task_buf, &_uart_worker, (void *)uarts);
     uart->transceiver = NULL;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)uart->module.dependencies[3];
-    if(hdl_interrupt_request(ic, uart->iterrupt, &event_uart_isr, desc))
+    uart->uart_isr.context = desc;
+    uart->uart_isr.handler = &event_uart_isr;
+    
+    if(hdl_interrupt_request(ic, uart->iterrupt, &uart->uart_isr))
       return HDL_MODULE_INIT_OK;
   }
   linked_list_unlink(linked_list_item(uart));

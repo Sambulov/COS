@@ -94,15 +94,15 @@ hdl_spi_server_private_t *spi = (hdl_spi_server_private_t *)context;
 }
 
 
-static void _spi_handler(linked_list_item_t *spi_item, void *arg) {
+// static void _spi_handler(linked_list_item_t *spi_item, void *arg) {
 
-}
+// }
 
-static uint8_t _spi_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
-  linked_list_t spis = (linked_list_t)arg;
-  linked_list_do_foreach(spis, &_spi_handler, NULL);
-  return cancel;
-}
+// static uint8_t _spi_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
+//   linked_list_t spis = (linked_list_t)arg;
+//   linked_list_do_foreach(spis, &_spi_handler, NULL);
+//   return cancel;
+// }
 
 // hdl_module_state_t hdl_spi(void *desc, uint8_t enable) {
 //   static coroutine_desc_static_t spi_task_buf;
@@ -155,7 +155,7 @@ hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable) {
   if(enable) {
     rcu_periph_clock_enable(rcu);
     linked_list_insert_last(&spis, linked_list_item(spi));
-    coroutine_add_static(&spi_task_buf, &_spi_worker, (void *)spis);
+    //coroutine_add_static(&spi_task_buf, &_spi_worker, (void *)spis);
     spi_parameter_struct init;
     init.device_mode = SPI_SLAVE;
     init.trans_mode = SPI_TRANSMODE_FULLDUPLEX;
@@ -183,6 +183,14 @@ hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable) {
   rcu_periph_clock_disable(rcu);
   return HDL_MODULE_DEINIT_OK;
 }
+
+
+
+
+
+
+
+
 
 hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable) {
 

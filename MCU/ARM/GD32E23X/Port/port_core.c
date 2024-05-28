@@ -341,7 +341,6 @@ static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_p
 }
 
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t irq, hdl_delegate_t *delegate) {
-//uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_nvic_irq_n_t irq, event_handler_t handler, void *context) {
   if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->interrupts == NULL) || (delegate == NULL))
     return HDL_FALSE;
   hdl_nvic_interrupt_private_t **isr = (hdl_nvic_interrupt_private_t **)ic->interrupts;

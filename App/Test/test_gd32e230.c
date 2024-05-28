@@ -222,7 +222,7 @@ uint32_t arr1[10]={1,2,3,4,5};
 uint32_t adc_raw[2];
 void test() {
   static uint32_t time_stamp_ms = 0;
-  //hdl_enable(&mod_adc.module);
+  hdl_enable(&mod_adc.module);
   //hdl_enable(&mod_gpio_adc_channel_3v3.module);
   //hdl_enable(&mod_gpio_adc_channel_1v5.module);
   hdl_enable(&mod_timer_ms.module);

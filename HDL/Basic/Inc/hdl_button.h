@@ -10,14 +10,7 @@ typedef enum {
   HDL_BTN_CLICKED,
 } hdl_btn_state_t;
 
-#define HDL_BUTTON_PRV_SIZE    16
-	
-typedef struct {
-  const uint32_t debounce_delay;
-  const uint32_t hold_delay;
-  const hdl_gpio_state active_state;
-  const hdl_gpio_pin_t *btn_gpio;
-} hdl_button_hw_t;
+#define HDL_BUTTON_PRV_SIZE    29
 
 typedef enum {
   HDL_BTN_EVENT_RELEASE = 0x01,
@@ -26,19 +19,24 @@ typedef enum {
   HDL_BTN_EVENT_CLICK   = 0x08,
 } hdl_btn_event_t;
 
+/* depends on:
+  gpio
+  timer
+ */
 typedef struct {
-	uint8_t __private[HDL_BUTTON_PRV_SIZE];
-  const hdl_button_hw_t *module;
-  hdl_btn_event_t event_mask;
-  event_handler_t button_event_cb;
-  void *context;
+  hdl_module_t module;
+  uint32_t debounce_delay;
+  uint32_t hold_delay;
+  hdl_event_t event;
+  uint8_t __private[HDL_BUTTON_PRV_SIZE];
 } hdl_button_t;
 
-void hdl_btn_work(hdl_button_t *desc);
-hdl_btn_state_t hdl_btn_state_get(hdl_button_t *desc);
+hdl_module_state_t hdl_button(void *desc, uint8_t enable);
 
-uint8_t hdl_btn_press(hdl_button_t *desc);
-uint8_t hdl_btn_click(hdl_button_t *desc);
-uint8_t hdl_btn_release(hdl_button_t *desc);
+hdl_btn_state_t hdl_btn_state_get(hdl_button_t *btn);
+
+uint8_t hdl_btn_sw_press(hdl_button_t *btn);
+uint8_t hdl_btn_sw_click(hdl_button_t *btn);
+uint8_t hdl_btn_sw_release(hdl_button_t *btn);
 
 #endif // HDL_BUTTON_H_

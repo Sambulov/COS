@@ -2,7 +2,7 @@
 #define PORT_SPI_H_
 
 #define HDL_SPI_MESSAGE_PRV_SIZE           4
-#define SPI_SERVER_PRIVATE_SIZE            20
+#define SPI_SERVER_PRIVATE_SIZE            68
 #define SPI_CH_PRIVATE_SIZE                20
 
 typedef enum {

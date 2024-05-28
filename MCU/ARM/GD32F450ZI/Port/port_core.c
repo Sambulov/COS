@@ -5,8 +5,7 @@ typedef struct {
   hdl_nvic_irq_n_t irq_type;
   uint8_t priority_group;
   uint8_t priority;
-  void *handler_context;
-  event_handler_t handler;
+  hdl_event_t event;
 } hdl_nvic_interrupt_private_t;
 
 #define hdl_exti_clear_pending(exti_line)       (EXTI_PD |= exti_line)
@@ -38,7 +37,8 @@ static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_t **isrs, uint32_t event
   if(isrs != NULL) {
     while (*isrs != NULL) {
       if((*isrs)->irq_type == irq) {
-        ((hdl_nvic_interrupt_private_t *)*isrs)->handler(event, __ic, ((hdl_nvic_interrupt_private_t *)*isrs)->handler_context);
+        hdl_nvic_interrupt_private_t *isr = (hdl_nvic_interrupt_private_t *)*isrs;
+        hdl_event_raise(&isr->event, __ic, event);
         return;
       }
       isrs++;
@@ -619,14 +619,13 @@ static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_p
   }
 }
 
-uint8_t hdl_interrupt_request(hdl_nvic_t *ic, hdl_nvic_irq_n_t irq, event_handler_t handler, void *context) {
-  if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->interrupts == NULL) || (handler == NULL))
+uint8_t hdl_interrupt_request(hdl_nvic_t *ic, hdl_nvic_irq_n_t irq, hdl_delegate_t *delegate) {
+  if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->interrupts == NULL) || (delegate == NULL))
     return HDL_FALSE;
   hdl_nvic_interrupt_private_t **isr = (hdl_nvic_interrupt_private_t **)ic->interrupts;
   while ((isr != NULL) && (*isr)->irq_type != irq) isr++;
   if(isr == NULL) return HDL_FALSE;
-  (*isr)->handler = handler;
-  (*isr)->handler_context = context;
+  hdl_event_subscribe(&(*isr)->event, delegate);
   uint8_t prio = (((*isr)->priority_group << (8U - ic->prio_bits)) | 
                   ((*isr)->priority & (0xFF >> ic->prio_bits)) & 
                   0xFFUL);

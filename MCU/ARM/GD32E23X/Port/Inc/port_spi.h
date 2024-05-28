@@ -3,6 +3,7 @@
 
 #define HDL_SPI_MESSAGE_PRV_SIZE           4
 #define SPI_SERVER_PRIVATE_SIZE            68
+#define SPI_MEM_SERVER_PRIVATE_SIZE        68
 #define SPI_CH_PRIVATE_SIZE                20
 
 typedef enum {
@@ -58,6 +59,40 @@ typedef struct {
   hdl_nvic_irq_n_t nss_iterrupt; /* if HDL_SPI_CS_SOFT in HDL_SPI_SERVER mode */
   uint8_t __private[SPI_SERVER_PRIVATE_SIZE];
 } hdl_spi_server_t;
+
+typedef struct {
+  uint8_t *mem_ptr;
+  uint16_t mem_size;
+} hdl_spi_server_memory_t;
+
+/* depends on:
+  gpio mosi
+  gpio miso  
+  gpio sck
+  gpio nss
+  apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
+  interrupt controller (nvic)
+  hdl_dma_channel rx
+  hdl_dma_channel tx
+  hdl_timer_t
+ */
+typedef struct {
+  hdl_module_t module;
+  hdl_spi_server_config_t *config;
+  hdl_nvic_irq_n_t spi_iterrupt;
+  hdl_nvic_irq_n_t nss_iterrupt;
+  hdl_spi_server_memory_t rx_mem;
+  hdl_spi_server_memory_t tx_mem;
+  uint8_t __private[SPI_MEM_SERVER_PRIVATE_SIZE];
+} hdl_spi_mem_server_t;
+
+
+
+
+
+
+
+
 
 /**************** vvv  SPI master vvv  ******************/
 // typedef struct {

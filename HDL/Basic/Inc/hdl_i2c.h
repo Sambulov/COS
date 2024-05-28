@@ -86,11 +86,7 @@ typedef struct {
 hdl_module_state_t hdl_i2c(void *desc, uint8_t enable);
 void hdl_hal_i2c_bus_state(hdl_i2c_t *desc);
 void hdl_i2c_client_xfer_message(hdl_i2c_t *desc, hdl_i2c_message_t *msg);
-//void hdl_i2c_server_xfer_message(hdl_i2c_t *desc, hdl_i2c_message_t *msg);
-void hdl_hal_i2c_deinit(hdl_i2c_t *desc);
-/* ================== */
 
-//void hdl_i2c_work(hdl_i2c_t *desc);
 void hdl_i2c_client_transaction_init_reset(hdl_i2c_transaction_t *transaction);
 void hdl_i2c_client_transaction_add_message(hdl_i2c_transaction_t *transaction, hdl_i2c_message_t *message);
 void hdl_i2c_client_enqueue_transaction(hdl_i2c_t *desc, hdl_i2c_transaction_t *transaction);

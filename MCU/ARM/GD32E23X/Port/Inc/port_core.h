@@ -2,8 +2,6 @@
 #ifndef PORT_CORE_H_
 #define PORT_CORE_H_
 
-#include  "Macros.h"
-
 #define HDL_INTERRUPT_PRV_SIZE       4
 
 typedef enum {

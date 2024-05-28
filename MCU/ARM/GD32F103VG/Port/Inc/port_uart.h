@@ -42,7 +42,7 @@ typedef struct {
   hdl_uart_stop_bits_t stop_bits;
 
   uint32_t init_timeout;
-  uint8_t __private[UART_PRIVATE_SIZE];
+  PRIVATE(UART_PRIVATE_SIZE);
 } hdl_uart_t;
 
 #endif // PORT_UART_H_

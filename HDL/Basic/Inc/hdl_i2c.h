@@ -46,7 +46,7 @@ typedef enum {
 } hdl_i2c_message_flags_t;
 
 typedef struct {
-  uint8_t __private[HDL_I2C_MESSAGE_PRV_SIZE];
+  PRIVATE(HDL_I2C_MESSAGE_PRV_SIZE);
   uint32_t address;
   uint8_t *buffer;
   uint32_t buffer_size;
@@ -67,15 +67,15 @@ typedef enum {
 } hdl_i2c_transaction_state_t;
 
 typedef struct {
-	uint8_t __private[HDL_I2C_TRANSACTION_PRV_SIZE];
+  PRIVATE(HDL_I2C_TRANSACTION_PRV_SIZE);
 } hdl_i2c_transaction_t;
 
 typedef struct {
-	uint8_t __private[HDL_I2C_HAL_PRV_SIZE];
+  PRIVATE(HDL_I2C_HAL_PRV_SIZE);
 } hdl_hal_i2c_t;
 
 typedef struct {
-	uint8_t __private[HDL_I2C_PRV_SIZE];
+  PRIVATE(HDL_I2C_PRV_SIZE);
   const hdl_i2c_hw_t *hw_conf;
   hdl_hal_i2c_t hal;
   event_handler_t *server_event_cb;

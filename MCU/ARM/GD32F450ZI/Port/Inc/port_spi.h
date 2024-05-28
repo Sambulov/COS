@@ -56,7 +56,7 @@ typedef struct {
   hdl_spi_server_config_t *config;
   hdl_nvic_irq_n_t spi_iterrupt;
   hdl_nvic_irq_n_t nss_iterrupt; /* if HDL_SPI_CS_SOFT in HDL_SPI_SERVER mode */
-  uint8_t __private[SPI_SERVER_PRIVATE_SIZE];
+  PRIVATE(SPI_SERVER_PRIVATE_SIZE);
 } hdl_spi_server_t;
 
 /**************** vvv  SPI master vvv  ******************/

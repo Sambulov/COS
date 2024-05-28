@@ -8,6 +8,7 @@
 
 #define HDL_FALSE         0
 #define HDL_TRUE          !HDL_FALSE
+#define PRIVATE(size)                           uint32_t __private[(size + sizeof(void *) - 1) >> 2]
 
 #include <stddef.h>
 #include __MCU_HAL_HDR__

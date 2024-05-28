@@ -81,7 +81,7 @@ typedef struct{
     uint32_t init_timeout;
     hdl_adc_source_t **sources;               /* max amount 15 */
     uint16_t *values;
-    uint8_t __private[HDL_ADC_PRIVATE_FIELD_SIZE];
+    PRIVATE(HDL_ADC_PRIVATE_FIELD_SIZE);
 } hdl_adc_t;
 
 #define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})

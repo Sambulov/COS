@@ -15,7 +15,7 @@ typedef enum {
 typedef hdl_module_state_t (*hdl_module_initializer_t)(void *desc, uint8_t enable);
 
 typedef struct _HDL_MODULE_T_ {
-  uint8_t __private[HDL_MODULE_DESC_PRIVATE_SIZE];
+  PRIVATE(HDL_MODULE_DESC_PRIVATE_SIZE);
   hdl_module_initializer_t init;
   struct _HDL_MODULE_T_ **dependencies;
   void *reg;

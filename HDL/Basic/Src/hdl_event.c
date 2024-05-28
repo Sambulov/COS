@@ -16,7 +16,7 @@ _Static_assert(sizeof(hdl_event_private_t) == sizeof(hdl_event_t), "In hdl_event
 
 void hdl_event_subscribe(hdl_event_t *event, hdl_delegate_t *delegate) {
   hdl_event_private_t *evt = (hdl_event_private_t *)event;
-  linked_list_insert(&evt->delegates, linked_list_item((hdl_delegate_private_t*)delegate), NULL);
+  linked_list_insert(&(evt->delegates), linked_list_item((hdl_delegate_private_t*)delegate), NULL);
 }
 
 void hdl_event_unsubscribe(hdl_event_t *event, hdl_delegate_t *delegate) {

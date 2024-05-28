@@ -4,7 +4,7 @@
 #define HDL_ISR_BUFFER_PRIVATE_SIZE       48
 
 typedef struct {
-  uint8_t __private[HDL_ISR_BUFFER_PRIVATE_SIZE];
+  PRIVATE(HDL_ISR_BUFFER_PRIVATE_SIZE);
 } hdl_isr_buffer_t;
 
 typedef struct {

@@ -2,6 +2,8 @@
 #ifndef PORT_CORE_H_
 #define PORT_CORE_H_
 
+#include  "Macros.h"
+
 #define HDL_INTERRUPT_PRV_SIZE       4
 
 typedef enum {
@@ -66,7 +68,7 @@ typedef struct {
   hdl_nvic_irq_n_t irq_type;
   uint8_t priority_group;
   uint8_t priority;
-  uint8_t __private[HDL_INTERRUPT_PRV_SIZE];
+  PRIVATE(HDL_INTERRUPT_PRV_SIZE);
 } hdl_nvic_interrupt_t;
 
 typedef enum {

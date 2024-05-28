@@ -16,7 +16,7 @@ typedef enum {
 } hdl_spi_message_state_t;
 
 typedef struct {
-  uint8_t __private[HDL_SPI_MESSAGE_PRV_SIZE];
+  PRIVATE(HDL_SPI_MESSAGE_PRV_SIZE);
   uint8_t *tx_buffer;
   uint8_t *rx_buffer;
   uint32_t tx_len;

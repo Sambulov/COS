@@ -9,11 +9,11 @@ typedef void (*event_handler_t)(uint32_t event_trigger, void *sender, void *cont
 typedef struct {
   event_handler_t handler;
   void *context;
-  uint8_t __private[HDL_DELEGATE_PRIVATE_SIZE];
+  PRIVATE(HDL_DELEGATE_PRIVATE_SIZE);
 } hdl_delegate_t;
 
 typedef struct {
-  uint8_t __private[HDL_EVENT_PRIVATE_SIZE];
+  PRIVATE(HDL_EVENT_PRIVATE_SIZE);
 }hdl_event_t;
 
 void hdl_event_subscribe(hdl_event_t *event, hdl_delegate_t *delegate);

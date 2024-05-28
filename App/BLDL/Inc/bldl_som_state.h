@@ -22,7 +22,6 @@ typedef struct {
   const hdl_gpio_pin_t *pmic_power_on;
   const hdl_gpio_pin_t *power_good;
   const hdl_gpio_pin_t *pmic_soc_rst;
-  const hdl_button_hw_t *reset_in;
   const bldl_som_boot_sel_t *bootsel;
   const bldl_som_boot_lock_t *boot_lock;
 } bldl_som_power_state_hw_t;

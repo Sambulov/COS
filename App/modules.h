@@ -33,9 +33,6 @@
   extern hdl_gpio_pin_t mod_gpio_adc_channel_1v5;
   extern hdl_gpio_pin_t mod_gpio_adc_channel_3v3;
 
-  extern hdl_button_hw_t mod_btn_power;
-  extern hdl_button_hw_t mod_btn_reset;
-
   extern hdl_i2c_hw_t mod_i2c_0;
 
   extern bldl_som_boot_lock_t mod_boot_lock;

@@ -13,8 +13,10 @@ typedef struct {
   hdl_module_t module;
   uint32_t delay;
   hdl_event_t event;
-  uint8_t raise_once : 1;
-  uint8_t running : 1;
+  uint8_t
+  raise_once : 1,
+  running    : 1,
+  dummy      : 6;
   uint32_t time_stamp;
   uint32_t current_delay;
   __linked_list_object__;
@@ -26,7 +28,7 @@ _Static_assert(offsetof(hdl_timer_event_private_t, event) == offsetof(hdl_timer_
 
 static void _timer_event_handler(LinkedListItem_t *item, void *arg) {
   hdl_timer_event_private_t *timer_event = linked_list_get_object(hdl_timer_event_private_t, item);
-  hdl_timer_t *timer = (hdl_timer_t *)btn->module.dependencies[0];
+  hdl_timer_t *timer = (hdl_timer_t *)timer_event->module.dependencies[0];
   if(!timer_event->running)
     return;
   if(TIME_ELAPSED(timer_event->time_stamp, timer_event->current_delay,hdl_timer_get(timer))) {
@@ -67,6 +69,9 @@ hdl_timer_event_state_t hdl_timer_event_state_get(hdl_timer_event_t *timer) {
 
 static uint8_t _hdl_timer_event_turn(hdl_timer_event_private_t *timer_event, uint8_t run, uint8_t once) {
   if((timer_event != NULL) && (timer_event->running != run)) {
+    hdl_timer_t *timer = (hdl_timer_t *)timer_event->module.dependencies[0];
+    timer_event->time_stamp = hdl_timer_get(timer);
+    timer_event->current_delay = timer_event->delay;
     timer_event->raise_once = once;
     timer_event->running = run;
     return HDL_TRUE;
@@ -89,7 +94,7 @@ uint8_t hdl_timer_event_stop(hdl_timer_event_t *timer) {
 uint8_t hdl_timer_event_reset(hdl_timer_event_t *timer) {
   hdl_timer_event_private_t *timer_event = (hdl_timer_event_private_t *)timer;
   if((timer_event != NULL) && (timer_event->running)) {
-    hdl_timer_t *timer = (hdl_timer_t *)btn->module.dependencies[0];
+    hdl_timer_t *timer = (hdl_timer_t *)timer_event->module.dependencies[0];
     timer_event->time_stamp = hdl_timer_get(timer);
     return HDL_TRUE;
   }

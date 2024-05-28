@@ -1,7 +1,7 @@
 #ifndef HDL_TIMER_EVENT_H_
 #define HDL_TIMER_EVENT_H_
 
-#define HDL_TIMER_EVENT_PRV_SIZE         30
+#define HDL_TIMER_EVENT_PRV_SIZE         25
 typedef enum {
   HDL_TIMER_EVENT_STOP,
   HDL_TIMER_EVENT_RUN,
@@ -14,7 +14,7 @@ typedef struct {
   hdl_module_t module;
   uint32_t delay;
   hdl_event_t event;
-  uint8_t __private[HDL_TIMER_EVENT_PRV_SIZE];
+  PRIVATE(HDL_TIMER_EVENT_PRV_SIZE);
 } hdl_timer_event_t;
 
 hdl_module_state_t hdl_timer_event(void *desc, uint8_t enable);

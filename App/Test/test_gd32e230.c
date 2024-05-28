@@ -54,7 +54,6 @@ extern hdl_adc_t mod_adc;
 extern hdl_gpio_pin_t mod_gpio_adc_channel_3v3;
 extern hdl_gpio_pin_t mod_gpio_adc_channel_1v5;
 extern hdl_timer_t mod_timer_ms;
-extern hdl_timer_t mod_timer_ms;
 extern hdl_adc_source_t mod_adc_source_0;
 extern hdl_adc_source_t mod_adc_source_1;
 extern hdl_clock_prescaler_t mod_clock_apb2;
@@ -62,7 +61,23 @@ extern hdl_clock_prescaler_t mod_clock_apb2;
 extern  hdl_dma_channel_t mod_m2m_dma_ch;
 
  void SysTick_Event(uint32_t event, void *sender, void *context){
-  __NOP();
+  switch (event)
+  {
+  case HDL_BTN_EVENT_RELEASE:
+    __NOP();
+    break;
+  case HDL_BTN_EVENT_PRESS:
+    __NOP();
+    break;
+  case HDL_BTN_EVENT_HOLD:
+    __NOP();
+    break;
+  case HDL_BTN_EVENT_CLICK:
+    __NOP();
+    break;
+  default:
+    break;
+  }
  }
 
   void Exti_Event(uint32_t event, void *sender, void *context){
@@ -142,7 +157,8 @@ hdl_gpio_pin_t pin_pa0 = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
     .module.reg = (void *)GPIO_PIN_0,
-    .mode = &gpio_input_np
+    .mode = &gpio_input_np,
+    .inactive_default = HDL_GPIO_HIGH,
 };
 
 hdl_gpio_pin_t pin_pb8 = {
@@ -150,6 +166,20 @@ hdl_gpio_pin_t pin_pb8 = {
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
     .module.reg = (void *)GPIO_PIN_8,
     .mode = &gpio_input_np
+};
+
+
+hdl_button_t btn = {
+  .module.init = &hdl_button,
+  .module.dependencies = hdl_module_dependencies(&pin_pa0.module, &mod_timer_ms.module),\
+  .debounce_delay = 100,
+  .hold_delay = 3000,
+};
+
+hdl_timer_event_t timer_with_event = {
+  .module.dependencies = hdl_module_dependencies(&mod_timer_ms.module),
+  .module.init = &hdl_timer_event,
+  .delay = 3000,
 };
 
 hdl_gpio_mode_t hdl_gpio_mode_uart_0_tx = {
@@ -233,6 +263,9 @@ void test() {
   //hdl_enable(&mod_m2m_dma_ch.module);
   //hdl_enable(&hdl_uart_0.module);
   hdl_enable(&mod_spi_slave.module);
+  hdl_enable(&btn.module);
+  hdl_enable(&timer_with_event.module);
+  
 
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
@@ -250,7 +283,12 @@ void test() {
   };
   //hdl_uart_set_transceiver(&hdl_uart_0, hdl_get_isr_transceiver_handler(&uart_isr_buffer, &usart_isr_buffer_config));
   hdl_spi_server_set_transceiver(&mod_spi_slave, hdl_get_isr_transceiver_handler(&uart_isr_buffer, &usart_isr_buffer_config));
-
+  static hdl_delegate_t btn_delegate = {
+    .handler = &SysTick_Event,
+    .context = NULL,
+  };
+  hdl_event_subscribe(&timer_with_event.event, &btn_delegate);
+  hdl_timer_event_run_once(&timer_with_event);
   while (1) {
     cooperative_scheduler(false);
 

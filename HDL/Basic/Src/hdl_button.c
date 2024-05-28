@@ -64,7 +64,7 @@ static void _button_handler(LinkedListItem_t *item, void *arg) {
         btn->input_state = HDL_BTN_RELEASED;
         break;
       }
-      uint8_t debounce_timeout = TIME_ELAPSED(btn->output_change_time, btn->debounce_delay, hdl_timer_get(btn_timer));
+      uint8_t debounce_timeout = TIME_ELAPSED(btn->input_change_time, btn->debounce_delay, hdl_timer_get(btn_timer));
       if(debounce_timeout) {
         btn->input_state = HDL_BTN_PRESSED;
         hdl_event_raise(&btn->event, (void *)btn, HDL_BTN_EVENT_PRESS);

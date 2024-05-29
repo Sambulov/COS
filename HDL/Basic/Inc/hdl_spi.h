@@ -16,12 +16,12 @@ typedef enum {
 } hdl_spi_message_state_t;
 
 typedef struct {
-  PRIVATE(HDL_SPI_MESSAGE_PRV_SIZE);
   uint8_t *tx_buffer;
   uint8_t *rx_buffer;
   uint32_t tx_len;
   uint32_t rx_skip;
   uint32_t rx_take;
+  PRIVATE(HDL_SPI_MESSAGE_PRV_SIZE);
 } hdl_spi_message_t;
 
 /**************** vvv  SPI slave vvv  ******************/

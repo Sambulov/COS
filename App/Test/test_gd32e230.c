@@ -1,6 +1,7 @@
 #include "app.h"
 #include "CodeLib.h"
 //#define TEST_CLOCK
+#define SPI_CLIENT
 
 
 #if defined ( GD32E23X )
@@ -57,6 +58,7 @@ extern hdl_timer_t mod_timer_ms;
 extern hdl_adc_source_t mod_adc_source_0;
 extern hdl_adc_source_t mod_adc_source_1;
 extern hdl_clock_prescaler_t mod_clock_apb2;
+extern hdl_gpio_pin_t mod_gpo_carrier_pwr_on;
 
 extern  hdl_dma_channel_t mod_m2m_dma_ch;
 
@@ -110,10 +112,16 @@ hdl_gpio_port_t hdl_gpio_port_b1 = {
   .reg = (void *)GPIOB,
 };
 
-
 hdl_gpio_mode_t gpio_input_np = {
     .type = GPIO_MODE_INPUT,
     .pull = GPIO_PUPD_NONE,
+};
+
+hdl_gpio_mode_t mod_gpio_output_pp = {
+  .type = GPIO_MODE_OUTPUT,
+  .otype = GPIO_OTYPE_PP,
+  .ospeed = GPIO_OSPEED_2MHZ,
+  .pull = GPIO_PUPD_NONE,
 };
 
 hdl_gpio_mode_t gpio_spi_mode = {
@@ -124,7 +132,59 @@ hdl_gpio_mode_t gpio_spi_mode = {
     .otype = GPIO_OTYPE_PP,
 };
 
-hdl_gpio_pin_t gpio_pin_spi_mosi = {
+#ifdef SPI_CLIENT
+  hdl_gpio_pin_t gpio_pin_spi_mosi = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
+    .module.reg = (void *)GPIO_PIN_5,
+    .mode = &gpio_spi_mode
+};
+
+hdl_gpio_pin_t gpio_pin_spi_miso = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
+    .module.reg = (void *)GPIO_PIN_4,
+    .mode = &gpio_spi_mode
+};
+
+hdl_gpio_pin_t gpio_pin_spi_sck = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
+    .module.reg = (void *)GPIO_PIN_3,
+    .mode = &gpio_spi_mode
+};
+
+hdl_gpio_pin_t gpio_pin_spi_cs = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
+    .module.reg = (void *)GPIO_PIN_15,
+    .mode = &mod_gpio_output_pp,
+    .inactive_default = HDL_GPIO_HIGH,
+};
+
+
+hdl_spi_client_config_t spi_master_config = {
+  .endian = HDL_SPI_ENDIAN_MSB,
+  .polarity = SPI_CK_PL_LOW_PH_2EDGE,
+  .prescale = HDL_SPI_PSC_256,
+};
+
+hdl_spi_client_t mod_spi_master_0 = {
+  .module.init = &hdl_spi_client,
+  .module.dependencies = hdl_module_dependencies(&gpio_pin_spi_mosi.module, &gpio_pin_spi_miso.module, &gpio_pin_spi_sck.module,
+                                                  &mod_clock_apb2.module, &mod_nvic.module, &mod_timer_ms.module),
+  .module.reg = (void *)SPI0,
+  .config = &spi_master_config,
+  .spi_iterrupt = HDL_NVIC_IRQ25_SPI0,
+};
+
+hdl_spi_client_ch_t spi_master_0_ch_0 = {
+  .module.init = &hdl_spi_ch,
+  .module.dependencies = hdl_module_dependencies(&mod_spi_master_0.module, &gpio_pin_spi_cs.module),
+};
+
+#else
+  hdl_gpio_pin_t gpio_pin_spi_mosi = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
     .module.reg = (void *)GPIO_PIN_5,
@@ -152,6 +212,26 @@ hdl_gpio_pin_t gpio_pin_spi_cs = {
     .mode = &gpio_spi_mode,
     .inactive_default = HDL_GPIO_LOW,
 };
+
+hdl_spi_server_config_t spi_server_config = {
+  .endian = HDL_SPI_ENDIAN_MSB,
+  .polarity = SPI_CK_PL_LOW_PH_2EDGE,
+  .prescale = HDL_SPI_PSC_2,
+};
+
+hdl_spi_server_t mod_spi_slave = {
+  .module.dependencies = hdl_module_dependencies(&gpio_pin_spi_mosi.module, &gpio_pin_spi_miso.module, &gpio_pin_spi_sck.module,
+                                                  &gpio_pin_spi_cs.module, &mod_clock_apb2.module, &mod_nvic.module, &mod_timer_ms.module),
+  .module.reg = (void*)SPI0,
+  .module.init = &hdl_spi_server,
+  .config = &spi_server_config,
+  .spi_iterrupt = HDL_NVIC_IRQ25_SPI0,
+  .nss_iterrupt = HDL_NVIC_IRQ7_EXTI4_15,
+};
+#endif
+
+
+
 
 hdl_gpio_pin_t pin_pa0 = {
     .module.init = &hdl_gpio_pin,
@@ -223,21 +303,7 @@ hdl_uart_t hdl_uart_0 = {
   .word_len = HDL_UART_WORD_LEN_8BIT,
 };
 
-hdl_spi_server_config_t spi_server_config = {
-  .endian = HDL_SPI_ENDIAN_MSB,
-  .polarity = SPI_CK_PL_LOW_PH_2EDGE,
-  .prescale = HDL_SPI_PSC_2,
-};
 
-hdl_spi_server_t mod_spi_slave = {
-  .module.dependencies = hdl_module_dependencies(&gpio_pin_spi_mosi.module, &gpio_pin_spi_miso.module, &gpio_pin_spi_sck.module,
-                                                  &gpio_pin_spi_cs.module, &mod_clock_apb2.module, &mod_nvic.module, &mod_timer_ms.module),
-  .module.reg = (void*)SPI0,
-  .module.init = &hdl_spi_server,
-  .config = &spi_server_config,
-  .spi_iterrupt = HDL_NVIC_IRQ25_SPI0,
-  .nss_iterrupt = HDL_NVIC_IRQ7_EXTI4_15,
-};
 
 hdl_isr_buffer_t uart_isr_buffer;
 uint8_t uart_tx_buff[32];
@@ -252,6 +318,7 @@ uint32_t arr1[10]={1,2,3,4,5};
 uint32_t adc_raw[2];
 void test() {
   static uint32_t time_stamp_ms = 0;
+
   hdl_enable(&mod_adc.module);
   //hdl_enable(&mod_gpio_adc_channel_3v3.module);
   //hdl_enable(&mod_gpio_adc_channel_1v5.module);
@@ -262,10 +329,15 @@ void test() {
   //hdl_enable(&pin_pb8.module);
   //hdl_enable(&mod_m2m_dma_ch.module);
   //hdl_enable(&hdl_uart_0.module);
-  hdl_enable(&mod_spi_slave.module);
+  
   hdl_enable(&btn.module);
   hdl_enable(&timer_with_event.module);
   
+#ifdef SPI_CLIENT
+  hdl_enable(&spi_master_0_ch_0.module);
+#else
+  hdl_enable(&mod_spi_slave.module);
+#endif
 
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
@@ -282,16 +354,33 @@ void test() {
   .rx_buffer_size = sizeof(uart_rx_buff),
   };
   //hdl_uart_set_transceiver(&hdl_uart_0, hdl_get_isr_transceiver_handler(&uart_isr_buffer, &usart_isr_buffer_config));
+#ifdef SPI_CLIENT
+
+#else
   hdl_spi_server_set_transceiver(&mod_spi_slave, hdl_get_isr_transceiver_handler(&uart_isr_buffer, &usart_isr_buffer_config));
+#endif
+  
   static hdl_delegate_t btn_delegate = {
     .handler = &SysTick_Event,
     .context = NULL,
   };
   hdl_event_subscribe(&timer_with_event.event, &btn_delegate);
   hdl_timer_event_run_once(&timer_with_event);
+  
+  static uint8_t tx_spi_buf[5] = {1, 2, 3, 4, 5};
+  static uint8_t rx_spi_buf[5] = {0, 0, 0, 0, 0};
+
+  static hdl_spi_message_t spi_msg = {
+    .rx_buffer = rx_spi_buf,
+    .tx_buffer = tx_spi_buf,
+    .tx_len = sizeof(tx_spi_buf),
+    .rx_skip = 0,
+    .rx_take = sizeof(rx_spi_buf),
+  };
+
   while (1) {
     cooperative_scheduler(false);
-
+    hdl_spi_client_xfer(&spi_master_0_ch_0, &spi_msg);
     // uint8_t data;
     // if (hdl_isr_buffer_read(&uart_isr_buffer, &data, 1)) {
     //   hdl_isr_buffer_write(&uart_isr_buffer, &data, 1);

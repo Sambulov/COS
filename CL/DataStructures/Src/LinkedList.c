@@ -82,30 +82,26 @@ uint8_t bLinkedListContains(LinkedList_t xList, LinkedListItem_t *pxItem) {
 }
 
 static LinkedListItem_t *_pxLinkedListFind(__LinkedListItem_t *pxCurrentItem, LinkedListMatch_t pfMatch, void *pxMatchArg, uint8_t bFirst, uint8_t bOverlap) {
-	if ((pfMatch != libNULL) && _bIsValidItem(pxCurrentItem)) {
-		__LinkedListItem_t **start = (__LinkedListItem_t **)pxCurrentItem->list;
-		if ((start == libNULL) || (bOverlap && !bFirst)) {
-			start = &pxCurrentItem;
-		}
-		if (bFirst) {
-			pxCurrentItem = *start;
-		}
-		do {
-			if (!bFirst) {
-				pxCurrentItem = pxCurrentItem->next;
-				if (pxCurrentItem == *start) {
-					break;
-				}
-			}
-			if (pfMatch((LinkedListItem_t *)pxCurrentItem, pxMatchArg)) {
-				return (LinkedListItem_t *)pxCurrentItem;
-			}
-			if (bFirst) {
-				pxCurrentItem = pxCurrentItem->next;
-			}
-		} while (pxCurrentItem != *start);
+  if (_bIsValidItem(pxCurrentItem)) {
+    __LinkedListItem_t *first = *(__LinkedListItem_t **)pxCurrentItem->list;
+    if((first == libNULL) || !bFirst) {
+      first = pxCurrentItem->next;
+      if(((first == libNULL) || (first == *(__LinkedListItem_t **)pxCurrentItem->list)) && !bOverlap)
+        return libNULL;
+      }
+    __LinkedListItem_t *last = first->prev;
+    if(!bOverlap && (pxCurrentItem->list != libNULL))
+      last = (*(__LinkedListItem_t **)pxCurrentItem->list)->prev;
+	pxCurrentItem = first;
+	while (1) {
+		if ((pfMatch == libNULL) || pfMatch((LinkedListItem_t *)pxCurrentItem, pxMatchArg))
+			return (LinkedListItem_t *)pxCurrentItem;
+		if (pxCurrentItem != last)
+			break;
+		pxCurrentItem = pxCurrentItem->next;
 	}
-	return libNULL;
+  }
+  return libNULL;
 }
 
 LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t xList, LinkedListMatch_t pfMatch, void *pxMatchArg) {

@@ -1,7 +1,7 @@
 #ifndef PORT_SPI_H_
 #define PORT_SPI_H_
 
-#define HDL_SPI_MESSAGE_PRV_SIZE           20
+#define HDL_SPI_MESSAGE_PRV_SIZE           28
 #define SPI_SERVER_PRIVATE_SIZE            68
 #define SPI_MEM_SERVER_PRIVATE_SIZE        68
 #define SPI_CH_PRIVATE_SIZE                20
@@ -83,7 +83,7 @@ typedef struct {
   hdl_nvic_irq_n_t nss_iterrupt;
   hdl_spi_server_memory_t rx_mem;
   hdl_spi_server_memory_t tx_mem;
-  uint8_t __private[SPI_MEM_SERVER_PRIVATE_SIZE];
+  PRIVATE(SPI_MEM_SERVER_PRIVATE_SIZE);
 } hdl_spi_mem_server_t;
 
 
@@ -95,7 +95,7 @@ typedef struct {
 
 
 /**************** vvv  SPI master vvv  ******************/
-#define HDl_SPI_CLIENT_PRIVATE_SIZE    24
+#define HDl_SPI_CLIENT_PRIVATE_SIZE    52
 #define HDl_SPI_CLIENT_CH_PRIVATE_SIZE 24
 
 typedef struct {
@@ -112,6 +112,7 @@ typedef struct {
   interrupt controller (nvic)
   hdl_timer_t
  */
+
 typedef struct {
   hdl_module_t module;
   hdl_spi_client_config_t *config;

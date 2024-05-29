@@ -8,7 +8,7 @@ extern "C" {
 #define CO_ROUTINE_DESC_SIZE  28
 
 typedef struct {
-    uint8_t dummy[CO_ROUTINE_DESC_SIZE];
+  CL_PRIVATE(CO_ROUTINE_DESC_SIZE);
 } CoroutineDescStatic_t;
 
 typedef CoroutineDescStatic_t *CoroutineDesc_t;

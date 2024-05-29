@@ -21,7 +21,7 @@ static inline void *__LinkedListCalcObjPtr(size_t llOffset, void *llPtr) { retur
 #define LL_ITEM_SIZE    16
 
 	typedef struct LL_ITEM_T {
-		uint8_t __prv[LL_ITEM_SIZE];
+		CL_PRIVATE(LL_ITEM_SIZE);
 	} LinkedListItem_t;
 
 	typedef LinkedListItem_t* LinkedList_t;

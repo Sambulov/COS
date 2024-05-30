@@ -80,8 +80,8 @@ typedef struct {
   hdl_spi_server_config_t *config;
   hdl_nvic_irq_n_t spi_iterrupt;
   hdl_nvic_irq_n_t nss_iterrupt;
-  hdl_basic_buffer_t *rx_mem;
-  hdl_basic_buffer_t *tx_mem;
+  hdl_double_buffer_t *rx_mem;
+  hdl_double_buffer_t *tx_mem;
   PRIVATE(SPI_MEM_SERVER_PRIVATE_SIZE);
 } hdl_spi_mem_server_t;
 

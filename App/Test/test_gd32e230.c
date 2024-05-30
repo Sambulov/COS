@@ -218,9 +218,20 @@ hdl_dma_channel_t mod_dma_ch_spi_rx = {
   hdl_dma_channel rx
   hdl_dma_channel tx
 */
-uint8_t spi_dma_buf[10] = {0xaa, 5, 3, 6, 3, 2, 1, 5, 6, 3};
-hdl_basic_buffer_t spi_buffer = {
-  .data = spi_dma_buf,
+uint8_t spi_dma_rx_0_buf[8] = {0xaa, 5, 3, 6, 3, 2, 1, 5};
+uint8_t spi_dma_rx_1_buf[8] = {0xaa, 5, 3, 6, 3, 2, 1, 5};
+uint8_t spi_dma_tx_0_buf[10] = {0xaa, 5, 3, 6, 3, 2, 1, 5, 2, 2};
+uint8_t spi_dma_tx_1_buf[10] = {0xaa, 5, 3, 6, 3, 2, 1, 5, 2, 2};
+
+hdl_double_buffer_t spi_rx_buffer = {
+  .data[0] = spi_dma_rx_0_buf,
+  .data[1] = spi_dma_rx_1_buf,
+  .size = 8,
+};
+
+hdl_double_buffer_t spi_tx_buffer = {
+  .data[0] = spi_dma_tx_0_buf,
+  .data[1] = spi_dma_tx_1_buf,
   .size = 10,
 };
 
@@ -233,8 +244,8 @@ hdl_spi_mem_server_t mod_spi_with_dma = {
   .config = &spi_slave_config,
   .spi_iterrupt = HDL_NVIC_IRQ25_SPI0,
   .nss_iterrupt = HDL_NVIC_IRQ7_EXTI4_15,
-  .rx_mem = &spi_buffer,
-  .tx_mem = &spi_buffer,
+  .rx_mem = &spi_rx_buffer,
+  .tx_mem = &spi_tx_buffer,
 };
 
 hdl_spi_client_t mod_spi_master_0 = {

@@ -44,7 +44,7 @@ hdl_dma_status_e hdl_dma_status(hdl_dma_channel_t *channel) {
 }
 
 /* Get DMA transfer counter value */
-uint32_t hdl_dma_counter(hdl_dma_channel_t *channel) {
+uint32_t hdl_dma_get_counter(hdl_dma_channel_t *channel) {
   hdl_dma_t *dma = _hdl_get_dma(channel);
   if(dma != NULL)
     return dma_transfer_number_get(dma_ch_no(channel));
@@ -99,4 +99,3 @@ uint8_t hdl_dma_run(hdl_dma_channel_t *channel, uint32_t periph_addr, uint32_t m
   }
   return HDL_FALSE;
 }
-

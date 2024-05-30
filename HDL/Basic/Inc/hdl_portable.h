@@ -14,6 +14,7 @@
 #include __MCU_HAL_HDR__
 
 #include "hdl_transceiver.h"
+#include "hdl_buffer.h"
 #include "hdl_event.h"
 #include "hdl_module.h"
 #include "hdl_core.h"
@@ -26,6 +27,5 @@
 #include "hdl_spi.h"
 #include "hdl_i2c.h"
 #include "hdl_uart.h"
-#include "hdl_basic_isr_buffer.h"
 
 #endif // HDL_PORTABLE_H_

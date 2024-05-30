@@ -172,7 +172,7 @@ hdl_spi_client_config_t spi_master_config = {
 hdl_spi_client_t mod_spi_master_0 = {
   .module.init = &hdl_spi_client,
   .module.dependencies = hdl_module_dependencies(&gpio_pin_spi_mosi.module, &gpio_pin_spi_miso.module, &gpio_pin_spi_sck.module,
-                                                  &mod_clock_apb2.module, &mod_nvic.module, &mod_timer_ms.module),
+                                                  &mod_clock_apb2.module, &mod_nvic.module),
   .module.reg = (void *)SPI0,
   .config = &spi_master_config,
   .spi_iterrupt = HDL_NVIC_IRQ25_SPI0,
@@ -221,7 +221,7 @@ hdl_spi_server_config_t spi_server_config = {
 
 hdl_spi_server_t mod_spi_slave = {
   .module.dependencies = hdl_module_dependencies(&gpio_pin_spi_mosi.module, &gpio_pin_spi_miso.module, &gpio_pin_spi_sck.module,
-                                                  &gpio_pin_spi_cs.module, &mod_clock_apb2.module, &mod_nvic.module, &mod_timer_ms.module),
+                                                  &gpio_pin_spi_cs.module, &mod_clock_apb2.module, &mod_nvic.module),
   .module.reg = (void*)SPI0,
   .module.init = &hdl_spi_server,
   .config = &spi_server_config,

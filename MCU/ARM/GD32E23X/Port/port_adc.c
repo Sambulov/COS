@@ -31,7 +31,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   if(hdl_adc->module.reg == NULL || hdl_adc->module.dependencies == NULL || hdl_adc->module.dependencies[0] == NULL ||
     hdl_adc->module.dependencies[1] == NULL || hdl_adc->module.dependencies[2] == NULL || hdl_adc->sources == NULL || 
     hdl_adc->sources[0] == NULL)
-      return HDL_MODULE_INIT_FAILED;
+    return HDL_MODULE_INIT_FAILED;
   //hdl_clock_t *clock = (hdl_clock_t *)hdl_adc->module.dependencies[0];
   hdl_timer_t *timer = (hdl_timer_t *)hdl_adc->module.dependencies[1];
   hdl_dma_channel_t *dma = (hdl_dma_channel_t *)hdl_adc->module.dependencies[2];

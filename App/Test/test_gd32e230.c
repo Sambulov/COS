@@ -50,6 +50,7 @@ void test() {
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
 extern hdl_nvic_t mod_nvic;
+extern hdl_dma_t mod_dma;
 extern hdl_core_t mod_sys_core;
 extern hdl_adc_t mod_adc;
 extern hdl_gpio_pin_t mod_gpio_adc_channel_3v3;
@@ -132,6 +133,9 @@ hdl_gpio_mode_t gpio_spi_mode = {
     .otype = GPIO_OTYPE_PP,
 };
 
+
+
+
 #ifdef SPI_CLIENT
   hdl_gpio_pin_t gpio_pin_spi_mosi = {
     .module.init = &hdl_gpio_pin,
@@ -158,7 +162,7 @@ hdl_gpio_pin_t gpio_pin_spi_cs = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
     .module.reg = (void *)GPIO_PIN_15,
-    .mode = &mod_gpio_output_pp,
+    .mode = &gpio_spi_mode,
     .inactive_default = HDL_GPIO_HIGH,
 };
 
@@ -167,6 +171,70 @@ hdl_spi_client_config_t spi_master_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_2EDGE,
   .prescale = HDL_SPI_PSC_256,
+};
+hdl_spi_server_config_t spi_slave_config = {
+  .endian = HDL_SPI_ENDIAN_MSB,
+  .polarity = SPI_CK_PL_LOW_PH_2EDGE,
+  .prescale = HDL_SPI_PSC_256,
+};
+
+
+/**************************************************************
+ *  DMA
+ *************************************************************/
+hdl_dma_channel_t mod_dma_ch_spi_rx = {
+  .module.init = &hdl_dma_ch,
+  .module.dependencies = hdl_module_dependencies(&mod_dma.module),
+  .module.reg = (void*)DMA_CH1,
+  .direction = HDL_DMA_DIRECTION_P2M,
+  .memory_inc = HDL_DMA_INCREMENT_ON,
+  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .periph_inc = HDL_DMA_INCREMENT_OFF,
+  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .mode = HDL_DMA_MODE_SINGLE,
+  .priority = 0
+};
+
+  hdl_dma_channel_t mod_dma_ch_spi_tx = {
+  .module.init = &hdl_dma_ch,
+  .module.dependencies = hdl_module_dependencies(&mod_dma.module),
+  .module.reg = (void*)DMA_CH2,
+  .direction = HDL_DMA_DIRECTION_M2P,
+  .memory_inc = HDL_DMA_INCREMENT_ON,
+  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .periph_inc = HDL_DMA_INCREMENT_OFF,
+  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .mode = HDL_DMA_MODE_SINGLE,
+  .priority = 0
+};
+
+/* depends on:
+  gpio mosi
+  gpio miso  
+  gpio sck
+  gpio nss
+  apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
+  interrupt controller (nvic)
+  hdl_dma_channel rx
+  hdl_dma_channel tx
+*/
+uint8_t spi_dma_buf[10] = {0xaa, 5, 3, 6, 3, 2, 1, 5, 6, 3};
+hdl_basic_buffer_t spi_buffer = {
+  .data = spi_dma_buf,
+  .size = 10,
+};
+
+hdl_spi_mem_server_t mod_spi_with_dma = {
+  .module.reg = (void *)SPI0,
+  .module.dependencies = hdl_module_dependencies(&gpio_pin_spi_mosi.module, &gpio_pin_spi_miso.module, &gpio_pin_spi_sck.module,
+                                                  &gpio_pin_spi_cs.module, &mod_clock_apb2.module, &mod_nvic.module, 
+                                                  &mod_dma_ch_spi_rx.module, &mod_dma_ch_spi_tx.module),
+  .module.init = &hdl_spi_mem_server,
+  .config = &spi_slave_config,
+  .spi_iterrupt = HDL_NVIC_IRQ25_SPI0,
+  .nss_iterrupt = HDL_NVIC_IRQ7_EXTI4_15,
+  .rx_mem = &spi_buffer,
+  .tx_mem = &spi_buffer,
 };
 
 hdl_spi_client_t mod_spi_master_0 = {
@@ -333,8 +401,9 @@ void test() {
   //hdl_enable(&btn.module);
   //hdl_enable(&timer_with_event.module);
   
+  hdl_enable(&mod_spi_with_dma.module);
 #ifdef SPI_CLIENT
-  hdl_enable(&spi_master_0_ch_0.module);
+  //hdl_enable(&spi_master_0_ch_0.module);
 #else
   hdl_enable(&mod_spi_slave.module);
 #endif
@@ -377,7 +446,7 @@ void test() {
     .rx_skip = 0,
     .rx_take = sizeof(rx_spi_buf),
   };
-hdl_spi_client_xfer(&spi_master_0_ch_0, &spi_msg);
+  //hdl_spi_client_xfer(&spi_master_0_ch_0, &spi_msg);
   while (1) {
     cooperative_scheduler(false);
     

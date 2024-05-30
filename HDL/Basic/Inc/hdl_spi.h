@@ -35,6 +35,6 @@ hdl_spi_message_state_t hdl_spi_client_xfer(hdl_spi_client_ch_t *spi_ch, hdl_spi
 hdl_spi_message_state_t hdl_spi_message_get_state(hdl_spi_message_t *message);
 
 /**************** vvv  SPI slave with DMA vvv  ******************/
-hdl_module_state_t hdl_spi_memory_server(void *desc, uint8_t enable);
+hdl_module_state_t hdl_spi_mem_server(void *desc, uint8_t enable);
 
 #endif /* HDL_SPI_H_ */

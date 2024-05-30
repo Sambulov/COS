@@ -1,8 +1,6 @@
 #include "hdl_portable.h"
 #include "CodeLib.h"
 
-#define SPI_ERROR_MASK      SPI_STAT_FERR | SPI_STAT_RXORERR | SPI_STAT_CONFERR | SPI_STAT_CRCERR | SPI_STAT_TXURERR
-
 typedef struct {
   hdl_module_t module;
   /* private */
@@ -48,11 +46,11 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   len = MAX(msg->tx_len, len);
   uint32_t state = SPI_STAT((uint32_t)spi->module.reg);
   uint32_t cr1 = SPI_CTL1((uint32_t)spi->module.reg);
-  if ((state & SPI_ERROR_MASK) == 0) {
-    /* spi in mode Receiver ---------------------------------------------------*/
+  if ((state & (SPI_ERROR_MASK)) == 0) {
+    /* RX ---------------------------------------------------*/
     if (state & SPI_STAT_RBNE) {
-      uint8_t data = SPI_DATA((uint32_t)spi->module.reg);
-      if (msg->rx_buffer != NULL && msg->rx_cursor >= msg->rx_skip) {
+      uint16_t data = SPI_DATA((uint32_t)spi->module.reg);
+      if (msg->rx_buffer != NULL && msg->rx_take > 0 && msg->rx_cursor >= msg->rx_skip) {
         msg->rx_buffer[msg->rx_cursor - msg->rx_skip] = data;
       }
       msg->rx_cursor++;
@@ -60,14 +58,14 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
         SPI_CTL1((uint32_t)spi->module.reg) &= ~(SPI_CTL1_RBNEIE);
       }
     }
-    ///* spi in mode Transmitter ------------------------------------------------*/
+    ///* TX ------------------------------------------------*/
     if ((state & SPI_STAT_TBE) && (cr1 & SPI_CTL1_TBEIE)) {
       if (msg->tx_cursor == len) {
         SPI_CTL1((uint32_t)spi->module.reg) &= ~(SPI_CTL1_TBEIE);
       }
       else {
         uint16_t data = 0;
-        if (msg->tx_buffer != NULL && msg->tx_len != 0 && msg->tx_cursor < msg->tx_len)
+        if (msg->tx_buffer != NULL && msg->tx_cursor < msg->tx_len)
         {
           data = msg->tx_buffer[msg->tx_cursor];
         }

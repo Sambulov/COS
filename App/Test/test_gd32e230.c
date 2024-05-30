@@ -319,19 +319,19 @@ uint32_t adc_raw[2];
 void test() {
   static uint32_t time_stamp_ms = 0;
 
-  hdl_enable(&mod_adc.module);
+  //hdl_enable(&mod_adc.module);
   //hdl_enable(&mod_gpio_adc_channel_3v3.module);
   //hdl_enable(&mod_gpio_adc_channel_1v5.module);
   hdl_enable(&mod_timer_ms.module);
-  hdl_enable(&mod_nvic.module);
-  hdl_enable(&mod_gpo_carrier_pwr_on.module);
+  //hdl_enable(&mod_nvic.module);
+  //hdl_enable(&mod_gpo_carrier_pwr_on.module);
   //hdl_enable(&pin_pa0.module);
   //hdl_enable(&pin_pb8.module);
   //hdl_enable(&mod_m2m_dma_ch.module);
   //hdl_enable(&hdl_uart_0.module);
   
-  hdl_enable(&btn.module);
-  hdl_enable(&timer_with_event.module);
+  //hdl_enable(&btn.module);
+  //hdl_enable(&timer_with_event.module);
   
 #ifdef SPI_CLIENT
   hdl_enable(&spi_master_0_ch_0.module);
@@ -364,23 +364,23 @@ void test() {
     .handler = &SysTick_Event,
     .context = NULL,
   };
-  hdl_event_subscribe(&timer_with_event.event, &btn_delegate);
-  hdl_timer_event_run_once(&timer_with_event);
+  //hdl_event_subscribe(&timer_with_event.event, &btn_delegate);
+  //hdl_timer_event_run_once(&timer_with_event);
   
-  static uint8_t tx_spi_buf[5] = {1, 2, 3, 4, 5};
-  static uint8_t rx_spi_buf[5] = {0, 0, 0, 0, 0};
+  static uint8_t tx_spi_buf[2] = {1, 2};
+  static uint8_t rx_spi_buf[5] = {0, 0, 0};
 
   static hdl_spi_message_t spi_msg = {
     .rx_buffer = rx_spi_buf,
     .tx_buffer = tx_spi_buf,
-    .tx_len = sizeof(tx_spi_buf),
+    .tx_len =  sizeof(tx_spi_buf),
     .rx_skip = 0,
     .rx_take = sizeof(rx_spi_buf),
   };
-
+hdl_spi_client_xfer(&spi_master_0_ch_0, &spi_msg);
   while (1) {
     cooperative_scheduler(false);
-    hdl_spi_client_xfer(&spi_master_0_ch_0, &spi_msg);
+    
     // uint8_t data;
     // if (hdl_isr_buffer_read(&uart_isr_buffer, &data, 1)) {
     //   hdl_isr_buffer_write(&uart_isr_buffer, &data, 1);

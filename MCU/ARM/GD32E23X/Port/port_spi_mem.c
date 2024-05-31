@@ -1,9 +1,9 @@
 #include "hdl_portable.h"
 #include "CodeLib.h"
 
-#define SPI_MEM_FLAGS_LOCK_RX_BUFFER   (uint32_t)(1)
-#define SPI_MEM_FLAGS_SWITCH_TX_BUFFER   (uint32_t)(2)
-#define SPI_MEM_FLAGS_RX_BUFFER_READY    (uint32_t)(4)
+
+#define SPI_MEM_FLAGS_RX_BUFFER_READY    (uint32_t)(1)
+#define SPI_MEM_FLAGS_SWITCH_TX_REQUEST  (uint32_t)(2)
 
 typedef struct {
   hdl_module_t module;
@@ -24,17 +24,16 @@ static void _spi_mem_reset(hdl_spi_mem_server_private_t *spi) {
   hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];
   hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->module.dependencies[7];
   hdl_spi_reset_status((uint32_t)spi->module.reg);
-  if((hdl_dma_get_counter(dma_rx) == 0) && !(spi->flags & SPI_MEM_FLAGS_RX_BUFFER_READY) ) {
+  /* RX update*/
+  if((hdl_dma_get_counter(dma_rx) == 0)) {
     spi->flags |= SPI_MEM_FLAGS_RX_BUFFER_READY;
     hdl_double_buffer_switch(spi->rx_mem);
   }
-
-  if(!(spi->flags & SPI_MEM_FLAGS_LOCK_RX_BUFFER)) {
-    hdl_double_buffer_switch(spi->rx_mem);
+  /* TX update*/
+  if(spi->flags & SPI_MEM_FLAGS_SWITCH_TX_REQUEST) {
+    hdl_double_buffer_switch(spi->tx_mem);
+    spi->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST;
   }
-  // if(spi->flags & SPI_MEM_FLAGS_SWITCH_TX_BUFFER) {
-  //   hdl_double_buffer_switch(spi->tx_mem);
-  // }
   hdl_dma_run(dma_rx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->rx_mem->data[spi->rx_mem->active_buffer_number], (uint32_t)spi->rx_mem->size);
   hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->tx_mem->data[spi->tx_mem->active_buffer_number], (uint32_t)spi->tx_mem->size);
 }
@@ -94,14 +93,28 @@ hdl_module_state_t hdl_spi_mem_server(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
-uint8_t hdl_spi_take_rx_buffer(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer) {
+uint8_t hdl_spi_mem_rx_buffer_take(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset) {
   hdl_spi_mem_server_private_t *spi_private = (hdl_spi_mem_server_private_t*)spi;
-  if(spi != NULL && buffer != NULL) {
+  if((spi != NULL) && (buffer != NULL) && (spi->rx_mem->size >= (buffer->size + offset))) {
     if(spi_private->flags & SPI_MEM_FLAGS_RX_BUFFER_READY) {
-      buffer->data = spi->rx_mem->data[!spi->rx_mem->active_buffer_number];
-      buffer->size = spi->rx_mem->size;
+      hdl_dma_channel_t *dma_mem = (hdl_dma_channel_t *)spi->module.dependencies[8];
+      hdl_dma_run(dma_mem, (uint32_t)&spi->rx_mem->data[!spi->rx_mem->active_buffer_number][offset], (uint32_t)buffer->data,  buffer->size);
+      while (hdl_dma_get_counter(dma_mem)); 
       return HDL_TRUE;
     }
+  }
+  return HDL_FALSE;
+}
+
+uint8_t hdl_spi_mem_tx_buffer_put(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset) {
+  hdl_spi_mem_server_private_t *spi_private = (hdl_spi_mem_server_private_t*)spi;
+  if((spi != NULL) && (buffer != NULL) && (spi->tx_mem->size >= (buffer->size + offset))) {
+    spi_private->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST; 
+    uint8_t *data = spi->rx_mem->data[!spi->rx_mem->active_buffer_number];
+    for(uint32_t i = offset; i < buffer->size; i++)
+      data[i] = buffer->data[i - offset];
+    spi_private->flags |= SPI_MEM_FLAGS_SWITCH_TX_REQUEST;
+    return HDL_TRUE;
   }
   return HDL_FALSE;
 }

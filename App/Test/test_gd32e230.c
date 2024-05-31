@@ -208,6 +208,19 @@ hdl_dma_channel_t mod_dma_ch_spi_rx = {
   .priority = 0
 };
 
+  hdl_dma_channel_t mod_dma_ch_spi_m2m = {
+  .module.init = &hdl_dma_ch,
+  .module.dependencies = hdl_module_dependencies(&mod_dma.module),
+  .module.reg = (void*)DMA_CH3,
+  .direction = HDL_DMA_DIRECTION_M2M,
+  .memory_inc = HDL_DMA_INCREMENT_ON,
+  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .periph_inc = HDL_DMA_INCREMENT_ON,
+  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .mode = HDL_DMA_MODE_SINGLE,
+  .priority = 0
+};
+
 /* depends on:
   gpio mosi
   gpio miso  
@@ -218,28 +231,28 @@ hdl_dma_channel_t mod_dma_ch_spi_rx = {
   hdl_dma_channel rx
   hdl_dma_channel tx
 */
-uint8_t spi_dma_rx_0_buf[8] = {0xaa, 5, 3, 6, 3, 2, 1, 5};
-uint8_t spi_dma_rx_1_buf[8] = {0xaa, 5, 3, 6, 3, 2, 1, 5};
-uint8_t spi_dma_tx_0_buf[10] = {0xaa, 5, 3, 6, 3, 2, 1, 5, 2, 2};
-uint8_t spi_dma_tx_1_buf[10] = {0xaa, 5, 3, 6, 3, 2, 1, 5, 2, 2};
+uint8_t spi_dma_rx_0_buf[1024] = {0xaa, 5, 3, 6, 3, 2, 1, 5};
+uint8_t spi_dma_rx_1_buf[1024] = {0xaa, 5, 3, 6, 3, 2, 1, 5};
+uint8_t spi_dma_tx_0_buf[1024] = {0xaa, 5, 3, 6, 3, 2, 1, 5, 2, 2};
+uint8_t spi_dma_tx_1_buf[1024] = {0xaa, 5, 3, 6, 3, 2, 1, 5, 2, 2};
 
 hdl_double_buffer_t spi_rx_buffer = {
   .data[0] = spi_dma_rx_0_buf,
   .data[1] = spi_dma_rx_1_buf,
-  .size = 8,
+  .size = sizeof(spi_dma_rx_0_buf),
 };
 
 hdl_double_buffer_t spi_tx_buffer = {
   .data[0] = spi_dma_tx_0_buf,
   .data[1] = spi_dma_tx_1_buf,
-  .size = 10,
+  .size = sizeof(spi_dma_tx_0_buf),
 };
 
 hdl_spi_mem_server_t mod_spi_with_dma = {
   .module.reg = (void *)SPI0,
   .module.dependencies = hdl_module_dependencies(&gpio_pin_spi_mosi.module, &gpio_pin_spi_miso.module, &gpio_pin_spi_sck.module,
                                                   &gpio_pin_spi_cs.module, &mod_clock_apb2.module, &mod_nvic.module, 
-                                                  &mod_dma_ch_spi_rx.module, &mod_dma_ch_spi_tx.module),
+                                                  &mod_dma_ch_spi_rx.module, &mod_dma_ch_spi_tx.module, &mod_dma_ch_spi_m2m.module),
   .module.init = &hdl_spi_mem_server,
   .config = &spi_slave_config,
   .spi_iterrupt = HDL_NVIC_IRQ25_SPI0,
@@ -433,6 +446,13 @@ void test() {
   .tx_buffer_size = sizeof(uart_tx_buff),
   .rx_buffer_size = sizeof(uart_rx_buff),
   };
+
+  uint8_t spi_mem_data[5];
+  hdl_basic_buffer_t spi_mem_test = {
+    .data = spi_mem_data,
+    .size = 5,
+  };
+
   //hdl_uart_set_transceiver(&hdl_uart_0, hdl_get_isr_transceiver_handler(&uart_isr_buffer, &usart_isr_buffer_config));
 #ifdef SPI_CLIENT
 
@@ -460,6 +480,13 @@ void test() {
   //hdl_spi_client_xfer(&spi_master_0_ch_0, &spi_msg);
   while (1) {
     cooperative_scheduler(false);
+    static uint8_t flag = 0;
+    if(hdl_spi_mem_rx_buffer_take(&mod_spi_with_dma, &spi_mem_test, 5) && !flag)
+    {
+      flag = 1;
+      __NOP();
+    }
+  
     
     // uint8_t data;
     // if (hdl_isr_buffer_read(&uart_isr_buffer, &data, 1)) {

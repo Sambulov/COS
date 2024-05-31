@@ -74,6 +74,7 @@ typedef struct {
   interrupt controller (nvic)
   hdl_dma_channel rx
   hdl_dma_channel tx
+  hdl_dma_channel m2m
 */
 typedef struct {
   hdl_module_t module;

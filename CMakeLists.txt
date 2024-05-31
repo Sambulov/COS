@@ -4,6 +4,26 @@ set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Set linker options
+add_link_options(-specs=nano.specs -lstdc++ -mthumb -mlittle-endian -mthumb-interwork)
+
+# Set defines
+set(DEFINES "ARM_MATH_CM3;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING;")
+
+# Set toolchain dir, empty - use default
+set(TOOLCHAIN "")
+
+# Set toolchain prefix
+set(TOOLCHAIN_PREFIX arm-none-eabi-)
+
+set(CMAKE_C_COMPILER ${TOOLCHAIN}${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN}${TOOLCHAIN_PREFIX}g++)
+set(CMAKE_ASM_COMPILER ${TOOLCHAIN}${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_AR ${TOOLCHAIN}${TOOLCHAIN_PREFIX}ar)
+set(CMAKE_OBJCOPY ${TOOLCHAIN}${TOOLCHAIN_PREFIX}objcopy)
+set(CMAKE_OBJDUMP ${TOOLCHAIN}${TOOLCHAIN_PREFIX}objdump)
+set(CMAKE_SIZE ${TOOLCHAIN}${TOOLCHAIN_PREFIX}size)
+
 # Set project name
 project(bmc)
 enable_language(C CXX ASM)

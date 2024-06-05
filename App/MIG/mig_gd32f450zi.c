@@ -295,7 +295,7 @@ hdl_gpio_pin_t mod_do_relay2 = {
   .inactive_default = HDL_GPIO_LOW,
 };
 /***********************************************************
- *                        PCIE
+ *                        Other
 ***********************************************************/
 hdl_gpio_pin_t mod_do_pci_switch = {
   .module.init = &hdl_gpio_pin,
@@ -304,6 +304,73 @@ hdl_gpio_pin_t mod_do_pci_switch = {
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
+hdl_gpio_pin_t mod_do_lte_reset = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_6,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+/***********************************************************
+ *               SMARC POWER UP and SMARC GPIO
+***********************************************************/
+hdl_gpio_pin_t mod_do_smarc_reset = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .module.reg = (void *)GPIO_PIN_0,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_di_smarc_reset_feedback = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_8,
+  .mode = &hdl_gpio_mode_input_floating,
+  .inactive_default = HDL_GPIO_HIGH,
+};
+hdl_gpio_pin_t mod_do_smarc_boot_0 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_13,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_do_smarc_boot_1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_14,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_do_smarc_boot_2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_15,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_do_smarc_button = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_12,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_do_smarc_irq_1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .module.reg = (void *)GPIO_PIN_10,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_HIGH,
+};
+hdl_gpio_pin_t mod_do_smarc_irq_2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .module.reg = (void *)GPIO_PIN_11,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_HIGH,
+};
+
 /***********************************************************
  *                        X1 Connector
 ***********************************************************/
@@ -530,20 +597,6 @@ hdl_plc_port_config_t mod_atb3500_port_default_cnf_ain = {
 /***********************************************************
  *                   UNIVERSAL DIGITAL OUTPUT
 ***********************************************************/
-bldl_atb3500_do_port_t mod_atb3500_do_relay1 = {
-  .module.init = &bldl_atb3500_do_port,
-  .module.reg = (void *)1,
-  .module.dependencies = hdl_module_dependencies(&mod_do_relay1.module),
-  .default_config = &mod_atb3500_port_default_cnf_do,
-  .output = HDL_GPIO_LOW,
-};
-bldl_atb3500_do_port_t mod_atb3500_do_relay2 = {
-  .module.init = &bldl_atb3500_do_port,
-  .module.reg = (void *)1,
-  .module.dependencies = hdl_module_dependencies(&mod_do_relay2.module),
-  .default_config = &mod_atb3500_port_default_cnf_do,
-  .output = HDL_GPIO_LOW,
-};
 bldl_atb3500_do_port_t mod_atb3500_do_external_output_1 = {
   .module.init = &bldl_atb3500_do_port,
   .module.reg = (void *)1,
@@ -671,10 +724,10 @@ bldl_atb3500_ain_port_t mod_atb3500_ai_ch5 = {
 };
 bldl_atb3500_port_expander_t mod_atb3500_port_expander = {
     .init = &bldl_atb3500_port_expander,
-    .dependencies = hdl_module_dependencies(&mod_atb3500_do_relay1.module, &mod_atb3500_do_relay2.module,
-        &mod_atb3500_do_external_output_1.module, &mod_atb3500_do_external_output_2.module, &mod_atb3500_do_pci_switch.module, 
-        &mod_atb3500_di_external_irq_1.module, &mod_atb3500_di_external_irq_1.module, &mod_atb3500_led_0_0.module, &mod_atb3500_led_0_1.module,
-        &mod_atb3500_led_0_2.module, &mod_atb3500_led_1_0.module, &mod_atb3500_led_1_1.module, &mod_atb3500_led_1_2.module,
-        &mod_atb3500_led_2_0.module, &mod_atb3500_led_2_1.module, &mod_atb3500_led_2_2.module, &mod_atb3500_ai_ch0.module, 
-        &mod_atb3500_ai_ch1.module, &mod_atb3500_ai_ch2.module, &mod_atb3500_ai_ch3.module, &mod_atb3500_ai_ch4.module, &mod_atb3500_ai_ch5.module)};
+    .dependencies = hdl_module_dependencies(&mod_atb3500_do_external_output_1.module, &mod_atb3500_do_external_output_2.module,
+        &mod_atb3500_do_pci_switch.module, &mod_atb3500_di_external_irq_1.module, &mod_atb3500_di_external_irq_1.module,
+        &mod_atb3500_led_0_0.module, &mod_atb3500_led_0_1.module, &mod_atb3500_led_0_2.module, &mod_atb3500_led_1_0.module, 
+        &mod_atb3500_led_1_1.module, &mod_atb3500_led_1_2.module, &mod_atb3500_led_2_0.module, &mod_atb3500_led_2_1.module, 
+        &mod_atb3500_led_2_2.module, &mod_atb3500_ai_ch0.module, &mod_atb3500_ai_ch1.module, &mod_atb3500_ai_ch2.module, 
+        &mod_atb3500_ai_ch3.module, &mod_atb3500_ai_ch4.module, &mod_atb3500_ai_ch5.module)};
 #endif

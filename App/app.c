@@ -8,6 +8,10 @@
 #include "app.h"
 #include "CodeLib.h"
 
+#if  defined(ATB_3500)
+  #include "device_logic.h"
+#endif
+
 extern hdl_nvic_t mod_nvic;
 extern hdl_dma_t mod_dma;
 extern hdl_adc_t mod_adc;
@@ -137,8 +141,12 @@ static void reset_btn_handler(uint32_t event, void *sender, void *context) {
 uint16_t adc_value[2];
 
 void main() {
+  #if defined(ATB_3500)
+    device_logic();
+  #else
+    test();
+  #endif
 
-  test();
   /* test complete? */
   asm("bkpt 255");
   for(;;);

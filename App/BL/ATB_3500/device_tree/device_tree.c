@@ -13,10 +13,50 @@
 /***********************************************************
  *               TIMERS
 ***********************************************************/
- extern hdl_timer_t mod_systick_timer_ms;
+extern hdl_timer_t mod_systick_timer_ms;
+extern hdl_timer_event_t mod_timer_event;
+
+hdl_delegate_t watchdog_smarc_delegate = {
+    .context = NULL,
+    .handler = NULL,
+};
 hdl_timer_t* get_object_timer_ms(void) {
     return &mod_systick_timer_ms;
 }
+hdl_timer_event_t* get_object_watchdog_smarc_timer(void) {
+    return &mod_timer_event;
+}
+hdl_delegate_t* get_object_watchdog_smarc_delegate(void) {
+    return &watchdog_smarc_delegate;
+}
+/***********************************************************
+ *               SPI
+***********************************************************/
+extern hdl_spi_mem_server_t mod_spi_3;
+uint8_t spi_dma_rx_0_buf[1] = {};
+uint8_t spi_dma_rx_1_buf[1] = {};
+uint8_t spi_dma_tx_0_buf[1] = {};
+uint8_t spi_dma_tx_1_buf[1] = {};
+
+hdl_double_buffer_t spi_rx_buffer = {
+    .data[0] = spi_dma_rx_0_buf,
+    .data[1] = spi_dma_rx_1_buf,
+    .size = sizeof(spi_dma_rx_0_buf),
+};
+hdl_double_buffer_t spi_tx_buffer = {
+    .data[0] = spi_dma_tx_0_buf,
+    .data[1] = spi_dma_tx_1_buf,
+    .size = sizeof(spi_dma_tx_0_buf),
+};
+hdl_spi_mem_server_t* get_object_spi3(void) {
+    return &mod_spi_3;
+};
+hdl_double_buffer_t* get_object_spi_3_rx_buffer(void) {
+    return &spi_rx_buffer;
+};
+hdl_double_buffer_t* get_object_spi_3_tx_buffer(void) {
+    return &spi_tx_buffer;
+};
 /***********************************************************
  *               SMARC POWER UP and SMARC GPIO
 ***********************************************************/
@@ -120,6 +160,45 @@ hdl_gpio_pin_t* get_object_do_relay_1(void) {
 }
 hdl_gpio_pin_t* get_object_do_relay_2(void) {
     return &mod_do_relay2;
+}
+/***********************************************************
+ *                        X1 Connector
+***********************************************************/
+extern hdl_gpio_pin_t mod_di_module_address_1;
+extern hdl_gpio_pin_t mod_di_module_address_2;
+extern hdl_gpio_pin_t mod_di_module_address_3;
+extern hdl_gpio_pin_t mod_di_module_address_4;
+extern hdl_gpio_pin_t mod_di_module_address_5;
+extern hdl_gpio_pin_t mod_di_external_periph_irq_1;
+extern hdl_gpio_pin_t mod_di_external_periph_irq_2;
+extern hdl_gpio_pin_t mod_do_external_output_1;
+extern hdl_gpio_pin_t mod_do_external_output_2;
+hdl_gpio_pin_t* get_object_di_module_address_1(void) {
+    return &mod_di_module_address_1;
+}
+hdl_gpio_pin_t* get_object_di_module_address_2(void) {
+    return &mod_di_module_address_2;
+}
+hdl_gpio_pin_t* get_object_di_module_address_3(void) {
+    return &mod_di_module_address_3;
+}
+hdl_gpio_pin_t* get_object_di_module_address_4(void) {
+    return &mod_di_module_address_4;
+}
+hdl_gpio_pin_t* get_object_di_module_address_5(void) {
+    return &mod_di_module_address_5;
+}
+hdl_gpio_pin_t* get_object_di_external_periph_irq_1(void) {
+    return &mod_di_external_periph_irq_1;
+}
+hdl_gpio_pin_t* get_object_di_external_periph_irq_2(void) {
+    return &mod_di_external_periph_irq_2;
+}
+hdl_gpio_pin_t* get_object_do_external_output_1(void) {
+    return &mod_do_external_output_1;
+}
+hdl_gpio_pin_t* get_object_do_external_output_2(void) {
+    return &mod_do_external_output_2;
 }
 /***********************************************************
  *                        Other

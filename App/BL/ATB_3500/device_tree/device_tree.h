@@ -13,6 +13,14 @@
  *               TIMERS
 ***********************************************************/
 hdl_timer_t* get_object_timer_ms(void);
+hdl_timer_event_t* get_object_watchdog_smarc_timer(void);
+hdl_delegate_t* get_object_watchdog_smarc_delegate(void);
+/***********************************************************
+ *               SPI
+***********************************************************/
+hdl_spi_mem_server_t* get_object_spi3(void);
+hdl_double_buffer_t* get_object_spi_3_rx_buffer(void);
+hdl_double_buffer_t* get_object_spi_3_tx_buffer(void);
 /***********************************************************
  *               SMARC POWER UP and SMARC GPIO
 ***********************************************************/
@@ -48,6 +56,18 @@ hdl_gpio_pin_t* get_object_di_power_good(void);
 ***********************************************************/
 hdl_gpio_pin_t* get_object_do_relay_1(void);
 hdl_gpio_pin_t* get_object_do_relay_2(void);
+/***********************************************************
+ *                        X1 Connector
+***********************************************************/
+hdl_gpio_pin_t* get_object_di_module_address_1(void);
+hdl_gpio_pin_t* get_object_di_module_address_2(void);
+hdl_gpio_pin_t* get_object_di_module_address_3(void);
+hdl_gpio_pin_t* get_object_di_module_address_4(void);
+hdl_gpio_pin_t* get_object_di_module_address_5(void);
+hdl_gpio_pin_t* get_object_di_external_periph_irq_1(void);
+hdl_gpio_pin_t* get_object_di_external_periph_irq_2(void);
+hdl_gpio_pin_t* get_object_do_external_output_1(void);
+hdl_gpio_pin_t* get_object_do_external_output_2(void);
 /***********************************************************
  *                        Other
 ***********************************************************/

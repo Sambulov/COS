@@ -26,7 +26,7 @@ uint32_t get_ms_time (void);
     \param[in]      h - pointer to struct
     \return         void
  */
-void device_object_distonary_init_default(object_dictionary_t *h);
+void device_object_distonary_init_default(object_dictionary_t *od);
 
 /*!
     \brief          Init all hardware module
@@ -35,7 +35,7 @@ void device_object_distonary_init_default(object_dictionary_t *h);
       \retval         DL_STATUS_SUCCES
       \retval         DL_STATUS_ERROR
  */
-device_logic_status_e device_hardware_init(object_dictionary_t *h);
+device_logic_status_e device_hardware_init(object_dictionary_t *od);
 
 /*!
     \brief          Update and filter adc value

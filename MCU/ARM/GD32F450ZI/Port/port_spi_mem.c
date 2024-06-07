@@ -4,6 +4,7 @@
 
 #define SPI_MEM_FLAGS_RX_BUFFER_READY    (uint32_t)(1)
 #define SPI_MEM_FLAGS_SWITCH_TX_REQUEST  (uint32_t)(2)
+#define SPI_MEM_FLAGS_RX_BUFFER_NEW_DATA (uint32_t)(4)
 
 typedef struct {
   hdl_module_t module;
@@ -27,6 +28,7 @@ static void _spi_mem_reset(hdl_spi_mem_server_private_t *spi) {
   /* RX update*/
   if((hdl_dma_get_counter(dma_rx) == 0)) {
     spi->flags |= SPI_MEM_FLAGS_RX_BUFFER_READY;
+    spi->flags |= SPI_MEM_FLAGS_RX_BUFFER_NEW_DATA;
     hdl_double_buffer_switch(spi->rx_mem);
   }
   /* TX update*/
@@ -41,7 +43,8 @@ static void _spi_mem_reset(hdl_spi_mem_server_private_t *spi) {
 static void event_spi_nss(uint32_t event, void *sender, void *context) {
   hdl_spi_mem_server_private_t *spi = (hdl_spi_mem_server_private_t*)context;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->module.dependencies[3];
-  if((event & (uint32_t)nss->module.reg) && (hdl_gpio_read(nss) == nss->inactive_default)) {
+
+  if(/*(event & (uint32_t)nss->module.reg) && */(hdl_gpio_read(nss) == nss->inactive_default)) {
     _spi_mem_reset(spi);
   }
 }
@@ -103,11 +106,22 @@ uint8_t hdl_spi_mem_rx_buffer_take(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t
     if(spi_private->flags & SPI_MEM_FLAGS_RX_BUFFER_READY) {
       hdl_dma_channel_t *dma_mem = (hdl_dma_channel_t *)spi->module.dependencies[8];
       hdl_dma_run(dma_mem, (uint32_t)&spi->rx_mem->data[!spi->rx_mem->active_buffer_number][offset], (uint32_t)buffer->data,  buffer->size);
-      while (hdl_dma_get_counter(dma_mem)); 
+      while (hdl_dma_get_counter(dma_mem));
+      spi_private->flags &= ~(SPI_MEM_FLAGS_RX_BUFFER_NEW_DATA);
       return HDL_TRUE;
     }
   }
   return HDL_FALSE;
+}
+
+hdl_spi_buffer_status_e hdl_spi_mem_rx_buffer_get_state(hdl_spi_mem_server_t *spi) {
+  hdl_spi_mem_server_private_t *spi_private = (hdl_spi_mem_server_private_t*)spi;
+  if(spi != NULL ) {
+    if(spi_private->flags & SPI_MEM_FLAGS_RX_BUFFER_READY) {
+      return (spi_private->flags & SPI_MEM_FLAGS_RX_BUFFER_NEW_DATA) ? HDL_SPI_BUFFER_NEW_DATA : HDL_SPI_BUFFER_PREVIOUS_DATA;
+    }
+  }
+  return HDL_SPI_BUFFER_NOT_READY;
 }
 
 uint8_t hdl_spi_mem_tx_buffer_put(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset) {

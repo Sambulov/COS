@@ -49,7 +49,7 @@ hdl_dma_status_e hdl_dma_status(hdl_dma_channel_t *channel) {
 }
 
 /* Get DMA transfer counter value */
-uint32_t hdl_dma_counter(hdl_dma_channel_t *channel) {
+uint32_t hdl_dma_get_counter(hdl_dma_channel_t *channel) {
   hdl_dma_t *dma = _hdl_get_dma(channel);
   if(dma != NULL)
     return dma_transfer_number_get((uint32_t)dma->module.reg, dma_ch_no(channel));

@@ -29,6 +29,15 @@ uint32_t get_ms_time (void) {
   return hdl_timer_get(get_object_timer_ms());
 }
 
+void device_watchdog_event_handler(uint32_t event_trigger, void *sender, void *context) {
+    if(context != NULL) {
+        object_dictionary_t *od = (object_dictionary_t *)context;
+        od->sb.sb_watchdog_event_occur = 1;
+        hdl_gpio_toggle((get_object_do_led_1_0()));
+        uint8_t a = hdl_gpio_read_output(get_object_do_led_1_0());
+        __NOP();
+    }
+}
 /*!
     \brief          Initial struct init
     \param[in]      od - pointer to struct
@@ -50,11 +59,12 @@ void device_object_distonary_init_default(object_dictionary_t *od) {
       \retval         DL_STATUS_SUCCES
       \retval         DL_STATUS_ERROR
  */
-device_logic_status_e device_hardware_init(object_dictionary_t *h) {
+device_logic_status_e device_hardware_init(object_dictionary_t *od) {
     /***********************************************************
      *               TIMERS
     ***********************************************************/
     hdl_enable(HDL_MODULE_WRAP(get_object_timer_ms()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_watchdog_smarc_timer()));
     /***********************************************************
      *               SMARC POWER UP and SMARC GPIO
      ***********************************************************/
@@ -86,6 +96,23 @@ device_logic_status_e device_hardware_init(object_dictionary_t *h) {
     hdl_enable(HDL_MODULE_WRAP(get_object_di_power_fault()));
     hdl_enable(HDL_MODULE_WRAP(get_object_di_power_good()));
     /***********************************************************
+     *                          RELAY
+    ***********************************************************/
+    hdl_enable(HDL_MODULE_WRAP(get_object_do_relay_1()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_do_relay_2()));
+    /***********************************************************
+     *                        X1 Connector
+    ***********************************************************/
+    hdl_enable(HDL_MODULE_WRAP(get_object_di_module_address_1()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_di_module_address_2()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_di_module_address_3()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_di_module_address_4()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_di_module_address_5()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_di_external_periph_irq_1()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_di_external_periph_irq_2()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_do_external_output_1()));
+    hdl_enable(HDL_MODULE_WRAP(get_object_do_external_output_2()));
+    /***********************************************************
      *                        Other
     ***********************************************************/
     hdl_enable(HDL_MODULE_WRAP(get_object_do_pci_switch()));
@@ -100,10 +127,25 @@ device_logic_status_e device_hardware_init(object_dictionary_t *h) {
     hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_4()));
     hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_5()));
     hdl_enable(HDL_MODULE_WRAP(get_object_adc()));
-
+    /***********************************************************
+     *                  SPI
+    ***********************************************************/
+    hdl_enable(HDL_MODULE_WRAP(get_object_spi3()));
+    
     while (!hdl_init_complete()) {
         cooperative_scheduler(false);
     }
+    /* Binding event */
+    hdl_timer_event_t *watchdog_smarc_timer = get_object_watchdog_smarc_timer();
+    hdl_delegate_t *watchdog_smarc_deleagte = get_object_watchdog_smarc_delegate();
+    watchdog_smarc_deleagte->context = od;
+    watchdog_smarc_deleagte->handler = &device_watchdog_event_handler;
+    hdl_event_subscribe(&watchdog_smarc_timer->event, watchdog_smarc_deleagte);
+    hdl_timer_event_run(get_object_watchdog_smarc_timer());
+    /* Binding buffer*/
+    hdl_spi_mem_server_t* spi = get_object_spi3();
+    spi->tx_mem = get_object_spi_3_tx_buffer();
+    spi->rx_mem = get_object_spi_3_rx_buffer();
     return DL_STATUS_SUCCESS;
 }
 

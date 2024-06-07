@@ -62,7 +62,8 @@ typedef struct {
     sb_all_hdl_module_is_init   : 1, /* This bit indicates that all hdl module have initialized */
     sb_adc_include_valid_data   : 1, /* This bit indicates that adc include valid data */
     sb_24v_poe_is_enable        : 1, /* This bit indicates that 24v poe is active */
-    dummy                       : 29;
+    sb_watchdog_event_occur     : 1, /* This bit indicates that watchdog event occur */
+    dummy                       : 28;
 } device_logic_state_bits_t;
 
 typedef struct {
@@ -84,7 +85,7 @@ void device_logic(void);
 
 #include "device_function.h"
 #include "device_tree.h"
-#include "atb_3500_shared_mem.h"
+#include "atb_3500_page_transfer.h"
 
 #endif /* ATB_3500 */
 #endif /* ATB_3500_DEVICE_LOGIC_H_ */

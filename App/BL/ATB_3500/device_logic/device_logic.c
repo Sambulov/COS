@@ -74,16 +74,24 @@ void state_common(void) {
     /* Wait until hdl module will have initialized */
     if(!od.sb.sb_all_hdl_module_is_init)
         return;
+    cooperative_scheduler(false);
     /* Every 1 ms */
     if(get_ms_time_from(time_stamp_1_ms) >= 1) {
         time_stamp_1_ms = get_ms_time();
         device_adc_proc(&od);
         device_check_power_status(&od);
         device_relay_control(&od);
-
-
     }
-}
+    if(od.state_machine.state == DL_STATE_MACHINE_POWER_MONITOR && od.state_machine.sub_state == 0)
+        hdl_gpio_write(get_object_do_led_1_1(), HDL_GPIO_ON_WRAP(get_object_do_led_1_1()));
+    else
+        hdl_gpio_write(get_object_do_led_1_1(), HDL_GPIO_OFF_WRAP(get_object_do_led_1_1()));
+
+    if(od.state_machine.state == DL_STATE_MACHINE_POWER_RESET && od.state_machine.sub_state == 0)
+        hdl_gpio_write(get_object_do_led_1_2(), HDL_GPIO_ON_WRAP(get_object_do_led_1_2()));
+    else
+        hdl_gpio_write(get_object_do_led_1_2(), HDL_GPIO_OFF_WRAP(get_object_do_led_1_2()));
+}   
 
 void state_initial(void) {
     device_logic_state_machine_t *sm = &od.state_machine;
@@ -170,6 +178,8 @@ void state_smarc_power_up(void) {
         case 2: {
             if(get_ms_time_from(time_stmap_ms) >= DELAY_MS_SECONDARY_POWER_STABLE) {
                 /* TODO: Here we cycling  */
+                hdl_gpio_write(get_object_do_led_1_0(), HDL_GPIO_ON_WRAP(get_object_do_led_1_0()));
+                sm->sub_state = 3;
             }
             else {
                 uint8_t power_is_stable = 1;

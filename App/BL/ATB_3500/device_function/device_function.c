@@ -120,13 +120,13 @@ device_logic_status_e device_hardware_init(object_dictionary_t *od) {
     /***********************************************************
      *                  ADC
      ***********************************************************/
-    hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_0()));
-    hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_1()));
-    hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_2()));
-    hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_3()));
-    hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_4()));
-    hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_5()));
-    hdl_enable(HDL_MODULE_WRAP(get_object_adc()));
+    // hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_0()));
+    // hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_1()));
+    // hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_2()));
+    // hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_3()));
+    // hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_4()));
+    // hdl_enable(HDL_MODULE_WRAP(get_object_gpio_ain_5()));
+    // hdl_enable(HDL_MODULE_WRAP(get_object_adc()));
     /***********************************************************
      *                  SPI
     ***********************************************************/

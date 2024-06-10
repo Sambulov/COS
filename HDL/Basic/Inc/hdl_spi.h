@@ -44,6 +44,5 @@ hdl_spi_message_state_t hdl_spi_message_get_state(hdl_spi_message_t *message);
 hdl_module_state_t hdl_spi_mem_server(void *desc, uint8_t enable);
 uint8_t hdl_spi_mem_rx_buffer_take(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset);
 uint8_t hdl_spi_mem_tx_buffer_put(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset);
-hdl_spi_buffer_status_e hdl_spi_mem_rx_buffer_get_state(hdl_spi_mem_server_t *spi);
 
 #endif /* HDL_SPI_H_ */

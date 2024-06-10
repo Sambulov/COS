@@ -33,10 +33,10 @@ hdl_delegate_t* get_object_watchdog_smarc_delegate(void) {
  *               SPI
 ***********************************************************/
 extern hdl_spi_mem_server_t mod_spi_3;
-uint8_t spi_dma_rx_0_buf[1] = {};
-uint8_t spi_dma_rx_1_buf[1] = {};
-uint8_t spi_dma_tx_0_buf[1] = {};
-uint8_t spi_dma_tx_1_buf[1] = {};
+uint8_t spi_dma_rx_0_buf[16] = {};
+uint8_t spi_dma_rx_1_buf[16] = {};
+uint8_t spi_dma_tx_0_buf[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11 ,12, 13, 14, 15};
+uint8_t spi_dma_tx_1_buf[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11 ,12, 13, 14, 15};
 
 hdl_double_buffer_t spi_rx_buffer = {
     .data[0] = spi_dma_rx_0_buf,

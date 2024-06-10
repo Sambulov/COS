@@ -11,12 +11,12 @@
 #define HDL_HXTAL_CLOCK                   20000000
 #define HDL_PLL_MUL_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc16m, mod_clock_hxtal */
 #define HDL_SYS_CLOCK                     mod_clock_pll_p_prescaler     /* Can be clocked by: mod_clock_pll_p_prescaler, mod_clock_hxtal, mod_clock_irc16m */
-#define HDL_PLL_VCO_PRESCALER             20                            /* Can be 2, 3 .. 63 */
-#define HDL_PLL_N_MULTIPLY                64                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
+#define HDL_PLL_VCO_PRESCALER             4                            /* Can be 2, 3 .. 63 */
+#define HDL_PLL_N_MULTIPLY                80                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
 #define HDL_PLL_P_PRESCALER               2                             /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
-#define HDL_PLL_Q_PRESCALER               2                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
+#define HDL_PLL_Q_PRESCALER               15                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
 #define HDL_AHB_PRESCALER                 1                             /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
-#define HDL_APB1_PRESCALER                2                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_APB2_PRESCALER                2                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
 hdl_core_t mod_sys_core = {
@@ -154,7 +154,7 @@ hdl_clock_counter_t mod_systick_counter = {
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),  // add ahb
   .module.reg = (void *)SysTick,
   .diction = HDL_DOWN_COUNTER,
-  .counter_reload = 32000 - 1,
+  .counter_reload = 200000 - 1,
 };
 hdl_clock_counter_t mod_timer0_counter = {
   .module.init = &hdl_clock_counter,
@@ -588,7 +588,8 @@ hdl_dma_channel_t mod_adc_dma_ch = {
   .periph_inc = HDL_DMA_INCREMENT_OFF,
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT,
   .mode = HDL_DMA_MODE_CIRCULAR,
-  .priority = 0
+  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_0,
+  .priority = HDL_DMA_PRIORITY_LOW
 };
 hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
   .module.init = &hdl_dma_ch,
@@ -600,20 +601,22 @@ hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
   .periph_inc = HDL_DMA_INCREMENT_OFF,
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
   .mode = HDL_DMA_MODE_SINGLE,
-  .priority = 3
+  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
+  .priority = HDL_DMA_PRIORITY_LOW
 };
 
   hdl_dma_channel_t mod_dma_ch_spi_3_tx = {
   .module.init = &hdl_dma_ch,
   .module.dependencies = hdl_module_dependencies(&mod_dma.module),
-  .module.reg = (void*)DMA_CH1,
+  .module.reg = (void*)DMA_CH4,
   .direction = HDL_DMA_DIRECTION_M2P,
   .memory_inc = HDL_DMA_INCREMENT_ON,
   .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
   .periph_inc = HDL_DMA_INCREMENT_OFF,
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
   .mode = HDL_DMA_MODE_SINGLE,
-  .priority = 3
+  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
+  .priority = HDL_DMA_PRIORITY_LOW,
 };
 
   hdl_dma_channel_t mod_dma_ch_spi_3_m2m = {
@@ -626,7 +629,8 @@ hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
   .periph_inc = HDL_DMA_INCREMENT_ON,
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
   .mode = HDL_DMA_MODE_SINGLE,
-  .priority = 2
+  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_0,
+  .priority = HDL_DMA_PRIORITY_LOW
 };
 /**************************************************************
  *                        ADC
@@ -700,7 +704,7 @@ hdl_gpio_pin_t mod_spi_3_cs = {
 hdl_spi_server_config_t hdl_spi_3_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_2EDGE,
-  .prescale = HDL_SPI_PSC_256,
+  .prescale = HDL_SPI_PSC_2,
 };
 // hdl_double_buffer_t spi_rx_buffer = {
 //   .data[0] = spi_dma_rx_0_buf,

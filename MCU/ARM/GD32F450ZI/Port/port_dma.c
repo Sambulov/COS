@@ -74,6 +74,7 @@ uint8_t hdl_dma_run(hdl_dma_channel_t *channel, uint32_t periph_addr, uint32_t m
   hdl_dma_t *dma = _hdl_get_dma(channel);
   if(dma != NULL) {
     dma_deinit((uint32_t)dma->module.reg, dma_ch_no(channel));
+    dma_channel_subperipheral_select((uint32_t)dma->module.reg, dma_ch_no(channel), channel->channel_periphery);
     dma_periph_address_config((uint32_t)dma->module.reg, dma_ch_no(channel), periph_addr);
     dma_memory_address_config((uint32_t)dma->module.reg, dma_ch_no(channel), DMA_MEMORY_0,  memory_addr);
     dma_transfer_number_config((uint32_t)dma->module.reg, dma_ch_no(channel), amount);

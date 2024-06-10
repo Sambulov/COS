@@ -887,7 +887,7 @@
     .periph_inc = HDL_DMA_INCREMENT_OFF,
     .periph_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT,
     .mode = HDL_DMA_MODE_CIRCULAR,
-    .priority = 0
+    .priority = HDL_DMA_PRIORITY_LOW,
   };
 
   hdl_dma_channel_t mod_m2m_dma_ch = {
@@ -900,7 +900,7 @@
     .periph_inc = HDL_DMA_INCREMENT_ON,
     .periph_width = HDL_DMA_SIZE_OF_MEMORY_32_BIT,
     .mode = HDL_DMA_MODE_SINGLE,
-    .priority = 0
+    .priority = HDL_DMA_PRIORITY_LOW,
   };
 
   hdl_clock_prescaler_t mod_clock_timer0 = {

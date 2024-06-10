@@ -78,7 +78,7 @@ void state_common(void) {
     /* Every 1 ms */
     if(get_ms_time_from(time_stamp_1_ms) >= 1) {
         time_stamp_1_ms = get_ms_time();
-        device_adc_proc(&od);
+        //device_adc_proc(&od);
         device_check_power_status(&od);
         device_relay_control(&od);
     }
@@ -132,25 +132,25 @@ void state_initial(void) {
         }
         /* Wait ADC stable */
         case 3: {
-            if(od.sb.sb_adc_include_valid_data)
+            //if(od.sb.sb_adc_include_valid_data)
                 sm->sub_state = 4;
             break;
         }
         /* Wait 24v stable */
         case 4: {
             uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_24V]);
-            if( (adc_value >= ADC_24V_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_24V_HIGH_TRHESHOLD_VALUE_MV) ){
+            //if( (adc_value >= ADC_24V_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_24V_HIGH_TRHESHOLD_VALUE_MV) ){
                 hdl_gpio_write(get_object_do_5v_power_on(), HDL_GPIO_ON_WRAP(get_object_do_5v_power_on()));
                 sm->sub_state = 5;
-            }
+            //}
             break;
         }
         /* Wait 5v stable */
         case 5: {
-            uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_5V]);
-            if( (adc_value >= ADC_5V_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_5V_HIGH_TRHESHOLD_VALUE_MV) ){
+            //uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_5V]);
+            //if( (adc_value >= ADC_5V_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_5V_HIGH_TRHESHOLD_VALUE_MV) ){
                 _state_machine_switch(DL_STATE_MACHINE_SMARC_POWER_UP, 0);
-            }
+            //}
             break;
         }
         default:
@@ -182,20 +182,20 @@ void state_smarc_power_up(void) {
                 sm->sub_state = 3;
             }
             else {
-                uint8_t power_is_stable = 1;
-                uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_3V3]);
-                if( !((adc_value >= ADC_3V3_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_3V3_HIGH_TRHESHOLD_VALUE_MV)) ){
-                    power_is_stable = 0;
-                }
-                adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_2V5]);
-                if( !((adc_value >= ADC_2V5_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_2V5_HIGH_TRHESHOLD_VALUE_MV)) ){
-                    power_is_stable = 0;
-                }
-                adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_1V8]);
-                if( !((adc_value >= ADC_1V8_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_1V8_HIGH_TRHESHOLD_VALUE_MV)) ){
-                    power_is_stable = 0;
-                }
-                if(power_is_stable)
+                // uint8_t power_is_stable = 1;
+                // uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_3V3]);
+                // if( !((adc_value >= ADC_3V3_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_3V3_HIGH_TRHESHOLD_VALUE_MV)) ){
+                //     power_is_stable = 0;
+                // }
+                // adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_2V5]);
+                // if( !((adc_value >= ADC_2V5_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_2V5_HIGH_TRHESHOLD_VALUE_MV)) ){
+                //     power_is_stable = 0;
+                // }
+                // adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_1V8]);
+                // if( !((adc_value >= ADC_1V8_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_1V8_HIGH_TRHESHOLD_VALUE_MV)) ){
+                //     power_is_stable = 0;
+                // }
+                // if(power_is_stable)
                     sm->sub_state = 3;
             }
             break;

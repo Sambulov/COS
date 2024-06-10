@@ -19,8 +19,6 @@ hdl_delegate_t* get_object_watchdog_smarc_delegate(void);
  *               SPI
 ***********************************************************/
 hdl_spi_mem_server_t* get_object_spi3(void);
-hdl_double_buffer_t* get_object_spi_3_rx_buffer(void);
-hdl_double_buffer_t* get_object_spi_3_tx_buffer(void);
 /***********************************************************
  *               SMARC POWER UP and SMARC GPIO
 ***********************************************************/

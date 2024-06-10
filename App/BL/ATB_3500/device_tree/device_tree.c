@@ -33,30 +33,11 @@ hdl_delegate_t* get_object_watchdog_smarc_delegate(void) {
  *               SPI
 ***********************************************************/
 extern hdl_spi_mem_server_t mod_spi_3;
-uint8_t spi_dma_rx_0_buf[16] = {};
-uint8_t spi_dma_rx_1_buf[16] = {};
-uint8_t spi_dma_tx_0_buf[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11 ,12, 13, 14, 15};
-uint8_t spi_dma_tx_1_buf[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ,11 ,12, 13, 14, 15};
 
-hdl_double_buffer_t spi_rx_buffer = {
-    .data[0] = spi_dma_rx_0_buf,
-    .data[1] = spi_dma_rx_1_buf,
-    .size = sizeof(spi_dma_rx_0_buf),
-};
-hdl_double_buffer_t spi_tx_buffer = {
-    .data[0] = spi_dma_tx_0_buf,
-    .data[1] = spi_dma_tx_1_buf,
-    .size = sizeof(spi_dma_tx_0_buf),
-};
 hdl_spi_mem_server_t* get_object_spi3(void) {
     return &mod_spi_3;
 };
-hdl_double_buffer_t* get_object_spi_3_rx_buffer(void) {
-    return &spi_rx_buffer;
-};
-hdl_double_buffer_t* get_object_spi_3_tx_buffer(void) {
-    return &spi_tx_buffer;
-};
+
 /***********************************************************
  *               SMARC POWER UP and SMARC GPIO
 ***********************************************************/

@@ -602,7 +602,7 @@ hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
   .mode = HDL_DMA_MODE_SINGLE,
   .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
-  .priority = HDL_DMA_PRIORITY_LOW
+  .priority = HDL_DMA_PRIORITY_MEDIUM
 };
 
   hdl_dma_channel_t mod_dma_ch_spi_3_tx = {
@@ -616,7 +616,7 @@ hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
   .mode = HDL_DMA_MODE_SINGLE,
   .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
-  .priority = HDL_DMA_PRIORITY_LOW,
+  .priority = HDL_DMA_PRIORITY_HIGH,
 };
 
   hdl_dma_channel_t mod_dma_ch_spi_3_m2m = {
@@ -703,20 +703,25 @@ hdl_gpio_pin_t mod_spi_3_cs = {
 
 hdl_spi_server_config_t hdl_spi_3_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
-  .polarity = SPI_CK_PL_LOW_PH_2EDGE,
+  .polarity = SPI_CK_PL_LOW_PH_1EDGE,
   .prescale = HDL_SPI_PSC_2,
 };
-// hdl_double_buffer_t spi_rx_buffer = {
-//   .data[0] = spi_dma_rx_0_buf,
-//   .data[1] = spi_dma_rx_1_buf,
-//   .size = sizeof(spi_dma_rx_0_buf),
-// };
+uint8_t spi_dma_rx_0_buf[4] = {};
+uint8_t spi_dma_rx_1_buf[4] = {};
+uint8_t spi_dma_tx_0_buf[4] = {0x3A, 0x55, 0x5A, 0xA5};
+uint8_t spi_dma_tx_1_buf[4] = {0x3A, 0x55, 0x5A, 0xA5};
 
-// hdl_double_buffer_t spi_tx_buffer = {
-//   .data[0] = spi_dma_tx_0_buf,
-//   .data[1] = spi_dma_tx_1_buf,
-//   .size = sizeof(spi_dma_tx_0_buf),
-// };
+hdl_double_buffer_t spi_rx_buffer = {
+    .data[0] = spi_dma_rx_0_buf,
+    .data[1] = spi_dma_rx_1_buf,
+    .size = sizeof(spi_dma_rx_0_buf),
+};
+hdl_double_buffer_t spi_tx_buffer = {
+    .data[0] = spi_dma_tx_0_buf,
+    .data[1] = spi_dma_tx_1_buf,
+    .size = sizeof(spi_dma_tx_0_buf),
+};
+
 hdl_spi_mem_server_t mod_spi_3 = {
   .module.reg = (void *)SPI3,
   .module.dependencies = hdl_module_dependencies(&mod_spi_3_mosi.module, &mod_spi_3_miso.module, &mod_spi_3_sck.module,
@@ -726,8 +731,8 @@ hdl_spi_mem_server_t mod_spi_3 = {
   .config = &hdl_spi_3_slave_config,
   .spi_iterrupt = HDL_NVIC_IRQ84_SPI3,
   .nss_iterrupt = HDL_NVIC_IRQ10_EXTI4,
-  .rx_mem = NULL,
-  .tx_mem = NULL,
+  .rx_mem = &spi_rx_buffer,
+  .tx_mem = &spi_tx_buffer,
 };
 /***********************************************************
  *                     UNIVERSAL PORT

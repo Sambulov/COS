@@ -142,10 +142,6 @@ device_logic_status_e device_hardware_init(object_dictionary_t *od) {
     watchdog_smarc_deleagte->handler = &device_watchdog_event_handler;
     hdl_event_subscribe(&watchdog_smarc_timer->event, watchdog_smarc_deleagte);
     hdl_timer_event_run(get_object_watchdog_smarc_timer());
-    /* Binding buffer*/
-    hdl_spi_mem_server_t* spi = get_object_spi3();
-    spi->tx_mem = get_object_spi_3_tx_buffer();
-    spi->rx_mem = get_object_spi_3_rx_buffer();
     return DL_STATUS_SUCCESS;
 }
 

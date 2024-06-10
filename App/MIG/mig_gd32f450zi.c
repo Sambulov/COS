@@ -11,12 +11,12 @@
 #define HDL_HXTAL_CLOCK                   20000000
 #define HDL_PLL_MUL_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc16m, mod_clock_hxtal */
 #define HDL_SYS_CLOCK                     mod_clock_pll_p_prescaler     /* Can be clocked by: mod_clock_pll_p_prescaler, mod_clock_hxtal, mod_clock_irc16m */
-#define HDL_PLL_VCO_PRESCALER             20                            /* Can be 2, 3 .. 63 */
-#define HDL_PLL_N_MULTIPLY                64                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
+#define HDL_PLL_VCO_PRESCALER             4                            /* Can be 2, 3 .. 63 */
+#define HDL_PLL_N_MULTIPLY                80                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
 #define HDL_PLL_P_PRESCALER               2                             /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
-#define HDL_PLL_Q_PRESCALER               2                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
+#define HDL_PLL_Q_PRESCALER               15                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
 #define HDL_AHB_PRESCALER                 1                             /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
-#define HDL_APB1_PRESCALER                2                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_APB2_PRESCALER                2                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
 hdl_core_t mod_sys_core = {
@@ -45,19 +45,24 @@ hdl_nvic_interrupt_t mod_irq_timer1 = {
   .priority_group = 2,
 };
 
-hdl_nvic_interrupt_t mod_irq_exti_0 = {
-  .irq_type = HDL_NVIC_IRQ6_EXTI0,
+hdl_nvic_interrupt_t mod_irq_exti_4 = {
+  .irq_type = HDL_NVIC_IRQ10_EXTI4,
   .priority = 0,
   .priority_group = 1,
+};
+hdl_nvic_interrupt_t mod_irq_spi_3 = {
+  .irq_type = HDL_NVIC_IRQ84_SPI3,
+  .priority = 0,
+  .priority_group = 0,
 };
 /***********************************************************
  *                          EXTI
 ***********************************************************/
-hdl_nvic_exti_t mod_nvic_exti_line_0 = {
-  .line = HDL_EXTI_LINE_0,
+hdl_nvic_exti_t mod_nvic_exti_line_4 = {
+  .line = HDL_EXTI_LINE_4,
   .mode = HDL_EXTI_MODE_INTERRUPT,
   .source = HDL_EXTI_SOURCE_PE,
-  .trigger = HDL_EXTI_TRIGGER_RISING
+  .trigger = HDL_EXTI_TRIGGER_RISING_FALLING,
 };
 /***********************************************************
  *                          NVIC
@@ -67,8 +72,8 @@ hdl_nvic_t mod_nvic = {
   .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
   .module.reg = NVIC,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_0),
-  .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0)
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3),
+  .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_4)
 };
 /***********************************************************
  *                          CLOCK
@@ -149,7 +154,7 @@ hdl_clock_counter_t mod_systick_counter = {
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),  // add ahb
   .module.reg = (void *)SysTick,
   .diction = HDL_DOWN_COUNTER,
-  .counter_reload = 32000 - 1,
+  .counter_reload = 200000 - 1,
 };
 hdl_clock_counter_t mod_timer0_counter = {
   .module.init = &hdl_clock_counter,
@@ -157,38 +162,44 @@ hdl_clock_counter_t mod_timer0_counter = {
   .module.reg = (void *)TIMER0,
   .diction = HDL_DOWN_COUNTER,
   .counter_reload = 16000 - 1,
-  };
-  hdl_clock_counter_t mod_timer1_counter = {
-  .module.init = &hdl_clock_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module), // add ahb
-  .module.reg = (void *)TIMER1,
-  .diction = HDL_DOWN_COUNTER,
-  .counter_reload = 16000 - 1,
-  };
-  /***********************************************************
-   *                          TIMER
-   ***********************************************************/
-  hdl_timer_t mod_systick_timer_ms = {
-    .module.init = hdl_timer,
-    .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
-    .module.reg = NULL,
-    .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
-    .val = 0
-  };
-    hdl_timer_t mod_timer0_ms = {
-    .module.init = hdl_timer,
-    .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
-    .module.reg = NULL,
-    .reload_iterrupt = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
-    .val = 0
-  };
-    hdl_timer_t mod_timer1_ms = {
-    .module.init = hdl_timer,
-    .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
-    .module.reg = NULL,
-    .reload_iterrupt = HDL_NVIC_IRQ28_TIMER1,
-    .val = 0
-  };
+};
+hdl_clock_counter_t mod_timer1_counter = {
+.module.init = &hdl_clock_counter,
+.module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module), // add ahb
+.module.reg = (void *)TIMER1,
+.diction = HDL_DOWN_COUNTER,
+.counter_reload = 16000 - 1,
+};
+/***********************************************************
+ *                          TIMER
+ ***********************************************************/
+hdl_timer_t mod_systick_timer_ms = {
+  .module.init = hdl_timer,
+  .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
+  .module.reg = NULL,
+  .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
+  .val = 0
+};
+hdl_timer_t mod_timer0_ms = {
+  .module.init = hdl_timer,
+  .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
+  .module.reg = NULL,
+  .reload_iterrupt = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
+  .val = 0
+};
+hdl_timer_t mod_timer1_ms = {
+  .module.init = hdl_timer,
+  .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
+  .module.reg = NULL,
+  .reload_iterrupt = HDL_NVIC_IRQ28_TIMER1,
+  .val = 0
+};
+hdl_timer_event_t mod_timer_event = {
+  .module.dependencies = hdl_module_dependencies(&mod_systick_timer_ms.module),
+  .module.init = &hdl_timer_event,
+  .delay = 3000,
+};
+
 /***********************************************************
  *                          GPIO PORT
 ***********************************************************/
@@ -206,6 +217,11 @@ hdl_gpio_port_t hdl_gpio_port_c = {
   .init = &hdl_gpio_port,
   .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .reg = (void *)GPIOC,
+};
+hdl_gpio_port_t hdl_gpio_port_d = {
+  .init = &hdl_gpio_port,
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .reg = (void *)GPIOD,
 };
 hdl_gpio_port_t hdl_gpio_port_e = {
   .init = &hdl_gpio_port,
@@ -229,19 +245,26 @@ hdl_gpio_port_t hdl_gpio_port_g = {
  *            GPIO MODE
 ***************************************/
 hdl_gpio_mode_t hdl_gpio_mode_input_floating = {
-    .type = GPIO_MODE_INPUT,
-    .pull = GPIO_PUPD_NONE,
-    .ospeed = GPIO_OSPEED_2MHZ
+  .type = GPIO_MODE_INPUT,
+  .pull = GPIO_PUPD_NONE,
+  .ospeed = GPIO_OSPEED_2MHZ
 };
 hdl_gpio_mode_t hdl_gpio_mode_output_no_pull = {
-    .type = GPIO_MODE_OUTPUT,
-    .pull = GPIO_PUPD_NONE,
-    .ospeed = GPIO_OSPEED_2MHZ,
+  .type = GPIO_MODE_OUTPUT,
+  .pull = GPIO_PUPD_NONE,
+  .ospeed = GPIO_OSPEED_2MHZ,
 };
 hdl_gpio_mode_t hdl_gpio_mode_analog = {
-    .type = GPIO_MODE_ANALOG,
+  .type = GPIO_MODE_ANALOG,
+  .pull = GPIO_PUPD_NONE,
+  .ospeed = GPIO_OSPEED_2MHZ,
+};
+hdl_gpio_mode_t hdl_gpio_spi_mode = {
+    .type = GPIO_MODE_AF,
     .pull = GPIO_PUPD_NONE,
-    .ospeed = GPIO_OSPEED_2MHZ,
+    .ospeed = GPIO_OSPEED_50MHZ,
+    .af = GPIO_AF_5,
+    .otype = GPIO_OTYPE_PP,
 };
 /***********************************************************
  *                          GPIO PIN
@@ -295,7 +318,7 @@ hdl_gpio_pin_t mod_do_relay2 = {
   .inactive_default = HDL_GPIO_LOW,
 };
 /***********************************************************
- *                        PCIE
+ *                        Other
 ***********************************************************/
 hdl_gpio_pin_t mod_do_pci_switch = {
   .module.init = &hdl_gpio_pin,
@@ -304,9 +327,111 @@ hdl_gpio_pin_t mod_do_pci_switch = {
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
+hdl_gpio_pin_t mod_do_lte_reset = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_6,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+/***********************************************************
+ *               SMARC POWER UP and SMARC GPIO
+***********************************************************/
+hdl_gpio_pin_t mod_do_smarc_reset = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .module.reg = (void *)GPIO_PIN_0,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_di_smarc_reset_feedback = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_8,
+  .mode = &hdl_gpio_mode_input_floating,
+  .inactive_default = HDL_GPIO_HIGH,
+};
+hdl_gpio_pin_t mod_do_smarc_boot_0 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_13,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_do_smarc_boot_1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_14,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_do_smarc_boot_2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_15,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_do_smarc_button = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
+  .module.reg = (void *)GPIO_PIN_12,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_do_smarc_irq_1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .module.reg = (void *)GPIO_PIN_10,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_HIGH,
+};
+hdl_gpio_pin_t mod_do_smarc_irq_2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .module.reg = (void *)GPIO_PIN_11,
+  .mode = &hdl_gpio_mode_output_no_pull,
+  .inactive_default = HDL_GPIO_HIGH,
+};
+
 /***********************************************************
  *                        X1 Connector
 ***********************************************************/
+hdl_gpio_pin_t mod_di_module_address_1 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d),
+  .module.reg = (void *)GPIO_PIN_8,
+  .mode = &hdl_gpio_mode_input_floating,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_di_module_address_2 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d),
+  .module.reg = (void *)GPIO_PIN_9,
+  .mode = &hdl_gpio_mode_input_floating,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_di_module_address_3 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d),
+  .module.reg = (void *)GPIO_PIN_10,
+  .mode = &hdl_gpio_mode_input_floating,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_di_module_address_4 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d),
+  .module.reg = (void *)GPIO_PIN_11,
+  .mode = &hdl_gpio_mode_input_floating,
+  .inactive_default = HDL_GPIO_LOW,
+};
+hdl_gpio_pin_t mod_di_module_address_5 = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d),
+  .module.reg = (void *)GPIO_PIN_12,
+  .mode = &hdl_gpio_mode_input_floating,
+  .inactive_default = HDL_GPIO_LOW,
+};
 hdl_gpio_pin_t mod_di_external_periph_irq_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
@@ -463,43 +588,146 @@ hdl_dma_channel_t mod_adc_dma_ch = {
   .periph_inc = HDL_DMA_INCREMENT_OFF,
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT,
   .mode = HDL_DMA_MODE_CIRCULAR,
-  .priority = 0
+  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_0,
+  .priority = HDL_DMA_PRIORITY_LOW
+};
+hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
+  .module.init = &hdl_dma_ch,
+  .module.dependencies = hdl_module_dependencies(&mod_dma.module),
+  .module.reg = (void*)DMA_CH3,
+  .direction = HDL_DMA_DIRECTION_P2M,
+  .memory_inc = HDL_DMA_INCREMENT_ON,
+  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .periph_inc = HDL_DMA_INCREMENT_OFF,
+  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .mode = HDL_DMA_MODE_SINGLE,
+  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
+  .priority = HDL_DMA_PRIORITY_LOW
+};
+
+  hdl_dma_channel_t mod_dma_ch_spi_3_tx = {
+  .module.init = &hdl_dma_ch,
+  .module.dependencies = hdl_module_dependencies(&mod_dma.module),
+  .module.reg = (void*)DMA_CH4,
+  .direction = HDL_DMA_DIRECTION_M2P,
+  .memory_inc = HDL_DMA_INCREMENT_ON,
+  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .periph_inc = HDL_DMA_INCREMENT_OFF,
+  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .mode = HDL_DMA_MODE_SINGLE,
+  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
+  .priority = HDL_DMA_PRIORITY_LOW,
+};
+
+  hdl_dma_channel_t mod_dma_ch_spi_3_m2m = {
+  .module.init = &hdl_dma_ch,
+  .module.dependencies = hdl_module_dependencies(&mod_dma.module),
+  .module.reg = (void*)DMA_CH1,
+  .direction = HDL_DMA_DIRECTION_M2M,
+  .memory_inc = HDL_DMA_INCREMENT_ON,
+  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .periph_inc = HDL_DMA_INCREMENT_ON,
+  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
+  .mode = HDL_DMA_MODE_SINGLE,
+  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_0,
+  .priority = HDL_DMA_PRIORITY_LOW
 };
 /**************************************************************
  *                        ADC
  *************************************************************/
 hdl_adc_source_t mod_adc_source_0 = {
-    .channel = HDL_ADC_CHANNEL_0,
-    .sample_time = HDL_ADC_SAMPLETIME_3,
+  .channel = HDL_ADC_CHANNEL_0,
+  .sample_time = HDL_ADC_SAMPLETIME_3,
 };
 hdl_adc_source_t mod_adc_source_1 = {
-    .channel = HDL_ADC_CHANNEL_1,
-    .sample_time = HDL_ADC_SAMPLETIME_3,
+  .channel = HDL_ADC_CHANNEL_1,
+  .sample_time = HDL_ADC_SAMPLETIME_3,
 };
 hdl_adc_source_t mod_adc_source_2 = {
-    .channel = HDL_ADC_CHANNEL_2,
-    .sample_time = HDL_ADC_SAMPLETIME_3,
+  .channel = HDL_ADC_CHANNEL_2,
+  .sample_time = HDL_ADC_SAMPLETIME_3,
 };
 hdl_adc_source_t mod_adc_source_3 = {
-    .channel = HDL_ADC_CHANNEL_3,
-    .sample_time = HDL_ADC_SAMPLETIME_3,
+  .channel = HDL_ADC_CHANNEL_3,
+  .sample_time = HDL_ADC_SAMPLETIME_3,
 };
 hdl_adc_source_t mod_adc_source_4 = {
-    .channel = HDL_ADC_CHANNEL_4,
-    .sample_time = HDL_ADC_SAMPLETIME_3,
+  .channel = HDL_ADC_CHANNEL_4,
+  .sample_time = HDL_ADC_SAMPLETIME_3,
 };
 hdl_adc_source_t mod_adc_source_5 = {
-    .channel = HDL_ADC_CHANNEL_5,
-    .sample_time = HDL_ADC_SAMPLETIME_3,
+  .channel = HDL_ADC_CHANNEL_5,
+  .sample_time = HDL_ADC_SAMPLETIME_3,
 };
 hdl_adc_t mod_adc = {
-    .module.init = &hdl_adc,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module),
-    .module.reg = (void *)ADC0,
-    .resolution = HDL_ADC_RESOLUTION_12BIT,
-    .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
-    .init_timeout = 3000,
-    .sources = hdl_adc_src(&mod_adc_source_0, &mod_adc_source_1, &mod_adc_source_2, &mod_adc_source_3, &mod_adc_source_4, &mod_adc_source_5),
+  .module.init = &hdl_adc,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module),
+  .module.reg = (void *)ADC0,
+  .resolution = HDL_ADC_RESOLUTION_12BIT,
+  .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
+  .init_timeout = 3000,
+  .sources = hdl_adc_src(&mod_adc_source_0, &mod_adc_source_1, &mod_adc_source_2, &mod_adc_source_3, &mod_adc_source_4, &mod_adc_source_5),
+};
+/**************************************************************
+ *                        SPI
+ *************************************************************/
+  hdl_gpio_pin_t mod_spi_3_mosi = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_e),
+    .module.reg = (void *)GPIO_PIN_6,
+    .mode = &hdl_gpio_spi_mode,
+};
+
+hdl_gpio_pin_t mod_spi_3_miso = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_e),
+    .module.reg = (void *)GPIO_PIN_5,
+    .mode = &hdl_gpio_spi_mode,
+};
+
+hdl_gpio_pin_t mod_spi_3_sck = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_e),
+    .module.reg = (void *)GPIO_PIN_2,
+    .mode = &hdl_gpio_spi_mode,
+};
+
+hdl_gpio_pin_t mod_spi_3_cs = {
+    .module.init = &hdl_gpio_pin,
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_e),
+    .module.reg = (void *)GPIO_PIN_4,
+    .mode = &hdl_gpio_spi_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+};
+
+
+hdl_spi_server_config_t hdl_spi_3_slave_config = {
+  .endian = HDL_SPI_ENDIAN_MSB,
+  .polarity = SPI_CK_PL_LOW_PH_2EDGE,
+  .prescale = HDL_SPI_PSC_2,
+};
+// hdl_double_buffer_t spi_rx_buffer = {
+//   .data[0] = spi_dma_rx_0_buf,
+//   .data[1] = spi_dma_rx_1_buf,
+//   .size = sizeof(spi_dma_rx_0_buf),
+// };
+
+// hdl_double_buffer_t spi_tx_buffer = {
+//   .data[0] = spi_dma_tx_0_buf,
+//   .data[1] = spi_dma_tx_1_buf,
+//   .size = sizeof(spi_dma_tx_0_buf),
+// };
+hdl_spi_mem_server_t mod_spi_3 = {
+  .module.reg = (void *)SPI3,
+  .module.dependencies = hdl_module_dependencies(&mod_spi_3_mosi.module, &mod_spi_3_miso.module, &mod_spi_3_sck.module,
+                                                  &mod_spi_3_cs.module, &mod_clock_apb2.module, &mod_nvic.module, 
+                                                  &mod_dma_ch_spi_3_rx.module, &mod_dma_ch_spi_3_tx.module, &mod_dma_ch_spi_3_m2m.module),
+  .module.init = &hdl_spi_mem_server,
+  .config = &hdl_spi_3_slave_config,
+  .spi_iterrupt = HDL_NVIC_IRQ84_SPI3,
+  .nss_iterrupt = HDL_NVIC_IRQ10_EXTI4,
+  .rx_mem = NULL,
+  .tx_mem = NULL,
 };
 /***********************************************************
  *                     UNIVERSAL PORT
@@ -530,20 +758,6 @@ hdl_plc_port_config_t mod_atb3500_port_default_cnf_ain = {
 /***********************************************************
  *                   UNIVERSAL DIGITAL OUTPUT
 ***********************************************************/
-bldl_atb3500_do_port_t mod_atb3500_do_relay1 = {
-  .module.init = &bldl_atb3500_do_port,
-  .module.reg = (void *)1,
-  .module.dependencies = hdl_module_dependencies(&mod_do_relay1.module),
-  .default_config = &mod_atb3500_port_default_cnf_do,
-  .output = HDL_GPIO_LOW,
-};
-bldl_atb3500_do_port_t mod_atb3500_do_relay2 = {
-  .module.init = &bldl_atb3500_do_port,
-  .module.reg = (void *)1,
-  .module.dependencies = hdl_module_dependencies(&mod_do_relay2.module),
-  .default_config = &mod_atb3500_port_default_cnf_do,
-  .output = HDL_GPIO_LOW,
-};
 bldl_atb3500_do_port_t mod_atb3500_do_external_output_1 = {
   .module.init = &bldl_atb3500_do_port,
   .module.reg = (void *)1,
@@ -671,10 +885,10 @@ bldl_atb3500_ain_port_t mod_atb3500_ai_ch5 = {
 };
 bldl_atb3500_port_expander_t mod_atb3500_port_expander = {
     .init = &bldl_atb3500_port_expander,
-    .dependencies = hdl_module_dependencies(&mod_atb3500_do_relay1.module, &mod_atb3500_do_relay2.module,
-        &mod_atb3500_do_external_output_1.module, &mod_atb3500_do_external_output_2.module, &mod_atb3500_do_pci_switch.module, 
-        &mod_atb3500_di_external_irq_1.module, &mod_atb3500_di_external_irq_1.module, &mod_atb3500_led_0_0.module, &mod_atb3500_led_0_1.module,
-        &mod_atb3500_led_0_2.module, &mod_atb3500_led_1_0.module, &mod_atb3500_led_1_1.module, &mod_atb3500_led_1_2.module,
-        &mod_atb3500_led_2_0.module, &mod_atb3500_led_2_1.module, &mod_atb3500_led_2_2.module, &mod_atb3500_ai_ch0.module, 
-        &mod_atb3500_ai_ch1.module, &mod_atb3500_ai_ch2.module, &mod_atb3500_ai_ch3.module, &mod_atb3500_ai_ch4.module, &mod_atb3500_ai_ch5.module)};
+    .dependencies = hdl_module_dependencies(&mod_atb3500_do_external_output_1.module, &mod_atb3500_do_external_output_2.module,
+        &mod_atb3500_do_pci_switch.module, &mod_atb3500_di_external_irq_1.module, &mod_atb3500_di_external_irq_1.module,
+        &mod_atb3500_led_0_0.module, &mod_atb3500_led_0_1.module, &mod_atb3500_led_0_2.module, &mod_atb3500_led_1_0.module, 
+        &mod_atb3500_led_1_1.module, &mod_atb3500_led_1_2.module, &mod_atb3500_led_2_0.module, &mod_atb3500_led_2_1.module, 
+        &mod_atb3500_led_2_2.module, &mod_atb3500_ai_ch0.module, &mod_atb3500_ai_ch1.module, &mod_atb3500_ai_ch2.module, 
+        &mod_atb3500_ai_ch3.module, &mod_atb3500_ai_ch4.module, &mod_atb3500_ai_ch5.module)};
 #endif

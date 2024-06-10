@@ -24,6 +24,12 @@ typedef struct {
   PRIVATE(HDL_SPI_MESSAGE_PRV_SIZE);
 } hdl_spi_message_t;
 
+typedef enum {
+  HDL_SPI_BUFFER_NOT_READY,
+  HDL_SPI_BUFFER_NEW_DATA,
+  HDL_SPI_BUFFER_PREVIOUS_DATA
+} hdl_spi_buffer_status_e;
+
 /**************** vvv  SPI slave vvv  ******************/
 hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable);
 void hdl_spi_server_set_transceiver(hdl_spi_server_t *spi, hdl_transceiver_t *transceiver);

@@ -216,17 +216,17 @@ static void svc_handler_main(uint32_t *sp) {
 }
 
 void EXTI0_1_IRQHandler() {
-  _call_isr(EXTI0_1_IRQn, __ic->interrupts, EXTI_PD);
+  _call_isr(EXTI0_1_IRQn, __ic->interrupts, EXTI_PD & (3 << 0));
   hdl_exti_clear_pending(EXTI_0 | EXTI_1);
 }
 
 void EXTI2_3_IRQHandler() {
-  _call_isr(EXTI2_3_IRQn, __ic->interrupts, EXTI_PD);
+  _call_isr(EXTI2_3_IRQn, __ic->interrupts, EXTI_PD & (3 << 2));
   hdl_exti_clear_pending(EXTI_2 | EXTI_3);
 }
 
 void EXTI4_15_IRQHandler() {
-  _call_isr(EXTI4_15_IRQn, __ic->interrupts, EXTI_PD);
+  _call_isr(EXTI4_15_IRQn, __ic->interrupts, EXTI_PD & (0xfff << 4));
   hdl_exti_clear_pending(EXTI_LINES_4_15);
 }
 

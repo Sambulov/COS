@@ -32,16 +32,7 @@ typedef struct {
   PRIVATE(DMA_PRIVATE_SIZE);
 } hdl_dma_t;
 
-typedef struct {
-  hdl_module_t module;                   /* Depends on dma module*/
-  hdl_dma_size_of_memory_e periph_width;
-  hdl_dma_size_of_memory_e memory_width;
-  hdl_dma_increment_e periph_inc;        /* HDL_DMA_INCREMENT_OFF, HDL_DMA_INCREMENT_ON */
-  hdl_dma_increment_e memory_inc;        /* HDL_DMA_INCREMENT_OFF, HDL_DMA_INCREMENT_ON */
-  hdl_dma_direction_e direction;         /* HDL_DMA_DIRECTION_P2M, HDL_DMA_DIRECTION_M2P, HDL_DMA_DIRECTION_M2M */
-  hdl_dma_mode_e mode;                   /* HDL_DMA_MODE_SINGLE_CONVERSION, HDL_DMA_MODE_CIRCULAR_CONVERSION */
-  uint32_t priority;                     /* channel priority level */
-} hdl_dma_channel_t;
+#include "port_dma.h"
 
 typedef enum {
     HDL_DMA_STATUS_NONE = (0),

@@ -67,6 +67,20 @@ elseif(BOARD STREQUAL "ATB_3500")
   set(MCU "GD32F450ZI")
   set(CORE "ARM")
   set(MCPU cortex-m4)
+  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_function"
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_tree"
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_lib"
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_protocol/atb_3500_page_transfer"
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_logic"
+  )
+  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_logic/*.c"
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_function/*.c"
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_tree/*.c"
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_lib/*.c"
+  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_protocol/atb_3500_page_transfer/*.c"
+  )
   add_compile_definitions("__MCU_HAL_HDR__=<gd32f4xx.h>")
   add_compile_definitions("GD32F450")
 else()
@@ -172,6 +186,7 @@ if (CORE STREQUAL "ARM")
       "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Port/Inc"
       "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/Inc"
       "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/Drivers/Inc"
+       ${SPECIFIC_BUSINESS_LOGIC_INC_PATH}
   )
 
   # Add you source file
@@ -193,6 +208,7 @@ if (CORE STREQUAL "ARM")
   "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Port/*.c"
   "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/*.c"
   "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/Drivers/Src/*.c"
+   ${SPECIFIC_BUSINESS_LOGIC_SRC_PATH}
   )
 
   add_compile_options(-mcpu=${MCPU} )

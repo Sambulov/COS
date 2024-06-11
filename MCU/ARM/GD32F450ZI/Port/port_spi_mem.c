@@ -27,6 +27,7 @@ static void _hdl_spi_mem_full_reset(hdl_spi_mem_server_private_t *spi) {
   init.frame_size = SPI_FRAMESIZE_8BIT;
   init.endian = spi->config->endian;
   init.clock_polarity_phase = spi->config->polarity;
+  init.prescale = HDL_SPI_PSC_2;
   init.nss = SPI_NSS_HARD;
   spi_init((uint32_t)spi->module.reg, &init);
   SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_ERRIE;

@@ -703,8 +703,7 @@ hdl_gpio_pin_t mod_spi_3_cs = {
 
 hdl_spi_server_config_t hdl_spi_3_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
-  .polarity = SPI_CK_PL_LOW_PH_1EDGE,
-  .prescale = HDL_SPI_PSC_2,
+  .polarity = SPI_CK_PL_LOW_PH_1EDGE
 };
 uint8_t spi_dma_rx_0_buf[4] = {};
 uint8_t spi_dma_rx_1_buf[4] = {};

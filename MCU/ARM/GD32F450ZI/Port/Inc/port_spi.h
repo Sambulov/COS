@@ -43,7 +43,6 @@ void hdl_spi_reset_status(uint32_t spi_module_reg);
 typedef struct {
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
-  hdl_spi_prescale_t prescale;
 } hdl_spi_server_config_t;
 
 /* depends on:

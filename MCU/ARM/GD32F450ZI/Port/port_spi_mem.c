@@ -28,7 +28,6 @@ static void _hdl_spi_mem_full_reset(hdl_spi_mem_server_private_t *spi) {
   init.endian = spi->config->endian;
   init.clock_polarity_phase = spi->config->polarity;
   init.nss = SPI_NSS_HARD;
-  init.prescale = spi->config->prescale;
   spi_init((uint32_t)spi->module.reg, &init);
   SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_ERRIE;
   hdl_dma_run(

@@ -47,6 +47,11 @@ static void _spi_mem_transaction_complete(hdl_spi_mem_server_private_t *spi) {
   hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];
   hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->module.dependencies[7];
   hdl_spi_reset_status((uint32_t)spi->module.reg);
+  /* TX update*/
+  if(spi->flags & SPI_MEM_FLAGS_SWITCH_TX_REQUEST) {
+    hdl_double_buffer_switch(spi->tx_mem);
+    spi->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST;
+  }
   /* RX update*/
   if((hdl_dma_get_counter(dma_rx) == 0)) {
     spi->flags |= SPI_MEM_FLAGS_RX_BUFFER_READY;
@@ -56,11 +61,6 @@ static void _spi_mem_transaction_complete(hdl_spi_mem_server_private_t *spi) {
   }
   else {
     _hdl_spi_mem_full_reset(spi);
-  }
-  /* TX update*/
-  if(spi->flags & SPI_MEM_FLAGS_SWITCH_TX_REQUEST) {
-    hdl_double_buffer_switch(spi->tx_mem);
-    spi->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST;
   }
 }
 

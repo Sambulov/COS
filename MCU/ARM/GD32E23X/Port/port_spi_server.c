@@ -53,7 +53,7 @@ hdl_spi_server_private_t *spi = (hdl_spi_server_private_t *)context;
 }
 
 hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable) {
-  static coroutine_desc_static_t spi_task_buf;
+  //static coroutine_desc_static_t spi_task_buf;
   static linked_list_t spis = NULL;
   hdl_spi_server_private_t *spi = (hdl_spi_server_private_t*)desc;
   rcu_periph_enum rcu;

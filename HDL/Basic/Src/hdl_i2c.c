@@ -1,159 +1,163 @@
 #include "hdl.h"
 #include "CodeLib.h"
 
+#define TRANSACTION_OVN ((uint32_t)(0xAF583DEA))
 typedef struct {
   /* private */
   __linked_list_object__
+  PRIVATE(HDL_I2C_HW_MESSAGE_PRV_SIZE);
   /* public */
   uint32_t address;
   uint8_t *buffer;
   uint32_t buffer_size;
-  uint32_t data_transfered;
-  hdl_i2c_message_flags_t flags;
+  hdl_i2c_message_options_t options;
 } hdl_i2c_message_private_t;
-
-#define HDL_I2C_TRANSACTION_OVN   ((uint32_t)(0x35768470))
-#define HDL_I2C_OVN               ((uint32_t)(0x9025F3AC))
 
 typedef struct {
   /* private */
+  uint32_t ovn;
   __linked_list_object__
   linked_list_t message_list;
-  uint32_t ovn;
   hdl_i2c_transaction_state_t state;
 } hdl_i2c_transaction_private_t;
 
 typedef struct {
+  /* public */
+  hdl_module_t module;
+  const hdl_i2c_hw_t *hw_conf;
   /* private */
   linked_list_t transaction_queue;
-  hdl_i2c_message_private_t message_buf;
-  uint32_t ovn;
-  LinkedListItem_t *current_message;
-  /* public */
-  const hdl_i2c_hw_t *hw_conf;
-  hdl_hal_i2c_t hal;
-  event_handler_t *server_event_cb;
-  void *context;
+  linked_list_item_t *current_message;
+  __linked_list_object__;
+  PRIVATE(HDL_I2C_HAL_PRV_SIZE);
 } hdl_i2c_private_t;
 
 _Static_assert(sizeof(hdl_i2c_message_private_t) == sizeof(hdl_i2c_message_t), "In hdl_i2c.h data structure size of hdl_i2c_message_t doesn't match, check HDL_I2C_MESSAGE_PRV_SIZE");
 _Static_assert((offsetof(hdl_i2c_message_private_t, address) == offsetof(hdl_i2c_message_t, address)) ||
+               (offsetof(hdl_i2c_message_private_t, options) == offsetof(hdl_i2c_message_t, options)) ||
                (offsetof(hdl_i2c_message_private_t, buffer) == offsetof(hdl_i2c_message_t, buffer)) ||
-               (offsetof(hdl_i2c_message_private_t, buffer_size) == offsetof(hdl_i2c_message_t, buffer_size)) ||
-               (offsetof(hdl_i2c_message_private_t, data_transfered) == offsetof(hdl_i2c_message_t, data_transfered)) ||
-               (offsetof(hdl_i2c_message_private_t, flags) == offsetof(hdl_i2c_message_t, flags)), "In hdl_i2c.h hdl_i2c_message_t properties order doesn't match");
+               (offsetof(hdl_i2c_message_private_t, buffer_size) == offsetof(hdl_i2c_message_t, buffer_size)), "In hdl_i2c.h hdl_i2c_message_t properties order doesn't match");
 
 _Static_assert(sizeof(hdl_i2c_transaction_private_t) == sizeof(hdl_i2c_transaction_t), "In hdl_i2c.h data structure size of hdl_i2c_transaction_t doesn't match, check HDL_I2C_TRANSACTION_PRV_SIZE");
 
 _Static_assert(sizeof(hdl_i2c_private_t) == sizeof(hdl_i2c_t), "In hdl_i2c.h data structure size of hdl_i2c_t doesn't match, check HDL_I2C_PRV_SIZE");
-_Static_assert((offsetof(hdl_i2c_private_t, hw_conf) == offsetof(hdl_i2c_t, hw_conf)) &&
-               (offsetof(hdl_i2c_private_t, hal) == offsetof(hdl_i2c_t, hal)) &&
-               (offsetof(hdl_i2c_private_t, server_event_cb) == offsetof(hdl_i2c_t, server_event_cb)), "In hdl_i2c.h hdl_i2c_t properties order doesn't match");
+_Static_assert((offsetof(hdl_i2c_private_t, hw_conf) == offsetof(hdl_i2c_t, hw_conf)) , "In hdl_i2c.h hdl_i2c_t properties order doesn't match");
 
-static uint8_t _hdl_i2c_init(hdl_i2c_private_t *i2c) {
-  if(i2c != NULL) {
-    linked_list_clear(&i2c->transaction_queue);
-    i2c->ovn = HDL_I2C_OVN;
-    i2c->current_message = NULL;
-    //i2c->state = 
-    hdl_i2c((hdl_i2c_t *)i2c, HDL_TRUE);
-    return HDL_TRUE;
-  }
-  return HDL_FALSE;
-}
-
-static inline uint8_t _hdl_i2c_desc_is_invalid(hdl_i2c_private_t *i2c) {
-  return (i2c == NULL) || ((i2c->ovn != HDL_I2C_OVN) && !_hdl_i2c_init(i2c));
-}
-
-static inline uint8_t _hdl_i2c_tr_desc_is_invalid(hdl_i2c_transaction_private_t *tr) {
-  return (tr == NULL) || (tr->ovn != HDL_I2C_TRANSACTION_OVN) || (tr->state != HDL_I2C_TRANSACTION_NEW);
-}
-
-void hdl_i2c_client_transaction_init_reset(hdl_i2c_transaction_t *transaction) {
-  hdl_i2c_transaction_private_t *tr = (hdl_i2c_transaction_private_t *)transaction;
-  if(tr != NULL) {
-    if(tr->ovn == HDL_I2C_TRANSACTION_OVN) {
-      if(tr->state == HDL_I2C_TRANSACTION_EXECUTING)
-        tr->state = HDL_I2C_TRANSACTION_TERMINATING;
-      if(tr->state == HDL_I2C_TRANSACTION_TERMINATING)
-        return;
-    }
-    linked_list_unlink(linked_list_item(tr));
-    tr->ovn = HDL_I2C_TRANSACTION_OVN;
-    tr->state = HDL_I2C_TRANSACTION_NEW;
-    linked_list_clear((linked_list_t *)&tr->message_list);
-  }
-}
-
-void hdl_i2c_client_transaction_add_message(hdl_i2c_transaction_t *transaction, hdl_i2c_message_t *message) {
+uint8_t hdl_i2c_client_transaction_add_message(hdl_i2c_transaction_t *transaction, hdl_i2c_message_t *message) {
   hdl_i2c_message_private_t *mess = (hdl_i2c_message_private_t *)message;
   hdl_i2c_transaction_private_t *tr = (hdl_i2c_transaction_private_t *)transaction;
-  if(_hdl_i2c_tr_desc_is_invalid(tr) || (tr->state != HDL_I2C_TRANSACTION_NEW) || (mess == NULL))
-    return;
-  //TODO: check message;
-  message->data_transfered = 0;
+  if((tr == NULL) || (mess == NULL))
+    return HDL_FALSE;
+  if(tr->ovn != TRANSACTION_OVN) {
+    tr->ovn = TRANSACTION_OVN;
+    tr->message_list = NULL;
+  } else switch (tr->state) {
+    case HDL_I2C_TRANSACTION_ENQUEUED:
+    case HDL_I2C_TRANSACTION_EXECUTING:
+    case HDL_I2C_TRANSACTION_TERMINATING:
+      return HDL_FALSE;
+    case HDL_I2C_TRANSACTION_EXECUTED:
+    case HDL_I2C_TRANSACTION_TERMINATED:
+    case HDL_I2C_TRANSACTION_FAILED:
+      linked_list_clear(&tr->message_list);
+    case HDL_I2C_TRANSACTION_NEW:
+    default: break;
+  }
+  // TODO: if message is part of other transaction
+  mess->data_transfered = 0;
+  mess->state = 0;
+  tr->state = HDL_I2C_TRANSACTION_NEW;
   linked_list_insert_last(&tr->message_list, linked_list_item(mess));
+  return HDL_TRUE;
 }
 
 void hdl_i2c_client_enqueue_transaction(hdl_i2c_t *desc, hdl_i2c_transaction_t *transaction) {
   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)desc;
   hdl_i2c_transaction_private_t *tr = (hdl_i2c_transaction_private_t *)transaction;
-  if(_hdl_i2c_desc_is_invalid(i2c) || _hdl_i2c_tr_desc_is_invalid(tr))
+  if((hdl_state(i2c) != HDL_MODULE_INIT_OK) || (tr == NULL) || (tr->ovn != TRANSACTION_OVN) || (tr->state != HDL_I2C_TRANSACTION_NEW))
     return;
-  if(tr->message_list != NULL) {
-    linked_list_insert_last(&i2c->transaction_queue, linked_list_item(tr));
-    tr->state = HDL_I2C_TRANSACTION_ENQUEUED;
-  }
-  else {
-    tr->state = HDL_I2C_TRANSACTION_EXECUTED;
-  }
+  linked_list_insert_last(&i2c->transaction_queue, linked_list_item(tr));
+  tr->state = HDL_I2C_TRANSACTION_ENQUEUED;
 }
 
 hdl_i2c_transaction_state_t hdl_i2c_client_transaction_state(hdl_i2c_transaction_t *transaction) {
   hdl_i2c_transaction_private_t *tr = (hdl_i2c_transaction_private_t *)transaction;
-  if(_hdl_i2c_tr_desc_is_invalid(tr))
+  if((tr == NULL) || (tr->ovn != TRANSACTION_OVN))
     return HDL_I2C_TRANSACTION_UNKNOWN;
   return tr->state;
 }
 
-void hdl_i2c_work(hdl_i2c_t *desc) {
-  hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)desc;
-  if(_hdl_i2c_desc_is_invalid(i2c))
+void hdl_i2c_client_cancel_transaction(hdl_i2c_t *desc, hdl_i2c_transaction_t *transaction) {
+  hdl_i2c_transaction_private_t *tr = (hdl_i2c_transaction_private_t *)transaction;
+  if((tr == NULL) || (tr->ovn != TRANSACTION_OVN))
     return;
-  hdl_i2c_transaction_private_t *tr = linked_list_get_object(hdl_i2c_transaction_private_t, i2c->transaction_queue);
-
-  if(i2c->current_message == NULL) {
-    if(tr != NULL) {
-      tr->state = HDL_I2C_TRANSACTION_EXECUTING;
-      i2c->current_message = tr->message_list;
-    }
-    if(i2c->current_message == NULL)
-      return;
-  }
-
-  if(i2c->current_message != NULL) {
-    if(tr->state == HDL_I2C_TRANSACTION_TERMINATING) {
-      hdl_i2c(desc, HDL_TRUE);
-      linked_list_unlink(i2c->transaction_queue);
+  else switch (tr->state) {
+    case HDL_I2C_TRANSACTION_ENQUEUED:
+      linked_list_unlink(linked_list_item(tr));
       tr->state = HDL_I2C_TRANSACTION_TERMINATED;
+      return;
+    case HDL_I2C_TRANSACTION_EXECUTING:
+      tr->state = HDL_I2C_TRANSACTION_TERMINATING;
+    default : break;
+  }
+}
+
+static void _hdl_i2c_work(linked_list_item_t *i2c_item, void *arg) {
+  hdl_i2c_private_t *i2c = linked_list_get_object(hdl_i2c_private_t, i2c_item);
+  hdl_i2c_transaction_private_t *tr = linked_list_get_object(hdl_i2c_transaction_private_t, i2c->transaction_queue);
+  hdl_i2c_hw_client_xfer_state_t bus_state = hdl_i2c_hw_client_xfer_state((hdl_i2c_t *)i2c);
+  if(tr != NULL) {
+    if(bus_state == HDL_I2C_HW_CLIENT_XFER_STATE_IDLE) {
+      if(i2c->current_message == NULL) {
+        if(tr->state == HDL_I2C_TRANSACTION_EXECUTING) {
+          tr->state = HDL_I2C_TRANSACTION_EXECUTED;
+          linked_list_unlink(linked_list_item(tr));
+        }
+        else {
+          tr->state = HDL_I2C_TRANSACTION_EXECUTING;
+          i2c->current_message = tr->message_list;
+        }
+      }
+      if(i2c->current_message != NULL) {
+        hdl_i2c_message_t *mess = (hdl_i2c_message_t *)linked_list_get_object(hdl_i2c_message_private_t, i2c->current_message);
+        hdl_i2c_client_xfer_message((hdl_i2c_t *)i2c, mess);
+        i2c->current_message = linked_list_find_next_no_overlap(i2c->current_message, NULL, NULL);
+      }
     }
-    else {
-      hdl_i2c_message_t *mess = (hdl_i2c_message_t *)linked_list_get_object(hdl_i2c_message_private_t, i2c->current_message);
-      hdl_i2c_client_xfer_message(desc, mess);
-      // if(transfer complete){
-      //   i2c->current_message = linked_list_find_next_no_overlap(i2c->current_message, NULL, NULL);
-      //   if(i2c->current_message == NULL) {
-      //     tr->state = HDL_I2C_TRANSACTION_EXECUTED;
-      //   }
-      // }
-      // if(transfer err) {
-      //   i2c->current_message = NULL;
-      //   tr->state = HDL_I2C_TRANSACTION_FAILED;
-      // }
+    else if(bus_state == HDL_I2C_HW_CLIENT_XFER_STATE_ONGOING) {
+      if(tr->state == HDL_I2C_TRANSACTION_TERMINATING) {
+        hdl_i2c_hw_client_cancel_transfer((hdl_i2c_t *)i2c);
+        tr->state = HDL_I2C_TRANSACTION_TERMINATED;
+        i2c->current_message = NULL;
+        linked_list_unlink(linked_list_item(tr));
+      }
+    }
+    else if(bus_state == HDL_I2C_HW_CLIENT_XFER_STATE_ERROR) {
+      // TODO: reset bus
+      i2c->current_message = NULL;
+      tr->state = HDL_I2C_TRANSACTION_FAILED;
+      linked_list_unlink(linked_list_item(tr));
     }
   }
-  if(i2c->current_message == NULL) {
-    linked_list_unlink(i2c->transaction_queue);
+}
+
+static void _i2c_client_sheduler(coroutine_desc_t this, uint8_t cancel, void *arg) {
+  linked_list_t i2cs = (linked_list_t)arg;
+  linked_list_do_foreach(i2cs, &_hdl_i2c_work, NULL);
+  return cancel;
+}
+
+hdl_module_state_t hdl_i2c(void *desc, uint8_t enable) {
+  static coroutine_desc_static_t i2c_task_buf;
+  static linked_list_t i2cs = NULL;
+  hdl_i2c_private_t *i2c = (hdl_i2c_private_t*)desc;
+  hdl_module_state_t i2c_state = hdl_i2c_hw(desc, enable);
+  if(i2c_state == HDL_MODULE_INIT_OK) {
+    linked_list_insert_last(&i2cs, linked_list_item(i2c));
+    coroutine_add_static(&i2c_task_buf, &_i2c_client_sheduler, (void *)i2cs);
   }
+  else if(i2c_state == HDL_MODULE_DEINIT_OK) {
+    linked_list_unlink(linked_list_item(i2c));
+  }
+  return i2c_state;
 }

@@ -28,7 +28,7 @@ typedef struct {
   uint32_t debounce_delay;
   uint32_t hold_delay;
   hdl_event_t event;
-  PRIVATE(HDL_BUTTON_PRV_SIZE);
+  PRIVATE(hdl, HDL_BUTTON_PRV_SIZE);
 } hdl_button_t;
 
 hdl_module_state_t hdl_button(void *desc, uint8_t enable);

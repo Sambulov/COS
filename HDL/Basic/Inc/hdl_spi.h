@@ -21,7 +21,7 @@ typedef struct {
   uint32_t tx_len;
   uint32_t rx_skip;
   uint32_t rx_take;
-  PRIVATE(HDL_SPI_MESSAGE_PRV_SIZE);
+  PRIVATE(hdl, HDL_SPI_MESSAGE_PRV_SIZE);
 } hdl_spi_message_t;
 
 typedef enum {

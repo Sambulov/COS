@@ -14,7 +14,7 @@ typedef struct {
   hdl_module_t module;
   uint32_t delay;
   hdl_event_t event;
-  PRIVATE(HDL_TIMER_EVENT_PRV_SIZE);
+  PRIVATE(hdl, HDL_TIMER_EVENT_PRV_SIZE);
 } hdl_timer_event_t;
 
 hdl_module_state_t hdl_timer_event(void *desc, uint8_t enable);

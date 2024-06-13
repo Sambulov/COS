@@ -15,7 +15,7 @@ typedef struct {
 } hdl_double_buffer_t;
 
 typedef struct {
-  PRIVATE(HDL_ISR_BUFFER_PRIVATE_SIZE);
+  PRIVATE(hdl, HDL_ISR_BUFFER_PRIVATE_SIZE);
 } hdl_isr_buffer_t;
 
 typedef struct {

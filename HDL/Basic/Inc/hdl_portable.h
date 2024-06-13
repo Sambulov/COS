@@ -8,7 +8,8 @@
 
 #define HDL_FALSE         0
 #define HDL_TRUE          !HDL_FALSE
-#define PRIVATE(size)                           uint32_t __private[(size + sizeof(void *) - 1) >> 2]
+
+#define PRIVATE(prefix, size)                          uint32_t __##prefix##_private[(size + sizeof(void *) - 1) >> 2]
 
 #include <stddef.h>
 #include __MCU_HAL_HDR__
@@ -25,7 +26,7 @@
 #include "hdl_timer.h"
 #include "hdl_gpio.h"
 #include "hdl_spi.h"
-#include "hdl_i2c.h"
+#include "hdl_i2c_client.h"
 #include "hdl_uart.h"
 
 #endif // HDL_PORTABLE_H_

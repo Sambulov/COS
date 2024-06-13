@@ -29,7 +29,7 @@ typedef dma_channel_enum hdl_dma_channel_number_t;
 
 typedef struct {
   hdl_module_t module;
-  PRIVATE(DMA_PRIVATE_SIZE);
+  PRIVATE(hdl, DMA_PRIVATE_SIZE);
 } hdl_dma_t;
 
 #include "port_dma.h"

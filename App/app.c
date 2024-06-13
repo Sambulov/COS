@@ -144,7 +144,8 @@ void main() {
   #if defined(ATB_3500)
     device_logic();
   #else
-    test();
+    //test();
+    test_i2c();
   #endif
 
   /* test complete? */

@@ -33,7 +33,7 @@
   extern hdl_gpio_pin_t mod_gpio_adc_channel_1v5;
   extern hdl_gpio_pin_t mod_gpio_adc_channel_3v3;
 
-  extern hdl_i2c_hw_t mod_i2c_0;
+  extern hdl_i2c_client_t mod_i2c0_client;
 
   extern bldl_som_boot_lock_t mod_boot_lock;
 

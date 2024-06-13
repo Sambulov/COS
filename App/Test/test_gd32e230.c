@@ -388,7 +388,7 @@ hdl_uart_t hdl_uart_0 = {
   .module.reg = (void *)USART0,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_pin_uart_0_rx.module, &hdl_gpio_pin_uart_0_tx.module,
    &mod_clock_apb2.module, &mod_nvic.module, &mod_timer_ms.module),
-  .iterrupt = HDL_NVIC_IRQ27_USART0,
+  .interrupt = HDL_NVIC_IRQ27_USART0,
   .baudrate = 115200,
   .parity = HDL_UART_PARITY_NONE,
   .stop_bits = HDL_UART_STOP_1BIT,

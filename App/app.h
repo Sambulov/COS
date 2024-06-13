@@ -4,8 +4,8 @@
 #include "bldl.h"
 #include "modules.h"
 #include "atb3500_reg_protocol.h"
-//#include "app_protocol.h"
 
 void test();
+void test_i2c();
 
 #endif // APP_H_

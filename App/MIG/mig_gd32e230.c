@@ -1220,21 +1220,18 @@
     .mode = &mod_gpio_i2c_mode
   };
 
-  hdl_i2c_hw_t mod_i2c_0 = {
-    .module.init = &hdl_i2c,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module, &mod_gpio_soc_scl.module, &mod_gpio_soc_sda.module),
-    //.clock = (hdl_clock_t *)&,
-    //.rx_dma_ch = &mod_i2c_rx_dma
-    //.tx_dma_ch = &mod_i2c_tx_dma
-    //.interrupt = &mod_i2c_int
-    .reg = I2C0,
-    .speed = 100000,
+  const hdl_i2c_client_hw_t mod_i2c_config = {
+    .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
+    .ev_interrupt = HDL_NVIC_IRQ23_I2C0_EV,
     .dtcy = I2C_DTCY_2,
-    .mode = 3,
-    .stretching = 1,
-    .general_call = 1,
-    .addr_size = I2C_ADDFORMAT_7BITS,
-    .addr = 0x3F,
+    .speed = 400000
+  };
+
+  hdl_i2c_client_t mod_i2c0_client = {
+    .module.init = &hdl_i2c,
+    .module.reg = (void *)I2C0,
+    .module.dependencies = hdl_module_dependencies(&mod_gpio_soc_scl.module, &mod_gpio_soc_sda.module, &mod_clock_apb2.module, &mod_nvic.module),
+    .hw_conf = &mod_i2c_config,
   };
 
 #endif

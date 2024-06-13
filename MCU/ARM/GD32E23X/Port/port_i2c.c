@@ -16,7 +16,7 @@
 //   __IO uint32_t FMPCFG;          /*!< I2C Fast mode plus configure register, Address offset: 0x90 */
 // } i2c_periph_t;
 
-// void hdl_hal_i2c_deinit(hdl_i2c_t *desc) {
+// void hdl_hal_i2c_deinit(hdl_i2c_client_t *desc) {
 //   if((desc == NULL || desc->hw_conf == NULL))
 //     return;
 //   /* reset config */
@@ -25,7 +25,7 @@
 //   i2c_deinit(desc->hw_conf->periph);
 // }
 
-// int32_t hdl_i2c(hdl_i2c_t *desc, uint8_t enable) {
+// int32_t hdl_i2c(hdl_i2c_client_t *desc, uint8_t enable) {
 //   if((desc == NULL) || (desc->hw_conf == NULL))
 //     return;
 //   /* reset config */
@@ -84,7 +84,7 @@
 //   return is_timeout(start_tick, timeout);
 // }
 
-// void hdl_i2c_client_xfer_message(hdl_i2c_t *desc, hdl_i2c_message_t *msg) {
+// void hdl_i2c_client_xfer_message(hdl_i2c_client_t *desc, hdl_i2c_message_t *msg) {
 
 // }
 
@@ -135,3 +135,85 @@
 // //   }
 // // }
 
+typedef struct {
+  /* private */
+  PRIVATE(hdl, HDL_I2C_MESSAGE_PRV_SIZE);
+  uint16_t transfered;
+  hdl_i2c_message_state_t state;
+  uint32_t ovn;
+  /* public */
+  uint16_t address;
+  uint8_t *buffer;
+  uint16_t buffer_size;
+  hdl_i2c_message_options_t options;
+} hdl_i2c_message_private_t;
+
+typedef struct {
+  hdl_module_t module;
+  const hdl_i2c_client_hw_t *hw_conf;
+  PRIVATE(hdl, HDL_I2C_PRV_SIZE);
+  hdl_i2c_message_private_t *current_msg;
+  hdl_i2c_message_t *current_msg1;
+  hdl_i2c_message_t *current_msg2;
+  hdl_i2c_message_t *current_msg3;
+} hdl_i2c_client_private_t;
+
+_Static_assert(sizeof(hdl_i2c_message_private_t) == sizeof(hdl_i2c_message_t), "In hdl_i2c.h data structure size of hdl_i2c_message_t doesn't match, check HDL_I2C_MESSAGE_PRV_SIZE");
+_Static_assert(sizeof(hdl_i2c_client_private_t) == sizeof(hdl_i2c_client_t), "In hdl_i2c.h data structure size of hdl_i2c_client_t doesn't match, check HDL_I2C_PRV_SIZE");
+
+#define HDL_MESSAGE_OVN   ((uint16_t)(0xFD357DAB))
+
+void hdl_i2c_hw_client_xfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *msg) {
+  hdl_i2c_message_private_t *message = (hdl_i2c_message_private_t *)msg;
+  hdl_i2c_client_private_t *_i2c = (hdl_i2c_client_private_t *)i2c;
+  if((message != NULL) && (_i2c->current_msg == NULL)) {
+    message->state = 0;
+    message->transfered = 0;
+    message->ovn = HDL_MESSAGE_OVN;
+    _i2c->current_msg = message;
+    //TODO: prepare hw
+  }
+}
+
+hdl_i2c_message_state_t hdl_i2c_client_message_state(hdl_i2c_message_t *msg) {
+  hdl_i2c_message_private_t *mess = (hdl_i2c_message_private_t *)msg;
+  if((mess != NULL) && (mess->ovn == HDL_MESSAGE_OVN))
+    return ((hdl_i2c_message_private_t *)msg)->state;
+  return 0;
+}
+
+uint16_t hdl_i2c_client_message_get_transfered(hdl_i2c_message_t *msg) {
+  hdl_i2c_message_private_t *mess = (hdl_i2c_message_private_t *)msg;
+  if((mess != NULL) && (mess->ovn == HDL_MESSAGE_OVN))
+    return ((hdl_i2c_message_private_t *)msg)->transfered;
+  return 0;
+}
+
+
+hdl_module_state_t hdl_i2c_hw(void *i2c, uint8_t enable) {
+  if(enable){
+    return HDL_MODULE_INIT_OK;
+  }
+  return HDL_MODULE_DEINIT_OK;
+}
+
+
+hdl_i2c_hw_client_xfer_state_t hdl_i2c_hw_client_xfer_state(hdl_i2c_client_t *i2c) {
+  hdl_i2c_client_private_t *_i2c = (hdl_i2c_client_private_t *)i2c;
+  if((_i2c->current_msg != NULL) && (_i2c->current_msg->transfered != _i2c->current_msg->buffer_size)) {
+    _i2c->current_msg->transfered++;
+    return HDL_I2C_HW_CLIENT_XFER_STATE_ONGOING;
+  }
+  _i2c->current_msg = NULL;
+  return HDL_I2C_HW_CLIENT_XFER_STATE_IDLE;
+}
+
+void hdl_i2c_hw_client_bus_reset(hdl_i2c_client_t *i2c) {
+
+}
+
+void hdl_i2c_hw_client_xfer_cancel(hdl_i2c_client_t *i2c) {
+  hdl_i2c_client_private_t *_i2c = (hdl_i2c_client_private_t *)i2c;
+  _i2c->current_msg = NULL;
+  hdl_i2c_hw_client_bus_reset(i2c);
+}

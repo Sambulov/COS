@@ -32,12 +32,12 @@ typedef enum{
 
 typedef struct {
   hdl_module_t module;
-  hdl_nvic_irq_n_t iterrupt;
+  hdl_nvic_irq_n_t interrupt;
   uint32_t baudrate;
   hdl_uart_word_len_t word_len;
   hdl_uart_parity_t parity;
   hdl_uart_stop_bits_t stop_bits;
-  PRIVATE(UART_PRIVATE_SIZE);
+  PRIVATE(hw, UART_PRIVATE_SIZE);
 } hdl_uart_t;
 
 #endif // PORT_UART_H_

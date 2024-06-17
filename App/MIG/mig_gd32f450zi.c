@@ -5,6 +5,7 @@
 #include "bldl.h"
 
 #if defined ( ATB_3500 )
+#include "atb_3500_page_transfer.h"
 
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
@@ -706,10 +707,10 @@ hdl_spi_server_config_t hdl_spi_3_slave_config = {
   .polarity = SPI_CK_PL_LOW_PH_1EDGE,
   .prescale = HDL_SPI_PSC_256,
 };
-uint8_t spi_dma_rx_0_buf[4] = {};
-uint8_t spi_dma_rx_1_buf[4] = {};
-uint8_t spi_dma_tx_0_buf[4] = {0x3A, 0x55, 0x5A, 0xA5};
-uint8_t spi_dma_tx_1_buf[4] = {0x3A, 0x55, 0x5A, 0xA5};
+uint8_t spi_dma_rx_0_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {};
+uint8_t spi_dma_rx_1_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {};
+uint8_t spi_dma_tx_0_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {0x3A, 0x55, 0x5A, 0xA5};
+uint8_t spi_dma_tx_1_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {0x3A, 0x55, 0x5A, 0xA5};
 
 hdl_double_buffer_t spi_rx_buffer = {
     .data[0] = spi_dma_rx_0_buf,

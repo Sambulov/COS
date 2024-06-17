@@ -5,6 +5,7 @@
 #include "bldl.h"
 
 #if defined ( ATB_3500 )
+#include "atb_3500_page_transfer.h"
 
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
@@ -12,9 +13,9 @@
 #define HDL_PLL_MUL_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc16m, mod_clock_hxtal */
 #define HDL_SYS_CLOCK                     mod_clock_pll_p_prescaler     /* Can be clocked by: mod_clock_pll_p_prescaler, mod_clock_hxtal, mod_clock_irc16m */
 #define HDL_PLL_VCO_PRESCALER             4                            /* Can be 2, 3 .. 63 */
-#define HDL_PLL_N_MULTIPLY                80                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
+#define HDL_PLL_N_MULTIPLY                96                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
 #define HDL_PLL_P_PRESCALER               2                             /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
-#define HDL_PLL_Q_PRESCALER               15                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
+#define HDL_PLL_Q_PRESCALER               10                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
 #define HDL_AHB_PRESCALER                 1                             /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
 #define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_APB2_PRESCALER                2                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
@@ -154,7 +155,7 @@ hdl_clock_counter_t mod_systick_counter = {
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),  // add ahb
   .module.reg = (void *)SysTick,
   .diction = HDL_DOWN_COUNTER,
-  .counter_reload = 200000 - 1,
+  .counter_reload = 240000 - 1,
 };
 hdl_clock_counter_t mod_timer0_counter = {
   .module.init = &hdl_clock_counter,
@@ -262,7 +263,7 @@ hdl_gpio_mode_t hdl_gpio_mode_analog = {
 hdl_gpio_mode_t hdl_gpio_spi_mode = {
     .type = GPIO_MODE_AF,
     .pull = GPIO_PUPD_NONE,
-    .ospeed = GPIO_OSPEED_50MHZ,
+    .ospeed = GPIO_OSPEED_MAX,
     .af = GPIO_AF_5,
     .otype = GPIO_OTYPE_PP,
 };
@@ -616,7 +617,7 @@ hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
   .mode = HDL_DMA_MODE_SINGLE,
   .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
-  .priority = HDL_DMA_PRIORITY_HIGH,
+  .priority = HDL_DMA_PRIORITY_ULTRA_HIGH,
 };
 
   hdl_dma_channel_t mod_dma_ch_spi_3_m2m = {
@@ -630,7 +631,7 @@ hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
   .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
   .mode = HDL_DMA_MODE_SINGLE,
   .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_0,
-  .priority = HDL_DMA_PRIORITY_LOW
+  .priority = HDL_DMA_PRIORITY_ULTRA_HIGH
 };
 /**************************************************************
  *                        ADC
@@ -705,10 +706,10 @@ hdl_spi_server_config_t hdl_spi_3_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_1EDGE
 };
-uint8_t spi_dma_rx_0_buf[4] = {};
-uint8_t spi_dma_rx_1_buf[4] = {};
-uint8_t spi_dma_tx_0_buf[4] = {0x3A, 0x55, 0x5A, 0xA5};
-uint8_t spi_dma_tx_1_buf[4] = {0x3A, 0x55, 0x5A, 0xA5};
+uint8_t spi_dma_rx_0_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {};
+uint8_t spi_dma_rx_1_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {};
+uint8_t spi_dma_tx_0_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {0x3A, 0x55, 0x5A, 0xA5};
+uint8_t spi_dma_tx_1_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {0x3A, 0x55, 0x5A, 0xA5};
 
 hdl_double_buffer_t spi_rx_buffer = {
     .data[0] = spi_dma_rx_0_buf,

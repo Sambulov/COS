@@ -178,7 +178,7 @@ void state_smarc_power_up(void) {
         case 2: {
             if(get_ms_time_from(time_stmap_ms) >= DELAY_MS_SECONDARY_POWER_STABLE) {
                 /* TODO: Here we cycling  */
-                hdl_gpio_write(get_object_do_led_1_0(), HDL_GPIO_ON_WRAP(get_object_do_led_1_0()));
+                //hdl_gpio_write(get_object_do_led_1_0(), HDL_GPIO_ON_WRAP(get_object_do_led_1_0()));
                 sm->sub_state = 3;
             }
             else {

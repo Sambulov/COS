@@ -10,13 +10,39 @@
 
 #if defined(ATB_3500)
 
+
+#define ATB_3500_SECTOR_DATA_SIZE                   ((uint32_t)32)
 #define ATB_3500_PAGE_TRANSFER_READ_SECTOR_SIZE     ((uint32_t)150)
 #define ATB_3500_PAGE_TRANSFER_WRITE_SECTOR_SIZE    ((uint32_t)150)
+
 
 #define ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE (ATB_3500_PAGE_TRANSFER_READ_SECTOR_SIZE +         \
                                                         ATB_3500_PAGE_TRANSFER_WRITE_SECTOR_SIZE)
 
 #pragma pack(1)
+
+typedef enum {
+    ATB_3500_SECTOR_TRANSFER_SM_INITIAL = (uint8_t)0,
+    ATB_3500_SECTOR_TRANSFER_SM_PROCCEDING = (uint8_t)1,
+    ATB_3500_SECTOR_TRNASFER_SM_COMPLETED = (uint8_t)2,
+    ATB_3500_SECTOR_TRNASFER_SM_FAILED = (uint8_t)3,
+} atb_3500_sector_transfer_state_machine_e;
+
+/* This function have to be implement by user */
+typedef uint8_t (*sector_transfer_client_request)(void *arg, const uint8_t *data, int16_t lenght);
+typedef uint8_t (*sector_transfer_server_answer)(void *arg, uint8_t *data, int16_t lenght);
+
+typedef struct {
+    /* Public */
+    sector_transfer_client_request client_request;
+    sector_transfer_server_answer server_answer;
+    /* Private */
+    uint8_t state_machine;                  /* atb_3500_sector_transfer_state_machine_e */
+    uint8_t current_destination_port;
+    uint8_t current_sequence_number;
+    uint8_t acknoledgment_number;
+
+} atb3500_sector_transfer_handler_t;
 
 typedef struct {
     uint8_t read_sector[ATB_3500_PAGE_TRANSFER_READ_SECTOR_SIZE];
@@ -28,10 +54,10 @@ typedef struct {
     uint8_t sequence_number;         /* Used to identify transaction number */
     uint8_t acknoledgment_number;    /* Used to acknowledge data transferring (server have to send this number + 1)*/
     uint8_t
-    flag_reset            : 1,       /* Used to notify issue with transferring */
+    flag_fault            : 1,       /* Used to notify issue with transferring */
     dummy                 : 7;       /* 0 - default value */
-    uint8_t data[32];                /* Data sector */
-} atb_3500_segment_strcut_t;
+    uint8_t data[ATB_3500_SECTOR_DATA_SIZE];                /* Data sector */
+} atb_3500_segment_struct_t;
 
 typedef struct {
     uint8_t cmd;
@@ -51,9 +77,9 @@ typedef struct {
 } atb_3500_sector_usart_buff_t;
 
 typedef struct {
-    atb_3500_segment_strcut_t spi_sector;      /* 36 bytes */
-    atb_3500_segment_strcut_t i2c_secor;       /* 36 bytes */
-    atb_3500_segment_strcut_t usart_sector;    /* 36 bytes */
+    atb_3500_segment_struct_t spi_sector;      /* 36 bytes */
+    atb_3500_segment_struct_t i2c_secor;       /* 36 bytes */
+    atb_3500_segment_struct_t usart_sector;    /* 36 bytes */
     /* Available for writing */
     /* X1 connector */
     uint8_t do_lte_modem_reset;                /* 1 byte */
@@ -77,9 +103,9 @@ typedef struct {
 } atb_3500_page_transfer_read_sector_t;
 
 typedef struct {
-    atb_3500_segment_strcut_t spi_sector;      /* 36 bytes */
-    atb_3500_segment_strcut_t i2c_secor;       /* 36 bytes */
-    atb_3500_segment_strcut_t usart_sector;    /* 36 bytes */
+    atb_3500_segment_struct_t spi_sector;      /* 36 bytes */
+    atb_3500_segment_struct_t i2c_secor;       /* 36 bytes */
+    atb_3500_segment_struct_t usart_sector;    /* 36 bytes */
     uint8_t di_module_addres_1;                /* 1 byte */
     uint8_t di_module_addres_2;                /* 1 byte */
     uint8_t di_module_addres_3;                /* 1 byte */

@@ -78,19 +78,19 @@ void state_common(void) {
     /* Every 1 ms */
     if(get_ms_time_from(time_stamp_1_ms) >= 1) {
         time_stamp_1_ms = get_ms_time();
-        //device_adc_proc(&od);
+        device_adc_proc(&od);
         device_check_power_status(&od);
         device_relay_control(&od);
     }
     if(od.state_machine.state == DL_STATE_MACHINE_POWER_MONITOR && od.state_machine.sub_state == 0)
-        hdl_gpio_write(get_object_do_led_1_1(), HDL_GPIO_ON_WRAP(get_object_do_led_1_1()));
+        hdl_gpio_write(&mod_do_led_1_0, HDL_GPIO_ON_WRAP(mod_do_led_1_0));
     else
-        hdl_gpio_write(get_object_do_led_1_1(), HDL_GPIO_OFF_WRAP(get_object_do_led_1_1()));
+        hdl_gpio_write(&mod_do_led_1_0, HDL_GPIO_OFF_WRAP(mod_do_led_1_0));
 
     if(od.state_machine.state == DL_STATE_MACHINE_POWER_RESET && od.state_machine.sub_state == 0)
-        hdl_gpio_write(get_object_do_led_1_2(), HDL_GPIO_ON_WRAP(get_object_do_led_1_2()));
+        hdl_gpio_write(&mod_do_led_1_2, HDL_GPIO_ON_WRAP(mod_do_led_1_2));
     else
-        hdl_gpio_write(get_object_do_led_1_2(), HDL_GPIO_OFF_WRAP(get_object_do_led_1_2()));
+        hdl_gpio_write(&mod_do_led_1_2, HDL_GPIO_OFF_WRAP(mod_do_led_1_2));
 }   
 
 void state_initial(void) {
@@ -115,42 +115,42 @@ void state_initial(void) {
             od.sb.sb_24v_poe_is_enable = 0;
 
 
-            hdl_gpio_write(get_object_do_smarc_reset(), HDL_GPIO_ON_WRAP(get_object_do_smarc_reset()));
-            hdl_gpio_write(get_object_do_lte_reset(), HDL_GPIO_ON_WRAP(get_object_do_lte_reset()));
+            hdl_gpio_write(&mod_do_smarc_reset, HDL_GPIO_ON_WRAP(mod_do_smarc_reset));
+            hdl_gpio_write(&mod_do_lte_reset, HDL_GPIO_ON_WRAP(mod_do_lte_reset));
 
-            hdl_gpio_write(get_object_do_smarc_irq_1(), HDL_GPIO_OFF_WRAP(get_object_do_smarc_irq_1()));
-            hdl_gpio_write(get_object_do_smarc_irq_2(), HDL_GPIO_OFF_WRAP(get_object_do_smarc_irq_2()));
-            hdl_gpio_write(get_object_do_smarc_button(),HDL_GPIO_OFF_WRAP(get_object_do_smarc_button()));
-            hdl_gpio_write(get_object_do_smarc_boot_0(), HDL_GPIO_OFF_WRAP(get_object_do_smarc_boot_0()));
-            hdl_gpio_write(get_object_do_smarc_boot_1(), HDL_GPIO_OFF_WRAP(get_object_do_smarc_boot_1()));
-            hdl_gpio_write(get_object_do_smarc_boot_2(), HDL_GPIO_OFF_WRAP(get_object_do_smarc_boot_2()));
+            hdl_gpio_write(&mod_do_smarc_irq_1, HDL_GPIO_OFF_WRAP(mod_do_smarc_irq_1));
+            hdl_gpio_write(&mod_do_smarc_irq_2, HDL_GPIO_OFF_WRAP(mod_do_smarc_irq_2));
+            hdl_gpio_write(&mod_do_smarc_button,HDL_GPIO_OFF_WRAP(mod_do_smarc_button));
+            hdl_gpio_write(&mod_do_smarc_boot_0, HDL_GPIO_OFF_WRAP(mod_do_smarc_boot_0));
+            hdl_gpio_write(&mod_do_smarc_boot_1, HDL_GPIO_OFF_WRAP(mod_do_smarc_boot_1));
+            hdl_gpio_write(&mod_do_smarc_boot_2, HDL_GPIO_OFF_WRAP(mod_do_smarc_boot_2));
 
-            hdl_gpio_write(get_object_do_24v_power_on(),HDL_GPIO_OFF_WRAP(get_object_do_24v_power_on()));
-            hdl_gpio_write(get_object_do_5v_power_on(),HDL_GPIO_OFF_WRAP(get_object_do_5v_power_on()));
+            hdl_gpio_write(&mod_do_24v_power_on, HDL_GPIO_OFF_WRAP(mod_do_24v_power_on));
+            hdl_gpio_write(&mod_do_5v_power_on, HDL_GPIO_OFF_WRAP(mod_do_5v_power_on));
             sm->sub_state = 3;
             break;
         }
         /* Wait ADC stable */
         case 3: {
-            //if(od.sb.sb_adc_include_valid_data)
+            if(od.sb.sb_adc_include_valid_data)
                 sm->sub_state = 4;
             break;
         }
         /* Wait 24v stable */
         case 4: {
             uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_24V]);
-            //if( (adc_value >= ADC_24V_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_24V_HIGH_TRHESHOLD_VALUE_MV) ){
-                hdl_gpio_write(get_object_do_5v_power_on(), HDL_GPIO_ON_WRAP(get_object_do_5v_power_on()));
+            if( (adc_value >= ADC_24V_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_24V_HIGH_TRHESHOLD_VALUE_MV) ){
+                hdl_gpio_write(&mod_do_5v_power_on, HDL_GPIO_ON_WRAP(mod_do_5v_power_on));
                 sm->sub_state = 5;
-            //}
+            }
             break;
         }
         /* Wait 5v stable */
         case 5: {
-            //uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_5V]);
-            //if( (adc_value >= ADC_5V_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_5V_HIGH_TRHESHOLD_VALUE_MV) ){
+            uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_5V]);
+            if( (adc_value >= ADC_5V_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_5V_HIGH_TRHESHOLD_VALUE_MV) ){
                 _state_machine_switch(DL_STATE_MACHINE_SMARC_POWER_UP, 0);
-            //}
+            }
             break;
         }
         default:
@@ -170,7 +170,7 @@ void state_smarc_power_up(void) {
         }
         case 1: {
             /* Here we have to check CARRIER_POWER_ON (adc_ain_3) */
-            hdl_gpio_write(get_object_do_smarc_reset(), HDL_GPIO_OFF_WRAP(get_object_do_smarc_reset()));
+            hdl_gpio_write(&mod_do_smarc_reset, HDL_GPIO_OFF_WRAP(mod_do_smarc_reset));
             sm->sub_state = 2;
             time_stmap_ms = get_ms_time();
             break;
@@ -178,31 +178,31 @@ void state_smarc_power_up(void) {
         case 2: {
             if(get_ms_time_from(time_stmap_ms) >= DELAY_MS_SECONDARY_POWER_STABLE) {
                 /* TODO: Here we cycling  */
-                //hdl_gpio_write(get_object_do_led_1_0(), HDL_GPIO_ON_WRAP(get_object_do_led_1_0()));
+                hdl_gpio_write(&mod_do_led_1_0, HDL_GPIO_ON_WRAP(mod_do_led_1_0));
                 sm->sub_state = 3;
             }
             else {
-                // uint8_t power_is_stable = 1;
-                // uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_3V3]);
-                // if( !((adc_value >= ADC_3V3_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_3V3_HIGH_TRHESHOLD_VALUE_MV)) ){
-                //     power_is_stable = 0;
-                // }
-                // adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_2V5]);
-                // if( !((adc_value >= ADC_2V5_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_2V5_HIGH_TRHESHOLD_VALUE_MV)) ){
-                //     power_is_stable = 0;
-                // }
-                // adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_1V8]);
-                // if( !((adc_value >= ADC_1V8_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_1V8_HIGH_TRHESHOLD_VALUE_MV)) ){
-                //     power_is_stable = 0;
-                // }
-                // if(power_is_stable)
+                uint8_t power_is_stable = 1;
+                uint16_t adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_3V3]);
+                if( !((adc_value >= ADC_3V3_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_3V3_HIGH_TRHESHOLD_VALUE_MV)) ){
+                    power_is_stable = 0;
+                }
+                adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_2V5]);
+                if( !((adc_value >= ADC_2V5_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_2V5_HIGH_TRHESHOLD_VALUE_MV)) ){
+                    power_is_stable = 0;
+                }
+                adc_value = filter_mean_get(&od.adc_filter[ATB3500_ADC_1V8]);
+                if( !((adc_value >= ADC_1V8_LOW_TRHESHOLD_VALUE_MV) && (adc_value <= ADC_1V8_HIGH_TRHESHOLD_VALUE_MV)) ){
+                    power_is_stable = 0;
+                }
+                if(power_is_stable)
                     sm->sub_state = 3;
             }
             break;
         }
         case 3: {
-            hdl_gpio_write(get_object_do_24v_power_on(), HDL_GPIO_ON_WRAP(get_object_do_24v_power_on()));
-            hdl_gpio_write(get_object_do_lte_reset(), HDL_GPIO_OFF_WRAP(get_object_do_lte_reset()));
+            hdl_gpio_write(&mod_do_24v_power_on, HDL_GPIO_ON_WRAP(mod_do_24v_power_on));
+            hdl_gpio_write(&mod_do_lte_reset, HDL_GPIO_OFF_WRAP(mod_do_lte_reset));
             od.sb.sb_24v_poe_is_enable = 1;
             _state_machine_switch(DL_STATE_MACHINE_POWER_MONITOR, 0);
             break;
@@ -217,7 +217,7 @@ void state_power_monitor(void) {
     switch (sm->sub_state) {
         /* Init major strcut */
         case 0: {
-            if( (hdl_gpio_read(get_object_di_smarc_reset_feedback())) == HDL_GPIO_ON_WRAP(get_object_di_smarc_reset_feedback()) ) {
+            if( hdl_gpio_read(&mod_di_smarc_reset_feedback) == HDL_GPIO_ON_WRAP(mod_di_smarc_reset_feedback) ) {
                 _state_machine_switch(DL_STATE_MACHINE_POWER_RESET, 0);
             }
             if(od.error.dl_error_poe_fault || od.error.dl_error_poe_not_good) {
@@ -239,7 +239,7 @@ void state_power_reset(void) {
             if(od.sb.sb_24v_poe_is_enable) {
                 if(od.counter_of_boot_retry > 0) {
                     od.counter_of_boot_retry--;
-                    hdl_gpio_write(get_object_do_smarc_reset(), HDL_GPIO_ON_WRAP(get_object_do_smarc_reset()));
+                    hdl_gpio_write(&mod_do_smarc_reset, HDL_GPIO_ON_WRAP(mod_do_smarc_reset));
                     smarc_reset_time_stamp_ms = get_ms_time();
                     sm->sub_state = 1;
                 }

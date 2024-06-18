@@ -8,10 +8,6 @@ typedef enum {
   GD_ADC_STATE_MACHINE_WORKING,
 } gd_adc_state_machine_e;
 
-typedef struct {
-
-} gd_adc_private_t;
-
 typedef struct{
     hdl_module_t module;
     hdl_adc_resolution_e resolution;
@@ -126,3 +122,12 @@ uint32_t hdl_adc_get_data(hdl_adc_t *hdl_adc, hdl_adc_source_t *src) {
   }
   return HDL_ADC_INVALID_VALUE;
 }
+
+uint32_t hdl_adc_get_age(hdl_adc_t *hdl_adc) {
+  if(hdl_adc != NULL) {
+    hdl_adc_private_t *adc = (hdl_adc_private_t *)hdl_adc;
+    return adc->state_machine == GD_ADC_STATE_MACHINE_WORKING? adc->time_stamp :0;
+  }
+}
+
+//TODO: update age

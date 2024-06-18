@@ -69,7 +69,6 @@ elseif(BOARD STREQUAL "ATB_3500")
   set(MCPU cortex-m4)
   set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
   "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_function"
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_tree"
   "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_lib"
   "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_protocol/atb_3500_page_transfer"
   "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_logic"
@@ -77,7 +76,6 @@ elseif(BOARD STREQUAL "ATB_3500")
   set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
   "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_logic/*.c"
   "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_function/*.c"
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_tree/*.c"
   "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_lib/*.c"
   "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_protocol/atb_3500_page_transfer/*.c"
   )

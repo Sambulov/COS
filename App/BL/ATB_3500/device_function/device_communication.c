@@ -1,12 +1,11 @@
-/*!
-    \file atb_3500_page_transfer.c
-    \author a.bodin
-    
-    \version 2024-06-05, V1.0.0, This file describe major protocol
- */
-
-#if defined(ATB_3500)
 #include "device_logic.h"
+
+void communication_init() {
+    /***********************************************************
+     *                  SPI
+    ***********************************************************/
+    hdl_enable(&mod_spi_3.module);
+}
 
 void device_page_transfer_thread(atb3500_sector_transfer_handler_t *sector_handler,
                                 const atb_3500_segment_struct_t *clent_sector,
@@ -99,7 +98,7 @@ void device_page_transfer_proc(object_dictionary_t *od, atb_3500_page_transfer_r
         else 
             hdl_gpio_write(&mod_do_led_2_2, HDL_GPIO_OFF_WRAP(mod_do_led_2_2));
         /* Watch dog */
-        hdl_timer_event_reset(&mod_timer_event);
+        watchdog_reset();
     }
     uint8_t tx_data_update;
     if(tx_data_update) {
@@ -141,5 +140,3 @@ void device_page_transfer_proc(object_dictionary_t *od, atb_3500_page_transfer_r
             ( (hdl_gpio_read_output(&mod_do_led_2_2)) == (HDL_GPIO_ON_WRAP(mod_do_led_2_2)) ) ? 1 : 0;
     }
 }
-
-#endif /* ATB_3500 */

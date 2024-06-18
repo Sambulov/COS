@@ -14,44 +14,63 @@
     \param[in]      time_stamp_ms
     \return         difference in ms
  */
-uint32_t get_ms_time_from(uint32_t time_stamp_ms);
-
+__STATIC_INLINE uint32_t get_ms_time_from(uint32_t time_stamp_ms) {
+    return hdl_timer_get(&mod_systick_timer_ms) - time_stamp_ms;
+}
 /*!
     \brief          Get current ms counter value
  */
-uint32_t get_ms_time (void);
+__STATIC_INLINE uint32_t get_ms_time (void) {
+  return hdl_timer_get(&mod_systick_timer_ms);
+}
 
-/*!
-    \brief          Reset all field to default value
-    \param[in]      h - pointer to struct
-    \return         void
- */
-void device_object_distonary_init_default(object_dictionary_t *od);
 
-/*!
-    \brief          Init all hardware module
-    \param[in]      h - pointer to struct
-    \return         
-      \retval         DL_STATUS_SUCCES
-      \retval         DL_STATUS_ERROR
- */
-device_logic_status_e device_hardware_init(object_dictionary_t *od);
 
-/*!
-    \brief          Update and filter adc value
- */
-void device_adc_proc(object_dictionary_t* h);
+#define ADC_CHANNEL_AMOUNT  6
+/* Corresponds to array adc index */
+typedef enum {
+    ATB3500_PD_24V     = (uint8_t) 0,
+    ATB3500_PD_24V_POE = (uint8_t) 1,
+    ATB3500_PD_5V      = (uint8_t) 2,
+    ATB3500_PD_3V3     = (uint8_t) 3,
+    ATB3500_PD_2V5     = (uint8_t) 4,
+    ATB3500_PD_1V8     = (uint8_t) 5,
+} atb3500_power_domain_e;
 
-/*!
-    \brief          This function check power status
- */
-void device_check_power_status(object_dictionary_t* h);
+typedef enum {
+    PD_STATE_OFF,
+    PD_STATE_ENABLE,
+    PD_STATE_STABLE_DELAY,
+    PD_STATE_STABLE,
+    PD_STATE_FAULT
+} power_state_e;
 
-/*!
-    \brief          This function describe relay control
- */
+//void power_domain_init();
+
+void power_domain_set(atb3500_power_domain_e domain, uint8_t enable);
+uint8_t power_domain_is_stable(atb3500_power_domain_e domain);
+
+
+void smarc_init();
+uint8_t smarc_boot_select(object_dictionary_t *od);
+//void device_check_power_status(object_dictionary_t* h);
+//void device_adc_proc(object_dictionary_t* h);
+
+
+void indicator_init();
 void device_relay_control(object_dictionary_t *od);
 
-uint8_t device_choose_smarc_boot(object_dictionary_t *od);
+
+void connector_init();
+void connector_lte_reset(uint8_t enable);
+
+
+void watchdog_init();
+void watchdog_reset();
+
+
+void communication_init();
+
+
 #endif /* ATB_3500 */
 #endif /* ATB_3500_DEVICE_FUNCTION_H_ */

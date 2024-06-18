@@ -623,9 +623,9 @@ uint8_t hdl_interrupt_request(hdl_nvic_t *ic, hdl_nvic_irq_n_t irq, hdl_delegate
   if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->interrupts == NULL) || (delegate == NULL))
     return HDL_FALSE;
   hdl_nvic_interrupt_private_t **isr = (hdl_nvic_interrupt_private_t **)ic->interrupts;
-  while ((isr != NULL) && (*isr)->irq_type != irq) isr++;
-  if(isr == NULL) return HDL_FALSE;
-  hdl_event_subscribe(&(*isr)->event, delegate);
+  while ((isr != NULL) && (*isr != NULL) && (*isr)->irq_type != irq) isr++;
+  if((isr == NULL) || (*isr == NULL)) return HDL_FALSE;
+  hdl_even_subscribe(&(*isr)->event, delegate);
   uint8_t prio = (((*isr)->priority_group << (8U - ic->prio_bits)) | 
                   ((*isr)->priority & (0xFF >> ic->prio_bits)) & 
                   0xFFUL);

@@ -1,5 +1,3 @@
-#include "hdl_portable.h"
-
 // typedef struct {
 //   __IO uint32_t CTL0;            /*!< I2C Control register 0,                Address offset: 0x00 */
 //   __IO uint32_t CTL1;            /*!< I2C Control register 1,                Address offset: 0x04 */
@@ -134,6 +132,8 @@
 // //     }
 // //   }
 // // }
+#include "hdl_portable.h"
+#include "CodeLib.h"
 
 typedef struct {
   /* private */
@@ -152,16 +152,16 @@ typedef struct {
   hdl_module_t module;
   const hdl_i2c_client_hw_t *hw_conf;
   PRIVATE(hdl, HDL_I2C_PRV_SIZE);
+  __linked_list_object__;
   hdl_i2c_message_private_t *current_msg;
-  hdl_i2c_message_t *current_msg1;
-  hdl_i2c_message_t *current_msg2;
-  hdl_i2c_message_t *current_msg3;
+  hdl_delegate_t ev_isr;
+  hdl_delegate_t er_isr;
 } hdl_i2c_client_private_t;
 
 _Static_assert(sizeof(hdl_i2c_message_private_t) == sizeof(hdl_i2c_message_t), "In hdl_i2c.h data structure size of hdl_i2c_message_t doesn't match, check HDL_I2C_MESSAGE_PRV_SIZE");
 _Static_assert(sizeof(hdl_i2c_client_private_t) == sizeof(hdl_i2c_client_t), "In hdl_i2c.h data structure size of hdl_i2c_client_t doesn't match, check HDL_I2C_PRV_SIZE");
 
-#define HDL_MESSAGE_OVN   ((uint16_t)(0xFD357DAB))
+#define HDL_MESSAGE_OVN   ((uint32_t)(0xFD357DAB))
 
 void hdl_i2c_hw_client_xfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *msg) {
   hdl_i2c_message_private_t *message = (hdl_i2c_message_private_t *)msg;
@@ -189,14 +189,73 @@ uint16_t hdl_i2c_client_message_get_transfered(hdl_i2c_message_t *msg) {
   return 0;
 }
 
+static void _i2c_client_handler(linked_list_item_t *i2c_item, void *arg) {
+  hdl_i2c_client_private_t *i2c = linked_list_get_object(hdl_i2c_client_private_t, i2c_item);
 
-hdl_module_state_t hdl_i2c_hw(void *i2c, uint8_t enable) {
-  if(enable){
-    return HDL_MODULE_INIT_OK;
-  }
-  return HDL_MODULE_DEINIT_OK;
+  //todo
+
 }
 
+static uint8_t _i2c_client_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
+  linked_list_t i2cs = (linked_list_t)arg;
+  linked_list_do_foreach(i2cs, &_i2c_client_handler, NULL);
+  return cancel;
+}
+
+static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
+  hdl_i2c_client_private_t *i2c = (hdl_i2c_client_private_t *)context;
+}
+
+static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
+  hdl_i2c_client_private_t *i2c = (hdl_i2c_client_private_t *)context;
+}
+
+hdl_module_state_t hdl_i2c_hw(void *i2c, uint8_t enable) {
+  static coroutine_desc_static_t i2c_client_task_buff;
+  static linked_list_t i2cs = NULL;
+  hdl_i2c_client_private_t *_i2c = (hdl_i2c_client_private_t *)i2c;
+  rcu_periph_enum rcu;
+  switch ((uint32_t)_i2c->module.reg) {
+    case I2C0:
+      rcu = RCU_I2C0;
+      break;
+    case I2C1:
+      rcu = RCU_I2C1;
+      break;  
+    default:
+      break;
+  }
+  i2c_deinit((uint32_t)_i2c->module.reg);
+  if(enable) {
+    linked_list_insert_last(&i2cs, linked_list_item(_i2c));
+    rcu_periph_clock_enable(rcu);
+    i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->hw_conf->speed, _i2c->hw_conf->dtcy);
+    i2c_mode_addr_config((uint32_t)_i2c->module.reg, I2C_I2CMODE_ENABLE, 
+      (_i2c->hw_conf->addr_10_bits? I2C_ADDFORMAT_10BITS: I2C_ADDFORMAT_7BITS), _i2c->hw_conf->addr0);
+    I2C_SADDR1((uint32_t)_i2c->module.reg) = (_i2c->hw_conf->addr1 & 0xFE);
+    I2C_SADDR1((uint32_t)_i2c->module.reg) |= (_i2c->hw_conf->dual_address? I2C_SADDR1_DUADEN : 0);
+    I2C_CTL0((uint32_t)_i2c->module.reg) |= 
+      (_i2c->hw_conf->general_call_enable? I2C_GCEN_ENABLE : I2C_GCEN_DISABLE) |
+      (_i2c->hw_conf->stretch_enable? I2C_SCLSTRETCH_ENABLE : I2C_SCLSTRETCH_DISABLE) |
+      I2C_I2CMODE_ENABLE;
+    
+    _i2c->ev_isr.context = i2c;
+    _i2c->ev_isr.handler = &event_i2c_ev_isr;
+    _i2c->er_isr.context = i2c;
+    _i2c->er_isr.handler = &event_i2c_er_isr;
+    
+    hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)_i2c->module.dependencies[3];
+    hdl_interrupt_request(ic, _i2c->hw_conf->err_interrupt, &_i2c->er_isr);
+    hdl_interrupt_request(ic, _i2c->hw_conf->ev_interrupt, &_i2c->ev_isr);
+
+    coroutine_add_static(&i2c_client_task_buff, &_i2c_client_worker, (void *)i2cs);
+    I2C_CTL0((uint32_t)_i2c->module.reg) |= I2C_CTL0_I2CEN;
+    return HDL_MODULE_INIT_OK;
+  }
+  linked_list_unlink(linked_list_item(_i2c));
+  rcu_periph_clock_disable(rcu);
+  return HDL_MODULE_DEINIT_OK;
+}
 
 hdl_i2c_hw_client_xfer_state_t hdl_i2c_hw_client_xfer_state(hdl_i2c_client_t *i2c) {
   hdl_i2c_client_private_t *_i2c = (hdl_i2c_client_private_t *)i2c;
@@ -209,11 +268,7 @@ hdl_i2c_hw_client_xfer_state_t hdl_i2c_hw_client_xfer_state(hdl_i2c_client_t *i2
 }
 
 void hdl_i2c_hw_client_bus_reset(hdl_i2c_client_t *i2c) {
-
-}
-
-void hdl_i2c_hw_client_xfer_cancel(hdl_i2c_client_t *i2c) {
   hdl_i2c_client_private_t *_i2c = (hdl_i2c_client_private_t *)i2c;
   _i2c->current_msg = NULL;
-  hdl_i2c_hw_client_bus_reset(i2c);
+  i2c_stop_on_bus((uint32_t)_i2c->module.reg);
 }

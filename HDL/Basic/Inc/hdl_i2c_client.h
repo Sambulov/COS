@@ -67,7 +67,6 @@ typedef enum {
 hdl_module_state_t hdl_i2c_hw(void *i2c, uint8_t enable);
 
 void hdl_i2c_hw_client_xfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *msg);
-void hdl_i2c_hw_client_xfer_cancel(hdl_i2c_client_t *i2c);
 hdl_i2c_hw_client_xfer_state_t hdl_i2c_hw_client_xfer_state(hdl_i2c_client_t *i2c);
 void hdl_i2c_hw_client_bus_reset(hdl_i2c_client_t *i2c);
 hdl_i2c_message_state_t hdl_i2c_client_message_state(hdl_i2c_message_t *msg);

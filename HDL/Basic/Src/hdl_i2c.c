@@ -124,7 +124,7 @@ static void _hdl_i2c_work(linked_list_item_t *i2c_item, void *arg) {
     }
     else if(bus_state == HDL_I2C_HW_CLIENT_XFER_STATE_ONGOING) {
       if(tr->state == HDL_I2C_TRANSACTION_TERMINATING) {
-        hdl_i2c_hw_client_xfer_cancel((hdl_i2c_client_t *)i2c);
+        hdl_i2c_hw_client_bus_reset((hdl_i2c_client_t *)i2c);
         tr->state = HDL_I2C_TRANSACTION_TERMINATED;
         i2c->current_message = NULL;
         linked_list_unlink(linked_list_item(tr));

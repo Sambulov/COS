@@ -671,66 +671,81 @@
   /**************************************************************
    *  NVIC, IRQ, EXTI
    *************************************************************/
-  hdl_nvic_interrupt_t mod_irq_systick = {
-    .irq_type = HDL_NVIC_EXCEPTION_SysTick,
-    .priority = 0,
-    .priority_group = 0,
-  };
-    hdl_nvic_interrupt_t mod_irq_timer0 = {
-    .irq_type = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
-    .priority = 0,
-    .priority_group = 1,
-  };
-    hdl_nvic_interrupt_t mod_irq_timer2 = {
-    .irq_type = HDL_NVIC_IRQ16_TIMER2,
-    .priority = 2,
-    .priority_group = 2,
-  };
+hdl_nvic_interrupt_t mod_irq_systick = {
+  .irq_type = HDL_NVIC_EXCEPTION_SysTick,
+  .priority = 0,
+  .priority_group = 0,
+};
 
-  hdl_nvic_interrupt_t mod_irq_exti_0_1 = {
-    .irq_type = HDL_NVIC_IRQ5_EXTI0_1,
-    .priority = 0,
-    .priority_group = 0,
-  };
+hdl_nvic_interrupt_t mod_irq_timer0 = {
+  .irq_type = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
+  .priority = 0,
+  .priority_group = 1,
+};
 
-  hdl_nvic_interrupt_t mod_irq_exti_2_3 = {
-    .irq_type = HDL_NVIC_IRQ6_EXTI2_3,
-    .priority = 0,
-    .priority_group = 0,
-  };
+hdl_nvic_interrupt_t mod_irq_timer2 = {
+  .irq_type = HDL_NVIC_IRQ16_TIMER2,
+  .priority = 2,
+  .priority_group = 2,
+};
 
-  hdl_nvic_interrupt_t mod_irq_exti_4_15 = {
-    .irq_type = HDL_NVIC_IRQ7_EXTI4_15,
-    .priority = 0,
-    .priority_group = 0,
-  };
-  hdl_nvic_interrupt_t mod_irq_usart_0 = {
-    .irq_type = HDL_NVIC_IRQ27_USART0,
-    .priority = 0,
-    .priority_group = 0,
-  };
-  hdl_nvic_interrupt_t mod_irq_spi_0 = {
-    .irq_type = HDL_NVIC_IRQ25_SPI0,
-    .priority = 0,
-    .priority_group = 0,
-  };
+hdl_nvic_interrupt_t mod_irq_exti_0_1 = {
+  .irq_type = HDL_NVIC_IRQ5_EXTI0_1,
+  .priority = 0,
+  .priority_group = 0,
+};
 
+hdl_nvic_interrupt_t mod_irq_exti_2_3 = {
+  .irq_type = HDL_NVIC_IRQ6_EXTI2_3,
+  .priority = 0,
+  .priority_group = 0,
+};
 
-  hdl_nvic_exti_t mod_nvic_exti_line_0 = {
-    .line = HDL_EXTI_LINE_0,
-    .mode = HDL_EXTI_MODE_INTERRUPT,
-    .source = HDL_EXTI_SOURCE_PA,
-    .trigger = HDL_EXTI_TRIGGER_FALLING
-  };
+hdl_nvic_interrupt_t mod_irq_exti_4_15 = {
+  .irq_type = HDL_NVIC_IRQ7_EXTI4_15,
+  .priority = 0,
+  .priority_group = 0,
+};
 
-  hdl_nvic_exti_t mod_nvic_exti_line_8 = {
+hdl_nvic_interrupt_t mod_irq_usart_0 = {
+  .irq_type = HDL_NVIC_IRQ27_USART0,
+  .priority = 0,
+  .priority_group = 0,
+};
+
+hdl_nvic_interrupt_t mod_irq_spi_0 = {
+  .irq_type = HDL_NVIC_IRQ25_SPI0,
+  .priority = 0,
+  .priority_group = 0,
+};
+
+hdl_nvic_interrupt_t mod_irq_i2c0_ev = {
+  .irq_type = HDL_NVIC_IRQ23_I2C0_EV,
+  .priority = 0,
+  .priority_group = 0,
+};
+
+hdl_nvic_interrupt_t mod_irq_i2c0_er = {
+  .irq_type = HDL_NVIC_IRQ32_I2C0_ER,
+  .priority = 0,
+  .priority_group = 0,
+};
+
+hdl_nvic_exti_t mod_nvic_exti_line_0 = {
+  .line = HDL_EXTI_LINE_0,
+  .mode = HDL_EXTI_MODE_INTERRUPT,
+  .source = HDL_EXTI_SOURCE_PA,
+  .trigger = HDL_EXTI_TRIGGER_FALLING
+};
+
+hdl_nvic_exti_t mod_nvic_exti_line_8 = {
   .line = HDL_EXTI_LINE_8,
   .mode = HDL_EXTI_MODE_INTERRUPT,
   .source = HDL_EXTI_SOURCE_PB,
   .trigger = HDL_EXTI_TRIGGER_FALLING
 };
 
-  hdl_nvic_exti_t mod_nvic_exti_line_15 = {
+hdl_nvic_exti_t mod_nvic_exti_line_15 = {
   .line = HDL_EXTI_LINE_15,
   .mode = HDL_EXTI_MODE_INTERRUPT,
   .source = HDL_EXTI_SOURCE_PA,
@@ -744,7 +759,7 @@
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .irq_latency = 0, /* TODO: define static assert */
     .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,
-     &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0),
+     &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0, &mod_irq_i2c0_ev, &mod_irq_i2c0_er),
     .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8, &mod_nvic_exti_line_15)
   };
 
@@ -1230,7 +1245,7 @@
   hdl_i2c_client_t mod_i2c0_client = {
     .module.init = &hdl_i2c,
     .module.reg = (void *)I2C0,
-    .module.dependencies = hdl_module_dependencies(&mod_gpio_soc_scl.module, &mod_gpio_soc_sda.module, &mod_clock_apb2.module, &mod_nvic.module),
+    .module.dependencies = hdl_module_dependencies(&mod_gpio_soc_scl.module, &mod_gpio_soc_sda.module, &mod_clock_apb1.module, &mod_nvic.module),
     .hw_conf = &mod_i2c_config,
   };
 

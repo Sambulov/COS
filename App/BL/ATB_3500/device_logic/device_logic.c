@@ -14,7 +14,7 @@
 object_dictionary_t od;
 /* State machine behavior */
 static void state_initial(void);
-static void state_power_monitor(void);
+
 
 /* Function common for all state machine */
 static void state_common(void);
@@ -37,7 +37,7 @@ void device_logic(void) {
                 break;
             }
             case DL_STATE_MACHINE_POWER_MONITOR: {
-                state_power_monitor();
+                //state_power_monitor();
                 break;
             }
             case DL_STATE_MACHINE_POWER_RESET: {
@@ -139,26 +139,9 @@ void state_initial(void) {
 }
 
 
-void state_power_monitor(void) {
-    device_logic_state_machine_t *sm = &od.state_machine;
-    switch (sm->sub_state) {
-        /* Init major strcut */
-        case 0: {
-            if( hdl_gpio_read(&mod_di_smarc_reset_feedback) == HDL_GPIO_ON_WRAP(mod_di_smarc_reset_feedback) ) {
-                //_state_machine_switch(DL_STATE_MACHINE_POWER_RESET, 0);
-            }
-            if(od.error.dl_error_poe_fault || od.error.dl_error_poe_not_good) {
-                //_state_machine_switch(DL_STATE_MACHINE_POWER_RESET, 0);
-            }
-            break;
-        }
-        default:
-            break;
-    }
-}
- void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) {
+void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) {
     __NOP();
- }
+}
 
 
 

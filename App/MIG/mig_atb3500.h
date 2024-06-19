@@ -13,12 +13,12 @@ extern hdl_spi_mem_server_t mod_spi_3;
 /***********************************************************
  *               SMARC POWER UP and SMARC GPIO
 ***********************************************************/
-extern hdl_gpio_pin_t mod_do_smarc_reset;
-extern hdl_gpio_pin_t mod_di_smarc_reset_feedback;
+extern hdl_gpio_pin_t mod_do_smarc_reset_in;
+extern hdl_gpio_pin_t mod_di_smarc_reset_out;
 extern hdl_gpio_pin_t mod_do_smarc_boot_0;
 extern hdl_gpio_pin_t mod_do_smarc_boot_1;
 extern hdl_gpio_pin_t mod_do_smarc_boot_2;
-extern hdl_gpio_pin_t mod_do_smarc_button;
+extern hdl_gpio_pin_t mod_do_smarc_power_btn;
 extern hdl_gpio_pin_t mod_do_smarc_irq_1;
 extern hdl_gpio_pin_t mod_do_smarc_irq_2;
 /***********************************************************

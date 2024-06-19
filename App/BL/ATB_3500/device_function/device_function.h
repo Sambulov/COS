@@ -52,11 +52,18 @@ void power_domain_set(atb3500_power_domain_e domain, uint8_t enable);
 uint8_t power_domain_is_stable(atb3500_power_domain_e domain);
 uint8_t power_domain_event_subscribe(atb3500_power_domain_e domain, hdl_delegate_t *callback);
 
-void smarc_init();
-uint8_t smarc_boot_select(object_dictionary_t *od);
-//void device_check_power_status(object_dictionary_t* h);
-//void device_adc_proc(object_dictionary_t* h);
 
+typedef enum {
+    SMARC_BOOT0 = 0x01,
+    SMARC_BOOT1 = 0x02,
+    SMARC_BOOT2 = 0x04
+} smarc_boot_select_e;
+
+void smarc_init();
+void smarc_boot_select(smarc_boot_select_e boot);
+void smarc_standby_circuits_cb();
+void smarc_runtime_circuits_cb();
+void smarc_runtime_cb();
 
 void indicator_init();
 void device_relay_control(object_dictionary_t *od);

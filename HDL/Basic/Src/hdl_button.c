@@ -133,10 +133,10 @@ uint8_t hdl_btn_sw_press(hdl_button_t *desc) {
   return _hdl_btn_sw_event((hdl_button_private_t *)desc, HDL_BTN_O_DEFAULT, HDL_BTN_O_PRESS);
 }
 
-uint8_t hdl_btn_click(hdl_button_t *desc) {
+uint8_t hdl_btn_sw_click(hdl_button_t *desc) {
   return _hdl_btn_sw_event((hdl_button_private_t *)desc, HDL_BTN_O_DEFAULT, HDL_BTN_O_CLICK_PRESS);
 }
 
-uint8_t hdl_btn_release(hdl_button_t *desc) {
+uint8_t hdl_btn_sw_release(hdl_button_t *desc) {
   return _hdl_btn_sw_event((hdl_button_private_t *)desc, HDL_BTN_O_PRESS, HDL_BTN_O_RELEASE);
 }

@@ -6,124 +6,145 @@
 #define DELAY_MS_SMARC_RESET_AFTER_POWER_ISSUE  ((uint32_t)200)
 #define DELAY_MS_SECONDARY_POWER_STABLE         ((uint32_t)5000)
 
+hdl_module_state_t smarc(void *desc, uint8_t enable);
+
+hdl_button_t power_button = {
+    .module.init = &hdl_button,
+    .module.dependencies = hdl_module_dependencies(&mod_do_smarc_power_btn.module, &mod_systick_timer_ms.module ),
+    .debounce_delay = 50,
+    .hold_delay = 0,
+};
+
+/* depends on:
+  gpio power bad (O)
+  hdl_button pwr_in
+  hdl_button pwr_out
+  gpio carrier_power_on (I)
+  gpio carrier_stand_by (I)
+  gpio reset_in (O)
+  gpio reset_out (O)
+  timer
+  gpio boot 0 (O)
+  gpio boot 1 (O)
+  gpio boot 2 (O)
+*/
+typedef struct {
+    hdl_module_t module;
+    uint8_t carrier_power_on : 1,
+            carrier_stby     : 1,
+            reset_out        : 1;
+}hdl_smarc_t;
+
+hdl_smarc_t mod_smarc = {
+    .module.init = &smarc,
+    .module.dependencies = hdl_module_dependencies(
+        &hdl_null_module /* power good */,
+        &power_button.module /* power button in */,
+        &power_button.module /* power button out */,
+        &hdl_null_module /* carrier_power_on */,
+        &hdl_null_module /* carrier_stand_by */,
+        &mod_do_smarc_reset_in.module, 
+        &mod_di_smarc_reset_out.module,
+        &mod_systick_timer_ms.module,
+        &mod_do_smarc_boot_0.module, 
+        &mod_do_smarc_boot_1.module, 
+        &mod_do_smarc_boot_2.module),
+};
+
+static void _on_power_button_in(uint32_t event_trigger, void *sender, void *context) {
+    hdl_button_t *pow_btn_out = (hdl_button_t *)mod_smarc.module.dependencies[2];
+    if(!HDL_IS_NULL_MODULE(pow_btn_out)) {
+        if(event_trigger == HDL_BTN_EVENT_CLICK)
+            hdl_btn_sw_click(pow_btn_out);
+        //if(event_trigger == HDL_BTN_EVENT_HOLD)
+        //    TODO: force shutdown
+    }
+}
+
+__weak void smarc_standby_circuits_cb() {
+
+}
+
+__weak void smarc_runtime_circuits_cb() {
+
+}
+
+__weak void smarc_runtime_cb() {
+
+}
+
+static uint8_t _smarc_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
+    hdl_smarc_t *smarc = (hdl_smarc_t *)arg;
+    hdl_gpio_pin_t *carrier_pwr_on = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[3];
+    if((HDL_IS_NULL_MODULE(carrier_pwr_on) || HDL_GPIO_IS_ACTIVE(carrier_pwr_on)) && !smarc->carrier_power_on) {
+        smarc->carrier_power_on = 1;
+        smarc_standby_circuits_cb();
+    } 
+
+    hdl_gpio_pin_t *carrier_stby = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[4];
+    if((HDL_IS_NULL_MODULE(carrier_stby) || HDL_GPIO_IS_ACTIVE(carrier_stby)) && !smarc->carrier_stby) {
+        smarc->carrier_stby = 1;
+        smarc_runtime_circuits_cb();
+    }
+
+    hdl_gpio_pin_t *reset_out = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[6];
+    if(!HDL_GPIO_IS_ACTIVE(reset_out) && !smarc->reset_out) {
+        smarc->reset_out = 1;
+        smarc_runtime_cb();
+    }
+    // TODO: other smarc states
+    return cancel;
+}
+
 hdl_module_state_t smarc(void *desc, uint8_t enable) {
+    static coroutine_desc_static_t smarc_task_buf;
+    static hdl_delegate_t pow_btn_delegate;
     if(enable) {
-        hdl_gpio_write(&mod_do_smarc_reset, HDL_GPIO_ON_WRAP(mod_do_smarc_reset));
-        hdl_gpio_write(&mod_do_lte_reset, HDL_GPIO_ON_WRAP(mod_do_lte_reset));
-
-        hdl_gpio_write(&mod_do_smarc_irq_1, HDL_GPIO_OFF_WRAP(mod_do_smarc_irq_1));
-        hdl_gpio_write(&mod_do_smarc_irq_2, HDL_GPIO_OFF_WRAP(mod_do_smarc_irq_2));
-        hdl_gpio_write(&mod_do_smarc_button,HDL_GPIO_OFF_WRAP(mod_do_smarc_button));
-        hdl_gpio_write(&mod_do_smarc_boot_0, HDL_GPIO_OFF_WRAP(mod_do_smarc_boot_0));
-        hdl_gpio_write(&mod_do_smarc_boot_1, HDL_GPIO_OFF_WRAP(mod_do_smarc_boot_1));
-        hdl_gpio_write(&mod_do_smarc_boot_2, HDL_GPIO_OFF_WRAP(mod_do_smarc_boot_2));
-
-        power_domain_set(ATB3500_PD_24V_POE, HDL_FALSE);
-        power_domain_set(ATB3500_PD_5V, HDL_FALSE);
+        hdl_gpio_pin_t *pow_bad_pin = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[0];
+        if(!HDL_IS_NULL_MODULE(pow_bad_pin)) {
+            HDL_GPIO_SET_ACTIVE(pow_bad_pin);
+        }
+        HDL_GPIO_SET_ACTIVE(&mod_do_smarc_reset_in);
+        hdl_button_t *pow_btn_in = (hdl_button_t *)mod_smarc.module.dependencies[1];
+        if(!HDL_IS_NULL_MODULE(pow_btn_in)) {
+            pow_btn_delegate.context = desc;
+            pow_btn_delegate.handler = &_on_power_button_in;
+            hdl_event_subscribe(&pow_btn_in->event, &pow_btn_delegate);
+        }
+        
+        hdl_gpio_pin_t *reset_out = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[6];
+        coroutine_add_static(&smarc_task_buf, &_smarc_worker, desc);
         return HDL_MODULE_INIT_OK;
     }
     return HDL_MODULE_DEINIT_OK;
 }
 
-hdl_module_t mod_smarc = {
-    .init = &smarc,
-    .dependencies = hdl_module_dependencies(
-    /***********************************************************
-     *               SMARC POWER UP and SMARC GPIO
-     ***********************************************************/
-        &mod_do_smarc_reset.module, &mod_di_smarc_reset_feedback.module,
-        &mod_do_smarc_boot_0.module, &mod_do_smarc_boot_1.module, &mod_do_smarc_boot_2.module,
-        &mod_do_smarc_button.module, &mod_do_smarc_irq_1.module, &mod_do_smarc_irq_2.module),
-};
-
 void smarc_init() {
-    hdl_enable(&mod_smarc);
-    //power_domain_init();
+    hdl_enable(&mod_smarc.module);
 }
 
-uint8_t smarc_boot_select(object_dictionary_t *od) {
-    return SUCCESS;
-}
-
-void device_smarc_irq_proc(object_dictionary_t *od) {
-    if(od->error.dl_error_poe_fault)
-        hdl_gpio_write(&mod_do_smarc_irq_1, HDL_GPIO_ON_WRAP(mod_do_smarc_irq_1));
-    else
-        hdl_gpio_write(&mod_do_smarc_irq_1, HDL_GPIO_OFF_WRAP(mod_do_smarc_irq_1));
-    if(od->error.dl_error_poe_not_good)
-        hdl_gpio_write(&mod_do_smarc_irq_2, HDL_GPIO_ON_WRAP(mod_do_smarc_irq_2));
-    else
-        hdl_gpio_write(&mod_do_smarc_irq_2, HDL_GPIO_OFF_WRAP(mod_do_smarc_irq_2));
-}
-
-device_logic_state_machine_t state_machine;
-
-void state_power_reset(void) {
-    static uint32_t smarc_reset_time_stamp_ms;
-    device_logic_state_machine_t *sm = &state_machine;
-    switch (sm->sub_state) {
-        /* Init major strcut */
-        case 0: {
-            hdl_gpio_write(&mod_do_smarc_reset, HDL_GPIO_ON_WRAP(mod_do_smarc_reset));
-            sm->sub_state = 2;
-            break;
-        }
-        case 1: {
-            if(get_ms_time_from(smarc_reset_time_stamp_ms) >= DELAY_MS_SMARC_RESET_AFTER_POWER_ISSUE) {
-                sm->sub_state = 2;
-            }
-            break;
-        }
-        case 2: {
-            //_state_machine_switch(DL_STATE_MACHINE_SMARC_POWER_UP, 0);
-            break;
-        }
-        default:
-            break;
+void smarc_boot_select(smarc_boot_select_e boot) {
+    hdl_gpio_pin_t *boot0 = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[8];
+    hdl_gpio_pin_t *boot1 = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[9];
+    hdl_gpio_pin_t *boot2 = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[10];
+    if(!HDL_IS_NULL_MODULE(boot0)) {
+        hdl_gpio_write(boot0, (boot & SMARC_BOOT0)? !boot0->inactive_default: boot0->inactive_default);
+    }
+    if(!HDL_IS_NULL_MODULE(boot1)) {
+        hdl_gpio_write(boot1, (boot & SMARC_BOOT0)? !boot1->inactive_default: boot1->inactive_default);
+    }
+    if(!HDL_IS_NULL_MODULE(boot2)) {
+        hdl_gpio_write(boot2, (boot & SMARC_BOOT0)? !boot2->inactive_default: boot2->inactive_default);
     }
 }
 
-void state_smarc_power_up(void) {
-    static uint32_t time_stmap_ms = 0;
-    device_logic_state_machine_t *sm = &state_machine;
-    switch (sm->sub_state) {
-        /* Choose smarc boot option */
-        case 0: {
-            //smarc_boot_select(&od);
-            sm->sub_state = 1;
-            break;
-        }
-        case 1: {
-            /* Here we have to check CARRIER_POWER_ON (adc_ain_3) */
-            hdl_gpio_write(&mod_do_smarc_reset, HDL_GPIO_OFF_WRAP(mod_do_smarc_reset));
-            sm->sub_state = 2;
-            time_stmap_ms = get_ms_time();
-            break;
-        }
-        case 2: {
-            if(get_ms_time_from(time_stmap_ms) >= DELAY_MS_SECONDARY_POWER_STABLE) {
-                /* TODO: Here we cycling  */
-                sm->sub_state = 3;
-            }
-            else {
-                uint8_t power_is_stable = 
-                    power_domain_is_stable(ATB3500_PD_3V3) &&
-                    power_domain_is_stable(ATB3500_PD_2V5) &&
-                    power_domain_is_stable(ATB3500_PD_1V8);
-                if(power_is_stable)
-                    sm->sub_state = 3;
-            }
-            break;
-        }
-        case 3: {
-            power_domain_set(ATB3500_PD_24V_POE, HDL_TRUE);
-            // TODO: call on event
-            //connector_lte_reset(HDL_FALSE);
+void smarc_carrier_redy() {
+    HDL_GPIO_SET_INACTIVE(&mod_do_smarc_reset_in);
+}
 
-            //_state_machine_switch(DL_STATE_MACHINE_POWER_MONITOR, 0);
-            break;
-        }
-        default:
-            break;
+void smarc_power_good() {
+    hdl_gpio_pin_t *pow_bad_pin = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[0];
+    if(!HDL_IS_NULL_MODULE(pow_bad_pin)) {
+        HDL_GPIO_SET_INACTIVE(pow_bad_pin);
     }
 }

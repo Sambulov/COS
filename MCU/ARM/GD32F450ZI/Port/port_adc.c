@@ -10,6 +10,8 @@ typedef enum {
 
 typedef struct{
     hdl_module_t module;
+    hdl_nvic_irq_n_t adc_iterrupt;
+    hdl_delegate_t adc_end_of_conversion;
     hdl_adc_resolution_e resolution;
     hdl_adc_data_alignment_t data_alignment;
     uint32_t init_timeout;
@@ -22,11 +24,17 @@ typedef struct{
 
 _Static_assert(sizeof(hdl_adc_private_t) == sizeof(hdl_adc_t), "In hdl_adc.h data structure size of hdl_adc_t doesn't match, check HDL_ADC_PRIVATE_FIELD_SIZE");
 
+static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
+    hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
+    hdl_timer_t *timer = (hdl_timer_t *)hdl_adc->module.dependencies[1];
+    hdl_adc->time_stamp = hdl_timer_get(timer);
+}
+
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)desc;
   if(hdl_adc->module.reg == NULL || hdl_adc->module.dependencies == NULL || hdl_adc->module.dependencies[0] == NULL ||
     hdl_adc->module.dependencies[1] == NULL || hdl_adc->module.dependencies[2] == NULL || hdl_adc->sources == NULL || 
-    hdl_adc->sources[0] == NULL)
+    hdl_adc->sources[0] == NULL || hdl_adc->module.dependencies[3] == NULL)
       return HDL_MODULE_INIT_FAILED;
   //hdl_clock_t *clock = (hdl_clock_t *)hdl_adc->module.dependencies[0];
   hdl_timer_t *timer = (hdl_timer_t *)hdl_adc->module.dependencies[1];
@@ -71,7 +79,12 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         adc_external_trigger_source_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, ADC_EXTTRIG_ROUTINE_T0_CH0); 
         adc_external_trigger_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, EXTERNAL_TRIGGER_DISABLE);
         adc_dma_request_after_last_enable((uint32_t)hdl_adc->module.reg);
+        ADC_CTL0((uint32_t)hdl_adc->module.reg) |= ADC_CTL0_EOCIE;
         adc_enable((uint32_t)hdl_adc->module.reg);
+        hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)hdl_adc->module.dependencies[3];
+        hdl_adc->adc_end_of_conversion.context = desc;
+        hdl_adc->adc_end_of_conversion.handler = &event_adc_end_of_conversion;
+        hdl_interrupt_request(ic, hdl_adc->adc_iterrupt, &hdl_adc->adc_end_of_conversion);
         /* There must be 14 CK_ADC tact */
         for(uint16_t i = 0; i < 10 * 14; i++)
           __NOP();

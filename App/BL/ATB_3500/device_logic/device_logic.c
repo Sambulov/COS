@@ -20,6 +20,8 @@ static void state_power_monitor(void);
 static void state_common(void);
 /* Support function */
 static void _state_machine_switch(device_logic_state_machine_e state, uint8_t substate);
+/* Callback */
+void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context);
 
 /* Major cycle */
 void device_logic(void) {
@@ -67,6 +69,10 @@ void state_common(void) {
         device_relay_control(&od);
     }
 }   
+hdl_delegate_t power_domain_24v_delagate = {
+    .context = &od,
+    .handler = power_domain_24v_rail,
+};
 
 void state_initial(void) {
     device_logic_state_machine_t *sm = &od.state_machine;
@@ -87,6 +93,8 @@ void state_initial(void) {
         }
         /* Hardware init */
         case 1: {
+            power_domain_init();
+            power_domain_event_subscribe(ATB3500_PD_24V, &power_domain_24v_delagate);
             smarc_init();
             indicator_init();
             connector_init();
@@ -148,6 +156,9 @@ void state_power_monitor(void) {
             break;
     }
 }
+ void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) {
+    __NOP();
+ }
 
 
 

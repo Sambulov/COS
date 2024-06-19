@@ -56,6 +56,12 @@ hdl_nvic_interrupt_t mod_irq_spi_3 = {
   .priority = 0,
   .priority_group = 0,
 };
+hdl_nvic_interrupt_t mod_irq_adc = {
+  .irq_type = HDL_NVIC_IRQ18_ADC,
+  .priority = 0,
+  .priority_group = 0,
+};
+
 /***********************************************************
  *                          EXTI
 ***********************************************************/
@@ -73,7 +79,7 @@ hdl_nvic_t mod_nvic = {
   .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
   .module.reg = NVIC,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3),
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc),
   .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_4)
 };
 /***********************************************************
@@ -663,8 +669,9 @@ hdl_adc_source_t mod_adc_source_5_adc_1v8 = {
 };
 hdl_adc_t mod_adc = {
   .module.init = &hdl_adc,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module),
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module, &mod_nvic.module),
   .module.reg = (void *)ADC0,
+  .adc_iterrupt = HDL_NVIC_IRQ18_ADC,
   .resolution = HDL_ADC_RESOLUTION_12BIT,
   .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
   .init_timeout = 3000,

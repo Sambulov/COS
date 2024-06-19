@@ -47,9 +47,10 @@ typedef enum {
 
 //void power_domain_init();
 
+void power_domain_init(void);
 void power_domain_set(atb3500_power_domain_e domain, uint8_t enable);
 uint8_t power_domain_is_stable(atb3500_power_domain_e domain);
-
+uint8_t power_domain_event_subscribe(atb3500_power_domain_e domain, hdl_delegate_t *callback);
 
 void smarc_init();
 uint8_t smarc_boot_select(object_dictionary_t *od);

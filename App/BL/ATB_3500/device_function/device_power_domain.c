@@ -66,6 +66,10 @@ dev_power_domain_private_t mod_power_domain = {
 
 };
 
+void power_domain_init(void) {
+    hdl_enable(&mod_power_domain.module);
+}
+
 static void _power_domain_set(atb3500_power_domain_e domain, hdl_gpio_pin_t *en_pin, uint8_t enable) {
     if(enable) {
         if (mod_power_domain.state[domain] == PD_STATE_OFF) {
@@ -134,20 +138,20 @@ static void _feed_ch_filter(dev_power_domain_private_t *pd, atb3500_power_domain
     uint8_t *cursor = &pd->ch_filter_value_cursor[ch];
     uint8_t *amount = &pd->ch_filter_values_amount[ch];
     pd->ch_filter_values[ch][*cursor] = value * pd->adc_scale[ch] * ADC_REFERENCE_VOLTAGE_MV / ADC_RESOLUTION;
-    *cursor++;
+    (*cursor)++;
     if(*cursor >= MAX_FILTER_MEAN_LENGH)
         *cursor = 0;
     if(*amount < MAX_FILTER_MEAN_LENGH)
-        *amount++;
-    pd->ch_values[ch] = array_median(pd->ch_filter_values[ch], MAX_FILTER_MEAN_LENGH);
+        (*amount)++;
+    pd->ch_values[ch] = array_median(pd->ch_filter_values[ch], *amount);
 }
 
 static uint8_t _power_domain_work(coroutine_desc_t this, uint8_t cancel, void *arg) {
     dev_power_domain_private_t *pd = (dev_power_domain_private_t*)arg;
     uint32_t time_now = get_ms_time();
+    uint32_t adc_current_age = hdl_adc_get_age((hdl_adc_t *)pd->module.dependencies[4]);
     for(int i = 0; i < ADC_CHANNEL_AMOUNT; i++) {
-        uint32_t adc_current_age = hdl_adc_get_age((hdl_adc_t *)pd->module.dependencies[4]);
-        if(pd->adc_age != adc_current_age) { //TODO: !!!if it is new value!!! update driver
+        if(pd->adc_age != adc_current_age) {
             _feed_ch_filter(pd, i, hdl_adc_get_data(&mod_adc, pd->adc_src[i]));
         }
         uint8_t state_current = pd->state[i];
@@ -190,7 +194,7 @@ static uint8_t _power_domain_work(coroutine_desc_t this, uint8_t cancel, void *a
         if(state_current != pd->state[i])
             hdl_event_raise(&pd->power_event[i], pd, pd->state[i]);
     }
-
+    pd->adc_age = adc_current_age;
     return cancel;
 }
 
@@ -209,4 +213,12 @@ hdl_module_state_t power_domain(void *desc, uint8_t enable) {
         return HDL_MODULE_INIT_OK;
     }
     return HDL_MODULE_DEINIT_OK;
+}
+
+uint8_t power_domain_event_subscribe(atb3500_power_domain_e domain, hdl_delegate_t *callback) {
+    if(domain <= ATB3500_PD_1V8) {
+        hdl_event_subscribe(&mod_power_domain.power_event[domain], callback);
+        return HDL_TRUE;
+    }
+    return HDL_FALSE;
 }

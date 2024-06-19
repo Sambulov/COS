@@ -74,8 +74,16 @@ typedef enum {
 } hdl_adc_data_alignment_t;
 
 /* TODO: Amend  uint16_t values to uint32_t values */
+/* depends on:
+  apb2_bus
+  timer
+  dma_ch
+  interrupt controller (nvic)
+ */
 typedef struct{
     hdl_module_t module;
+    hdl_nvic_irq_n_t adc_iterrupt;
+    hdl_delegate_t adc_end_of_conversion;
     hdl_adc_resolution_e resolution;
     hdl_adc_data_alignment_t data_alignment;
     uint32_t init_timeout;

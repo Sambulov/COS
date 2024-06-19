@@ -11,6 +11,16 @@ typedef struct {
   void *reg;
 } hdl_hardware_private_t;
 
+hdl_module_state_t hdl_null_module_init(void *desc, const uint8_t enable) {
+  if(enable)
+    return HDL_MODULE_INIT_OK;
+  return HDL_MODULE_DEINIT_OK;
+}
+
+hdl_module_t hdl_null_module = {
+  .init = &hdl_null_module_init,
+};
+
 _Static_assert(sizeof(hdl_hardware_private_t) == sizeof(hdl_module_t), "In hdl_hw.h data structure size of hdl_module_t doesn't match, check HDL_MODULE_DESC_PRIVATE_SIZE");
 
 static linked_list_t dev_init_queue = NULL;

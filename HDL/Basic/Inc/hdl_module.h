@@ -21,6 +21,8 @@ typedef struct _HDL_MODULE_T_ {
   void *reg;
 } hdl_module_t;
 
+extern hdl_module_t hdl_null_module;
+
 #define hdl_module_dependencies(...) ((hdl_module_t *[]){__VA_ARGS__, NULL})
 
 void hdl_enable(hdl_module_t *desc);

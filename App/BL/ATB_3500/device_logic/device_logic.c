@@ -93,7 +93,6 @@ void power_domain_2v5_rail(uint32_t event_trigger, void *sender, void *context) 
 
 
 void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *context) {
-
     if(event_trigger == SMARC_CARRIER_EVENT_STBY_CIRCUITS) {
         power_domain_set(&mod_power_domain, ATB3500_PD_3V3, HDL_TRUE);
         power_domain_set(&mod_power_domain, ATB3500_PD_2V5, HDL_TRUE);
@@ -126,6 +125,24 @@ void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) 
     }
 }
 
+bldl_communication_t smarc_comm = {
+    .module.init = communication,
+    .module.dependencies = hdl_module_dependencies(&mod_spi_3.module),
+};
+
+typedef struct {
+    uint8_t x[12]
+    /* data */
+} test_rx_comm_t;
+
+typedef struct {
+    uint8_t x[12]
+    /* data */
+} test_tx_comm_t;
+
+test_rx_comm_t test_rx;
+test_tx_comm_t test_tx;
+
 void device_logic(void) {
     static dev_context_t context;
     hdl_enable(&mod_power_domain.module);
@@ -134,11 +151,20 @@ void device_logic(void) {
     hdl_enable(&mod_smarc.module);
     smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
 
+    hdl_enable(&smarc_comm.module);
+    communication_mem_map_t map_test_tx = { .offset = 3, .size = sizeof(test_tx_comm_t) };
+    communication_mem_map_t map_test_rx = { .offset = 20, .size = sizeof(test_rx_comm_t) };
+    communication_map_tx(&smarc_comm, &map_test_tx);
+    communication_map_rx(&smarc_comm, &map_test_rx);
+
     indicator_init();
     connector_init();
     watchdog_init();
-    communication_init();
+
     while (1) {
+        if(communication_get(&smarc_comm, &map_test_rx, (void*)&test_rx)) {
+            __NOP();
+        }
         cooperative_scheduler(false);
     }
 }

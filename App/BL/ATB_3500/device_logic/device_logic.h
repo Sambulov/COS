@@ -11,6 +11,7 @@
 #include "bldl.h"
 #include "bldl_power_domain.h"
 #include "bldl_smarc_carrier.h"
+#include "bldl_communication.h"
 #include "CodeLib.h"
 #include "mig_atb3500.h"
 

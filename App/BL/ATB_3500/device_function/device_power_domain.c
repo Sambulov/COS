@@ -21,7 +21,7 @@
 #define ADC_2V5_LOW_TRHESHOLD_VALUE_MV          ((uint16_t)2250)   /* -10% from 2.5v */
 #define ADC_2V5_HIGH_TRHESHOLD_VALUE_MV         ((uint16_t)2750)   /* +10% from 2.5v */
 #define ADC_1V8_LOW_TRHESHOLD_VALUE_MV          ((uint16_t)1620)   /* -10% from 1.8v */
-#define ADC_1V8_HIGH_TRHESHOLD_VALUE_MV         ((uint16_t)1980)   /* +10% from 1.8v */
+#define ADC_1V8_HIGH_TRHESHOLD_VALUE_MV         ((uint16_t)2500)   /* +10% from 1.8v */
 
 #define POWER_RAIL_24V_RAISE_DELAY              ((uint32_t)(5000))
 #define POWER_RAIL_24V_STAB_DELAY               ((uint32_t)(100))
@@ -102,10 +102,11 @@ void power_domain_set(atb3500_power_domain_e domain, uint8_t enable) {
         case ATB3500_PD_5V:
             en_pin = &mod_do_5v_power_on;
             break;
-        case ATB3500_PD_24V:
         case ATB3500_PD_3V3:
         case ATB3500_PD_2V5:
         case ATB3500_PD_1V8:
+            break;
+        case ATB3500_PD_24V:
         default:
             return;
     }
@@ -159,6 +160,11 @@ static uint8_t _power_domain_work(coroutine_desc_t this, uint8_t cancel, void *a
             case PD_STATE_OFF:
                 break;
             case PD_STATE_ENABLE:
+                if(i == ATB3500_PD_3V3 || i == ATB3500_PD_2V5 || i == ATB3500_PD_1V8) {
+                    if(pd->state[ATB3500_PD_5V] != PD_STATE_STABLE) {
+                        break;
+                    }
+                }
                 if(TIME_ELAPSED(pd->timestamps[i], POWER_RAIL_24V_RAISE_DELAY, time_now)) {
                     pd->state[i] = PD_STATE_FAULT;
                 }
@@ -170,11 +176,6 @@ static uint8_t _power_domain_work(coroutine_desc_t this, uint8_t cancel, void *a
             case PD_STATE_STABLE_DELAY:
                 if(TIME_ELAPSED(pd->timestamps[i], POWER_RAIL_24V_STAB_DELAY, time_now)) {
                     pd->state[i] = power_domain_is_stable(i)? PD_STATE_STABLE: PD_STATE_FAULT;
-                    if(i == ATB3500_PD_5V) {
-                        _power_domain_set(ATB3500_PD_3V3, NULL, HDL_TRUE);
-                        _power_domain_set(ATB3500_PD_2V5, NULL, HDL_TRUE);
-                        _power_domain_set(ATB3500_PD_1V8, NULL, HDL_TRUE);
-                    }
                 }
                 break;
             case PD_STATE_STABLE:

@@ -715,10 +715,10 @@ hdl_spi_server_config_t hdl_spi_3_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_1EDGE
 };
-uint8_t spi_dma_rx_0_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {};
-uint8_t spi_dma_rx_1_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {};
-uint8_t spi_dma_tx_0_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {0x3A, 0x55, 0x5A, 0xA5};
-uint8_t spi_dma_tx_1_buf[ATB_3500_PAGE_TRANSFER_TOTAL_SECTOR_SIZE] = {0x3A, 0x55, 0x5A, 0xA5};
+uint8_t spi_dma_rx_0_buf[20] = {};
+uint8_t spi_dma_rx_1_buf[20] = {};
+uint8_t spi_dma_tx_0_buf[20] = {0x3A, 0x55, 0x5A, 0xA5};
+uint8_t spi_dma_tx_1_buf[20] = {0x3A, 0x55, 0x5A, 0xA5};
 
 hdl_double_buffer_t spi_rx_buffer = {
     .data[0] = spi_dma_rx_0_buf,

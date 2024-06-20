@@ -110,7 +110,7 @@ uint8_t hdl_spi_mem_tx_buffer_put(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t 
   hdl_spi_mem_server_private_t *spi_private = (hdl_spi_mem_server_private_t*)spi;
   if((spi != NULL) && (buffer != NULL) && (spi->tx_mem->size >= (buffer->size + offset))) {
     spi_private->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST; 
-    uint8_t *data = spi->rx_mem->data[!spi->rx_mem->active_buffer_number];
+    uint8_t *data = spi->tx_mem->data[!spi->tx_mem->active_buffer_number];
     for(uint32_t i = offset; i < buffer->size; i++)
       data[i] = buffer->data[i - offset];
     spi_private->flags |= SPI_MEM_FLAGS_SWITCH_TX_REQUEST;

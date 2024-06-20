@@ -131,17 +131,17 @@ bldl_communication_t smarc_comm = {
 };
 
 typedef struct {
-    uint8_t x[12]
+    uint8_t x[12];
     /* data */
 } test_rx_comm_t;
 
 typedef struct {
-    uint8_t x[12]
+    uint8_t x[12];
     /* data */
 } test_tx_comm_t;
 
 test_rx_comm_t test_rx;
-test_tx_comm_t test_tx;
+test_tx_comm_t test_tx = {.x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
 
 void device_logic(void) {
     static dev_context_t context;
@@ -153,17 +153,21 @@ void device_logic(void) {
 
     hdl_enable(&smarc_comm.module);
     communication_mem_map_t map_test_tx = { .offset = 3, .size = sizeof(test_tx_comm_t) };
-    communication_mem_map_t map_test_rx = { .offset = 20, .size = sizeof(test_rx_comm_t) };
+    communication_mem_map_t map_test_rx = { .offset = 3, .size = sizeof(test_rx_comm_t) };
     communication_map_tx(&smarc_comm, &map_test_tx);
     communication_map_rx(&smarc_comm, &map_test_rx);
 
     indicator_init();
     connector_init();
     watchdog_init();
-
+    while (!hdl_init_complete()) {
+        cooperative_scheduler(false);
+    }
+    communication_put(&smarc_comm, &map_test_tx, (void*)&test_tx);
     while (1) {
         if(communication_get(&smarc_comm, &map_test_rx, (void*)&test_rx)) {
             __NOP();
+            
         }
         cooperative_scheduler(false);
     }

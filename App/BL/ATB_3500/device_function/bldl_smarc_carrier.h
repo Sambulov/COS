@@ -1,6 +1,8 @@
 #ifndef BLDL_SMARC_CARRIER_H_
 #define BLDL_SMARC_CARRIER_H_
 
+#define BLDL_SMARC_CARRIER_PRV_SIZE    (16)
+
 typedef enum {
     SMARC_CARRIER_BOOT0 = 0x01,
     SMARC_CARRIER_BOOT1 = 0x02,
@@ -28,10 +30,7 @@ typedef enum {
 */
 typedef struct {
     hdl_module_t module;
-    uint8_t carrier_power_on : 1,
-            carrier_stby     : 1,
-            reset_out        : 1;
-    void *bl_context;
+    PRIVATE(bldl, BLDL_SMARC_CARRIER_PRV_SIZE);
 } bldl_smarc_carrier_t;
 
 hdl_module_state_t bldl_smarc_carrier(void *desc, uint8_t enable);

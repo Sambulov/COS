@@ -16,6 +16,8 @@ typedef struct {
     void * event_context;
 } bldl_smarc_carrier_private_t;
 
+_Static_assert(sizeof(bldl_smarc_carrier_private_t) == sizeof(bldl_smarc_carrier_t), "In bldl_smarc_carrier.h data structure size of bldl_smarc_carrier_t doesn't match, check BLDL_SMARC_CARRIER_PRV_SIZE");
+
 static void _on_power_button_in(uint32_t event_trigger, void *sender, void *context) {
     bldl_smarc_carrier_private_t *carrier = (bldl_smarc_carrier_private_t *)context;
     hdl_button_t *pow_btn_out = (hdl_button_t *)carrier->module.dependencies[2];

@@ -33,6 +33,7 @@ typedef struct {
     uint8_t carrier_power_on : 1,
             carrier_stby     : 1,
             reset_out        : 1;
+    void *bl_context;
 }hdl_smarc_t;
 
 hdl_smarc_t mod_smarc = {
@@ -49,6 +50,7 @@ hdl_smarc_t mod_smarc = {
         &mod_do_smarc_boot_0.module, 
         &mod_do_smarc_boot_1.module, 
         &mod_do_smarc_boot_2.module),
+    
 };
 
 static void _on_power_button_in(uint32_t event_trigger, void *sender, void *context) {
@@ -61,15 +63,15 @@ static void _on_power_button_in(uint32_t event_trigger, void *sender, void *cont
     }
 }
 
-__weak void smarc_standby_circuits_cb() {
+__weak void smarc_standby_circuits_cb(void *context) {
 
 }
 
-__weak void smarc_runtime_circuits_cb() {
+__weak void smarc_runtime_circuits_cb(void *context) {
 
 }
 
-__weak void smarc_runtime_cb() {
+__weak void smarc_runtime_cb(void *context) {
 
 }
 
@@ -78,19 +80,19 @@ static uint8_t _smarc_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
     hdl_gpio_pin_t *carrier_pwr_on = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[3];
     if((HDL_IS_NULL_MODULE(carrier_pwr_on) || HDL_GPIO_IS_ACTIVE(carrier_pwr_on)) && !smarc->carrier_power_on) {
         smarc->carrier_power_on = 1;
-        smarc_standby_circuits_cb();
+        smarc_standby_circuits_cb(smarc->bl_context);
     } 
 
     hdl_gpio_pin_t *carrier_stby = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[4];
     if((HDL_IS_NULL_MODULE(carrier_stby) || HDL_GPIO_IS_ACTIVE(carrier_stby)) && !smarc->carrier_stby) {
         smarc->carrier_stby = 1;
-        smarc_runtime_circuits_cb();
+        smarc_runtime_circuits_cb(smarc->bl_context);
     }
 
     hdl_gpio_pin_t *reset_out = (hdl_gpio_pin_t *)mod_smarc.module.dependencies[6];
     if(!HDL_GPIO_IS_ACTIVE(reset_out) && !smarc->reset_out) {
         smarc->reset_out = 1;
-        smarc_runtime_cb();
+        smarc_runtime_cb(smarc->bl_context);
     }
     // TODO: other smarc states
     return cancel;
@@ -119,8 +121,9 @@ hdl_module_state_t smarc(void *desc, uint8_t enable) {
     return HDL_MODULE_DEINIT_OK;
 }
 
-void smarc_init() {
+void smarc_init(void* context) {
     hdl_enable(&mod_smarc.module);
+    mod_smarc.bl_context = context;
 }
 
 void smarc_boot_select(smarc_boot_select_e boot) {
@@ -131,10 +134,10 @@ void smarc_boot_select(smarc_boot_select_e boot) {
         hdl_gpio_write(boot0, (boot & SMARC_BOOT0)? !boot0->inactive_default: boot0->inactive_default);
     }
     if(!HDL_IS_NULL_MODULE(boot1)) {
-        hdl_gpio_write(boot1, (boot & SMARC_BOOT0)? !boot1->inactive_default: boot1->inactive_default);
+        hdl_gpio_write(boot1, (boot & SMARC_BOOT1)? !boot1->inactive_default: boot1->inactive_default);
     }
     if(!HDL_IS_NULL_MODULE(boot2)) {
-        hdl_gpio_write(boot2, (boot & SMARC_BOOT0)? !boot2->inactive_default: boot2->inactive_default);
+        hdl_gpio_write(boot2, (boot & SMARC_BOOT2)? !boot2->inactive_default: boot2->inactive_default);
     }
 }
 

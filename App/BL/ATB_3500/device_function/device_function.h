@@ -59,11 +59,13 @@ typedef enum {
     SMARC_BOOT2 = 0x04
 } smarc_boot_select_e;
 
-void smarc_init();
+void smarc_init(void *context);
 void smarc_boot_select(smarc_boot_select_e boot);
-void smarc_standby_circuits_cb();
-void smarc_runtime_circuits_cb();
-void smarc_runtime_cb();
+void smarc_power_good();
+void smarc_carrier_redy();
+void smarc_runtime_cb(void *context);
+void smarc_standby_circuits_cb(void *context);
+void smarc_runtime_circuits_cb(void *context);
 
 void indicator_init();
 void device_relay_control(object_dictionary_t *od);

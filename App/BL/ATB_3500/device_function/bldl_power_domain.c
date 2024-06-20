@@ -20,8 +20,6 @@ typedef struct {
 
 _Static_assert(sizeof(bldl_power_domain_private_t) == sizeof(bldl_power_domain_t), "In bldl_power_domain.h data structure size of bldl_power_domain_t doesn't match, check BLDL_POWER_DOMAIN_PRV_SIZE");
 
-hdl_module_state_t power_domain(void *desc, uint8_t enable);
-
 static void _power_domain_set(bldl_power_domain_private_t *mod_power_domain, atb3500_power_domain_e domain, hdl_gpio_pin_t *en_pin, uint8_t enable) {
     if(enable) {
         if (mod_power_domain->state[domain] == PD_STATE_OFF) {

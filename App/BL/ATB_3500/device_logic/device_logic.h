@@ -9,7 +9,8 @@
 
 #ifdef ATB_3500
 #include "bldl.h"
-#include "power_domain.h"
+#include "bldl_power_domain.h"
+#include "bldl_smarc_carrier.h"
 #include "CodeLib.h"
 #include "mig_atb3500.h"
 

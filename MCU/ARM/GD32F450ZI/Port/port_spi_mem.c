@@ -31,6 +31,7 @@ static void _hdl_spi_mem_full_reset(hdl_spi_mem_server_private_t *spi) {
   init.prescale = HDL_SPI_PSC_2;
   init.nss = SPI_NSS_HARD;
   spi_init((uint32_t)spi->module.reg, &init);
+  SPI_DATA((uint32_t)spi->module.reg) = 0xAA;
   SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_ERRIE;
   hdl_dma_run(
     (hdl_dma_channel_t *)spi->module.dependencies[6], 
@@ -139,11 +140,13 @@ uint8_t hdl_spi_mem_tx_buffer_put(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t 
   if((spi != NULL) && (buffer != NULL) && (spi->tx_mem->size >= (buffer->size + offset))) {
     hdl_dma_channel_t *dma_mem = (hdl_dma_channel_t *)spi->module.dependencies[8];
     hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->module.dependencies[3];
+    hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->module.dependencies[7];
     uint8_t nss_inactive = hdl_gpio_is_inactive_default(nss);
     uint8_t *data = spi->tx_mem->data[!spi->tx_mem->active_buffer_number];
     spi_private->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST;
     if(nss_inactive) {
       data = spi->tx_mem->data[spi->tx_mem->active_buffer_number];
+      hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->tx_mem->data[spi->tx_mem->active_buffer_number], (uint32_t)spi->tx_mem->size);
     }
     hdl_dma_run(dma_mem, (uint32_t)buffer->data, (uint32_t)data, buffer->size);
     while (hdl_dma_get_counter(dma_mem));

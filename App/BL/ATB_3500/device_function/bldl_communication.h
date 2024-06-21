@@ -16,14 +16,16 @@ typedef struct {
     uint32_t offset;
     uint32_t size;
     PRIVATE(bldl, BLDL_COMMUNICATION_MAP_PRV_SIZE);
-} communication_mem_map_t;
+} proto_map_mem_t;
 
 hdl_module_state_t communication(void *desc, uint8_t enable);
 
-uint8_t communication_map_rx(bldl_communication_t *desc, communication_mem_map_t *map);
-uint8_t communication_map_tx(bldl_communication_t *desc, communication_mem_map_t *map);
+uint32_t communication_epoch(bldl_communication_t *desc);
 
-uint8_t communication_get(bldl_communication_t *desc, communication_mem_map_t *map, void *object);
-uint8_t communication_put(bldl_communication_t *desc, communication_mem_map_t *map, void *object);
+uint8_t communication_map_rx(bldl_communication_t *desc, proto_map_mem_t *map);
+uint8_t communication_map_tx(bldl_communication_t *desc, proto_map_mem_t *map);
+
+uint8_t communication_get(bldl_communication_t *desc, proto_map_mem_t *map, void *object);
+uint8_t communication_put(bldl_communication_t *desc, proto_map_mem_t *map, void *object);
 
 #endif //BLDL_COMMUNICATION_H_

@@ -15,6 +15,7 @@ typedef struct {
   uint32_t flags;
   hdl_delegate_t spi_isr;
   hdl_delegate_t nss_isr;
+  uint32_t xfer_epoch;
 } hdl_spi_mem_server_private_t;
 
 _Static_assert(sizeof(hdl_spi_mem_server_private_t) <= sizeof(hdl_spi_mem_server_t), "In port_spi.h data structure size of hdl_spi_mem_server_t doesn't match, check SPI_MEM_SERVER_PRIVATE_SIZE");
@@ -55,7 +56,9 @@ static void _spi_mem_transaction_complete(hdl_spi_mem_server_private_t *spi) {
   }
   /* RX update*/
   if((hdl_dma_get_counter(dma_rx) == 0)) {
+    hdl_timer_t *timer = (hdl_dma_channel_t *)spi->module.dependencies[9];
     spi->flags |= SPI_MEM_FLAGS_RX_BUFFER_READY;
+    spi->xfer_epoch = hdl_timer_get(timer);
     hdl_double_buffer_switch(spi->rx_mem);
     hdl_dma_run(dma_rx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->rx_mem->data[spi->rx_mem->active_buffer_number], (uint32_t)spi->rx_mem->size);
     hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->tx_mem->data[spi->tx_mem->active_buffer_number], (uint32_t)spi->tx_mem->size);
@@ -105,11 +108,17 @@ hdl_module_state_t hdl_spi_mem_server(void *desc, uint8_t enable) {
     hdl_interrupt_request(ic, spi->spi_iterrupt, &spi->spi_isr);
     hdl_interrupt_request(ic, spi->nss_iterrupt, &spi->nss_isr);
     spi->flags = 0;
+    spi->xfer_epoch = 0;
     _hdl_spi_mem_full_reset(spi);
     return HDL_MODULE_INIT_OK;
   }
   rcu_periph_clock_disable(rcu);
   return HDL_MODULE_DEINIT_OK;
+}
+
+uint32_t hdl_spi_mem_buffer_epoch(hdl_spi_mem_server_t *spi) {
+  hdl_spi_mem_server_private_t *spi_private = (hdl_spi_mem_server_private_t*)spi;
+  return spi_private->xfer_epoch;
 }
 
 uint8_t hdl_spi_mem_rx_buffer_take(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset) {

@@ -16,7 +16,7 @@ typedef struct {
 } communication_mem_map_private_t;
 
 
-static uint8_t _map_rx_tx(bldl_communication_t *desc, communication_mem_map_t *map, uint8_t rx) {
+static uint8_t _map_rx_tx(bldl_communication_t *desc, proto_map_mem_t *map, uint8_t rx) {
     bldl_communication_private_t *comm = (bldl_communication_private_t*)desc;
     communication_mem_map_private_t *mem_map = (communication_mem_map_private_t*)map;
     //TODO: check intersection
@@ -30,15 +30,15 @@ static uint8_t _map_rx_tx(bldl_communication_t *desc, communication_mem_map_t *m
 }
 
 
-uint8_t communication_map_rx(bldl_communication_t *desc, communication_mem_map_t *map) {
+uint8_t communication_map_rx(bldl_communication_t *desc, proto_map_mem_t *map) {
     return _map_rx_tx(desc, map, 1);
 }
 
-uint8_t communication_map_tx(bldl_communication_t *desc, communication_mem_map_t *map) {
+uint8_t communication_map_tx(bldl_communication_t *desc, proto_map_mem_t *map) {
     return _map_rx_tx(desc, map, 0);
 }
 
-static uint8_t _get_put(bldl_communication_t *desc, communication_mem_map_t *map, void *object, uint8_t get) {
+static uint8_t _get_put(bldl_communication_t *desc, proto_map_mem_t *map, void *object, uint8_t get) {
     bldl_communication_private_t *comm = (bldl_communication_private_t*)desc;
     communication_mem_map_private_t *mem_map = (communication_mem_map_private_t*)map;
     //TODO: check if comm contains map
@@ -50,11 +50,16 @@ static uint8_t _get_put(bldl_communication_t *desc, communication_mem_map_t *map
     return get? hdl_spi_mem_rx_buffer_take(spi, &buf, map->offset): hdl_spi_mem_tx_buffer_put(spi, &buf, map->offset);
 }
 
-uint8_t communication_get(bldl_communication_t *desc, communication_mem_map_t *map, void *object) {
+uint32_t communication_epoch(bldl_communication_t *desc) {
+    hdl_spi_mem_server_t *spi = (hdl_spi_mem_server_t *)desc->module.dependencies[0];
+    return hdl_spi_mem_buffer_epoch(spi);
+}
+
+uint8_t communication_get(bldl_communication_t *desc, proto_map_mem_t *map, void *object) {
     return _get_put(desc, map, object, 1);
 }
 
-uint8_t communication_put(bldl_communication_t *desc, communication_mem_map_t *map, void *object) {
+uint8_t communication_put(bldl_communication_t *desc, proto_map_mem_t *map, void *object) {
     return _get_put(desc, map, object, 0);
 }
 

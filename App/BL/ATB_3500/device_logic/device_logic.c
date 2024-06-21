@@ -130,45 +130,53 @@ bldl_communication_t smarc_comm = {
     .module.dependencies = hdl_module_dependencies(&mod_spi_3.module),
 };
 
-typedef struct {
-    uint8_t x[12];
-    /* data */
-} test_rx_comm_t;
+atb3500_io_t carrier_io = {
+    .module.dependencies = hdl_module_dependencies(&smarc_comm.module,
+    /***********************************************************
+    *                      LED
+    ***********************************************************/
+        &mod_do_led_2_0.module, &mod_do_led_2_1.module, &mod_do_led_2_2.module, 
+        &mod_do_led_1_0.module, &mod_do_led_1_1.module, &mod_do_led_1_2.module, 
+        &mod_do_led_0_0.module, &mod_do_led_0_1.module, &mod_do_led_0_2.module,
+    /***********************************************************
+    *                          RELAY
+    ***********************************************************/
+        &mod_do_relay1.module, &mod_do_relay2.module)
+};
 
-typedef struct {
-    uint8_t x[12];
-    /* data */
-} test_tx_comm_t;
 
-test_rx_comm_t test_rx;
-test_tx_comm_t test_tx = {.x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
+hdl_module_t app_module = {
+    .dependencies = hdl_module_dependencies(
+        &mod_power_domain.module,
+        &mod_smarc.module,
+        &smarc_comm.module,
+        &carrier_io.module
+    )
+};
 
 void device_logic(void) {
     static dev_context_t context;
-    hdl_enable(&mod_power_domain.module);
-
+    hdl_enable(&app_module);
     power_domain_event_subscribe(&mod_power_domain, ATB3500_PD_24V, &power_domain_24v_rail, &context);
-    hdl_enable(&mod_smarc.module);
     smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
 
-    hdl_enable(&smarc_comm.module);
-    communication_mem_map_t map_test_tx = { .offset = 3, .size = sizeof(test_tx_comm_t) };
-    communication_mem_map_t map_test_rx = { .offset = 3, .size = sizeof(test_rx_comm_t) };
-    communication_map_tx(&smarc_comm, &map_test_tx);
-    communication_map_rx(&smarc_comm, &map_test_rx);
+    /* proto map */
+    proto_map_mem_t io_tx = { .offset = 0, .size = atb3500_io_proto_tx_size() };
+    proto_map_mem_t io_rx = { .offset = 0, .size = atb3500_io_proto_rx_size() };
 
-    indicator_init();
-    connector_init();
-    watchdog_init();
+    communication_map_tx(&smarc_comm, &io_tx);
+    communication_map_rx(&smarc_comm, &io_rx);
+
+    atb3500_io_proto_set_map_tx(&carrier_io, &io_tx);
+    atb3500_io_proto_set_map_rx(&carrier_io, &io_rx);
+
+    //connector_init();
+    //watchdog_init();
     while (!hdl_init_complete()) {
         cooperative_scheduler(false);
     }
-    communication_put(&smarc_comm, &map_test_tx, (void*)&test_tx);
+    //TODO: smarc enable;
     while (1) {
-        if(communication_get(&smarc_comm, &map_test_rx, (void*)&test_rx)) {
-            __NOP();
-            
-        }
         cooperative_scheduler(false);
     }
 }

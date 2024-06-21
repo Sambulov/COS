@@ -3,7 +3,7 @@
 
 #define HDL_SPI_MESSAGE_PRV_SIZE           28
 #define SPI_SERVER_PRIVATE_SIZE            52
-#define SPI_MEM_SERVER_PRIVATE_SIZE        52
+#define SPI_MEM_SERVER_PRIVATE_SIZE        56
 #define SPI_CH_PRIVATE_SIZE                20
 
 #define SPI_ERROR_MASK      (uint32_t)(SPI_STAT_FERR | SPI_STAT_RXORERR | SPI_STAT_CONFERR | SPI_STAT_CRCERR | SPI_STAT_TXURERR)
@@ -74,6 +74,7 @@ typedef struct {
   hdl_dma_channel rx
   hdl_dma_channel tx
   hdl_dma_channel m2m
+  timer
 */
 typedef struct {
   hdl_module_t module;

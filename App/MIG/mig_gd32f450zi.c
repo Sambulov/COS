@@ -471,65 +471,74 @@ hdl_gpio_pin_t mod_do_external_output_2 = {
 /***********************************************************
  *                          LED
 ***********************************************************/
+/*
+      * | * | *  
+LEFT  * | * | *  
+      * | * | *  
+         BOT
+LED_2_0 | LED_2_1 | LED_2_2
+LED_1_0 | LED_1_1 | LED_1_2
+LED_0_0 | LED_0_1 | LED_0_2
+*/
 hdl_gpio_pin_t mod_do_led_0_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_0,
+    .module.reg = (void *)GPIO_PIN_3,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_0_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_1,
+  .module.reg = (void *)GPIO_PIN_6,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_0_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_2,
+  .module.reg = (void *)GPIO_PIN_0,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_1_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_3,
+  .module.reg = (void *)GPIO_PIN_4,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_1_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_4,
+  .module.reg = (void *)GPIO_PIN_7,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_1_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_5,
+  .module.reg = (void *)GPIO_PIN_1,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_2_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_6,
+  .module.reg = (void *)GPIO_PIN_5,
   .mode = &hdl_gpio_mode_output_no_pull,
 };
 hdl_gpio_pin_t mod_do_led_2_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_7,
+  .module.reg = (void *)GPIO_PIN_8,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_2_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_8,
+  .module.reg = (void *)GPIO_PIN_2,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };

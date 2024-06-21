@@ -56,7 +56,7 @@ static void _spi_mem_transaction_complete(hdl_spi_mem_server_private_t *spi) {
   }
   /* RX update*/
   if((hdl_dma_get_counter(dma_rx) == 0)) {
-    hdl_timer_t *timer = (hdl_dma_channel_t *)spi->module.dependencies[9];
+    hdl_timer_t *timer = (hdl_timer_t *)spi->module.dependencies[9];
     spi->flags |= SPI_MEM_FLAGS_RX_BUFFER_READY;
     spi->xfer_epoch = hdl_timer_get(timer);
     hdl_double_buffer_switch(spi->rx_mem);
@@ -137,7 +137,7 @@ uint8_t hdl_spi_mem_rx_buffer_take(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t
 uint8_t hdl_spi_mem_tx_buffer_put(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset) {
   hdl_spi_mem_server_private_t *spi_private = (hdl_spi_mem_server_private_t*)spi;
   if((spi != NULL) && (buffer != NULL) && (spi->tx_mem->size >= (buffer->size + offset))) {
-    spi_private->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST; 
+    spi_private->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST;
     uint8_t *data = spi->tx_mem->data[!spi->tx_mem->active_buffer_number];
     for(uint32_t i = offset; i < buffer->size; i++)
       data[i] = buffer->data[i - offset];

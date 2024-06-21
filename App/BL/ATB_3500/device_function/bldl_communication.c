@@ -13,12 +13,14 @@ typedef struct {
     uint32_t size;
     /* private */
    __linked_list_object__;
-} communication_mem_map_private_t;
+} proto_map_mem_private_t;
 
+_Static_assert(sizeof(bldl_communication_private_t) == sizeof(bldl_communication_t), "In bldl_communication.h data structure size of bldl_communication_t doesn't match, check BLDL_COMMUNICATION_PRV_SIZE");
+_Static_assert(sizeof(proto_map_mem_private_t) == sizeof(proto_map_mem_t), "In bldl_communication.h data structure size of proto_map_mem_t doesn't match, check BLDL_COMMUNICATION_MAP_PRV_SIZE");
 
 static uint8_t _map_rx_tx(bldl_communication_t *desc, proto_map_mem_t *map, uint8_t rx) {
     bldl_communication_private_t *comm = (bldl_communication_private_t*)desc;
-    communication_mem_map_private_t *mem_map = (communication_mem_map_private_t*)map;
+    proto_map_mem_private_t *mem_map = (proto_map_mem_private_t*)map;
     //TODO: check intersection
     if(rx) {
         linked_list_insert_last(&comm->map_rx, linked_list_item(mem_map));
@@ -40,7 +42,7 @@ uint8_t communication_map_tx(bldl_communication_t *desc, proto_map_mem_t *map) {
 
 static uint8_t _get_put(bldl_communication_t *desc, proto_map_mem_t *map, void *object, uint8_t get) {
     bldl_communication_private_t *comm = (bldl_communication_private_t*)desc;
-    communication_mem_map_private_t *mem_map = (communication_mem_map_private_t*)map;
+    proto_map_mem_private_t *mem_map = (proto_map_mem_private_t*)map;
     //TODO: check if comm contains map
     hdl_basic_buffer_t buf = {
         .data = object,

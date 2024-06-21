@@ -131,13 +131,14 @@ bldl_communication_t smarc_comm = {
 };
 
 atb3500_io_t carrier_io = {
+    .module.init = atb3500_io,
     .module.dependencies = hdl_module_dependencies(&smarc_comm.module,
     /***********************************************************
     *                      LED
     ***********************************************************/
-        &mod_do_led_2_0.module, &mod_do_led_2_1.module, &mod_do_led_2_2.module, 
-        &mod_do_led_1_0.module, &mod_do_led_1_1.module, &mod_do_led_1_2.module, 
         &mod_do_led_0_0.module, &mod_do_led_0_1.module, &mod_do_led_0_2.module,
+        &mod_do_led_1_0.module, &mod_do_led_1_1.module, &mod_do_led_1_2.module, 
+        &mod_do_led_2_0.module, &mod_do_led_2_1.module, &mod_do_led_2_2.module, 
     /***********************************************************
     *                          RELAY
     ***********************************************************/

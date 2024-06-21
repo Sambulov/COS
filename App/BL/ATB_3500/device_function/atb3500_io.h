@@ -1,20 +1,20 @@
 #ifndef ATB3500_IO_H_
 #define ATB3500_IO_H_
 
-#define BLDL_IO_PRV_SIZE    16
+#define ATB3500_IO_PRV_SIZE    24
 
 #define ATB3500_IO_AMOUNT   11
 /*
   depends on:
   communication
-  LED_2_0, LED_2_1, LED_2_2
-  LED_1_0, LED_1_1, LED_1_2
-  LED_0_0, LED_0_1, LED_0_2
+  LED_0_0, LED_0_1, LED_0_2,
+  LED_1_0, LED_1_1, LED_1_2,
+  LED_2_0, LED_2_1, LED_2_2,
   RELAY_1, RELAY_2
 */
 typedef struct {
     hdl_module_t module;
-    PRIVATE(bldl, BLDL_COMMUNICATION_PRV_SIZE);
+    PRIVATE(bldl, ATB3500_IO_PRV_SIZE);
 } atb3500_io_t;
 
 typedef enum {

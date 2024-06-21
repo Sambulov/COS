@@ -27,6 +27,8 @@ typedef struct {
     uint32_t epoch;
 } atb3500_io_private_t;
 
+_Static_assert(sizeof(atb3500_io_private_t) == sizeof(atb3500_io_t), "In atb3500_io.h data structure size of atb3500_io_t doesn't match, check ATB3500_IO_PRV_SIZE");
+
 void atb3500_io_set(atb3500_io_t *desc, atb3500_io_port_t port, uint8_t active) {
     //TODO: check all
     hdl_gpio_pin_t *gpio = _get_gpio_pin(desc, port);
@@ -58,18 +60,18 @@ static uint8_t _io_work(coroutine_desc_t this, uint8_t cancel, void *arg) {
     bldl_communication_t *comm = (bldl_communication_t *)io->module.dependencies[0];
     uint32_t comm_ts = communication_epoch(comm);
     if(io->epoch != comm_ts) {
-        io->epoch != comm_ts;
+        io->epoch = comm_ts;
         if(communication_get(comm, io->map_rx, (void*)&io->data)) {
             uint32_t port = 1;
             while(port) {
                 atb3500_io_set((atb3500_io_t *)io, (atb3500_io_port_t)port, (io->data.output & port) != 0);
-                //TODO: read input
-                io->data.input = io->data.output;
                 port <<= 1;
             }
-            communication_put(comm, io->map_tx, (void*)&io->data);
         }
     }
+    //TODO: sync input and dir
+    io->data.input = io->data.output;
+    communication_put(comm, io->map_tx, (void*)&io->data);
     return cancel;
 }
 
@@ -78,6 +80,17 @@ hdl_module_state_t atb3500_io(void *desc, uint8_t enable) {
     if(enable) {
         atb3500_io_private_t *io = (atb3500_io_private_t*)desc;
         io->data.dir = ATB3500_IO_ALL;
+        uint32_t port = 1;
+        while(port) {
+            //TODO: check all
+            hdl_gpio_pin_t *gpio = _get_gpio_pin(desc, port);
+            if(gpio != NULL && hdl_gpio_read_output(gpio))
+                io->data.output |= port;
+            else {
+                io->data.output &= ~port;
+            }
+            port <<= 1;
+        }    
         coroutine_add_static(&io_task_buf, &_io_work, (void *)desc);
         return HDL_MODULE_INIT_OK;
     }

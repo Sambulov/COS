@@ -3,6 +3,7 @@
 
 #define SPI_MEM_FLAGS_RX_BUFFER_READY    (uint32_t)(1)
 #define SPI_MEM_FLAGS_SWITCH_TX_REQUEST  (uint32_t)(2)
+#define SPI_FIRST_BYTE_VALUE             (uint8_t)(0xAA)
 
 typedef struct {
   hdl_module_t module;
@@ -31,7 +32,7 @@ static void _hdl_spi_mem_full_reset(hdl_spi_mem_server_private_t *spi) {
   init.prescale = HDL_SPI_PSC_2;
   init.nss = SPI_NSS_HARD;
   spi_init((uint32_t)spi->module.reg, &init);
-  SPI_DATA((uint32_t)spi->module.reg) = 0xAA;
+  SPI_DATA((uint32_t)spi->module.reg) = SPI_FIRST_BYTE_VALUE;
   SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_ERRIE;
   hdl_dma_run(
     (hdl_dma_channel_t *)spi->module.dependencies[6], 
@@ -61,6 +62,7 @@ static void _spi_mem_transaction_complete(hdl_spi_mem_server_private_t *spi) {
     spi->flags |= SPI_MEM_FLAGS_RX_BUFFER_READY;
     spi->xfer_epoch = hdl_timer_get(timer);
     hdl_double_buffer_switch(spi->rx_mem);
+    SPI_DATA((uint32_t)spi->module.reg) = SPI_FIRST_BYTE_VALUE;
     hdl_dma_run(dma_rx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->rx_mem->data[spi->rx_mem->active_buffer_number], (uint32_t)spi->rx_mem->size);
     hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->tx_mem->data[spi->tx_mem->active_buffer_number], (uint32_t)spi->tx_mem->size);
   }

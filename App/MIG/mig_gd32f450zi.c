@@ -726,8 +726,8 @@ hdl_spi_server_config_t hdl_spi_3_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_1EDGE
 };
-uint8_t spi_dma_rx_0_buf[12] = {};
-uint8_t spi_dma_rx_1_buf[12] = {};
+uint8_t spi_dma_rx_0_buf[13] = {};
+uint8_t spi_dma_rx_1_buf[13] = {};
 uint8_t spi_dma_tx_0_buf[12] = {0x3A, 0x55, 0x5A, 0xA5};
 uint8_t spi_dma_tx_1_buf[12] = {0x3A, 0x55, 0x5A, 0xA5};
 

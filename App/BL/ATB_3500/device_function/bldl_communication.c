@@ -41,6 +41,8 @@ uint8_t communication_map_tx(bldl_communication_t *desc, proto_map_mem_t *map) {
 }
 
 static uint8_t _get_put(bldl_communication_t *desc, proto_map_mem_t *map, void *object, uint8_t get) {
+    if((desc == NULL) || (map == NULL))
+        return HDL_FALSE;
     bldl_communication_private_t *comm = (bldl_communication_private_t*)desc;
     proto_map_mem_private_t *mem_map = (proto_map_mem_private_t*)map;
     //TODO: check if comm contains map

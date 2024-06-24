@@ -1,13 +1,13 @@
 #include "device_logic.h"
  
 typedef struct {
-  uint32_t set;
-  uint32_t reset;
+  atb3500_io_port_t set;
+  atb3500_io_port_t reset;
 } atb3500_io_proto_rx_t;
 
 typedef struct {
-  uint32_t input;
-  uint32_t output;
+  atb3500_io_port_t input;
+  atb3500_io_port_t output;
 } atb3500_io_proto_tx_t;
 
 typedef struct {
@@ -31,7 +31,7 @@ static hdl_gpio_pin_t *_atb3500_get_gpio_pin(atb3500_io_private_t *io, atb3500_i
 static uint8_t _atb3500_io_update_input(atb3500_io_private_t *io, atb3500_io_port_t port) {
     uint32_t in = io->tx_data.input;
     hdl_gpio_pin_t *gpio = _atb3500_get_gpio_pin(io, port);
-    if(((gpio != NULL) && (hdl_gpio_read(gpio) == HDL_GPIO_HIGH)) ||
+    if(((gpio != NULL) && (hdl_gpio_read(gpio) != gpio->inactive_default)) ||
        ((gpio == NULL) && (io->tx_data.output & port))) {
         io->tx_data.input |= port;
     }
@@ -85,7 +85,7 @@ void atb3500_io_proto_set_map_tx(atb3500_io_t *desc, proto_map_mem_t *map) {
         atb3500_io_private_t *io = (atb3500_io_private_t*)desc;
         io->map_tx = map;
         bldl_communication_t *comm = (bldl_communication_t *)io->module.dependencies[0];
-        communication_put(comm, io->map_tx, (void*)&io->map_tx);
+        communication_put(comm, io->map_tx, (void*)&io->tx_data);
     }
 }
 
@@ -107,14 +107,12 @@ static uint8_t _io_work(coroutine_desc_t this, uint8_t cancel, void *arg) {
         if(rx_valid && ((rx_data.set | rx_data.reset) & port)) {
             changed |= _atb3500_io_update_output(io, port, (rx_data.set & port) != 0);
         }
-        else {
-            changed |= _atb3500_io_update_input(io, port);
-        }
+        changed |= _atb3500_io_update_input(io, port);
         port <<= 1;
     }
     if(changed) {
         bldl_communication_t *comm = (bldl_communication_t *)io->module.dependencies[0];
-        communication_put(comm, io->map_tx, (void*)&io->map_tx);
+        communication_put(comm, io->map_tx, (void*)&io->tx_data);
     }
     return cancel;
 }
@@ -127,7 +125,7 @@ hdl_module_state_t atb3500_io(void *desc, uint8_t enable) {
         while(port) {
             //TODO: check all
             hdl_gpio_pin_t *gpio = _atb3500_get_gpio_pin(desc, port);
-            if(gpio != NULL && hdl_gpio_read_output(gpio))
+            if(gpio != NULL && (hdl_gpio_read_output(gpio) != gpio->inactive_default) )
                 io->tx_data.output |= port;
             else {
                 io->tx_data.output &= ~port;

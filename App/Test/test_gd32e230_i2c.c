@@ -3,7 +3,7 @@
 
 void test_i2c() {
   hdl_enable(&mod_timer_ms.module);
-  hdl_enable(&mod_i2c0_client.module);
+  //hdl_enable(&mod_i2c0_client.module);
 
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
@@ -35,7 +35,7 @@ void test_i2c() {
   };
   hdl_i2c_client_transaction_add_message(&tr, &msg1);
   hdl_i2c_client_transaction_add_message(&tr, &msg2);
-  hdl_i2c_client_enqueue_transaction(&mod_i2c0_client, &tr);
+  //hdl_i2c_client_enqueue_transaction(&mod_i2c0_client, &tr);
   while (1) {
     cooperative_scheduler(false);
   }

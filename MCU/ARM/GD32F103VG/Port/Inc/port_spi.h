@@ -59,7 +59,7 @@ typedef struct {
   hdl_spi_server_config_t *config;
   hdl_nvic_irq_n_t spi_iterrupt;
   hdl_nvic_irq_n_t nss_iterrupt; /* if HDL_SPI_CS_SOFT in HDL_SPI_SERVER mode */
-  PRIVATE(SPI_SERVER_PRIVATE_SIZE);
+  PRIVATE(hw, SPI_SERVER_PRIVATE_SIZE);
 } hdl_spi_server_t;
 
 
@@ -83,7 +83,7 @@ typedef struct {
   hdl_nvic_irq_n_t nss_iterrupt;
   hdl_double_buffer_t *rx_mem;
   hdl_double_buffer_t *tx_mem;
-  PRIVATE(SPI_MEM_SERVER_PRIVATE_SIZE);
+  PRIVATE(hw, SPI_MEM_SERVER_PRIVATE_SIZE);
 } hdl_spi_mem_server_t;
 
 /**************** vvv  SPI master vvv  ******************/
@@ -107,7 +107,7 @@ typedef struct {
   hdl_module_t module;
   hdl_spi_client_config_t *config;
   hdl_nvic_irq_n_t spi_iterrupt;
-  PRIVATE(HDl_SPI_CLIENT_PRIVATE_SIZE);
+  PRIVATE(hw, HDl_SPI_CLIENT_PRIVATE_SIZE);
 } hdl_spi_client_t;
 
 /* depends on:
@@ -116,7 +116,7 @@ typedef struct {
  */
 typedef struct {
   hdl_module_t module;
-  PRIVATE(HDl_SPI_CLIENT_CH_PRIVATE_SIZE);
+  PRIVATE(hw, HDl_SPI_CLIENT_CH_PRIVATE_SIZE);
 } hdl_spi_client_ch_t;
 
 #endif // PORT_SPI_H_

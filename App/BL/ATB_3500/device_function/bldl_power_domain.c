@@ -35,11 +35,6 @@ static void _power_domain_set(bldl_power_domain_private_t *mod_power_domain, atb
         if(en_pin != NULL)
             HDL_GPIO_SET_INACTIVE(en_pin);
         mod_power_domain->state[domain] = PD_STATE_OFF;
-        if(domain == ATB3500_PD_5V) {
-            _power_domain_set(mod_power_domain, ATB3500_PD_3V3, NULL, HDL_FALSE);
-            _power_domain_set(mod_power_domain, ATB3500_PD_2V5, NULL, HDL_FALSE);
-            _power_domain_set(mod_power_domain, ATB3500_PD_1V8, NULL, HDL_FALSE);
-        }
         if(mod_power_domain->power_event[domain] != NULL)
             mod_power_domain->power_event[domain](mod_power_domain->state[domain], (void *)mod_power_domain, mod_power_domain->power_event_context[domain]);
     }

@@ -12,7 +12,8 @@ typedef enum {
 typedef enum {
     SMARC_CARRIER_EVENT_STBY_CIRCUITS,
     SMARC_CARRIER_EVENT_RUNTIME_CIRCUITS,
-    SMARC_CARRIER_EVENT_RUNTIME
+    SMARC_CARRIER_EVENT_RUNTIME,
+    SMARC_CARRIER_EVENT_MODULE_RESET
 } smarc_carrier_event_e;
 
 /* depends on:
@@ -37,7 +38,7 @@ hdl_module_state_t bldl_smarc_carrier(void *desc, uint8_t enable);
 
 uint8_t smarc_carrier_event_subscribe(bldl_smarc_carrier_t *desc, event_handler_t handler, void *context);
 void smarc_carrier_boot_select(bldl_smarc_carrier_t *desc, smarc_carrier_boot_select_e select);
-void smarc_carrier_redy(bldl_smarc_carrier_t *desc);
-void smarc_carrier_power_good(bldl_smarc_carrier_t *desc);
+void smarc_carrier_ready(bldl_smarc_carrier_t *desc, uint8_t enable);
+void smarc_carrier_power_good(bldl_smarc_carrier_t *desc, uint8_t enable);
 
 #endif //BLDL_SMARC_CARRIER_H_

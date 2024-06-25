@@ -60,6 +60,11 @@ static uint8_t _smarc_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
         carrier->reset_out = 1;
         _call_event_hundler(carrier, SMARC_CARRIER_EVENT_RUNTIME);
     }
+
+    if(HDL_GPIO_IS_ACTIVE(reset_out) && carrier->reset_out) {
+        carrier->reset_out = 0;
+        _call_event_hundler(carrier, SMARC_CARRIER_EVENT_MODULE_RESET);
+    }
     // TODO: other smarc states
     return cancel;
 }
@@ -104,16 +109,22 @@ void smarc_carrier_boot_select(bldl_smarc_carrier_t *desc, smarc_carrier_boot_se
     }
 }
 
-void smarc_carrier_redy(bldl_smarc_carrier_t *desc) {
+void smarc_carrier_ready(bldl_smarc_carrier_t *desc, uint8_t enable) {
     bldl_smarc_carrier_private_t *carrier = (bldl_smarc_carrier_private_t *)desc;
     hdl_gpio_pin_t *reset_in = (hdl_gpio_pin_t *)carrier->module.dependencies[5];
-    HDL_GPIO_SET_INACTIVE(reset_in);
+    if(enable)
+        HDL_GPIO_SET_INACTIVE(reset_in);
+    else 
+        HDL_GPIO_SET_ACTIVE(reset_in);
 }
 
-void smarc_carrier_power_good(bldl_smarc_carrier_t *desc) {
+void smarc_carrier_power_good(bldl_smarc_carrier_t *desc, uint8_t enable) {
     bldl_smarc_carrier_private_t *carrier = (bldl_smarc_carrier_private_t *)desc;
     hdl_gpio_pin_t *pow_bad_pin = (hdl_gpio_pin_t *)carrier->module.dependencies[0];
     if(!HDL_IS_NULL_MODULE(pow_bad_pin)) {
-        HDL_GPIO_SET_INACTIVE(pow_bad_pin);
+        if(enable)
+            HDL_GPIO_SET_INACTIVE(pow_bad_pin);
+        else 
+            HDL_GPIO_SET_ACTIVE(pow_bad_pin);
     }
 }

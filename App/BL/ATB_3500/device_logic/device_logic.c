@@ -60,11 +60,15 @@ typedef struct {
      power_domain_3v3_is_stable : 1,
      power_domain_2v5_is_stable : 1,
      power_domain_1v8_is_stable : 1;
+  uint32_t time_stamp;
+  uint32_t restart_delay;
 } dev_context_t;
 
 void power_domain_rails_stable(dev_context_t *dev) {
     if(dev->power_domain_1v8_is_stable && dev->power_domain_2v5_is_stable && dev->power_domain_3v3_is_stable)
-        smarc_carrier_redy(&mod_smarc);
+        smarc_carrier_ready(&mod_smarc, HDL_TRUE);
+    else
+        smarc_carrier_ready(&mod_smarc, HDL_FALSE);
 }
 
 void power_domain_1v8_rail(uint32_t event_trigger, void *sender, void *context) {
@@ -72,6 +76,8 @@ void power_domain_1v8_rail(uint32_t event_trigger, void *sender, void *context) 
     if(event_trigger == PD_STATE_STABLE) {
         dev->power_domain_1v8_is_stable = 1;
     }
+    else if(event_trigger == PD_STATE_OFF)
+        dev->power_domain_1v8_is_stable = 0;
     power_domain_rails_stable(dev);
 }
 
@@ -80,6 +86,8 @@ void power_domain_3v3_rail(uint32_t event_trigger, void *sender, void *context) 
     if(event_trigger == PD_STATE_STABLE) {
         dev->power_domain_3v3_is_stable = 1;
     }
+    else if(event_trigger == PD_STATE_OFF)
+        dev->power_domain_3v3_is_stable = 0;
     power_domain_rails_stable(dev);
 }
 
@@ -88,6 +96,8 @@ void power_domain_2v5_rail(uint32_t event_trigger, void *sender, void *context) 
     if(event_trigger == PD_STATE_STABLE) {
         dev->power_domain_2v5_is_stable = 1;
     }
+    else if(event_trigger == PD_STATE_OFF)
+        dev->power_domain_2v5_is_stable = 0;
     power_domain_rails_stable(dev);
 }
 
@@ -108,12 +118,26 @@ void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *con
     else if(event_trigger == SMARC_CARRIER_EVENT_RUNTIME) {
         /* Start runtime */
     }
+    else if(event_trigger == SMARC_CARRIER_EVENT_MODULE_RESET) {
+        power_domain_set(&mod_power_domain, ATB3500_PD_5V, HDL_FALSE);
+    }
 }
 
 void power_domain_5v_rail(uint32_t event_trigger, void *sender, void *context) {
     dev_context_t *dev = (dev_context_t*)context;
     if(event_trigger == PD_STATE_STABLE) {
-        smarc_carrier_power_good(&mod_smarc);
+        smarc_carrier_power_good(&mod_smarc, HDL_TRUE);
+        power_domain_set(&mod_power_domain, ATB3500_PD_3V3, HDL_TRUE);
+        power_domain_set(&mod_power_domain, ATB3500_PD_2V5, HDL_TRUE);
+        power_domain_set(&mod_power_domain, ATB3500_PD_1V8, HDL_TRUE);
+    }
+    else if(event_trigger == PD_STATE_OFF) {
+        smarc_carrier_power_good(&mod_smarc, HDL_FALSE);
+        power_domain_set(&mod_power_domain, ATB3500_PD_3V3, HDL_FALSE);
+        power_domain_set(&mod_power_domain, ATB3500_PD_2V5, HDL_FALSE);
+        power_domain_set(&mod_power_domain, ATB3500_PD_1V8, HDL_FALSE);
+        dev->restart_delay = 3000;
+        dev->time_stamp = hdl_timer_get(&mod_systick_timer_ms);
     }
 }
 
@@ -169,7 +193,7 @@ hdl_module_t app_module = {
 };
 
 void device_logic(void) {
-    static dev_context_t context;
+    static dev_context_t context = {0};
     hdl_enable(&app_module);
     power_domain_event_subscribe(&mod_power_domain, ATB3500_PD_24V, &power_domain_24v_rail, &context);
     smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
@@ -192,6 +216,13 @@ void device_logic(void) {
     //TODO: smarc enable;
     while (1) {
         cooperative_scheduler(false);
+        if(context.restart_delay != 0) {
+            uint32_t time_now = hdl_timer_get(&mod_systick_timer_ms);
+            if (TIME_ELAPSED(context.time_stamp, context.restart_delay, time_now)) {
+                context.restart_delay = 0;
+                power_domain_set(&mod_power_domain, ATB3500_PD_5V, HDL_TRUE);
+            }
+        }
     }
 }
 

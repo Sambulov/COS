@@ -568,7 +568,7 @@ static void svc_handler_main(uint32_t *sp) {
 void irq_n_handler() {
   uint32_t prio = -1;
   IRQn_Type irq = 0;
-  for(uint32_t i = 0; i< sizeof(NVIC->IABR); i++) {
+  for(uint32_t i = 0; i < sizeof(NVIC->IABR)/sizeof(NVIC->IABR[0]); i++) {
     uint32_t iabr = NVIC->IABR[i];
     while(iabr) {
       uint8_t bit = 31 - __CLZ(iabr);

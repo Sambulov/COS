@@ -106,7 +106,7 @@ void smarc_carrier_boot_select(bldl_smarc_carrier_t *desc, smarc_carrier_boot_se
 
 void smarc_carrier_redy(bldl_smarc_carrier_t *desc) {
     bldl_smarc_carrier_private_t *carrier = (bldl_smarc_carrier_private_t *)desc;
-    hdl_gpio_pin_t *reset_in = (hdl_gpio_pin_t *)carrier->module.dependencies[6];
+    hdl_gpio_pin_t *reset_in = (hdl_gpio_pin_t *)carrier->module.dependencies[5];
     HDL_GPIO_SET_INACTIVE(reset_in);
 }
 

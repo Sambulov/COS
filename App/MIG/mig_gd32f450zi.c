@@ -726,10 +726,13 @@ hdl_spi_server_config_t hdl_spi_3_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_1EDGE
 };
-static uint8_t spi_dma_rx_0_buf[12] = {};
-static uint8_t spi_dma_rx_1_buf[12] = {};
-static uint8_t spi_dma_tx_0_buf[12] = {};
-static uint8_t spi_dma_tx_1_buf[12] = {};
+
+#define SPI_MEM_SIZE    32
+
+static uint8_t spi_dma_rx_0_buf[SPI_MEM_SIZE] = {0};
+static uint8_t spi_dma_rx_1_buf[SPI_MEM_SIZE] = {0};
+static uint8_t spi_dma_tx_0_buf[SPI_MEM_SIZE] = {0};
+static uint8_t spi_dma_tx_1_buf[SPI_MEM_SIZE] = {0};
 
 hdl_double_buffer_t spi_rx_buffer = {
     .data[0] = spi_dma_rx_0_buf,

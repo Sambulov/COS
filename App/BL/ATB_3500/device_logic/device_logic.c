@@ -8,7 +8,7 @@
 
 #include "device_logic.h"
 #include "app.h"
-
+#include "CodeLib.h"
 
 bldl_power_domain_t mod_power_domain = {
     .module.init = &power_domain,
@@ -21,7 +21,7 @@ bldl_power_domain_t mod_power_domain = {
      *                  ADC
      ***********************************************************/        
         &mod_adc.module, &mod_adc_pin_24v.module, &mod_adc_pin_24v_poe.module, &mod_adc_pin_5v.module, &mod_adc_pin_3v3.module, 
-        &mod_adc_pin_2v5.module, &mod_adc_pin_1v8.module),
+        &mod_adc_pin_2v5.module, &mod_adc_pin_1v8.module, &mod_systick_timer_ms.module),
     .adc_scale = (uint32_t[]) { ADC_CHANNEL_0_VOLTAGE_DIVIDER, ADC_CHANNEL_1_VOLTAGE_DIVIDER,
         ADC_CHANNEL_2_VOLTAGE_DIVIDER, ADC_CHANNEL_3_VOLTAGE_DIVIDER,
         ADC_CHANNEL_4_VOLTAGE_DIVIDER, ADC_CHANNEL_5_VOLTAGE_DIVIDER },
@@ -103,7 +103,7 @@ void power_domain_2v5_rail(uint32_t event_trigger, void *sender, void *context) 
 
 
 void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *context) {
-    if(event_trigger == SMARC_CARRIER_EVENT_STBY_CIRCUITS) {
+    if(event_trigger == SMARC_EVENT_CARRIER_SLEEP_TO_STBY_CIRCUITS) {
         power_domain_set(&mod_power_domain, ATB3500_PD_3V3, HDL_TRUE);
         power_domain_set(&mod_power_domain, ATB3500_PD_2V5, HDL_TRUE);
         power_domain_set(&mod_power_domain, ATB3500_PD_1V8, HDL_TRUE);
@@ -112,13 +112,13 @@ void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *con
         power_domain_event_subscribe(&mod_power_domain, ATB3500_PD_1V8, &power_domain_1v8_rail, context);
         smarc_carrier_boot_select(&mod_smarc, SMARC_CARRIER_BOOT0 | SMARC_CARRIER_BOOT1 | SMARC_CARRIER_BOOT2);
     }
-    else if(event_trigger == SMARC_CARRIER_EVENT_RUNTIME_CIRCUITS) {
+    else if(event_trigger == SMARC_EVENT_CARRIER_STBY_TO_RUNTIME_CIRCUITS) {
 
     }
-    else if(event_trigger == SMARC_CARRIER_EVENT_RUNTIME) {
+    else if(event_trigger == SMARC_EVENT_CARRIER_MODULE_RUNTIME) {
         /* Start runtime */
     }
-    else if(event_trigger == SMARC_CARRIER_EVENT_MODULE_RESET) {
+    else if(event_trigger == SMARC_EVENT_CARRIER_MODULE_RESET) {
         power_domain_set(&mod_power_domain, ATB3500_PD_5V, HDL_FALSE);
     }
 }
@@ -149,12 +149,16 @@ void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) 
     }
 }
 
+void watchdog_event_handler(uint32_t event_trigger, void *sender, void *context) {
+
+}
+
 bldl_communication_t smarc_comm = {
     .module.init = communication,
     .module.dependencies = hdl_module_dependencies(&mod_spi_3.module),
 };
 
-atb3500_io_t carrier_io = {
+atb3500_io_t mod_carrier_io = {
     .module.init = atb3500_io,
     .module.dependencies = hdl_module_dependencies(&smarc_comm.module,
     /***********************************************************
@@ -182,13 +186,17 @@ atb3500_io_t carrier_io = {
     
 };
 
+atb3500_watchdog_t mod_watchdog = {
+    .module.init = &atb3500_watchdog,
+    .module.dependencies = hdl_module_dependencies(&smarc_comm.module, &mod_watchdog_timer.module)
+};
 
 hdl_module_t app_module = {
     .dependencies = hdl_module_dependencies(
         &mod_power_domain.module,
         &mod_smarc.module,
-        &smarc_comm.module,
-        &carrier_io.module
+        &mod_carrier_io.module,
+        &mod_watchdog.module
     )
 };
 
@@ -197,16 +205,22 @@ void device_logic(void) {
     hdl_enable(&app_module);
     power_domain_event_subscribe(&mod_power_domain, ATB3500_PD_24V, &power_domain_24v_rail, &context);
     smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
-
+    atb3500_watchdog_event_subscribe(&mod_watchdog, &watchdog_event_handler, &context);
     /* proto map */
     proto_map_mem_t io_tx = { .offset = 0, .size = atb3500_io_proto_tx_size() };
     proto_map_mem_t io_rx = { .offset = 0, .size = atb3500_io_proto_rx_size() };
+    proto_map_mem_t watchdog_tx = { .offset = 16, .size = atb3500_io_proto_tx_size() };
+    proto_map_mem_t watchdog_rx = { .offset = 16, .size = atb3500_io_proto_rx_size() };
 
     communication_map_tx(&smarc_comm, &io_tx);
     communication_map_rx(&smarc_comm, &io_rx);
+    communication_map_tx(&smarc_comm, &watchdog_tx);
+    communication_map_rx(&smarc_comm, &watchdog_rx);
 
-    atb3500_io_proto_set_map_tx(&carrier_io, &io_tx);
-    atb3500_io_proto_set_map_rx(&carrier_io, &io_rx);
+    atb3500_io_proto_set_map_tx(&mod_carrier_io, &io_tx);
+    atb3500_io_proto_set_map_rx(&mod_carrier_io, &io_rx);
+    atb3500_watchdog_proto_set_map_tx(&mod_watchdog, &watchdog_tx);
+    atb3500_watchdog_proto_set_map_rx(&mod_watchdog, &watchdog_rx);
 
     //connector_init();
     //watchdog_init();

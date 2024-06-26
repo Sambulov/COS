@@ -1,5 +1,5 @@
 #include "device_logic.h"
-
+#include "CodeLib.h"
 typedef struct {
     hdl_module_t module;
     uint32_t adc_scale[POWER_DOMAIN_CHANNELS_AMOUNT];
@@ -23,7 +23,7 @@ _Static_assert(sizeof(bldl_power_domain_private_t) == sizeof(bldl_power_domain_t
 static void _power_domain_set(bldl_power_domain_private_t *mod_power_domain, atb3500_power_domain_e domain, hdl_gpio_pin_t *en_pin, uint8_t enable) {
     if(enable) {
         if (mod_power_domain->state[domain] == PD_STATE_OFF) {
-            mod_power_domain->timestamps[domain] = get_ms_time();
+            mod_power_domain->timestamps[domain] = hdl_timer_get(&mod_systick_timer_ms);
             if(en_pin != NULL)
                 HDL_GPIO_SET_ACTIVE(en_pin);
             mod_power_domain->state[domain] = PD_STATE_ENABLE;
@@ -98,7 +98,7 @@ static void _feed_ch_filter(bldl_power_domain_private_t *pd, atb3500_power_domai
 
 static uint8_t _power_domain_work(coroutine_desc_t this, uint8_t cancel, void *arg) {
     bldl_power_domain_private_t *pd = (bldl_power_domain_private_t*)arg;
-    uint32_t time_now = get_ms_time();
+    uint32_t time_now = hdl_timer_get(&mod_systick_timer_ms);
     uint32_t adc_current_age = hdl_adc_get_age((hdl_adc_t *)pd->module.dependencies[4]);
     for(int i = 0; i < POWER_DOMAIN_CHANNELS_AMOUNT; i++) {
         if(pd->adc_age != adc_current_age) {
@@ -159,7 +159,7 @@ hdl_module_state_t power_domain(void *desc, uint8_t enable) {
         }
         mod_power_domain->adc_age = hdl_adc_get_age((hdl_adc_t *)mod_power_domain->module.dependencies[4]);
         mod_power_domain->state[ATB3500_PD_24V] = PD_STATE_ENABLE;
-        mod_power_domain->timestamps[ATB3500_PD_24V] = get_ms_time();
+        mod_power_domain->timestamps[ATB3500_PD_24V] = hdl_timer_get(&mod_systick_timer_ms);
         coroutine_add_static(&power_task_buf, &_power_domain_work, (void *)desc);
         return HDL_MODULE_INIT_OK;
     }

@@ -1,5 +1,5 @@
 #include "device_logic.h"
- 
+#include "CodeLib.h"
 typedef struct {
   atb3500_io_port_t set;
   atb3500_io_port_t reset;
@@ -111,7 +111,6 @@ static uint8_t _io_work(coroutine_desc_t this, uint8_t cancel, void *arg) {
         port <<= 1;
     }
     if(changed) {
-        bldl_communication_t *comm = (bldl_communication_t *)io->module.dependencies[0];
         communication_put(comm, io->map_tx, (void*)&io->tx_data);
     }
     return cancel;

@@ -13,7 +13,7 @@
 #include "bldl_smarc_carrier.h"
 #include "bldl_communication.h"
 #include "atb3500_io.h"
-#include "CodeLib.h"
+#include "atb3500_watchdog.h"
 #include "mig_atb3500.h"
 
 #define HDL_GPIO_ON_WRAP(x)      (!(x.inactive_default))
@@ -64,7 +64,6 @@ typedef struct {
 
 void device_logic(void);
 
-#include "device_function.h"
 #include "atb_3500_page_transfer.h"
 
 #endif /* ATB_3500 */

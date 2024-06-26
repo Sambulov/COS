@@ -148,12 +148,15 @@ uint8_t hdl_spi_mem_tx_buffer_put(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t 
     spi_private->flags &= ~SPI_MEM_FLAGS_SWITCH_TX_REQUEST;
     if(nss_inactive) {
       data = spi->tx_mem->data[spi->tx_mem->active_buffer_number];
-      hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->tx_mem->data[spi->tx_mem->active_buffer_number], (uint32_t)spi->tx_mem->size);
     }
+    data += offset;
     hdl_dma_run(dma_mem, (uint32_t)buffer->data, (uint32_t)data, buffer->size);
     while (hdl_dma_get_counter(dma_mem));
     if(!nss_inactive) {
       spi_private->flags |= SPI_MEM_FLAGS_SWITCH_TX_REQUEST;
+    }
+    else {
+      hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->tx_mem->data[spi->tx_mem->active_buffer_number], (uint32_t)spi->tx_mem->size);
     }
     return HDL_TRUE;
   }

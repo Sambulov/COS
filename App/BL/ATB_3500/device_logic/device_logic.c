@@ -103,7 +103,7 @@ void power_domain_2v5_rail(uint32_t event_trigger, void *sender, void *context) 
 
 
 void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *context) {
-    if(event_trigger == SMARC_EVENT_CARRIER_SLEEP_TO_STBY_CIRCUITS) {
+    if(event_trigger == SMARC_CARRIER_EVENT_STBY_CIRCUITS) {
         power_domain_set(&mod_power_domain, ATB3500_PD_3V3, HDL_TRUE);
         power_domain_set(&mod_power_domain, ATB3500_PD_2V5, HDL_TRUE);
         power_domain_set(&mod_power_domain, ATB3500_PD_1V8, HDL_TRUE);
@@ -112,13 +112,13 @@ void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *con
         power_domain_event_subscribe(&mod_power_domain, ATB3500_PD_1V8, &power_domain_1v8_rail, context);
         smarc_carrier_boot_select(&mod_smarc, SMARC_CARRIER_BOOT0 | SMARC_CARRIER_BOOT1 | SMARC_CARRIER_BOOT2);
     }
-    else if(event_trigger == SMARC_EVENT_CARRIER_STBY_TO_RUNTIME_CIRCUITS) {
+    else if(event_trigger == SMARC_CARRIER_EVENT_RUNTIME_CIRCUITS) {
 
     }
-    else if(event_trigger == SMARC_EVENT_CARRIER_MODULE_RUNTIME) {
+    else if(event_trigger == SMARC_CARRIER_EVENT_RUNTIME) {
         /* Start runtime */
     }
-    else if(event_trigger == SMARC_EVENT_CARRIER_MODULE_RESET) {
+    else if(event_trigger == SMARC_CARRIER_EVENT_MODULE_RESET) {
         power_domain_set(&mod_power_domain, ATB3500_PD_5V, HDL_FALSE);
     }
 }
@@ -206,11 +206,16 @@ void device_logic(void) {
     power_domain_event_subscribe(&mod_power_domain, ATB3500_PD_24V, &power_domain_24v_rail, &context);
     smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
     atb3500_watchdog_event_subscribe(&mod_watchdog, &watchdog_event_handler, &context);
+    //connector_init();
+    //watchdog_init();
+    while (!hdl_init_complete()) {
+        cooperative_scheduler(false);
+    }
     /* proto map */
     proto_map_mem_t io_tx = { .offset = 0, .size = atb3500_io_proto_tx_size() };
     proto_map_mem_t io_rx = { .offset = 0, .size = atb3500_io_proto_rx_size() };
-    proto_map_mem_t watchdog_tx = { .offset = 16, .size = atb3500_io_proto_tx_size() };
-    proto_map_mem_t watchdog_rx = { .offset = 16, .size = atb3500_io_proto_rx_size() };
+    proto_map_mem_t watchdog_tx = { .offset = 16, .size = atb3500_watchdog_proto_tx_size() };
+    proto_map_mem_t watchdog_rx = { .offset = 16, .size = atb3500_watchdog_proto_rx_size() };
 
     communication_map_tx(&smarc_comm, &io_tx);
     communication_map_rx(&smarc_comm, &io_rx);
@@ -221,12 +226,6 @@ void device_logic(void) {
     atb3500_io_proto_set_map_rx(&mod_carrier_io, &io_rx);
     atb3500_watchdog_proto_set_map_tx(&mod_watchdog, &watchdog_tx);
     atb3500_watchdog_proto_set_map_rx(&mod_watchdog, &watchdog_rx);
-
-    //connector_init();
-    //watchdog_init();
-    while (!hdl_init_complete()) {
-        cooperative_scheduler(false);
-    }
     //TODO: smarc enable;
     while (1) {
         cooperative_scheduler(false);

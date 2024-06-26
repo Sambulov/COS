@@ -204,7 +204,7 @@ hdl_timer_t mod_timer1_ms = {
 hdl_timer_event_t mod_watchdog_timer = {
   .module.dependencies = hdl_module_dependencies(&mod_systick_timer_ms.module),
   .module.init = &hdl_timer_event,
-  .delay = 3000,
+  .delay = 0,
 };
 
 
@@ -729,10 +729,10 @@ hdl_spi_server_config_t hdl_spi_3_slave_config = {
 
 #define SPI_MEM_SIZE    32
 
-static uint8_t spi_dma_rx_0_buf[SPI_MEM_SIZE] = {0};
-static uint8_t spi_dma_rx_1_buf[SPI_MEM_SIZE] = {0};
-static uint8_t spi_dma_tx_0_buf[SPI_MEM_SIZE] = {0};
-static uint8_t spi_dma_tx_1_buf[SPI_MEM_SIZE] = {0};
+uint8_t spi_dma_rx_0_buf[SPI_MEM_SIZE] = {0};
+uint8_t spi_dma_rx_1_buf[SPI_MEM_SIZE] = {0};
+uint8_t spi_dma_tx_0_buf[SPI_MEM_SIZE] = {0};
+uint8_t spi_dma_tx_1_buf[SPI_MEM_SIZE] = {0};
 
 hdl_double_buffer_t spi_rx_buffer = {
     .data[0] = spi_dma_rx_0_buf,

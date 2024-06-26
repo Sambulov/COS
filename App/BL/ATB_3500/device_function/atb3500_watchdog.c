@@ -88,11 +88,7 @@ hdl_module_state_t atb3500_watchdog(void *desc, uint8_t enable) {
     static coroutine_desc_static_t watchdog_task_buf;
     if(enable) {
         atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)desc;
-        hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[1];
-        wdt->watchdog_delegate.context = NULL;
-        wdt->watchdog_delegate.handler = NULL;
-        wdt->magic_value_config = _wd_gen_new_magic(0);
-        hdl_event_subscribe(&timer->event, &wdt->watchdog_delegate);
+        wdt->magic_value_config = _wd_gen_new_magic(0); 
         coroutine_add_static(&watchdog_task_buf, &_watchdog_work, (void *)desc);
         return HDL_MODULE_INIT_OK;
     }
@@ -101,6 +97,8 @@ hdl_module_state_t atb3500_watchdog(void *desc, uint8_t enable) {
 
 hdl_module_state_t atb3500_watchdog_event_subscribe(atb3500_watchdog_t *desc, event_handler_t handler, void *context) {
     atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)desc;
+    hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[1];
     wdt->watchdog_delegate.context = context;
     wdt->watchdog_delegate.handler = handler;
+    hdl_event_subscribe(&timer->event, &wdt->watchdog_delegate);
 }

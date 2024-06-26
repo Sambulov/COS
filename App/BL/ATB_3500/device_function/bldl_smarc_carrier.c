@@ -1,5 +1,5 @@
 #include "device_logic.h"
-
+#include "CodeLib.h"
 // #define MAX_BOOT_BOOT_RETRY              ((int8_t)5)
 
 /* SMARC RESET DELAY */
@@ -8,6 +8,7 @@
 
 typedef struct {
     hdl_module_t module;
+    uint32_t sw_power_btn_trig_delay;
     uint8_t carrier_power_on : 1,
             carrier_stby     : 1,
             reset_out        : 1;
@@ -21,12 +22,20 @@ _Static_assert(sizeof(bldl_smarc_carrier_private_t) == sizeof(bldl_smarc_carrier
 static void _on_power_button_in(uint32_t event_trigger, void *sender, void *context) {
     bldl_smarc_carrier_private_t *carrier = (bldl_smarc_carrier_private_t *)context;
     hdl_button_t *pow_btn_out = (hdl_button_t *)carrier->module.dependencies[2];
-    if(!HDL_IS_NULL_MODULE(pow_btn_out)) {
-        if(event_trigger == HDL_BTN_EVENT_CLICK)
-            hdl_btn_sw_click(pow_btn_out);
-        //if(event_trigger == HDL_BTN_EVENT_HOLD)
-        //    TODO: force shutdown
-    }
+    // if(!HDL_IS_NULL_MODULE(pow_btn_out)) {
+
+    //         SMARC_CARRIER_EVENT_POWER_BTN_DOWN,
+    // ,
+    // SMARC_CARRIER_EVENT_POWER_BTN_UP,
+
+    //     if(event_trigger == HDL_BTN_EVENT_PRESS) {
+    //         hdl_btn_sw_click(pow_btn_out);
+    //         _call_event_hundler(carrier, SMARC_CARRIER_EVENT_POWER_BTN_CLICK);
+    //         _call_event_hundler(carrier, SMARC_CARRIER_EVENT_STBY_CIRCUITS);
+    //     }
+    //     //if(event_trigger == HDL_BTN_EVENT_HOLD)
+    //     //    TODO: force shutdown
+    // }
 }
 
 uint8_t smarc_carrier_event_subscribe(bldl_smarc_carrier_t *desc, event_handler_t handler, void *context) {
@@ -46,24 +55,24 @@ static uint8_t _smarc_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
     hdl_gpio_pin_t *carrier_pwr_on = (hdl_gpio_pin_t *)carrier->module.dependencies[3];
     if((HDL_IS_NULL_MODULE(carrier_pwr_on) || HDL_GPIO_IS_ACTIVE(carrier_pwr_on)) && !carrier->carrier_power_on) {
         carrier->carrier_power_on = 1;
-        _call_event_hundler(carrier, SMARC_CARRIER_EVENT_STBY_CIRCUITS);
+        _call_event_hundler(carrier, SMARC_EVENT_CARRIER_SLEEP_TO_STBY_CIRCUITS);
     } 
 
     hdl_gpio_pin_t *carrier_stby = (hdl_gpio_pin_t *)carrier->module.dependencies[4];
     if((HDL_IS_NULL_MODULE(carrier_stby) || HDL_GPIO_IS_ACTIVE(carrier_stby)) && !carrier->carrier_stby) {
         carrier->carrier_stby = 1;
-        _call_event_hundler(carrier, SMARC_CARRIER_EVENT_RUNTIME_CIRCUITS);
+        _call_event_hundler(carrier, SMARC_EVENT_CARRIER_STBY_TO_RUNTIME_CIRCUITS);
     }
 
     hdl_gpio_pin_t *reset_out = (hdl_gpio_pin_t *)carrier->module.dependencies[6];
     if(!HDL_GPIO_IS_ACTIVE(reset_out) && !carrier->reset_out) {
         carrier->reset_out = 1;
-        _call_event_hundler(carrier, SMARC_CARRIER_EVENT_RUNTIME);
+        _call_event_hundler(carrier, SMARC_EVENT_CARRIER_MODULE_RUNTIME);
     }
 
     if(HDL_GPIO_IS_ACTIVE(reset_out) && carrier->reset_out) {
         carrier->reset_out = 0;
-        _call_event_hundler(carrier, SMARC_CARRIER_EVENT_MODULE_RESET);
+        _call_event_hundler(carrier, SMARC_EVENT_CARRIER_MODULE_RESET);
     }
     // TODO: other smarc states
     return cancel;

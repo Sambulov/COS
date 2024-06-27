@@ -13,7 +13,7 @@ static hdl_gpio_pin_t *_atb3500_get_gpio_pin(atb3500_io_private_t *io, atb3500_i
     uint32_t ind = 31 - __CLZ(port);
     if((io == NULL) || (ind >= ATB3500_IO_AMOUNT))
         return NULL;
-    return (hdl_gpio_pin_t *)io->module.dependencies[ind + 1];
+    return (hdl_gpio_pin_t *)io->module.dependencies[ind];
 }
 
 static uint8_t _atb3500_io_update_input(atb3500_io_private_t *io, atb3500_io_port_t port) {

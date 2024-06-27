@@ -12,7 +12,7 @@ _Static_assert(sizeof(atb3500_watchdog_private_t) == sizeof(atb3500_watchdog_t),
 
 atb3500_watchdog_proto_tx_t *atb3500_watchdog_update(atb3500_watchdog_t *desc, atb3500_watchdog_proto_rx_t *rx_data) {
     atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)desc;
-    hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[1];
+    hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[0];
     if(rx_data->magic_value_reset == ATB3500_WATCHDOG_RESET_MAGIC) {
         hdl_timer_event_reset(timer);
     }
@@ -30,7 +30,7 @@ atb3500_watchdog_proto_tx_t *atb3500_watchdog_update(atb3500_watchdog_t *desc, a
 
 static uint8_t _watchdog_work(coroutine_desc_t this, uint8_t cancel, void *arg) {
     atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)arg;
-    hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[1];
+    hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[0];
 
     return cancel;
 }
@@ -38,7 +38,7 @@ static uint8_t _watchdog_work(coroutine_desc_t this, uint8_t cancel, void *arg) 
 hdl_module_state_t atb3500_watchdog(void *desc, uint8_t enable) {
     if(enable) {
         atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)desc;
-        hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[1];
+        hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[0];
         wdt->watchdog_delegate.context = NULL;
         wdt->watchdog_delegate.handler = NULL;
         wdt->tx_data.ovn = ATB3500_WATCHDOG_OVN;

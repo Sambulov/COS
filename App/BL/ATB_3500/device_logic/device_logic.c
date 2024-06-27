@@ -152,7 +152,7 @@ void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) 
 }
 
 void watchdog_event_handler(uint32_t event_trigger, void *sender, void *context) {
-
+    __NOP();
 }
 
 bldl_communication_t smarc_comm = {
@@ -162,7 +162,7 @@ bldl_communication_t smarc_comm = {
 
 atb3500_io_t mod_carrier_io = {
     .module.init = atb3500_io,
-    .module.dependencies = hdl_module_dependencies(&smarc_comm.module,
+    .module.dependencies = hdl_module_dependencies(
     /***********************************************************
     *                      LED
     ***********************************************************/
@@ -190,7 +190,7 @@ atb3500_io_t mod_carrier_io = {
 
 atb3500_watchdog_t mod_watchdog = {
     .module.init = &atb3500_watchdog,
-    .module.dependencies = hdl_module_dependencies(&smarc_comm.module, &mod_watchdog_timer.module)
+    .module.dependencies = hdl_module_dependencies(&mod_watchdog_timer.module)
 };
 
 #define WDT_CMD    0x00000000ED
@@ -223,6 +223,8 @@ hdl_module_t app_module = {
     .dependencies = hdl_module_dependencies(
         &mod_power_domain.module,
         &mod_smarc.module,
+        &mod_carrier_io.module,
+        &mod_watchdog.module,
         &mod_spi_server_dma.module
    )
 };
@@ -237,6 +239,7 @@ void device_logic(void) {
     while (!hdl_init_complete()) {
         cooperative_scheduler(false);
     }
+    atb3500_watchdog_event_subscribe(&mod_watchdog, &watchdog_event_handler, &context);
     hdl_spi_server_dma_set_rx_buffer(&mod_spi_server_dma, &context.spi_buffer);
     while (1) {
         cooperative_scheduler(false);

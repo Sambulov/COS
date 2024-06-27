@@ -4,6 +4,7 @@
 #define HDL_SPI_MESSAGE_PRV_SIZE           28
 #define SPI_SERVER_PRIVATE_SIZE            52
 #define SPI_MEM_SERVER_PRIVATE_SIZE        56
+#define SPI_SERVER_DMA_PRIVATE_SIZE        80
 #define SPI_CH_PRIVATE_SIZE                20
 
 #define SPI_ERROR_MASK      (uint32_t)(SPI_STAT_FERR | SPI_STAT_RXORERR | SPI_STAT_CONFERR | SPI_STAT_CRCERR | SPI_STAT_TXURERR)
@@ -60,6 +61,27 @@ typedef struct {
   hdl_nvic_irq_n_t nss_iterrupt; /* if HDL_SPI_CS_SOFT in HDL_SPI_SERVER mode */
   PRIVATE(hw, SPI_SERVER_PRIVATE_SIZE);
 } hdl_spi_server_t;
+
+/**************** vvv  SPI slave DMA vvv  ******************/
+
+/* depends on:
+  gpio mosi
+  gpio miso  
+  gpio sck
+  gpio nss
+  apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
+  interrupt controller (nvic)
+  hdl_dma_channel rx
+  hdl_dma_channel tx
+  timer
+*/
+typedef struct {
+  hdl_module_t module;
+  hdl_spi_server_config_t *config;
+  hdl_nvic_irq_n_t spi_iterrupt;
+  hdl_nvic_irq_n_t nss_iterrupt;
+  PRIVATE(hw, SPI_SERVER_DMA_PRIVATE_SIZE);
+} hdl_spi_server_dma_t;
 
 
 /**************** vvv  SPI slave shared memory vvv  ******************/

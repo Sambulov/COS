@@ -62,6 +62,7 @@ typedef struct {
      power_domain_1v8_is_stable : 1;
   uint32_t time_stamp;
   uint32_t restart_delay;
+  hdl_basic_buffer_t spi_buffer;
 } dev_context_t;
 
 void power_domain_rails_stable(dev_context_t *dev) {
@@ -191,6 +192,47 @@ atb3500_watchdog_t mod_watchdog = {
     .module.dependencies = hdl_module_dependencies(&smarc_comm.module, &mod_watchdog_timer.module)
 };
 
+
+void spi_event_handler(uint32_t event_trigger, void *sender, void *context) {
+    dev_context_t *cont = (dev_context_t *)context;
+    __NOP();
+}
+
+#define NEW_SPI_DMA
+
+#ifdef NEW_SPI_DMA
+hdl_module_t app_module = {
+    .dependencies = hdl_module_dependencies(
+        &mod_power_domain.module,
+        &mod_smarc.module,
+        &mod_spi_server_dma.module
+   )
+};
+
+void device_logic(void) {
+    static uint8_t buf[128];
+    static dev_context_t context = {.spi_buffer.size = 128, .spi_buffer.data = buf};
+    hdl_enable(&app_module);
+    power_domain_event_subscribe(&mod_power_domain, ATB3500_PD_24V, &power_domain_24v_rail, &context);
+    smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
+    hdl_spi_server_dma_set_handler(&mod_spi_server_dma, &spi_event_handler, &context);
+    while (!hdl_init_complete()) {
+        cooperative_scheduler(false);
+    }
+    hdl_spi_server_dma_set_rx_buffer(&mod_spi_server_dma, &context.spi_buffer);
+    while (1) {
+        cooperative_scheduler(false);
+        if(context.restart_delay != 0) {
+            uint32_t time_now = hdl_timer_get(&mod_systick_timer_ms);
+            if (TIME_ELAPSED(context.time_stamp, context.restart_delay, time_now)) {
+                context.restart_delay = 0;
+                power_domain_set(&mod_power_domain, ATB3500_PD_5V, HDL_TRUE);
+            }
+        }
+    }
+}
+
+#else
 hdl_module_t app_module = {
     .dependencies = hdl_module_dependencies(
         &mod_power_domain.module,
@@ -203,6 +245,7 @@ hdl_module_t app_module = {
 void device_logic(void) {
     static dev_context_t context = {0};
     hdl_enable(&app_module);
+    hdl_enable(&mod_spi_server_dma.module);
     power_domain_event_subscribe(&mod_power_domain, ATB3500_PD_24V, &power_domain_24v_rail, &context);
     smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
     atb3500_watchdog_event_subscribe(&mod_watchdog, &watchdog_event_handler, &context);
@@ -239,5 +282,6 @@ void device_logic(void) {
         }
     }
 }
+#endif
 
 #endif /* ATB_3500 */

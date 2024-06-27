@@ -104,3 +104,11 @@ uint8_t hdl_dma_run(hdl_dma_channel_t *channel, uint32_t periph_addr, uint32_t m
   }
   return HDL_FALSE;
 }
+
+uint8_t hdl_dma_stop(hdl_dma_channel_t *channel) {
+  hdl_dma_t *dma = _hdl_get_dma(channel);
+  if(dma != NULL) {
+    dma_deinit((uint32_t)dma->module.reg, dma_ch_no(channel));
+  }
+  return HDL_FALSE;
+}

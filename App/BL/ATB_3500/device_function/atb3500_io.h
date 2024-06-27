@@ -1,9 +1,10 @@
 #ifndef ATB3500_IO_H_
 #define ATB3500_IO_H_
 
-#define ATB3500_IO_PRV_SIZE    20
+#define ATB3500_IO_PRV_SIZE    8
 
 #define ATB3500_IO_AMOUNT   22
+
 /*
   depends on:
   communication
@@ -60,13 +61,19 @@ typedef enum {
                           
 } atb3500_io_port_t;
 
+typedef struct {
+  atb3500_io_port_t set;
+  atb3500_io_port_t reset;
+} atb3500_io_proto_rx_t;
+
+typedef struct {
+  atb3500_io_port_t input;
+  atb3500_io_port_t output;
+} atb3500_io_proto_tx_t;
+
 hdl_module_state_t atb3500_io(void *desc, uint8_t enable);
 
 void atb3500_io_set(atb3500_io_t *desc, atb3500_io_port_t port, uint8_t active);
-
-uint32_t atb3500_io_proto_rx_size(void);
-void atb3500_io_proto_set_map_rx(atb3500_io_t *desc, proto_map_mem_t *map);
-uint32_t atb3500_io_proto_tx_size(void);
-void atb3500_io_proto_set_map_tx(atb3500_io_t *desc, proto_map_mem_t *map);
+atb3500_io_proto_tx_t *atb3500_io_update(atb3500_io_t *desc, atb3500_io_proto_rx_t *rx_data);
 
 #endif //ATB3500_IO_H_

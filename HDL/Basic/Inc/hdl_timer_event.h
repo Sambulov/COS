@@ -25,5 +25,6 @@ uint8_t hdl_timer_event_run_once(hdl_timer_event_t *timer);
 uint8_t hdl_timer_event_run(hdl_timer_event_t *timer);
 uint8_t hdl_timer_event_reset(hdl_timer_event_t *timer);
 uint8_t hdl_timer_event_stop(hdl_timer_event_t *timer);
+uint32_t hdl_timer_event_get_timer(hdl_timer_event_t *timer);
 
 #endif // HDL_TIMER_EVENT_H_

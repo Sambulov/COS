@@ -83,7 +83,6 @@ typedef struct {
   PRIVATE(hw, SPI_SERVER_DMA_PRIVATE_SIZE);
 } hdl_spi_server_dma_t;
 
-
 /**************** vvv  SPI slave shared memory vvv  ******************/
 
 /* depends on:

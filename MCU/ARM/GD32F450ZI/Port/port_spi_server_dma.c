@@ -26,7 +26,7 @@ static void event_spi_nss(uint32_t event, void *sender, void *context) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)context;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->module.dependencies[3];
   if((event & (uint32_t)nss->module.reg) && (hdl_gpio_read(nss) == nss->inactive_default)) {
-    if(SPI_CTL1((uint32_t)spi->module.reg) & SPI_CTL1_DMAREN) {
+    if(spi->rx_mem) {
       hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];
       spi->received = (spi->rx_mem->size - hdl_dma_get_counter(dma_rx));
     }
@@ -50,6 +50,11 @@ void hdl_spi_server_dma_set_handler(hdl_spi_server_dma_t *desc, event_handler_t 
   }
 }
 
+static void _spi_reset_dma() {
+
+}
+
+
 uint8_t hdl_spi_server_dma_set_rx_buffer(hdl_spi_server_dma_t *desc, hdl_basic_buffer_t *buffer) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)desc;
   if((desc != NULL) && (hdl_state(&desc->module) == HDL_MODULE_INIT_OK)) {
@@ -57,10 +62,8 @@ uint8_t hdl_spi_server_dma_set_rx_buffer(hdl_spi_server_dma_t *desc, hdl_basic_b
     spi->rx_mem = buffer;
     if(buffer != NULL) {
       hdl_dma_run(dma_rx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)buffer->data , (uint32_t)buffer->size);
-      SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMAREN;
     }
     else {
-      SPI_CTL1((uint32_t)spi->module.reg) &= ~SPI_CTL1_DMAREN;
       hdl_dma_stop(dma_rx);
     }
     return HDL_TRUE;
@@ -74,10 +77,8 @@ uint8_t hdl_spi_server_dma_set_tx_data(hdl_spi_server_dma_t *desc, hdl_basic_buf
     hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->module.dependencies[7];
     if(buffer != NULL) {
       hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)buffer->data , (uint32_t)buffer->size);
-      SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMATEN;
     }
     else {
-      SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMATEN;
       hdl_dma_stop(dma_tx);
     }
     return HDL_TRUE;
@@ -93,9 +94,8 @@ static void _spi_server_dma_handler(linked_list_item_t *spi_item, void *arg) {
     }
     spi->received = 0;
     if(spi->rx_mem != NULL) {
-      hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->module.dependencies[7];
-      hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->rx_mem->data , (uint32_t)spi->rx_mem->size);
-      SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMATEN;
+      hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];
+      hdl_dma_run(dma_rx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->rx_mem->data , (uint32_t)spi->rx_mem->size);
     }
   }
 }
@@ -114,6 +114,10 @@ hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable) {
   switch ((uint32_t)spi->module.reg) {
     case SPI0: rcu = RCU_SPI0; break;
     case SPI1: rcu = RCU_SPI1; break;
+    case SPI2: rcu = RCU_SPI2; break;
+    case SPI3: rcu = RCU_SPI3; break;
+    case SPI4: rcu = RCU_SPI4; break;
+    case SPI5: rcu = RCU_SPI5; break;
     default: return HDL_MODULE_INIT_FAILED;
   }
   spi_i2s_deinit((uint32_t)spi->module.reg);
@@ -126,6 +130,7 @@ hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable) {
     init.endian = spi->config->endian;
     init.clock_polarity_phase = spi->config->polarity;
     init.nss = SPI_NSS_HARD;
+    init.prescale = HDL_SPI_PSC_2;
     spi_init((uint32_t)spi->module.reg, &init);
     SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_ERRIE;
     spi->nss_isr.context = desc;
@@ -136,6 +141,7 @@ hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable) {
     hdl_interrupt_request(ic, spi->spi_iterrupt, &spi->spi_isr);
     hdl_interrupt_request(ic, spi->nss_iterrupt, &spi->nss_isr);
     spi->received = 0;
+    SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMATEN | SPI_CTL1_DMAREN;
     spi_enable((uint32_t)spi->module.reg);
     linked_list_insert_last(&spis, linked_list_item(spi));
     coroutine_add_static(&spi_client_task_buff, &_spi_server_dma_worker, (void *)spis);

@@ -1,10 +1,5 @@
-#include "device_logic.h"
+#include "hdl.h"
 #include "CodeLib.h"
-// #define MAX_BOOT_BOOT_RETRY              ((int8_t)5)
-
-/* SMARC RESET DELAY */
-#define DELAY_MS_SMARC_RESET_AFTER_POWER_ISSUE  ((uint32_t)200)
-#define DELAY_MS_SECONDARY_POWER_STABLE         ((uint32_t)5000)
 
 typedef struct {
     hdl_module_t module;
@@ -86,17 +81,17 @@ static uint8_t _smarc_carrier_work(coroutine_desc_t this, uint8_t cancel, void *
     hdl_gpio_pin_t *reset_out = _smarc_get_ctrl_pin(carrier, RESET_OUT_PIN);
 
     if(reset_out != NULL) {
-        if(HDL_GPIO_IS_INACTIVE(reset_out)) carrier->state |= RESET_OUT;
+        if(hdl_gpio_is_inactive(reset_out)) carrier->state |= RESET_OUT;
         else carrier->state &= ~RESET_OUT;
     }
 
     if(carrier_stby != NULL) {
-        if(HDL_GPIO_IS_INACTIVE(carrier_stby)) carrier->state |= CARRIER_STANDBY;
+        if(hdl_gpio_is_inactive(carrier_stby)) carrier->state |= CARRIER_STANDBY;
         else carrier->state &= ~CARRIER_STANDBY;
     }
 
     if(carrier_pwr_on != NULL) {
-        if(HDL_GPIO_IS_ACTIVE(carrier_pwr_on)) carrier->state |= CARRIER_POWER_ON;
+        if(hdl_gpio_is_active(carrier_pwr_on)) carrier->state |= CARRIER_POWER_ON;
         else carrier->state &= ~CARRIER_POWER_ON;
     }
 
@@ -121,13 +116,13 @@ static uint8_t _smarc_carrier_work(coroutine_desc_t this, uint8_t cancel, void *
         if((carrier->state ^ carrier->old_state) & CARRIER_READY) {
             if(carrier->state & CARRIER_READY) {
                 if((carrier->target_state >= CARRIER_READY) && (carrier->old_state & CARRIER_STANDBY)) {
-                    if(reset_in != NULL) HDL_GPIO_SET_ACTIVE(reset_in);
+                    if(reset_in != NULL) hdl_gpio_set_active(reset_in);
                     _call_event_hundler(carrier, SMARC_EVENT_CARRIER_BOOT_READY);
                     carrier->old_state |= CARRIER_READY;
                 }
             }
             else {
-                if(reset_in != NULL) HDL_GPIO_SET_INACTIVE(reset_in);
+                if(reset_in != NULL) hdl_gpio_set_inactive(reset_in);
                 if(carrier->state < CARRIER_READY) {
                     _call_event_hundler(carrier, SMARC_EVENT_CARRIER_RUNTIME_TO_STBY_CIRCUITS);
                 }
@@ -178,12 +173,12 @@ static uint8_t _smarc_carrier_work(coroutine_desc_t this, uint8_t cancel, void *
 
         if((carrier->state ^ carrier->old_state) & POWER_GOOD) {
             if(carrier->state & POWER_GOOD) {
-                if(power_bad != NULL) HDL_GPIO_SET_INACTIVE(power_bad);
+                if(power_bad != NULL) hdl_gpio_set_inactive(power_bad);
                 _call_event_hundler(carrier, SMARC_EVENT_CARRIER_POWER_GOOD);
                 carrier->old_state |= POWER_GOOD;
             }
             else {
-                if(power_bad != NULL) HDL_GPIO_SET_ACTIVE(power_bad);
+                if(power_bad != NULL) hdl_gpio_set_active(power_bad);
                 _call_event_hundler(carrier, SMARC_EVENT_CARRIER_POWER_FAULT);
                 carrier->old_state &= ~POWER_GOOD;
             }
@@ -200,10 +195,10 @@ hdl_module_state_t bldl_smarc_carrier(void *desc, uint8_t enable) {
         hdl_gpio_pin_t *pow_bad_pin = (hdl_gpio_pin_t *)carrier->module.dependencies[0];
         hdl_gpio_pin_t *rst_in_pin = (hdl_gpio_pin_t *)carrier->module.dependencies[4];
         if(!HDL_IS_NULL_MODULE(pow_bad_pin)) {
-            HDL_GPIO_SET_ACTIVE(pow_bad_pin);
+            hdl_gpio_set_active(pow_bad_pin);
         }
         if(!HDL_IS_NULL_MODULE(rst_in_pin)) {
-            HDL_GPIO_SET_INACTIVE(rst_in_pin);
+            hdl_gpio_set_inactive(rst_in_pin);
         }
         carrier->old_state = INITIAL;
         carrier->state = INITIAL;

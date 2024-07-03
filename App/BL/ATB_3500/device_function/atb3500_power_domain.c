@@ -35,7 +35,7 @@ void atb3500_power_rail_set(atb3500_power_rail_t *desc, uint8_t enable) {
             if (rail->state == PD_STATE_OFF) {
                 rail->timestamp = hdl_timer_get(timer);
                 if(en_pin != NULL)
-                    HDL_GPIO_SET_ACTIVE(en_pin);
+                    hdl_gpio_set_active(en_pin);
                 rail->state = PD_STATE_ENABLED;
                 if(rail->event != NULL)
                     rail->event(rail->state, (void *)rail, rail->event_context);
@@ -43,7 +43,7 @@ void atb3500_power_rail_set(atb3500_power_rail_t *desc, uint8_t enable) {
         }
         else if (rail->state != PD_STATE_OFF) {
             if(en_pin != NULL)
-                HDL_GPIO_SET_INACTIVE(en_pin);
+                hdl_gpio_set_inactive(en_pin);
             rail->state = PD_STATE_OFF;
             if(rail->event != NULL)
                 rail->event(rail->state, (void *)rail, rail->event_context);

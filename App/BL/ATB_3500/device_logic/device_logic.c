@@ -220,7 +220,7 @@ void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) 
 }
 
 void watchdog_event_handler(uint32_t event_trigger, void *sender, void *context) {
-
+    __NOP();
 }
 
 atb3500_io_t mod_carrier_io = {
@@ -297,6 +297,8 @@ hdl_module_t app_module = {
     .dependencies = hdl_module_dependencies(
         &power_domain,
         &mod_smarc.module,
+        &mod_carrier_io.module,
+        &mod_watchdog.module,
         &mod_spi_server_dma.module
    )
 };
@@ -311,6 +313,7 @@ void device_logic(void) {
     atb3500_power_rail_event_subscribe(&rail_24v, &power_domain_24v_rail, &context);
     smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
     hdl_spi_server_dma_set_handler(&mod_spi_server_dma, &spi_event_handler, &context);
+    atb3500_watchdog_event_subscribe(&mod_watchdog, &watchdog_event_handler, &context);
     hdl_spi_server_dma_set_rx_buffer(&mod_spi_server_dma, &context.spi_buffer);
     while (1) {
         cooperative_scheduler(false);

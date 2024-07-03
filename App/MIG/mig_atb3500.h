@@ -9,7 +9,6 @@ extern hdl_timer_event_t mod_watchdog_timer;
 /**************************************************************
  *                        SPI
  *************************************************************/
-extern hdl_spi_mem_server_t mod_spi_3;
 extern hdl_spi_server_dma_t mod_spi_server_dma;
 /***********************************************************
  *               SMARC POWER UP and SMARC GPIO

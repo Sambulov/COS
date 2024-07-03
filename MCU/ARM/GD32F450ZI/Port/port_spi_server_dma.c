@@ -16,7 +16,7 @@ typedef struct {
   uint32_t received;
   hdl_delegate_t spi_isr;
   hdl_delegate_t nss_isr;
-  event_handler_t spi_cb;
+  hdl_event_handler_t spi_cb;
   void *context;
 } hdl_spi_server_dma_private_t;
 
@@ -42,7 +42,7 @@ static void event_spi_isr(uint32_t event, void *sender, void *context) {
   }
 }
 
-void hdl_spi_server_dma_set_handler(hdl_spi_server_dma_t *desc, event_handler_t handler, void *context) {
+void hdl_spi_server_dma_set_handler(hdl_spi_server_dma_t *desc, hdl_event_handler_t handler, void *context) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)desc;
   if(desc != NULL) {
     spi->spi_cb = handler;

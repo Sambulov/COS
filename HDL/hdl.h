@@ -28,6 +28,7 @@ extern "C" {
 #include "hdl_timer_event.h"
 #include "RK809.h"
 #include "plc_io.h"
+#include "smarc_carrier.h"
 
 #ifdef __cplusplus
 }

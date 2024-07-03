@@ -58,7 +58,7 @@ static uint8_t _hdl_hw_work(CoroutineDesc_t this, uint8_t cancel, void *arg) {
   /* ??? run driver worker ??? */
 }
 
-hdl_module_state_t hdl_state(hdl_module_t *desc) {
+hdl_module_state_t hdl_state(const hdl_module_t *desc) {
   hdl_module_state_t res = HDL_MODULE_INIT_UNKNOWN;
   if(desc != NULL) {
     hdl_hardware_private_t *module = (hdl_hardware_private_t *)desc;

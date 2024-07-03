@@ -34,15 +34,9 @@ hdl_module_state_t hdl_spi_ch(void *desc, uint8_t enable);
 hdl_spi_message_state_t hdl_spi_client_xfer(hdl_spi_client_ch_t *spi_ch, hdl_spi_message_t *message);
 hdl_spi_message_state_t hdl_spi_message_get_state(hdl_spi_message_t *message);
 
-/**************** vvv  SPI mem slave vvv  ******************/
-hdl_module_state_t hdl_spi_mem_server(void *desc, uint8_t enable);
-uint32_t hdl_spi_mem_buffer_epoch(hdl_spi_mem_server_t *spi);
-uint8_t hdl_spi_mem_rx_buffer_take(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset);
-uint8_t hdl_spi_mem_tx_buffer_put(hdl_spi_mem_server_t *spi, hdl_basic_buffer_t *buffer, uint32_t offset);
-
 /**************** vvv  SPI slave DMA vvv  ******************/
 hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable);
-void hdl_spi_server_dma_set_handler(hdl_spi_server_dma_t *desc, event_handler_t handler, void *context);
+void hdl_spi_server_dma_set_handler(hdl_spi_server_dma_t *desc, hdl_event_handler_t handler, void *context);
 uint8_t hdl_spi_server_dma_set_rx_buffer(hdl_spi_server_dma_t *desc, hdl_basic_buffer_t *buffer);
 uint8_t hdl_spi_server_dma_set_tx_data(hdl_spi_server_dma_t *desc, hdl_basic_buffer_t *buffer);
 

@@ -73,7 +73,7 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
 }
 
 hdl_gpio_state hdl_gpio_read(const hdl_gpio_pin_t *gpio){
-  if (gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
+  if (hdl_state(&gpio->module) != HDL_MODULE_INIT_OK)
     return HDL_GPIO_LOW;
   /* gpio_port it`s GPIOx(x = A,B,C) */
   uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
@@ -81,7 +81,7 @@ hdl_gpio_state hdl_gpio_read(const hdl_gpio_pin_t *gpio){
 }
 
 hdl_gpio_state hdl_gpio_read_output(const hdl_gpio_pin_t *gpio) {
-  if (gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
+  if (hdl_state(&gpio->module) != HDL_MODULE_INIT_OK)
     return HDL_GPIO_LOW;
   /* gpio_port it`s GPIOx(x = A,B,C) */
   uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
@@ -89,7 +89,7 @@ hdl_gpio_state hdl_gpio_read_output(const hdl_gpio_pin_t *gpio) {
 }
 
 void hdl_gpio_write(const hdl_gpio_pin_t *gpio, const hdl_gpio_state state){
-  if (gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
+  if (hdl_state(&gpio->module) != HDL_MODULE_INIT_OK)
     return;
   /* gpio_port it`s GPIOx(x = A,B,C) */
   uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
@@ -97,7 +97,7 @@ void hdl_gpio_write(const hdl_gpio_pin_t *gpio, const hdl_gpio_state state){
 }
 
 void hdl_gpio_toggle(const hdl_gpio_pin_t *gpio){
-  if (gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
+  if (hdl_state(&gpio->module) != HDL_MODULE_INIT_OK)
     return;
   /* gpio_port it`s GPIOx(x = A,B,C) */
   uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;

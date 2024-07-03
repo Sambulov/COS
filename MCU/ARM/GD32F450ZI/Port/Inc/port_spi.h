@@ -83,30 +83,6 @@ typedef struct {
   PRIVATE(hw, SPI_SERVER_DMA_PRIVATE_SIZE);
 } hdl_spi_server_dma_t;
 
-/**************** vvv  SPI slave shared memory vvv  ******************/
-
-/* depends on:
-  gpio mosi
-  gpio miso  
-  gpio sck
-  gpio nss
-  apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
-  interrupt controller (nvic)
-  hdl_dma_channel rx
-  hdl_dma_channel tx
-  hdl_dma_channel m2m
-  timer
-*/
-typedef struct {
-  hdl_module_t module;
-  hdl_spi_server_config_t *config;
-  hdl_nvic_irq_n_t spi_iterrupt;
-  hdl_nvic_irq_n_t nss_iterrupt;
-  hdl_double_buffer_t *rx_mem;
-  hdl_double_buffer_t *tx_mem;
-  PRIVATE(hw, SPI_MEM_SERVER_PRIVATE_SIZE);
-} hdl_spi_mem_server_t;
-
 /**************** vvv  SPI master vvv  ******************/
 #define HDl_SPI_CLIENT_PRIVATE_SIZE    52
 #define HDl_SPI_CLIENT_CH_PRIVATE_SIZE 24

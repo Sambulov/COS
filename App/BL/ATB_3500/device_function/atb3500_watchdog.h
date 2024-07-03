@@ -31,7 +31,7 @@ typedef struct {
 } atb3500_watchdog_t;
 
 hdl_module_state_t atb3500_watchdog(void *desc, uint8_t enable);
-hdl_module_state_t atb3500_watchdog_event_subscribe(atb3500_watchdog_t *desc, event_handler_t handler, void *context);
+hdl_module_state_t atb3500_watchdog_event_subscribe(atb3500_watchdog_t *desc, hdl_event_handler_t handler, void *context);
 atb3500_watchdog_proto_tx_t *atb3500_watchdog_update(atb3500_watchdog_t *desc, atb3500_watchdog_proto_rx_t *rx_data);
 
 #endif //ATB3500_WATCHDOG_H_

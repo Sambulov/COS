@@ -1,7 +1,7 @@
 #ifndef BLDL_SMARC_CARRIER_H_
 #define BLDL_SMARC_CARRIER_H_
 
-#define BLDL_SMARC_CARRIER_PRV_SIZE    (16)
+#define BLDL_SMARC_CARRIER_PRV_SIZE    (12)
 
 typedef enum {
     SMARC_CARRIER_BOOT0 = 0x01,
@@ -10,27 +10,50 @@ typedef enum {
 } smarc_carrier_boot_select_e;
 
 typedef enum {
+    SMARC_EVENT_CARRIER_POWER_GOOD,
     SMARC_EVENT_CARRIER_SLEEP_TO_STBY_CIRCUITS,
     SMARC_EVENT_CARRIER_STBY_TO_RUNTIME_CIRCUITS,
+    SMARC_EVENT_CARRIER_BOOT_READY,
     SMARC_EVENT_CARRIER_MODULE_RUNTIME,
     SMARC_EVENT_CARRIER_MODULE_RESET,
     SMARC_EVENT_CARRIER_RUNTIME_TO_STBY_CIRCUITS,
     SMARC_EVENT_CARRIER_STBY_TO_SLEEP_CIRCUITS,
     SMARC_EVENT_CARRIER_FAULT,
     SMARC_EVENT_CARRIER_POWER_FAULT,
+    SMARC_EVENT_CARRIER_MODULE_BAD_STATE,
 } smarc_carrier_event_e;
+
+typedef enum {
+    INITIAL          = 0x00,
+    POWER_GOOD       = 0x01,
+    BOOT_TRIGGER     = POWER_GOOD,
+    CARRIER_POWER_ON = 0x04,
+    CARRIER_STANDBY  = 0x08,
+    CARRIER_READY    = 0x10,
+    RESET_IN         = CARRIER_READY,
+    RESET_OUT        = 0x40,
+    RUNTIME          = RESET_OUT
+} smarc_carrier_sate_t;
+
+#define POWER_BAD_PIN               0
+#define CARRIER_POWER_ON_PIN        1
+#define CARRIER_STBY_PIN            2
+#define RESET_IN_PIN                3
+#define RESET_OUT_PIN               4
+#define BOOT0_PIN                   5
+#define BOOT1_PIN                   6
+#define BOOT2_PIN                   7
 
 /* depends on:
   gpio power bad (O)
-  hdl_button_pwr_out
   gpio carrier_power_on (I)
   gpio carrier_stand_by (I)
   gpio reset_in (O)
-  gpio reset_out (O)
-  timer
+  gpio reset_out (I)
   gpio boot 0 (O)
   gpio boot 1 (O)
   gpio boot 2 (O)
+  timer
 */
 typedef struct {
     hdl_module_t module;
@@ -40,11 +63,32 @@ typedef struct {
 
 hdl_module_state_t bldl_smarc_carrier(void *desc, uint8_t enable);
 
-uint8_t smarc_carrier_event_subscribe(bldl_smarc_carrier_t *desc, event_handler_t handler, void *context);
+uint8_t smarc_carrier_event_subscribe(bldl_smarc_carrier_t *desc, hdl_event_handler_t handler, void *context);
 void smarc_carrier_boot_select(bldl_smarc_carrier_t *desc, smarc_carrier_boot_select_e select);
 
-void smarc_carrier_power_good(bldl_smarc_carrier_t *desc, uint8_t enable);
-void smarc_carrier_ready(bldl_smarc_carrier_t *desc, uint8_t enable);
+
+void smarc_carrier_set_target_state(bldl_smarc_carrier_t *desc, smarc_carrier_sate_t state);
+smarc_carrier_sate_t smarc_carrier_get_target_state(bldl_smarc_carrier_t *desc);
+smarc_carrier_sate_t smarc_carrier_get_current_state(bldl_smarc_carrier_t *desc);
+void smarc_carrier_force_state(bldl_smarc_carrier_t *desc, smarc_carrier_sate_t state, uint8_t active);
+
+
+
+static inline void smarc_carrier_power_good(bldl_smarc_carrier_t *desc, uint8_t enable) {
+    smarc_carrier_force_state(desc, POWER_GOOD, enable);
+}
+
+static inline void smarc_carrier_ready(bldl_smarc_carrier_t *desc, uint8_t enable) {
+    smarc_carrier_force_state(desc, CARRIER_READY, enable);
+}
+
+static inline void smarc_carrier_boot(bldl_smarc_carrier_t *desc) {
+    smarc_carrier_set_target_state(desc, RUNTIME);
+}
+
+static inline void smarc_carrier_shutdown(bldl_smarc_carrier_t *desc) {
+    smarc_carrier_set_target_state(desc, POWER_GOOD);
+}
 
 /*
     Smarc carrier driver usage
@@ -67,15 +111,6 @@ void smarc_carrier_ready(bldl_smarc_carrier_t *desc, uint8_t enable);
     3) CARRIER_STBY# became active, SMARC_CARRIER_EVENT_RUNTIME_TO_STBY_CIRCUITS event will raise. Switch carrier to standby mode.
     4) CARRIER_PWR_ON became inactive, SMARC_CARRIER_EVENT_STBY_TO_SLEEP_CIRCUITS event will raise. Switch carrier to sleep mode.
     5) POWER_BAD# became active, SMARC_EVENT_CARRIER_POWER_FAULT event will raise. App notifies module about power fault state.
-
-AppInitState 
-    POWER_GOOD           = 0x01,
-    POWER_POWER_BTN_TRIG = 0x02,
-    CARRIER_PWR_ON_SET   = 0x04,
-    CARRIER_STBY_RESET   = 0x08,
-    CARRIER_READY        = 0x10,
-    RESET_IN_SET         = 0x20,
-    RESET_OUT_SET        = 0x40,
     
 */
 

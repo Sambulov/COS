@@ -29,7 +29,7 @@ extern hdl_module_t hdl_null_module;
 
 void hdl_enable(hdl_module_t *desc);
 void hdl_kill(hdl_module_t *desc);
-hdl_module_state_t hdl_state(hdl_module_t *desc);
+hdl_module_state_t hdl_state(const hdl_module_t *desc);
 uint8_t hdl_init_complete();
 
 #endif // HDL_MODULE_H_

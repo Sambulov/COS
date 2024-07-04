@@ -57,13 +57,15 @@ typedef enum {
 
 #define ATB3500_POWER_RAIL_TIMER         0
 #define ATB3500_POWER_RAIL_ADC           1
-#define ATB3500_POWER_RAIL_SOURSE_RAIL   2
-#define ATB3500_POWER_RAIL_EN_PIN        3
+#define ATB3500_POWER_RAIL_ADC_PIN       2
+#define ATB3500_POWER_RAIL_SOURSE_RAIL   3
+#define ATB3500_POWER_RAIL_EN_PIN        4
 
 /*
     depends on:
     - timer
     - adc
+    - adc_pin
     - source power_rail
     - enable_pin
 */

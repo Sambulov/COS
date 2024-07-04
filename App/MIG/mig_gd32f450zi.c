@@ -350,7 +350,7 @@ hdl_gpio_pin_t mod_do_smarc_reset_in = {
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .module.reg = (void *)GPIO_PIN_0,
   .mode = &hdl_gpio_mode_output_no_pull,
-  .inactive_default = HDL_GPIO_LOW,
+  .inactive_default = HDL_GPIO_HIGH,
 };
 hdl_gpio_pin_t mod_di_smarc_reset_out = {
   .module.init = &hdl_gpio_pin,

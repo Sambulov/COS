@@ -192,14 +192,10 @@ hdl_module_state_t bldl_smarc_carrier(void *desc, uint8_t enable) {
     bldl_smarc_carrier_private_t *carrier = (bldl_smarc_carrier_private_t *)desc;
     static coroutine_desc_static_t smarc_task_buf;
     if(enable) {
-        hdl_gpio_pin_t *pow_bad_pin = (hdl_gpio_pin_t *)carrier->module.dependencies[0];
-        hdl_gpio_pin_t *rst_in_pin = (hdl_gpio_pin_t *)carrier->module.dependencies[4];
-        if(!HDL_IS_NULL_MODULE(pow_bad_pin)) {
-            hdl_gpio_set_active(pow_bad_pin);
-        }
-        if(!HDL_IS_NULL_MODULE(rst_in_pin)) {
-            hdl_gpio_set_inactive(rst_in_pin);
-        }
+        hdl_gpio_pin_t *pow_bad_pin = _smarc_get_ctrl_pin(carrier, POWER_BAD_PIN);
+        hdl_gpio_pin_t *rst_in_pin = _smarc_get_ctrl_pin(carrier, RESET_IN_PIN);
+        if(pow_bad_pin != NULL) hdl_gpio_set_active(pow_bad_pin);
+        if(rst_in_pin != NULL) hdl_gpio_set_inactive(rst_in_pin);
         carrier->old_state = INITIAL;
         carrier->state = INITIAL;
         carrier->target_state = INITIAL;

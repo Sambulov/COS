@@ -15,6 +15,7 @@ atb3500_power_rail_t rail_24v = {
     .module.dependencies = hdl_module_dependencies(
         &mod_systick_timer_ms.module,
         &mod_adc.module,
+        &mod_adc_pin_24v.module,
         &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_24V,
@@ -30,6 +31,7 @@ atb3500_power_rail_t rail_24vpoe = {
     .module.dependencies = hdl_module_dependencies(
         &mod_systick_timer_ms.module,
         &mod_adc.module,
+        &mod_adc_pin_24v_poe.module,
         &rail_24v.module,
         &mod_do_24v_poe_power_on.module /*, 
         &mod_di_24v_poe_power_fault.module, 
@@ -47,6 +49,7 @@ atb3500_power_rail_t rail_5v = {
     .module.dependencies = hdl_module_dependencies(
         &mod_systick_timer_ms.module,
         &mod_adc.module,
+        &mod_adc_pin_5v.module,
         &rail_24v.module,
         &mod_do_5v_power_on.module),
     .adc_scale = POWER_RAIL_ADC_SCALE_5V,
@@ -62,6 +65,7 @@ atb3500_power_rail_t rail_3v3 = {
     .module.dependencies = hdl_module_dependencies(
         &mod_systick_timer_ms.module,
         &mod_adc.module,
+        &mod_adc_pin_3v3.module,
         &rail_5v.module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_3V3,
@@ -77,6 +81,7 @@ atb3500_power_rail_t rail_2v5 = {
     .module.dependencies = hdl_module_dependencies(
         &mod_systick_timer_ms.module,
         &mod_adc.module,
+        &mod_adc_pin_2v5.module,
         &rail_5v.module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_2V5,
@@ -92,6 +97,7 @@ atb3500_power_rail_t rail_1v8 = {
     .module.dependencies = hdl_module_dependencies(
         &mod_systick_timer_ms.module,
         &mod_adc.module,
+        &mod_adc_pin_1v8.module,
         &rail_5v.module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_1V8,
@@ -135,10 +141,13 @@ typedef struct {
 } dev_context_t;
 
 void power_domain_rails_stable(dev_context_t *dev) {
-    if(dev->power_domain_1v8_is_stable && dev->power_domain_2v5_is_stable && dev->power_domain_3v3_is_stable)
+    if(dev->power_domain_1v8_is_stable && dev->power_domain_2v5_is_stable && dev->power_domain_3v3_is_stable) {
+        smarc_carrier_boot_select(&mod_smarc, SMARC_CARRIER_BOOT0 | SMARC_CARRIER_BOOT1 | SMARC_CARRIER_BOOT2);
         smarc_carrier_ready(&mod_smarc, HDL_TRUE);
-    else
+    }
+    else {
         smarc_carrier_ready(&mod_smarc, HDL_FALSE);
+    }
 }
 
 void power_domain_1v8_rail(uint32_t event_trigger, void *sender, void *context) {
@@ -174,7 +183,6 @@ void power_domain_2v5_rail(uint32_t event_trigger, void *sender, void *context) 
 
 void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *context) {
     if(event_trigger == SMARC_EVENT_CARRIER_SLEEP_TO_STBY_CIRCUITS) {
-        smarc_carrier_boot_select(&mod_smarc, SMARC_CARRIER_BOOT0 | SMARC_CARRIER_BOOT1 | SMARC_CARRIER_BOOT2);
         atb3500_power_rail_event_subscribe(&rail_3v3, &power_domain_3v3_rail, context);
         atb3500_power_rail_event_subscribe(&rail_2v5, &power_domain_2v5_rail, context);
         atb3500_power_rail_event_subscribe(&rail_1v8, &power_domain_1v8_rail, context);
@@ -189,17 +197,25 @@ void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *con
         /* Start runtime */
     }
     else if(event_trigger == SMARC_EVENT_CARRIER_MODULE_RESET) {
+        /* This pins aren`t provided, we have to notify driver about this */
+        smarc_carrier_force_state(&mod_smarc, CARRIER_POWER_ON, HDL_FALSE); 
+        smarc_carrier_force_state(&mod_smarc, CARRIER_STANDBY, HDL_FALSE);
         atb3500_power_rail_set(&rail_1v8, HDL_FALSE);
         atb3500_power_rail_set(&rail_2v5, HDL_FALSE);
         atb3500_power_rail_set(&rail_3v3, HDL_FALSE);
         atb3500_power_rail_set(&rail_5v, HDL_FALSE);
+        smarc_carrier_shutdown(&mod_smarc);
     }
 }
 
 void power_domain_5v_rail(uint32_t event_trigger, void *sender, void *context) {
     dev_context_t *dev = (dev_context_t*)context;
     if(event_trigger == PD_STATE_STABLE) {
+        smarc_carrier_boot(&mod_smarc);
         smarc_carrier_power_good(&mod_smarc, HDL_TRUE);
+        /* This pins aren`t provided, we have to notify driver about this */
+        smarc_carrier_force_state(&mod_smarc, CARRIER_POWER_ON, HDL_TRUE); 
+        smarc_carrier_force_state(&mod_smarc, CARRIER_STANDBY, HDL_TRUE);
     }
     else if(event_trigger == PD_STATE_OFF) {
         smarc_carrier_power_good(&mod_smarc, HDL_FALSE);
@@ -220,7 +236,14 @@ void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) 
 }
 
 void watchdog_event_handler(uint32_t event_trigger, void *sender, void *context) {
-    __NOP();
+    /* This pins aren`t provided, we have to notify driver about this */
+    smarc_carrier_force_state(&mod_smarc, CARRIER_POWER_ON, HDL_FALSE); 
+    smarc_carrier_force_state(&mod_smarc, CARRIER_STANDBY, HDL_FALSE);
+    atb3500_power_rail_set(&rail_1v8, HDL_FALSE);
+    atb3500_power_rail_set(&rail_2v5, HDL_FALSE);
+    atb3500_power_rail_set(&rail_3v3, HDL_FALSE);
+    atb3500_power_rail_set(&rail_5v, HDL_FALSE);
+    smarc_carrier_shutdown(&mod_smarc);
 }
 
 atb3500_io_t mod_carrier_io = {
@@ -315,6 +338,8 @@ void device_logic(void) {
     hdl_spi_server_dma_set_handler(&mod_spi_server_dma, &spi_event_handler, &context);
     atb3500_watchdog_event_subscribe(&mod_watchdog, &watchdog_event_handler, &context);
     hdl_spi_server_dma_set_rx_buffer(&mod_spi_server_dma, &context.spi_buffer);
+    atb3500_power_rail_set(&rail_24v, HDL_TRUE);
+
     while (1) {
         cooperative_scheduler(false);
         if(context.restart_delay != 0) {
@@ -322,6 +347,7 @@ void device_logic(void) {
             if (TIME_ELAPSED(context.time_stamp, context.restart_delay, time_now)) {
                 context.restart_delay = 0;
                 atb3500_power_rail_set(&rail_5v, HDL_TRUE);
+
             }
         }
     }

@@ -174,8 +174,7 @@ hdl_spi_client_config_t spi_master_config = {
 };
 hdl_spi_server_config_t spi_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
-  .polarity = SPI_CK_PL_LOW_PH_2EDGE,
-  .prescale = HDL_SPI_PSC_256,
+  .polarity = SPI_CK_PL_LOW_PH_2EDGE
 };
 
 
@@ -248,17 +247,15 @@ hdl_double_buffer_t spi_tx_buffer = {
   .size = sizeof(spi_dma_tx_0_buf),
 };
 
-hdl_spi_mem_server_t mod_spi_with_dma = {
+hdl_spi_server_dma_t mod_spi_server_dma = {
   .module.reg = (void *)SPI0,
   .module.dependencies = hdl_module_dependencies(&gpio_pin_spi_mosi.module, &gpio_pin_spi_miso.module, &gpio_pin_spi_sck.module,
                                                   &gpio_pin_spi_cs.module, &mod_clock_apb2.module, &mod_nvic.module, 
-                                                  &mod_dma_ch_spi_rx.module, &mod_dma_ch_spi_tx.module, &mod_dma_ch_spi_m2m.module),
-  .module.init = &hdl_spi_mem_server,
+                                                  &mod_dma_ch_spi_rx.module, &mod_dma_ch_spi_tx.module),
+  .module.init = &hdl_spi_server_dma,
   .config = &spi_slave_config,
   .spi_iterrupt = HDL_NVIC_IRQ25_SPI0,
   .nss_iterrupt = HDL_NVIC_IRQ7_EXTI4_15,
-  .rx_mem = &spi_rx_buffer,
-  .tx_mem = &spi_tx_buffer,
 };
 
 hdl_spi_client_t mod_spi_master_0 = {
@@ -425,7 +422,7 @@ void test() {
   //hdl_enable(&btn.module);
   //hdl_enable(&timer_with_event.module);
   
-  hdl_enable(&mod_spi_with_dma.module);
+  hdl_enable(&mod_spi_server_dma.module);
 #ifdef SPI_CLIENT
   //hdl_enable(&spi_master_0_ch_0.module);
 #else
@@ -481,11 +478,11 @@ void test() {
   while (1) {
     cooperative_scheduler(false);
     static uint8_t flag = 0;
-    if(hdl_spi_mem_rx_buffer_take(&mod_spi_with_dma, &spi_mem_test, 5) && !flag)
-    {
-      flag = 1;
-      __NOP();
-    }
+    // if(hdl_spi_mem_rx_buffer_take(&mod_spi_server_dma, &spi_mem_test, 5) && !flag)
+    // {
+    //   flag = 1;
+    //   __NOP();
+    // }
   
     
     // uint8_t data;

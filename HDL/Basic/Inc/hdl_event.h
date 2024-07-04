@@ -4,10 +4,10 @@
 #define HDL_DELEGATE_PRIVATE_SIZE    16
 #define HDL_EVENT_PRIVATE_SIZE        4
 
-typedef void (*event_handler_t)(uint32_t event_trigger, void *sender, void *context);
+typedef void (*hdl_event_handler_t)(uint32_t event_trigger, void *sender, void *context);
 
 typedef struct {
-  event_handler_t handler;
+  hdl_event_handler_t handler;
   void *context;
   PRIVATE(hdl, HDL_DELEGATE_PRIVATE_SIZE);
 } hdl_delegate_t;

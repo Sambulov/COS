@@ -16,8 +16,12 @@ typedef struct {
   hdl_gpio_state inactive_default;
 } hdl_gpio_pin_t;
 
-#define hdl_gpio_set_inactive_default(gpio)    (hdl_gpio_write(gpio, gpio->inactive_default))
-#define hdl_gpio_is_inactive_default(gpio)     (hdl_gpio_read(gpio) == gpio->inactive_default)
+#define hdl_gpio_set_inactive(gpio)            (hdl_gpio_write(gpio, gpio->inactive_default))
+#define hdl_gpio_set_active(gpio)              (hdl_gpio_write(gpio, !gpio->inactive_default))
+#define hdl_gpio_is_inactive(gpio)             (hdl_gpio_read(gpio) == gpio->inactive_default)
+#define hdl_gpio_is_active(gpio)               (!hdl_gpio_is_inactive(gpio))
+#define hdl_gpio_is_set_as_inactive(gpio)      (hdl_gpio_read_output(gpio) == gpio->inactive_default)
+#define hdl_gpio_is_set_as_active(gpio)        (!hdl_gpio_is_set_as_inactive(gpio))
 
 hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable);
 hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable);

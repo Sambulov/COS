@@ -2,7 +2,7 @@
 #include "CodeLib.h"
 
 typedef struct {
-  event_handler_t handler;
+  hdl_event_handler_t handler;
   void *context;
   __linked_list_object__;
 } hdl_delegate_private_t;

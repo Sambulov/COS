@@ -100,3 +100,15 @@ uint8_t hdl_timer_event_reset(hdl_timer_event_t *timer) {
   }
   return HDL_FALSE;
 }
+
+uint32_t hdl_timer_event_get_timer(hdl_timer_event_t *timer) {
+  hdl_timer_event_private_t *timer_event = (hdl_timer_event_private_t *)timer;
+  if(timer_event != NULL) {
+    hdl_timer_t *timer = (hdl_timer_t *)timer_event->module.dependencies[0];
+    if(timer_event->running) {
+      return hdl_timer_get(timer) - timer_event->time_stamp;
+    }
+    return timer_event->delay;
+  }
+  return 0;
+}

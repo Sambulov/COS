@@ -72,7 +72,6 @@ hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable) {
     init.endian = spi->config->endian;
     init.clock_polarity_phase = spi->config->polarity;
     init.nss = SPI_NSS_HARD;
-    init.prescale = spi->config->prescale;
     spi_init((uint32_t)spi->module.reg, &init);
     SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_RBNEIE | SPI_CTL1_TBEIE | SPI_CTL1_ERRIE;
     //SPI_CTL0((uint32_t)spi->module.reg) |= SPI_CTL0_SWNSS; 

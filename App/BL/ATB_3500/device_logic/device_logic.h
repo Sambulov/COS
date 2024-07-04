@@ -9,19 +9,10 @@
 
 #ifdef ATB_3500
 #include "bldl.h"
-#include "bldl_power_domain.h"
-#include "bldl_smarc_carrier.h"
-#include "bldl_communication.h"
+#include "atb3500_power_domain.h"
 #include "atb3500_io.h"
 #include "atb3500_watchdog.h"
 #include "mig_atb3500.h"
-
-#define HDL_GPIO_ON_WRAP(x)      (!(x.inactive_default))
-#define HDL_GPIO_OFF_WRAP(x)      ((x.inactive_default))
-
-#define HDL_GPIO_SET_ACTIVE(gpio)     hdl_gpio_write(gpio, !((gpio)->inactive_default))
-#define HDL_GPIO_SET_INACTIVE(gpio)   hdl_gpio_write(gpio, (gpio)->inactive_default)
-#define HDL_GPIO_IS_ACTIVE(gpio)      (hdl_gpio_read(gpio) != (gpio)->inactive_default)
 
 typedef enum{
     DL_STATUS_SUCCESS = 0,

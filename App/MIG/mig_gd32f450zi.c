@@ -350,7 +350,7 @@ hdl_gpio_pin_t mod_do_smarc_reset_in = {
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .module.reg = (void *)GPIO_PIN_0,
   .mode = &hdl_gpio_mode_output_no_pull,
-  .inactive_default = HDL_GPIO_LOW,
+  .inactive_default = HDL_GPIO_HIGH,
 };
 hdl_gpio_pin_t mod_di_smarc_reset_out = {
   .module.init = &hdl_gpio_pin,
@@ -745,19 +745,17 @@ hdl_double_buffer_t spi_tx_buffer = {
     .size = sizeof(spi_dma_tx_0_buf),
 };
 
-hdl_spi_mem_server_t mod_spi_3 = {
+hdl_spi_server_dma_t mod_spi_server_dma = {
   .module.reg = (void *)SPI3,
   .module.dependencies = hdl_module_dependencies(&mod_spi_3_mosi.module, &mod_spi_3_miso.module, &mod_spi_3_sck.module,
                                                   &mod_spi_3_cs.module, &mod_clock_apb2.module, &mod_nvic.module, 
-                                                  &mod_dma_ch_spi_3_rx.module, &mod_dma_ch_spi_3_tx.module, &mod_dma_ch_spi_3_m2m.module,
-                                                  &mod_timer0_ms.module),
-  .module.init = &hdl_spi_mem_server,
+                                                  &mod_dma_ch_spi_3_rx.module, &mod_dma_ch_spi_3_tx.module),
+  .module.init = &hdl_spi_server_dma,
   .config = &hdl_spi_3_slave_config,
   .spi_iterrupt = HDL_NVIC_IRQ84_SPI3,
   .nss_iterrupt = HDL_NVIC_IRQ10_EXTI4,
-  .rx_mem = &spi_rx_buffer,
-  .tx_mem = &spi_tx_buffer,
 };
+
 /***********************************************************
  *                     UNIVERSAL PORT
 ***********************************************************/

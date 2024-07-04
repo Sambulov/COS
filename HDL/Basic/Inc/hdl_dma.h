@@ -46,9 +46,9 @@ hdl_module_state_t hdl_dma(void *desc, uint8_t enable);
 hdl_module_state_t hdl_dma_ch(void *desc, uint8_t enable);
 
 uint8_t hdl_dma_run(hdl_dma_channel_t *channel, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount);
+uint8_t hdl_dma_stop(hdl_dma_channel_t *channel);
 hdl_dma_status_e hdl_dma_status(hdl_dma_channel_t *channel);
 uint32_t hdl_dma_get_counter(hdl_dma_channel_t *channel);
-
 
 #if defined ( GD32E23X )
 

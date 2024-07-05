@@ -31,7 +31,7 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 
 #define libNULL                ((void *)0)
 
-#define UNUSED(x)              ((void)(x))
+#define libUNUSED(x)           ((void)(x))
 
 #define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
 

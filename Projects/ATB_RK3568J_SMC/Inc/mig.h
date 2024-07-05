@@ -1,0 +1,5 @@
+#ifndef MIG_ATB_RK3568J_SMC_H_
+#define MIG_ATB_RK3568J_SMC_H_
+
+
+#endif // MIG_ATB_RK3568J_SMC_H_

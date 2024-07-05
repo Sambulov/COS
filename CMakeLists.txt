@@ -44,23 +44,47 @@ if(BOARD STREQUAL "ATB_RK3568J_SMC_R3")
   set(MCU  "NUM46X")
   set(CORE "ARM")
   set(MCPU cortex-m4)
+  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/Inc"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/Inc")
+  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/*.c"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/*.c")
   add_compile_definitions("__MCU_HAL_HDR__=<m460.h>")
 elseif(BOARD STREQUAL "ATB_RK3568J_SMC_R1")
   set(MCU "GD32E23X")
   set(CORE "ARM")
   set(MCPU cortex-m23)
+  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/Inc"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/Inc")
+  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/*.c"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/*.c")
   add_compile_definitions("__MCU_HAL_HDR__=<gd32e23x.h>")
 elseif(BOARD STREQUAL "ATB_RK3568J_SMC_R0")
   set(MCU "STM32L0XX")
   set(CORE "ARM")
   set(MCPU cortex-m0)
+  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/Inc"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/Inc")
+  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/*.c"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/*.c")
   add_compile_definitions("__MCU_HAL_HDR__=<stm32l0xx_hal.h>")
   add_compile_definitions("STM32L071KB")
   add_compile_definitions("STM32L071xx")
-elseif(BOARD STREQUAL "USPD")
+elseif(BOARD STREQUAL "ATB_USPD20K")
   set(MCU "GD32F103VG")
   set(CORE "ARM")
   set(MCPU cortex-m3)
+  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_USPD20K/Inc"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_USPD20K/BLDL/Inc")
+  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_USPD20K/*.c"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_USPD20K/BLDL/*.c")
   add_compile_definitions("__MCU_HAL_HDR__=<gd32f10x.h>")
   add_compile_definitions("GD32F10X_XD")
 elseif(BOARD STREQUAL "ATB_3500")
@@ -68,19 +92,24 @@ elseif(BOARD STREQUAL "ATB_3500")
   set(CORE "ARM")
   set(MCPU cortex-m4)
   set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_function"
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_lib"
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_protocol/atb_3500_page_transfer"
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_logic"
-  )
+  "${CMAKE_SOURCE_DIR}/Projects/ATB3500/Inc"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB3500/BLDL/Inc")
   set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_logic/*.c"
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_function/*.c"
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_lib/*.c"
-  "${CMAKE_SOURCE_DIR}/App/BL/ATB_3500/device_protocol/atb_3500_page_transfer/*.c"
-  )
+  "${CMAKE_SOURCE_DIR}/Projects/ATB3500/*.c"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB3500/BLDL/*.c")
   add_compile_definitions("__MCU_HAL_HDR__=<gd32f4xx.h>")
   add_compile_definitions("GD32F450")
+elseif(BOARD STREQUAL "ATB_MUVV")
+  set(MCU "GD32E23X")
+  set(CORE "ARM")
+  set(MCPU cortex-m23)
+  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_MUVV/Inc"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_MUVV/BLDL/Inc")
+  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_MUVV/*.c"
+  "${CMAKE_SOURCE_DIR}/Projects/ATB_MUVV/BLDL/*.c")
+  add_compile_definitions("__MCU_HAL_HDR__=<gd32e23x.h>")  
 else()
   message( SEND_ERROR "Board not supported!" )
 endif()
@@ -164,12 +193,6 @@ if (CORE STREQUAL "ARM")
 
   # Add Include directories
   include_directories(
-      "${CMAKE_SOURCE_DIR}/App"
-      "${CMAKE_SOURCE_DIR}/App/BLDL/Inc"
-      "${CMAKE_SOURCE_DIR}/App/Tasks/Inc"
-      "${CMAKE_SOURCE_DIR}/App/MIG"
-      "${CMAKE_SOURCE_DIR}/App/Protocol"
-      "${CMAKE_SOURCE_DIR}/App/Protocol/Register_protocol/Inc"
       "${CMAKE_SOURCE_DIR}/CL"
       "${CMAKE_SOURCE_DIR}/CL/Inc"
       "${CMAKE_SOURCE_DIR}/CL/DataStructures/Inc"
@@ -190,12 +213,6 @@ if (CORE STREQUAL "ARM")
 
   # Add you source file
   file(GLOB SOURCES
-  "${CMAKE_SOURCE_DIR}/App/*.c"
-  "${CMAKE_SOURCE_DIR}/App/BLDL/Src/*.c"
-  "${CMAKE_SOURCE_DIR}/App/Tasks/*.c"
-  "${CMAKE_SOURCE_DIR}/App/MIG/*.c"
-  "${CMAKE_SOURCE_DIR}/App/Protocol/Register_protocol/Src/*.c"
-  "${CMAKE_SOURCE_DIR}/App/Test/*.c"
   "${CMAKE_SOURCE_DIR}/CL/Src/*.c"
   "${CMAKE_SOURCE_DIR}/CL/DataStructures/Src/*.c"
   "${CMAKE_SOURCE_DIR}/CL/Workflow/Src/*.c"

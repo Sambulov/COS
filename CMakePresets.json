@@ -7,8 +7,8 @@
     },
     "configurePresets": [
         {
-            "name": "DebugNUM463KG",
-            "displayName": "Debug NUM463KG",
+            "name": "ATB_RK3568J_SMC_R3_D",
+            "displayName": "ATB_RK3568J_SMC_R3 Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -17,8 +17,8 @@
             }
         },
         {
-            "name": "DebugGD32E230",
-            "displayName": "Debug GD32E230",
+            "name": "ATB_RK3568J_SMC_R1_D",
+            "displayName": "ATB_RK3568J_SMC_R1 Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -27,8 +27,8 @@
             }
         },
         {
-            "name": "DebugSTM32L071",
-            "displayName": "Debug STM32L071",
+            "name": "ATB_RK3568J_SMC_R0_D",
+            "displayName": "ATB_RK3568J_SMC_R0 Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -37,73 +37,43 @@
             }
         },
         {
-            "name": "DebugGD32F103",
-            "displayName": "Debug GD32F103",
+            "name": "ATB_USPD20K_D",
+            "displayName": "ATB_USPD20K Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "USPD"
+                "BOARD": "ATB_USPD20K"
             }
         },
         {
-            "name": "DebugGD32F450ZI",
-            "displayName": "Debug GD32F450ZI",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_3500"
-            }
-        },
-        {
-            "name": "ReleaseNUM463KG",
-            "displayName": "Release NUM463KG",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "ATB_RK3568J_SMC_R3"
-            }
-        },
-        {
-            "name": "ReleaseGD32E230",
-            "displayName": "Release GD32E230",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "ATB_RK3568J_SMC_R1"
-            }
-        },
-        {
-            "name": "ReleaseSTM32L071",
-            "displayName": "Release STM32L071",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "ATB_RK3568J_SMC_R0"
-            }
-        },
-        {
-            "name": "ReleaseGD32F103",
-            "displayName": "Release GD32F103",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "USPD"
-            }
-        },
-        {
-            "name": "ReleaseGD32F450ZI",
-            "displayName": "Release GD32F450ZI",
+            "name": "ATB3500_D",
+            "displayName": "ATB3500 Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "BOARD": "ATB_3500"
+            }
+        },
+        {
+            "name": "ATB_MUVV_D",
+            "displayName": "ATB_MUVV Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_MUVV"
+            }
+        },
+
+        {
+            "name": "Release",
+            "displayName": "Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {

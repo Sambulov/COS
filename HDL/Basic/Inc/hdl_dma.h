@@ -25,8 +25,6 @@ typedef enum {
     HDL_DMA_SIZE_OF_MEMORY_32_BIT = 2,
 } hdl_dma_size_of_memory_e;
 
-typedef dma_channel_enum hdl_dma_channel_number_t;
-
 typedef struct {
   hdl_module_t module;
   PRIVATE(hdl, DMA_PRIVATE_SIZE);

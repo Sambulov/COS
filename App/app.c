@@ -145,7 +145,7 @@ void main() {
     device_logic();
   #else
     //test();
-    test_i2c();
+    //test_i2c();
   #endif
 
   /* test complete? */

@@ -10,8 +10,8 @@
 
 #define MAX_SYS_CLOCK             240000000UL
 #define PLL_MAX_FREQ              MAX_SYS_CLOCK
-#define APB1_MAX_FREQ             120000000UL
-#define APB2_MAX_FREQ             60000000UL
+#define APB2_MAX_FREQ             120000000UL
+#define APB1_MAX_FREQ             60000000UL
 
 /*!
     \brief      get flag state

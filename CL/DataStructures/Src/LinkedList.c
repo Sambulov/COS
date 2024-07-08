@@ -96,7 +96,7 @@ static LinkedListItem_t *_pxLinkedListFind(__LinkedListItem_t *pxCurrentItem, Li
 	while (1) {
 		if ((pfMatch == libNULL) || pfMatch((LinkedListItem_t *)pxCurrentItem, pxMatchArg))
 			return (LinkedListItem_t *)pxCurrentItem;
-		if (pxCurrentItem != last)
+		if (pxCurrentItem == last)
 			break;
 		pxCurrentItem = pxCurrentItem->next;
 	}

@@ -74,6 +74,7 @@ typedef struct {
   hdl_dma_channel rx
   hdl_dma_channel tx
   timer
+  exti
 */
 typedef struct {
   hdl_module_t module;

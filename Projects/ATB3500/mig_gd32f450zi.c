@@ -62,15 +62,6 @@ hdl_nvic_interrupt_t mod_irq_adc = {
 };
 
 /***********************************************************
- *                          EXTI
-***********************************************************/
-hdl_exti_t mod_nvic_exti_line_4 = {
-  .line = HDL_EXTI_LINE_4,
-  .mode = HDL_EXTI_MODE_INTERRUPT,
-  .source = HDL_EXTI_SOURCE_PE,
-  .trigger = HDL_EXTI_TRIGGER_RISING_FALLING,
-};
-/***********************************************************
  *                          NVIC
 ***********************************************************/
 hdl_nvic_t mod_nvic = {
@@ -80,6 +71,25 @@ hdl_nvic_t mod_nvic = {
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc),
 };
+
+/***********************************************************
+ *                          EXTI
+***********************************************************/
+
+hdl_exti_t mod_nvic_exti_line_4 = {
+  .line = HDL_EXTI_LINE_4,
+  .mode = HDL_EXTI_MODE_INTERRUPT,
+  .source = HDL_EXTI_SOURCE_PE,
+  .trigger = HDL_EXTI_TRIGGER_RISING_FALLING,
+};
+
+hdl_exti_controller_t mod_exti = {
+  .module.init = &hdl_exti,
+  .module.reg = (void *)EXTI,
+  .module.dependencies = hdl_module_dependencies(&mod_nvic.module),
+  .extis = hdl_extis(&mod_nvic_exti_line_4)
+};
+
 /***********************************************************
  *                          CLOCK
 ***********************************************************/
@@ -729,7 +739,7 @@ hdl_spi_server_dma_t mod_spi3_server_dma = {
   .module.reg = (void *)SPI3,
   .module.dependencies = hdl_module_dependencies(&mod_spi_3_mosi.module, &mod_spi_3_miso.module, &mod_spi_3_sck.module,
                                                   &mod_spi_3_cs.module, &mod_clock_apb2.module, &mod_nvic.module, 
-                                                  &mod_dma_ch_spi_3_rx.module, &mod_dma_ch_spi_3_tx.module),
+                                                  &mod_dma_ch_spi_3_rx.module, &mod_dma_ch_spi_3_tx.module, &mod_exti.module),
   .module.init = &hdl_spi_server_dma,
   .config = &hdl_spi_slave_config,
   .spi_iterrupt = HDL_NVIC_IRQ84_SPI3,

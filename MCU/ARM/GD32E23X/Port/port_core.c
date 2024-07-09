@@ -1,5 +1,6 @@
 #include "hdl_portable.h"
 #include "CodeLib.h"
+
 typedef struct {
   IRQn_Type irq_type;
   uint8_t priority_group;
@@ -7,25 +8,12 @@ typedef struct {
   hdl_event_t event;
 } hdl_nvic_interrupt_private_t;
 
-#define hdl_exti_clear_pending(exti_line)       (EXTI_PD |= exti_line)
-
-#define EXTI_LINES_ALL_POSSIBLE   EXTI_0  | EXTI_1  | EXTI_2  |  EXTI_3 | \
-                                  EXTI_4  | EXTI_5  | EXTI_6  |  EXTI_7 | \
-                                  EXTI_8  | EXTI_9  | EXTI_10 | EXTI_11 | \
-                                  EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15 | \
-                                  EXTI_16 | EXTI_17 | EXTI_19 | EXTI_21
-
-#define EXTI_LINES_4_15           EXTI_4  | EXTI_5  | EXTI_6  |  EXTI_7 | \
-                                  EXTI_8  | EXTI_9  | EXTI_10 | EXTI_11 | \
-                                  EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15
-
 _Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_nvic_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
 
 extern void *_estack;
 extern void *_sidata, *_sdata, *_edata;
 extern void *_sbss, *_ebss;
 
-//void SystemInit();
 void __libc_init_array();
 void main();
 hdl_nvic_t *__ic = NULL;
@@ -41,7 +29,7 @@ static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_t **isrs, uint32_t event
       isrs++;
     }
   }
-  //If you get stuck here, your code is missing a handler for some interrupt.
+  //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
 	asm("bkpt 255");
   for(;;) ;
 }
@@ -60,22 +48,16 @@ void LVD_IRQHandler()                   { _call_isr(LVD_IRQn, __ic->interrupts, 
 void RTC_IRQHandler()                   { _call_isr(RTC_IRQn, __ic->interrupts, 0); }
 void FMC_IRQHandler()                   { _call_isr(FMC_IRQn, __ic->interrupts, 0); }
 void RCU_IRQHandler()                   { _call_isr(RCU_IRQn, __ic->interrupts, 0); }
-void EXTI0_1_IRQHandler();
-void EXTI2_3_IRQHandler();
-void EXTI4_15_IRQHandler();
+void EXTI0_1_IRQHandler()               { _call_isr(EXTI0_1_IRQn, __ic->interrupts, 0); EXTI_PD |= (EXTI_0 | EXTI_1); }
+void EXTI2_3_IRQHandler()               { _call_isr(EXTI2_3_IRQn, __ic->interrupts, 0); EXTI_PD |= (EXTI_2 | EXTI_3); }
+void EXTI4_15_IRQHandler()              { _call_isr(EXTI4_15_IRQn, __ic->interrupts, 0); EXTI_PD |= EXTI_LINES_4_15; }
 void DMA_Channel0_IRQHandler()          { _call_isr(DMA_Channel0_IRQn, __ic->interrupts, 0); }
 void DMA_Channel1_2_IRQHandler()        { _call_isr(DMA_Channel1_2_IRQn, __ic->interrupts, 0); }
 void DMA_Channel3_4_IRQHandler()        { _call_isr(DMA_Channel3_4_IRQn, __ic->interrupts, 0); }
 void ADC_CMP_IRQHandler()               { _call_isr(ADC_CMP_IRQn, __ic->interrupts, 0); }
-void TIMER0_BRK_UP_TRG_COM_IRQHandler() {
-  _call_isr(TIMER0_BRK_UP_TRG_COM_IRQn, __ic->interrupts, 0);
-  TIMER_INTF(TIMER0) &= ~TIMER_INTF_UPIF;
-}
+void TIMER0_BRK_UP_TRG_COM_IRQHandler() {_call_isr(TIMER0_BRK_UP_TRG_COM_IRQn, __ic->interrupts, 0); TIMER_INTF(TIMER0) &= ~TIMER_INTF_UPIF; }
 void TIMER0_Channel_IRQHandler()        { _call_isr(TIMER0_Channel_IRQn, __ic->interrupts, 0); }
-void TIMER2_IRQHandler() {
-  _call_isr(TIMER2_IRQn, __ic->interrupts, 0);
-  TIMER_INTF(TIMER2) &= ~TIMER_INTF_UPIF;
-}
+void TIMER2_IRQHandler()                { _call_isr(TIMER2_IRQn, __ic->interrupts, 0); TIMER_INTF(TIMER2) &= ~TIMER_INTF_UPIF; }
 void TIMER5_IRQHandler()                { _call_isr(TIMER5_IRQn, __ic->interrupts, 0); }
 void TIMER13_IRQHandler()               { _call_isr(TIMER13_IRQn, __ic->interrupts, 0); }
 void TIMER14_IRQHandler()               { _call_isr(TIMER14_IRQn, __ic->interrupts, 0); }
@@ -188,7 +170,6 @@ __attribute__((naked, noreturn)) void Reset_Handler() {
     *pDest = 0;
   //TODO: turn off JTAG;
   __libc_init_array();
-  //SystemInit();
   main();
   for (;;) ;
 }
@@ -213,21 +194,6 @@ static void svc_handler_main(uint32_t *sp) {
   instruction -= 2;
   /* get the opcode, in little endian */
   _call_isr(SVCall_IRQn, __ic->interrupts, (uint8_t)*instruction);
-}
-
-void EXTI0_1_IRQHandler() {
-  _call_isr(EXTI0_1_IRQn, __ic->interrupts, EXTI_PD & (3 << 0));
-  hdl_exti_clear_pending(EXTI_0 | EXTI_1);
-}
-
-void EXTI2_3_IRQHandler() {
-  _call_isr(EXTI2_3_IRQn, __ic->interrupts, EXTI_PD & (3 << 2));
-  hdl_exti_clear_pending(EXTI_2 | EXTI_3);
-}
-
-void EXTI4_15_IRQHandler() {
-  _call_isr(EXTI4_15_IRQn, __ic->interrupts, EXTI_PD & (0xfff << 4));
-  hdl_exti_clear_pending(EXTI_LINES_4_15);
 }
 
 void irq_n_handler() {
@@ -262,82 +228,21 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
-void _hdl_exti_request(hdl_interrupt_controller_t *ic) {
-  hdl_nvic_exti_t **extis = ic->exti_lines;
-  if(extis != NULL) {
-    while (*extis != NULL) {
-      uint8_t exti_no = 31 - __CLZ((*extis)->line);
-      if(exti_no <= 15) { /* if GPIO exti lines */
-        syscfg_exti_line_config((*extis)->source, exti_no);
-      } /* other lines from internal modules are fixed */
-      if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
-        EXTI_FTEN |= (*extis)->line;
-      }
-      else {
-        EXTI_FTEN &= ~((*extis)->line);
-      }
-      if((*extis)->trigger & HDL_EXTI_TRIGGER_RISING) {
-        EXTI_RTEN |= (*extis)->line;
-      }
-      else {
-        EXTI_RTEN &= ~((*extis)->line);
-      }
-      EXTI_EVEN |= (*extis)->line;
-      extis++;
-    }
-  }
-}
 
-hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
+hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
   if(enable) {
     hdl_nvic_t *nvic = (hdl_nvic_t *)desc;
     /* NVIC_SetPriorityGrouping   not available for Cortex-M23 */
     nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0);
     SYSCFG_CPU_IRQ_LAT = nvic->irq_latency;
     __ic = (hdl_nvic_t *)desc;
-    /* TODO: fing wokaround to save context for interrupt vector */
-    _hdl_exti_request(nvic);
+    /* TODO: finde wokaround to save context for interrupt vector */
     return HDL_MODULE_INIT_OK;
   }
   else {
-    //TODO: disable envic
-    HDL_REG_CLEAR(EXTI_INTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_RTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_EVEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
-    hdl_exti_clear_pending(EXTI_LINES_ALL_POSSIBLE);
+    //TODO: disable nvic
   }
   return HDL_MODULE_DEINIT_OK;
-}
-
-static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_private_t *isr) {
-  hdl_nvic_exti_t **extis = ic->exti_lines;
-  if(extis == NULL) return;
-  hdl_exti_line_t exti_lines_int_en = 0;
-  switch (isr->irq_type) {
-    case HDL_NVIC_IRQ5_EXTI0_1:
-      exti_lines_int_en = EXTI_0 | EXTI_1;
-      break;
-    case HDL_NVIC_IRQ6_EXTI2_3:
-      exti_lines_int_en = EXTI_2 | EXTI_3;
-      break;
-    case HDL_NVIC_IRQ7_EXTI4_15:
-      exti_lines_int_en = EXTI_LINES_4_15;
-      break;
-    default:
-      return;
-  }
-  while ((*extis != NULL) && (exti_lines_int_en)) {
-    if((exti_lines_int_en & ((*extis)->line)) &&
-       ((*extis)->mode == HDL_EXTI_MODE_INTERRUPT)) {
-      EXTI_INTEN |= (*extis)->line;
-    }
-    exti_lines_int_en &= ~((*extis)->line);
-    extis++;
-  }
 }
 
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t irq, hdl_delegate_t *delegate) {
@@ -378,12 +283,7 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t irq, h
     }
   }
   else {
-    _hdl_nvic_exti_interrupt_enable(ic, *isr);
     NVIC_EnableIRQ((*isr)->irq_type);
   }
   return HDL_TRUE;
-}
-
-void hdl_exti_sw_trigger(hdl_interrupt_controller_t *desc, hdl_exti_line_t line) {
-  EXTI_SWIEV |= line;
 }

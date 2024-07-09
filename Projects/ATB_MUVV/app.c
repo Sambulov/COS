@@ -1,40 +1,43 @@
 #include "app.h"
 #include "CodeLib.h"
-//#define TEST_CLOCK
-#define SPI_CLIENT
 
-void main() {
-  while (1);
+extern hdl_timer_t mod_timer_ms;
+extern hdl_gpio_pin_t mod_gpo_led;
+extern hdl_gpio_pin_t mod_gpi_button;
+//extern hdl_timer_t mod_timer0_ms;
+//extern hdl_timer_t mod_timer2_ms;
+extern hdl_exti_controller_t mod_exti;
+extern hdl_nvic_t mod_nvic;
+
+void exti0_1_hundler(uint32_t event_trigger, void *sender, void *context) {
+  hdl_gpio_write(&mod_gpo_led, HDL_GPIO_LOW);
 }
 
-
-#if defined ( GD32E23X )
-
-#ifdef TEST_CLOCK
-
-extern hdl_gpio_pin_t mod_gpo_carrier_pwr_on;
-extern hdl_timer_t mod_timer0_ms;
-extern hdl_timer_t mod_timer2_ms;
-
-void test() {
+void main() {
   static uint32_t time_stamp_sys_ms = 0;
   static uint32_t time_stamp_timer0_ms = 0;
   static uint32_t time_stamp_timer2_ms = 0;
 
+
   hdl_enable(&mod_timer_ms.module);
-  hdl_enable(&mod_gpo_carrier_pwr_on.module);
-  hdl_enable(&mod_timer0_ms.module);
-  hdl_enable(&mod_timer2_ms.module);
+  hdl_enable(&mod_gpo_led.module);
+  hdl_enable(&mod_gpi_button.module);
+  hdl_enable(&mod_exti.module);
+  //hdl_enable(&mod_timer0_ms.module);
+  //hdl_enable(&mod_timer2_ms.module);
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
+  hdl_delegate_t exti_test = {.context =NULL, .handler = &exti0_1_hundler};
+
+  hdl_interrupt_request(&mod_nvic, HDL_NVIC_IRQ5_EXTI0_1, &exti_test);
 
   while (1)
   {
     
     if (TIME_ELAPSED(time_stamp_sys_ms, 1000, hdl_timer_get(&mod_timer_ms))){
       time_stamp_sys_ms += 1000;
-      hdl_gpio_toggle(&mod_gpo_carrier_pwr_on);
+      hdl_gpio_toggle(&mod_gpo_led);
     }
 
     // if (TIME_ELAPSED(time_stamp_timer0_ms, 1000, hdl_timer_get(&mod_timer0_ms))){
@@ -49,7 +52,7 @@ void test() {
   }
 }
 
-#else
+#ifdef XXX
 
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
@@ -523,6 +526,4 @@ void test() {
     }
   }
 }
-#endif
-
 #endif

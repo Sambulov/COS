@@ -731,21 +731,21 @@ hdl_nvic_interrupt_t mod_irq_i2c0_er = {
   .priority_group = 0,
 };
 
-hdl_nvic_exti_t mod_nvic_exti_line_0 = {
+hdl_exti_t mod_nvic_exti_line_0 = {
   .line = HDL_EXTI_LINE_0,
   .mode = HDL_EXTI_MODE_INTERRUPT,
   .source = HDL_EXTI_SOURCE_PA,
   .trigger = HDL_EXTI_TRIGGER_FALLING
 };
 
-hdl_nvic_exti_t mod_nvic_exti_line_8 = {
+hdl_exti_t mod_nvic_exti_line_8 = {
   .line = HDL_EXTI_LINE_8,
   .mode = HDL_EXTI_MODE_INTERRUPT,
   .source = HDL_EXTI_SOURCE_PB,
   .trigger = HDL_EXTI_TRIGGER_FALLING
 };
 
-hdl_nvic_exti_t mod_nvic_exti_line_15 = {
+hdl_exti_t mod_nvic_exti_line_15 = {
   .line = HDL_EXTI_LINE_15,
   .mode = HDL_EXTI_MODE_INTERRUPT,
   .source = HDL_EXTI_SOURCE_PA,
@@ -753,14 +753,14 @@ hdl_nvic_exti_t mod_nvic_exti_line_15 = {
 };
 
   hdl_nvic_t mod_nvic = {
-    .module.init = &hdl_nvic,
+    .module.init = &hdl_interrupt_controller,
     .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .irq_latency = 0, /* TODO: define static assert */
     .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,
      &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0, &mod_irq_i2c0_ev, &mod_irq_i2c0_er),
-    .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8, &mod_nvic_exti_line_15)
+    //.exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8, &mod_nvic_exti_line_15)
   };
 
   /**************************************************************

@@ -64,7 +64,7 @@ hdl_nvic_interrupt_t mod_irq_adc = {
 /***********************************************************
  *                          EXTI
 ***********************************************************/
-hdl_nvic_exti_t mod_nvic_exti_line_4 = {
+hdl_exti_t mod_nvic_exti_line_4 = {
   .line = HDL_EXTI_LINE_4,
   .mode = HDL_EXTI_MODE_INTERRUPT,
   .source = HDL_EXTI_SOURCE_PE,
@@ -74,12 +74,11 @@ hdl_nvic_exti_t mod_nvic_exti_line_4 = {
  *                          NVIC
 ***********************************************************/
 hdl_nvic_t mod_nvic = {
-  .module.init = &hdl_nvic,
+  .module.init = &hdl_interrupt_controller,
   .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
   .module.reg = NVIC,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc),
-  .exti_lines = hdl_exti_lines(&mod_nvic_exti_line_4)
 };
 /***********************************************************
  *                          CLOCK

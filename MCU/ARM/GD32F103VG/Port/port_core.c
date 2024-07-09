@@ -8,20 +8,6 @@ typedef struct {
   hdl_event_t event;
 } hdl_nvic_interrupt_private_t;
 
-#define hdl_exti_clear_pending(exti_line)       (EXTI_PD |= exti_line)
-
-#define EXTI_LINES_ALL_POSSIBLE   EXTI_0  | EXTI_1  | EXTI_2  |  EXTI_3 | \
-                                  EXTI_4  | EXTI_5  | EXTI_6  |  EXTI_7 | \
-                                  EXTI_8  | EXTI_9  | EXTI_10 | EXTI_11 | \
-                                  EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15 | \
-                                  EXTI_16 | EXTI_17 | EXTI_19
-
-#define EXTI_LINES_5_9                      EXTI_5  | EXTI_6  | EXTI_7  | \
-                                  EXTI_8  | EXTI_9
-
-#define EXTI_LINES_10_15                              EXTI_10 | EXTI_11 | \
-                                  EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15
-
 _Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_nvic_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
 
 extern void *_estack;
@@ -44,9 +30,9 @@ static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_t **isrs, uint32_t event
       isrs++;
     }
   }
-  //If you get stuck here, your code is missing a handler for some interrupt.
-	//asm("bkpt 255");
-  //for(;;) ;
+  //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
+	asm("bkpt 255");
+  for(;;) ;
 }
 
 void irq_n_handler();
@@ -68,11 +54,11 @@ void TAMPER_IRQHandler()                { _call_isr(HDL_NVIC_IRQ2_TAMPER, __ic->
 void RTC_IRQHandler()                   { _call_isr(HDL_NVIC_IRQ3_RTC, __ic->interrupts, 0); }
 void FMC_IRQHandler()                   { _call_isr(HDL_NVIC_IRQ4_FMC, __ic->interrupts, 0); }
 void RCU_IRQHandler()                   { _call_isr(HDL_NVIC_IRQ5_RCU_CTC, __ic->interrupts, 0); }
-void EXTI0_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ6_EXTI0, __ic->interrupts, EXTI_0); hdl_exti_clear_pending(EXTI_0); }
-void EXTI1_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ7_EXTI1, __ic->interrupts, EXTI_1); hdl_exti_clear_pending(EXTI_1); }
-void EXTI2_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ8_EXTI2, __ic->interrupts, EXTI_2); hdl_exti_clear_pending(EXTI_2); }
-void EXTI3_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ9_EXTI3, __ic->interrupts, EXTI_3); hdl_exti_clear_pending(EXTI_3); }
-void EXTI4_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ10_EXTI4, __ic->interrupts, EXTI_4); hdl_exti_clear_pending(EXTI_4); }
+void EXTI0_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ6_EXTI0, __ic->interrupts, EXTI_0); EXTI_PD |= EXTI_0; }
+void EXTI1_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ7_EXTI1, __ic->interrupts, EXTI_1); EXTI_PD |= EXTI_1; }
+void EXTI2_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ8_EXTI2, __ic->interrupts, EXTI_2); EXTI_PD |= EXTI_2; }
+void EXTI3_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ9_EXTI3, __ic->interrupts, EXTI_3); EXTI_PD |= EXTI_3; }
+void EXTI4_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ10_EXTI4, __ic->interrupts, EXTI_4); EXTI_PD |= EXTI_4; }
 void DMA0_Channel0_IRQHandler()         { _call_isr(HDL_NVIC_IRQ11_DMA0_Channel0, __ic->interrupts, 0); }
 void DMA0_Channel1_IRQHandler()         { _call_isr(HDL_NVIC_IRQ12_DMA0_Channel1, __ic->interrupts, 0); }
 void DMA0_Channel2_IRQHandler()         { _call_isr(HDL_NVIC_IRQ13_DMA0_Channel2, __ic->interrupts, 0); }
@@ -87,7 +73,7 @@ void USBD_HP_CAN0_TX_IRQHandler         { _call_isr(HDL_NVIC_IRQ19_USBD_HP_CAN0_
 void USBD_LP_CAN0_RX0_IRQHandler()      { _call_isr(HDL_NVIC_IRQ20_USBD_LP_CAN0_RX0, __ic->interrupts, 0); } /* IRQ20 */
 void CAN0_RX1_IRQHandler()              { _call_isr(HDL_NVIC_IRQ21_CAN0_RX1, __ic->interrupts, 0); } /* IRQ21 */
 void CAN0_EWMC_IRQHandler()             { _call_isr(HDL_NVIC_IRQ22_CAN0_EWMC, __ic->interrupts, 0); } /* IRQ22 */
-void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, EXTI_PD & (0x1f << 5)); } /* IRQ23 */
+void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, EXTI_PD & EXTI_LINES_5_9); EXTI_PD |= EXTI_LINES_5_9; } /* IRQ23 */
 void TIMER0_BRK_IRQHandler()            { _call_isr(HDL_NVIC_IRQ24_TIMER0_BRK, __ic->interrupts, 0); } /* IRQ24 */
 void TIMER0_UP_IRQHandler()             { _call_isr(HDL_NVIC_IRQ25_TIMER0_UP, __ic->interrupts, 0); } /* IRQ25 */
 void TIMER0_TRG_CMT_IRQHandler()        { _call_isr(HDL_NVIC_IRQ26_TIMER0_TRG_CMT, __ic->interrupts, 0); } /* IRQ26 */
@@ -104,7 +90,7 @@ void SPI1_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->i
 void USART0_IRQHandler()                { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
 void USART1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); } /* IRQ39 */
-void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & (0x3f << 10)); } /* IRQ40 */
+void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { _call_isr(HDL_NVIC_IRQ41_RTC_Alarm, __ic->interrupts, 0); } /* IRQ41 */
 void USBD_WKUP_IRQHandler()             { _call_isr(HDL_NVIC_IRQ42_USBD_WKUP, __ic->interrupts, 0); } /* IRQ42 */
 void EXMC_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ48_EXMC, __ic->interrupts, 0); } /* IRQ48 */
@@ -114,7 +100,7 @@ void USBD_HP_CAN0_TX_IRQHandler()       { _call_isr(HDL_NVIC_IRQ19_USBD_HP_CAN0_
 void USBD_LP_CAN0_RX0_IRQHandler()      { _call_isr(HDL_NVIC_IRQ20_USBD_LP_CAN0_RX0, __ic->interrupts, 0); } /* IRQ20 */
 void CAN0_RX1_IRQHandler()              { _call_isr(HDL_NVIC_IRQ21_CAN0_RX1, __ic->interrupts, 0); } /* IRQ21 */
 void CAN0_EWMC_IRQHandler()             { _call_isr(HDL_NVIC_IRQ22_CAN0_EWMC, __ic->interrupts, 0); } /* IRQ22 */
-void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, EXTI_PD & (0x1f << 5)); } /* IRQ23 */
+void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, EXTI_PD & EXTI_LINES_5_9); EXTI_PD |= EXTI_LINES_5_9; } /* IRQ23 */
 void TIMER0_BRK_IRQHandler()            { _call_isr(HDL_NVIC_IRQ24_TIMER0_BRK, __ic->interrupts, 0); } /* IRQ24 */
 void TIMER0_UP_IRQHandler()             { _call_isr(HDL_NVIC_IRQ25_TIMER0_UP, __ic->interrupts, 0); } /* IRQ25 */
 void TIMER0_TRG_CMT_IRQHandler()        { _call_isr(HDL_NVIC_IRQ26_TIMER0_TRG_CMT, __ic->interrupts, 0); } /* IRQ26 */
@@ -131,7 +117,7 @@ void SPI1_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->i
 void USART0_IRQHandler()                { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
 void USART1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); } /* IRQ39 */
-void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & (0x3f << 10)); } /* IRQ40 */
+void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { _call_isr(HDL_NVIC_IRQ41_RTC_Alarm, __ic->interrupts, 0); } /* IRQ41 */
 void USBD_WKUP_IRQHandler()             { _call_isr(HDL_NVIC_IRQ42_USBD_WKUP, __ic->interrupts, 0); } /* IRQ42 */
 void TIMER7_BRK_IRQHandler()            { _call_isr(HDL_NVIC_IRQ43_TIMER7_BRK, __ic->interrupts, 0); } /* IRQ43 */
@@ -157,7 +143,7 @@ void USBD_HP_CAN0_TX_IRQHandler()       { _call_isr(HDL_NVIC_IRQ19_USBD_HP_CAN0_
 void USBD_LP_CAN0_RX0_IRQHandler()      { _call_isr(HDL_NVIC_IRQ20_USBD_LP_CAN0_RX0, __ic->interrupts, 0); } /* IRQ20 */
 void CAN0_RX1_IRQHandler()              { _call_isr(HDL_NVIC_IRQ21_CAN0_RX1, __ic->interrupts, 0); } /* IRQ21 */
 void CAN0_EWMC_IRQHandler()             { _call_isr(HDL_NVIC_IRQ22_CAN0_EWMC, __ic->interrupts, 0); }  /* IRQ22 */
-void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, EXTI_PD & EXTI_LINES_5_9); hdl_exti_clear_pending(EXTI_LINES_5_9); } /* IRQ23 */
+void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, EXTI_PD & EXTI_LINES_5_9); EXTI_PD |= EXTI_LINES_5_9; } /* IRQ23 */
 void TIMER0_BRK_TIMER8_IRQHandler()     { _call_isr(HDL_NVIC_IRQ24_TIMER0_BRK_TIMER8, __ic->interrupts, 0); } /* IRQ24 */
 void TIMER0_UP_TIMER9_IRQHandler() { 
   _call_isr(HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, __ic->interrupts, 0);
@@ -181,7 +167,7 @@ void SPI1_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->i
 void USART0_IRQHandler()                { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
 void USART1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); } /* IRQ39 */
-void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); hdl_exti_clear_pending(EXTI_LINES_10_15); } /* IRQ40 */
+void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { _call_isr(HDL_NVIC_IRQ41_RTC_Alarm, __ic->interrupts, 0); } /* IRQ41 */
 void USBD_WKUP_IRQHandler()             { _call_isr(HDL_NVIC_IRQ42_USBD_WKUP, __ic->interrupts, 0); } /* IRQ42 */
 void TIMER7_BRK_TIMER11_IRQHandler()    { _call_isr(HDL_NVIC_IRQ43_TIMER7_BRK_TIMER11, __ic->interrupts, 0); } /* IRQ43 */
@@ -224,7 +210,7 @@ void SPI1_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->i
 void USART0_IRQHandler()                { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
 void USART1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); } /* IRQ39 */
-void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); } /* IRQ40 */
+void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { _call_isr(HDL_NVIC_IRQ41_RTC_ALARM, __ic->interrupts, 0); } /* IRQ41 */
 void USBFS_WKUP_IRQHandler()            { _call_isr(HDL_NVIC_IRQ42_USBFS_WKUP, __ic->interrupts, 0); } /* IRQ42 */
 void TIMER7_BRK_IRQHandler()            { _call_isr(HDL_NVIC_IRQ43_TIMER7_BRK, __ic->interrupts, 0); } /* IRQ43 */
@@ -597,35 +583,7 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
-void _hdl_exti_request(hdl_interrupt_controller_t *ic) {
-  if((hdl_state(&ic->module) == HDL_MODULE_INIT_OK)) {
-    hdl_nvic_exti_t **extis = ic->exti_lines;
-    if(extis != NULL) {
-      while (*extis != NULL) {
-        uint8_t exti_no = 31 - __CLZ((*extis)->line);
-        if(exti_no <= 15) { /* if GPIO exti lines */
-          gpio_exti_source_select((*extis)->source, exti_no);
-        } /* other lines from internal modules are fixed */
-        if((*extis)->trigger & HDL_EXTI_TRIGGER_FALLING) {
-          EXTI_FTEN |= (*extis)->line;
-        }
-        else {
-          EXTI_FTEN &= ~((*extis)->line);
-        }
-        if((*extis)->trigger & HDL_EXTI_TRIGGER_RISING) {
-          EXTI_RTEN |= (*extis)->line;
-        }
-        else {
-          EXTI_RTEN &= ~((*extis)->line);
-        }
-        EXTI_EVEN |= (*extis)->line;
-        extis++;
-      }
-    }
-  }
-}
-
-hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
+hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
   if(enable) {
     hdl_nvic_t *nvic = (hdl_nvic_t *)desc;
     /* TODO: NVIC_SetPriorityGrouping  */
@@ -633,60 +591,12 @@ hdl_module_state_t hdl_nvic(void *desc, uint8_t enable) {
     //SYSCFG_CPU_IRQ_LAT = nvic->irq_latency;
     __ic = (hdl_nvic_t *)desc;
     /* TODO: fing wokaround to save context for interrupt vector */
-    _hdl_exti_request(nvic);
     return HDL_MODULE_INIT_OK;
   }
   else {
     //TODO: disable envic
-    HDL_REG_CLEAR(EXTI_INTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_RTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_EVEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
-    HDL_REG_CLEAR(EXTI_FTEN, EXTI_LINES_ALL_POSSIBLE);
-    hdl_exti_clear_pending(EXTI_LINES_ALL_POSSIBLE);
   }
   return HDL_MODULE_DEINIT_OK;
-}
-
-static void _hdl_nvic_exti_interrupt_enable(hdl_nvic_t *ic, hdl_nvic_interrupt_private_t *isr) {
-  hdl_nvic_exti_t **extis = ic->exti_lines;
-  if(extis == NULL) return;
-  hdl_exti_line_t exti_lines_int_en = 0;
-  switch (isr->irq_type) {
-    case HDL_NVIC_IRQ6_EXTI0:
-      exti_lines_int_en = HDL_EXTI_LINE_0;
-      break;
-    case HDL_NVIC_IRQ7_EXTI1:
-      exti_lines_int_en = HDL_EXTI_LINE_1;
-      break;
-    case HDL_NVIC_IRQ8_EXTI2:
-      exti_lines_int_en = HDL_EXTI_LINE_2;
-      break;
-    case HDL_NVIC_IRQ9_EXTI3:
-      exti_lines_int_en = HDL_EXTI_LINE_3;
-      break;
-    case HDL_NVIC_IRQ10_EXTI4:
-      exti_lines_int_en = HDL_EXTI_LINE_4;
-      break;
-    case HDL_NVIC_IRQ23_EXTI5_9:
-      exti_lines_int_en = EXTI_LINES_5_9;
-      break;
-    case HDL_NVIC_IRQ40_EXTI10_15:
-      exti_lines_int_en = EXTI_LINES_10_15;
-      break;    
-    default:
-      return;
-  }
-  while ((*extis != NULL) && (exti_lines_int_en)) {
-    if((exti_lines_int_en & ((*extis)->line)) &&
-       ((*extis)->mode == HDL_EXTI_MODE_INTERRUPT)) {
-      EXTI_INTEN |= (*extis)->line;
-    }
-    exti_lines_int_en &= ~((*extis)->line);
-    extis++;
-  }
 }
 
 uint8_t hdl_interrupt_request(hdl_nvic_t *ic, hdl_nvic_irq_n_t irq, hdl_delegate_t *delegate) {
@@ -726,7 +636,6 @@ uint8_t hdl_interrupt_request(hdl_nvic_t *ic, hdl_nvic_irq_n_t irq, hdl_delegate
     }
   }
   else {
-    _hdl_nvic_exti_interrupt_enable(ic, *isr);
     NVIC_EnableIRQ((*isr)->irq_type);
   }
   return HDL_TRUE;
@@ -734,8 +643,4 @@ uint8_t hdl_interrupt_request(hdl_nvic_t *ic, hdl_nvic_irq_n_t irq, hdl_delegate
 
 void hdl_interrupt_sw_trigger(hdl_nvic_irq_n_t interrupt) {
   NVIC_SetPendingIRQ(interrupt);
-}
-
-void hdl_exti_sw_trigger(hdl_interrupt_controller_t *desc, hdl_exti_line_t line) {
-  EXTI_SWIEV |= line;
 }

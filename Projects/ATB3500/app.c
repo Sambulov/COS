@@ -57,6 +57,10 @@ void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) 
     if(event_trigger == PD_STATE_STABLE) atb3500_power_rail_set(&rail_5v, HDL_TRUE);
 }
 
+void power_domain_24vpoe_rail(uint32_t event_trigger, void *sender, void *context) {
+
+}
+
 void watchdog_event_handler(uint32_t event_trigger, void *sender, void *context) {
     carrier_shutdown((dev_context_t *)context);
 }
@@ -69,14 +73,17 @@ void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *con
     }
 }
 
+#define RX_BUFFER_SIZE    2048
+
 void main() {
-    static uint8_t buf[128];
-    static dev_context_t context = {.spi_buffer.size = 128, .spi_buffer.data = buf};
+    static uint8_t buf[RX_BUFFER_SIZE];
+    static dev_context_t context = {.spi_buffer.size = RX_BUFFER_SIZE, .spi_buffer.data = buf};
     hdl_enable(&app_module);
     while (!hdl_init_complete()) {
         cooperative_scheduler(false);
     }
     atb3500_power_rail_event_subscribe(&rail_24v, &power_domain_24v_rail, &context);
+    atb3500_power_rail_event_subscribe(&rail_24vpoe, &power_domain_24vpoe_rail, &context);
     atb3500_power_rail_event_subscribe(&rail_5v, &power_domain_5v_rail, &context);
     atb3500_power_rail_event_subscribe(&rail_3v3, &power_domain_3v3_rail, &context);
     atb3500_power_rail_event_subscribe(&rail_2v5, &power_domain_2v5_rail, &context);

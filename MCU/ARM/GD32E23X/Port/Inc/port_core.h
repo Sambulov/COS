@@ -2,6 +2,8 @@
 #ifndef PORT_CORE_H_
 #define PORT_CORE_H_
 
+#include "port_exti.h"
+
 #define HDL_INTERRUPT_PRV_SIZE       4
 
 typedef enum {
@@ -69,72 +71,10 @@ typedef struct {
   PRIVATE(hw, HDL_INTERRUPT_PRV_SIZE);
 } hdl_nvic_interrupt_t;
 
-typedef enum {
-  HDL_EXTI_TRIGGER_FALLING        = 0x01,
-  HDL_EXTI_TRIGGER_RISING         = 0x02,
-  HDL_EXTI_TRIGGER_RISING_FALLING = HDL_EXTI_TRIGGER_RISING | HDL_EXTI_TRIGGER_FALLING,
-  HDL_EXTI_TRIGGER_NONE           = !(HDL_EXTI_TRIGGER_RISING | HDL_EXTI_TRIGGER_FALLING)
-} hdl_exti_trig_type_t;
-
-typedef enum {
-  HDL_EXTI_LINE_0 = EXTI_0,   /*!< EXTI line 0 PA0, PB0, PF0 */
-  HDL_EXTI_LINE_1 = EXTI_1,   /*!< EXTI line 1 PA1, PB1, PF1 */
-  HDL_EXTI_LINE_2 = EXTI_2,   /*!< EXTI line 2 PA2, PB2 */
-  HDL_EXTI_LINE_3 = EXTI_3,   /*!< EXTI line 3 PA3, PB3 */
-  HDL_EXTI_LINE_4 = EXTI_4,   /*!< EXTI line 4 PA4, PB4 */
-  HDL_EXTI_LINE_5 = EXTI_5,   /*!< EXTI line 5 PA5, PB5 */
-  HDL_EXTI_LINE_6 = EXTI_6,   /*!< EXTI line 6 PA6, PB6, PF6 */
-  HDL_EXTI_LINE_7 = EXTI_7,   /*!< EXTI line 7 PA7, PB7, PF7 */
-  HDL_EXTI_LINE_8 = EXTI_8,   /*!< EXTI line 8 PA8, PB8 */
-  HDL_EXTI_LINE_9 = EXTI_9,   /*!< EXTI line 9 PA9, PB9 */
-  HDL_EXTI_LINE_10 = EXTI_10, /*!< EXTI line 10 PA10, PB10 */
-  HDL_EXTI_LINE_11 = EXTI_11, /*!< EXTI line 11 PA11, PB11 */
-  HDL_EXTI_LINE_12 = EXTI_12, /*!< EXTI line 12 PA12, PB12 */
-  HDL_EXTI_LINE_13 = EXTI_13, /*!< EXTI line 13 PA13, PB13, PC13 */
-  HDL_EXTI_LINE_14 = EXTI_14, /*!< EXTI line 14 PA14, PB14, PC14 */
-  HDL_EXTI_LINE_15 = EXTI_15, /*!< EXTI line 15 PA15, PB15, PC15 */
-  HDL_EXTI_LINE_16 = EXTI_16, /*!< EXTI line 16 LVD */
-  HDL_EXTI_LINE_17 = EXTI_17, /*!< EXTI line 17 RTC alarm */
-  HDL_EXTI_LINE_18 = EXTI_18, /*!< EXTI line 18 Reserved */
-  HDL_EXTI_LINE_19 = EXTI_19, /*!< EXTI line 19 RTC tamper and timestamp */
-  HDL_EXTI_LINE_20 = EXTI_20, /*!< EXTI line 20 Reserved */    
-  HDL_EXTI_LINE_21 = EXTI_21, /*!< EXTI line 21 CMP output */
-  HDL_EXTI_LINE_22 = EXTI_22, /*!< EXTI line 22 Reserved */
-  HDL_EXTI_LINE_23 = EXTI_23, /*!< EXTI line 23 Reserved */
-  HDL_EXTI_LINE_24 = EXTI_24, /*!< EXTI line 24 Reserved */
-  HDL_EXTI_LINE_25 = EXTI_25, /*!< EXTI line 25 USART0 wakeup */
-  HDL_EXTI_LINE_26 = EXTI_26, /*!< EXTI line 26 Reserved */
-  HDL_EXTI_LINE_27 = EXTI_27, /*!< EXTI line 27 Reserved */
-} hdl_exti_line_t;
-
-
-typedef enum {
-  HDL_EXTI_SOURCE_PA = 0b0000,
-  HDL_EXTI_SOURCE_PB = 0b0001,
-  HDL_EXTI_SOURCE_PC = 0b0010,
-  HDL_EXTI_SOURCE_PD = 0b0011,
-  HDL_EXTI_SOURCE_PE = 0b0100,
-  HDL_EXTI_SOURCE_PF = 0b0101,
-  HDL_EXTI_SOURCE_PG = 0b0110,
-} hdl_exti_source_t;
-
-typedef enum {
-  HDL_EXTI_MODE_INTERRUPT = EXTI_INTERRUPT,
-  HDL_EXTI_MODE_EVENT = EXTI_EVENT
-} hdl_exti_mode_t;
-
-typedef struct {
-  hdl_exti_line_t line;
-  hdl_exti_source_t source;
-  hdl_exti_mode_t mode;
-  hdl_exti_trig_type_t trigger;
-} hdl_nvic_exti_t;
-
 typedef struct {
   hdl_module_t module;
   uint32_t prio_bits;
   hdl_nvic_interrupt_t **interrupts;
-  hdl_nvic_exti_t **exti_lines;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
 } hdl_nvic_t;
 
@@ -144,7 +84,6 @@ typedef struct{
 } hdl_core_t;
 
 #define hdl_interrupts(...) ((hdl_nvic_interrupt_t *[]){__VA_ARGS__, NULL})
-#define hdl_exti_lines(...) ((hdl_nvic_exti_t *[]){__VA_ARGS__, NULL})
 
 typedef hdl_nvic_t hdl_interrupt_controller_t;
 typedef hdl_nvic_interrupt_t hdl_interrupt_t;

@@ -220,12 +220,11 @@
   };
 
   hdl_nvic_t mod_nvic = {
-    .module.init = &hdl_nvic,
+    .module.init = &hdl_interrupt_controller,
     .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
     .module.reg = NVIC,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0_update, &mod_irq_timer1),
-    //.exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8)
   };
 
   hdl_clock_prescaler_t mod_clock_ahb = {

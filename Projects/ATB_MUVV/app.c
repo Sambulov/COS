@@ -8,6 +8,8 @@ extern hdl_gpio_pin_t mod_gpi_button;
 //extern hdl_timer_t mod_timer2_ms;
 extern hdl_exti_controller_t mod_exti;
 extern hdl_nvic_t mod_nvic;
+extern hdl_i2c_client_t mod_i2c0_client;
+
 
 void exti0_1_hundler(uint32_t event_trigger, void *sender, void *context) {
   hdl_gpio_write(&mod_gpo_led, HDL_GPIO_LOW);
@@ -23,6 +25,7 @@ void main() {
   hdl_enable(&mod_gpo_led.module);
   hdl_enable(&mod_gpi_button.module);
   hdl_enable(&mod_exti.module);
+  hdl_enable(&mod_i2c0_client.module);
   //hdl_enable(&mod_timer0_ms.module);
   //hdl_enable(&mod_timer2_ms.module);
   while (!hdl_init_complete()) {
@@ -31,12 +34,40 @@ void main() {
   hdl_delegate_t exti_test = {.context =NULL, .handler = &exti0_1_hundler};
 
   hdl_interrupt_request(&mod_nvic, HDL_NVIC_IRQ5_EXTI0_1, &exti_test);
+  
+// typedef enum {
+//   HDL_I2C_MESSAGE_START          = 0x01, /* Generate start condition */
+//   HDL_I2C_MESSAGE_ADDR           = 0x02, /* Send addr */
+//   HDL_I2C_MESSAGE_MRSW           = 0x04, /* Receiver mode if option set, else trasmitter mode */
+//   HDL_I2C_MESSAGE_ADDR_10        = 0x02, /* Send addr */
+//   HDL_I2C_MESSAGE_NACK_LAST      = 0x08, /* Send NACK in the end in receiver mode */
+//   HDL_I2C_MESSAGE_STOP           = 0x10, /* Generate stop condition */
+// } hdl_i2c_message_options_t;
 
+  /* register address */
+  uint8_t i2c_buffer_register_address[2] = {0, 0x80};
+  uint8_t i2c_buffer_data[4] = {0, 1, 2, 3};
+
+  hdl_i2c_message_t i2c_msg = {
+    .address = 0xA0,
+    .buffer = i2c_buffer_register_address,
+    .buffer_size = sizeof(i2c_buffer_register_address),
+    .options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR,
+  };
+  hdl_i2c_message_t i2c_msg_data = {
+    .address = 0xA0,
+    .buffer = i2c_buffer_data,
+    .buffer_size = sizeof(i2c_buffer_data),
+    .options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | 
+                HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
+  };
+  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg);
+  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_data);
   while (1)
   {
-    
     if (TIME_ELAPSED(time_stamp_sys_ms, 1000, hdl_timer_get(&mod_timer_ms))){
       time_stamp_sys_ms += 1000;
+      
       hdl_gpio_toggle(&mod_gpo_led);
     }
 

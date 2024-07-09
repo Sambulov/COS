@@ -1041,11 +1041,11 @@ hdl_gpio_mode_t mod_gpio_alternate_swd_mode = {
   .af = GPIO_AF_0,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_PP,
-  .ospeed = GPIO_OSPEED_50MHZ,
+  .ospeed = GPIO_OSPEED_2MHZ,
 };
 
 hdl_gpio_mode_t mod_gpio_i2c_mode = {
-  .af = GPIO_AF_4,
+  .af = GPIO_AF_1,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_OD,
   .ospeed = GPIO_OSPEED_2MHZ
@@ -1083,26 +1083,40 @@ hdl_gpio_pin_t mod_gpo_led = {
   .mode = &mod_gpio_output_pp_mode
 };
 
-// hdl_gpio_pin_t mod_gpio_soc_scl = {
-//   .module.init = &hdl_gpio_pin,
-//   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-//   .module.reg = (void *)GPIO_PIN_9,
-//   .mode = &mod_gpio_i2c_mode
-// };
+hdl_gpio_pin_t mod_gpio_i2c0_scl = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .module.reg = (void *)GPIO_PIN_6,
+  .mode = &mod_gpio_i2c_mode
+};
 
-// hdl_gpio_pin_t mod_gpio_soc_sda = {
-//   .module.init = &hdl_gpio_pin,
-//   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
-//   .module.reg = (void *)GPIO_PIN_10,
-//   .mode = &mod_gpio_i2c_mode
-// };
+hdl_gpio_pin_t mod_gpio_i2c0_sda = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .module.reg = (void *)GPIO_PIN_7,
+  .mode = &mod_gpio_i2c_mode
+};
 
-// const hdl_i2c_client_hw_t mod_i2c_config = {
-//   .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
-//   .ev_interrupt = HDL_NVIC_IRQ23_I2C0_EV,
-//   .dtcy = I2C_DTCY_2,
-//   .speed = 400000
-// };
+hdl_i2c_client_config_t mod_i2c_config = {
+  .addr0 = 0,
+  .addr1 = 0,
+  .addr_10_bits = 0,
+  .dtcy = I2C_DTCY_2,
+  .dual_address = 0,
+  .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
+  .ev_interrupt = HDL_NVIC_IRQ23_I2C0_EV,
+  .general_call_enable = 0,
+  .speed = 400000,
+  .stretch_enable = 0
+};
+
+hdl_i2c_client_t mod_i2c0_client = {
+  .module.init = &hdl_i2c_client,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_i2c0_scl.module, &mod_gpio_i2c0_sda.module,
+                                                 &mod_clock_apb1.module, &mod_nvic.module),
+  .module.reg = (void *)I2C0,
+  .config = &mod_i2c_config,
+};
 
 // hdl_i2c_client_t mod_i2c0_client = {
 //   .module.init = &hdl_i2c,

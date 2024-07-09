@@ -45,7 +45,7 @@ typedef struct {
 
 hdl_module_state_t hdl_i2c_client(void *i2c, uint8_t enable);
 
-
+void _hdl_hal_i2c_transfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *message);
 
 
 

@@ -343,59 +343,54 @@ static uint8_t _hdl_reg_wait_condition(__IO uint32_t *reg, uint32_t flags, uint8
   return 0;
 }
 
-static void _hdl_hal_i2c_transfer_message(const hdl_i2c_client_private_t *i2c, hdl_i2c_message_t *message) {
+void _hdl_hal_i2c_transfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *message) {
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
+  uint32_t ss = I2C_CTL0((uint32_t)i2c_periph) & I2C_SCLSTRETCH_DISABLE;
+  I2C_CTL0((uint32_t)i2c_periph) &= ~I2C_SCLSTRETCH_DISABLE;
   if(message->options & HDL_I2C_MESSAGE_START) {
     /* send a start condition to I2C bus */
     i2c_start_on_bus((uint32_t)i2c_periph);
     /* wait until SBSEND bit is set */
     _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_SBSEND, 1, 10);
     /* send slave address to I2C bus */
-    i2c_master_addressing((uint32_t)i2c_periph, message->address << 1, 
+    i2c_master_addressing((uint32_t)i2c_periph, message->address, 
       (message->options & HDL_I2C_MESSAGE_MRSW)? I2C_RECEIVER: I2C_TRANSMITTER);
     /* wait until ADDSEND bit is set */
     _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_ADDSEND, 1, 10);
     /* clear the ADDSEND bit */
-    //i2c_flag_clear(desc, I2C_FLAG_ADDSEND); // ?????
+    i2c_flag_clear((uint32_t)i2c_periph, I2C_FLAG_ADDSEND); // ?????
   }
-
-  i2c_ackpos_config((uint32_t)i2c_periph, I2C_ACKPOS_CURRENT);
-  i2c_ack_config((uint32_t)i2c_periph, I2C_ACK_ENABLE);
-  
+  //i2c_ackpos_config((uint32_t)i2c_periph, I2C_ACKPOS_CURRENT);
   if(((message->options & HDL_I2C_MESSAGE_MRSW) && (i2c_periph->STAT1 & I2C_STAT1_TR)) ||
       (!(message->options & HDL_I2C_MESSAGE_MRSW) && !(i2c_periph->STAT1 & I2C_STAT1_TR))) {
     /* if message read operation and desc state transmitter or
           message write operation and desc state receiver */
     // TODO: reset transceiver, return bad state
   }
-
   /* transfer data */
   for (uint32_t i = 0; i < message->buffer_size; i++) {
     if(message->options & HDL_I2C_MESSAGE_MRSW) {
       /* wait until byte received */
-      if(_hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10)) {
-        break;
-      }
+      _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
       message->buffer[i] = i2c_data_receive((uint32_t)i2c_periph);
     }
     else {
-      if(_hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_TBE, 1, 10)) {
-        break;
-      }
+      _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_TBE, 1, 10);
       i2c_data_transmit((uint32_t)i2c_periph, message->buffer[i]);
     }
   }
-  
+  _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_BTC, 1, 10);
   if(message->options & HDL_I2C_MESSAGE_STOP) {
     /* send a start condition to I2C bus */
     i2c_stop_on_bus((uint32_t)i2c_periph);
     /* wait until SBSEND bit is set */
-    _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_STPDET, 1, 10);
+    //_hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_STPDET, 1, 10);
   }
+  I2C_CTL0((uint32_t)i2c_periph) |= ss;
 }
 
 
-hdl_module_state_t hdl_i2c_hw(void *i2c, uint8_t enable) {
+hdl_module_state_t hdl_i2c_client(void *i2c, uint8_t enable) {
   hdl_i2c_client_private_t *_i2c = (hdl_i2c_client_private_t *)i2c;
   rcu_periph_enum rcu;
   switch ((uint32_t)_i2c->module.reg) {
@@ -414,24 +409,22 @@ hdl_module_state_t hdl_i2c_hw(void *i2c, uint8_t enable) {
     i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
     i2c_mode_addr_config((uint32_t)_i2c->module.reg, I2C_I2CMODE_ENABLE, 
       (_i2c->config->addr_10_bits? I2C_ADDFORMAT_10BITS: I2C_ADDFORMAT_7BITS), _i2c->config->addr0);
+    i2c_ack_config(((uint32_t)_i2c->module.reg), I2C_ACK_ENABLE);
     I2C_SADDR1((uint32_t)_i2c->module.reg) = (_i2c->config->addr1 & 0xFE);
     I2C_SADDR1((uint32_t)_i2c->module.reg) |= (_i2c->config->dual_address? I2C_SADDR1_DUADEN : 0);
     I2C_CTL0((uint32_t)_i2c->module.reg) |= 
       (_i2c->config->general_call_enable? I2C_GCEN_ENABLE : I2C_GCEN_DISABLE) |
       (_i2c->config->stretch_enable? I2C_SCLSTRETCH_ENABLE : I2C_SCLSTRETCH_DISABLE) |
-      I2C_I2CMODE_ENABLE;
-    
+      I2C_I2CMODE_ENABLE;   
     _i2c->ev_isr.context = i2c;
     _i2c->ev_isr.handler = &event_i2c_ev_isr;
     _i2c->er_isr.context = i2c;
-    _i2c->er_isr.handler = &event_i2c_er_isr;
-    
+    _i2c->er_isr.handler = &event_i2c_er_isr; 
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)_i2c->module.dependencies[3];
     hdl_interrupt_request(ic, _i2c->config->err_interrupt, &_i2c->er_isr);
     hdl_interrupt_request(ic, _i2c->config->ev_interrupt, &_i2c->ev_isr);
-
-    coroutine_add_static(&_i2c->i2c_client_task_buff, &_i2c_client_worker, (void*)_i2c);
     I2C_CTL0((uint32_t)_i2c->module.reg) |= I2C_CTL0_I2CEN;
+    coroutine_add_static(&_i2c->i2c_client_task_buff, &_i2c_client_worker, (void*)_i2c);
     return HDL_MODULE_INIT_OK;
   }
   coroutine_cancel(&_i2c->i2c_client_task_buff);

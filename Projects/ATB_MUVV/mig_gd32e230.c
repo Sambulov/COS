@@ -1107,7 +1107,7 @@ hdl_i2c_client_config_t mod_i2c_config = {
   .ev_interrupt = HDL_NVIC_IRQ23_I2C0_EV,
   .general_call_enable = 0,
   .speed = 400000,
-  .stretch_enable = 0
+  .stretch_enable = 1
 };
 
 hdl_i2c_client_t mod_i2c0_client = {

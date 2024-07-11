@@ -62,12 +62,24 @@ uint8_t atb3500_power_rail_event_subscribe(atb3500_power_rail_t *desc, hdl_event
     return HDL_FALSE;
 }
 
+static uint8_t _check_feedback(atb3500_power_rail_private_t *desc) {
+    hdl_gpio_pin_t *feed_back_power_fault = (hdl_gpio_pin_t *)desc->module.dependencies[ATB3500_POWER_RAIL_FEEDBACK_FAULT];
+    hdl_gpio_pin_t *feed_back_power_good = (hdl_gpio_pin_t *)desc->module.dependencies[ATB3500_POWER_RAIL_FEEDBACK_GOOD];
+    if((HDL_IS_NULL_MODULE(feed_back_power_fault)) || (HDL_IS_NULL_MODULE(feed_back_power_good)))
+        return 1;
+    if((desc->state == PD_STATE_OFF) || (desc->state == PD_STATE_ENABLED) || (desc->state == PD_STATE_STABLE_DELAY))
+        return 1;
+    return ((hdl_gpio_is_active(feed_back_power_fault)) || (hdl_gpio_is_inactive(feed_back_power_good))) ? 0 : 1;
+}
+
 uint8_t atb3500_power_rail_is_stable(atb3500_power_rail_t *desc) {
     atb3500_power_rail_private_t *rail = (atb3500_power_rail_private_t *)desc;
+    uint8_t feedback_is_ok = _check_feedback(rail);
     return (rail != NULL) && 
            (rail->state != PD_STATE_OFF) && 
            (rail->voltage >= rail->uv_threshold) && 
-           (rail->voltage <= rail->ov_threshold);
+           (rail->voltage <= rail->ov_threshold) && 
+           (feedback_is_ok);
 }
 
 static void _feed_rail_filter(atb3500_power_rail_private_t *rail, uint32_t value) {

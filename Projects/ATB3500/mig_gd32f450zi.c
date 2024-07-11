@@ -17,7 +17,7 @@
 #define HDL_PLL_Q_PRESCALER               10                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
 #define HDL_AHB_PRESCALER                 1                             /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
 #define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
-#define HDL_APB2_PRESCALER                2                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB2_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
 hdl_core_t mod_sys_core = {
   .module.init = &hdl_core,
@@ -485,9 +485,9 @@ LEFT  * | * | *
       * | * | *  
          BOT
 
-      LED_0_0 | LED_0_1 | LED_0_2
-LEFT  LED_1_0 | LED_1_1 | LED_1_2
-      LED_2_0 | LED_2_1 | LED_2_2
+      LED_0_2 | LED_1_2 | LED_2_2
+LEFT  LED_0_1 | LED_1_1 | LED_2_1
+      LED_0_0 | LED_1_0 | LED_2_0
                   BOT
 */
 hdl_gpio_pin_t mod_do_led_0_0 = {
@@ -500,21 +500,21 @@ hdl_gpio_pin_t mod_do_led_0_0 = {
 hdl_gpio_pin_t mod_do_led_0_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_6,
+  .module.reg = (void *)GPIO_PIN_4,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_0_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_0,
+  .module.reg = (void *)GPIO_PIN_5,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_1_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_4,
+  .module.reg = (void *)GPIO_PIN_6,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
@@ -528,20 +528,20 @@ hdl_gpio_pin_t mod_do_led_1_1 = {
 hdl_gpio_pin_t mod_do_led_1_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_1,
+  .module.reg = (void *)GPIO_PIN_8,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
 hdl_gpio_pin_t mod_do_led_2_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_5,
+  .module.reg = (void *)GPIO_PIN_0,
   .mode = &hdl_gpio_mode_output_no_pull,
 };
 hdl_gpio_pin_t mod_do_led_2_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
-  .module.reg = (void *)GPIO_PIN_8,
+  .module.reg = (void *)GPIO_PIN_1,
   .mode = &hdl_gpio_mode_output_no_pull,
   .inactive_default = HDL_GPIO_LOW,
 };
@@ -757,6 +757,8 @@ atb3500_power_rail_t rail_24v = {
         &mod_adc.module,
         &mod_adc_pin_24v.module,
         &hdl_null_module,
+        &hdl_null_module,
+        &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_24V,
     .adc_src = &mod_adc_source_0_adc_24v,
@@ -773,9 +775,9 @@ atb3500_power_rail_t rail_24vpoe = {
         &mod_adc.module,
         &mod_adc_pin_24v_poe.module,
         &rail_24v.module,
-        &mod_do_24v_poe_power_on.module /*, 
+        &mod_do_24v_poe_power_on.module, 
         &mod_di_24v_poe_power_fault.module, 
-        &mod_di_24v_poe_power_good.module */),
+        &mod_di_24v_poe_power_good.module),
     .adc_scale = POWER_RAIL_ADC_SCALE_24V,
     .adc_src = &mod_adc_source_0_adc_24v,
     .uv_threshold = POWER_RAIL_UV_TRHESHOLD_24V,
@@ -791,7 +793,9 @@ atb3500_power_rail_t rail_5v = {
         &mod_adc.module,
         &mod_adc_pin_5v.module,
         &rail_24v.module,
-        &mod_do_5v_power_on.module),
+        &mod_do_5v_power_on.module,
+        &hdl_null_module,
+        &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_5V,
     .adc_src = &mod_adc_source_2_adc_5v,
     .uv_threshold = POWER_RAIL_UV_TRHESHOLD_5V,
@@ -807,6 +811,8 @@ atb3500_power_rail_t rail_3v3 = {
         &mod_adc.module,
         &mod_adc_pin_3v3.module,
         &rail_5v.module,
+        &hdl_null_module,
+        &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_3V3,
     .adc_src = &mod_adc_source_3_adc_3v3,
@@ -823,6 +829,8 @@ atb3500_power_rail_t rail_2v5 = {
         &mod_adc.module,
         &mod_adc_pin_2v5.module,
         &rail_5v.module,
+        &hdl_null_module,
+        &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_2V5,
     .adc_src = &mod_adc_source_4_adc_2v5,
@@ -839,6 +847,8 @@ atb3500_power_rail_t rail_1v8 = {
         &mod_adc.module,
         &mod_adc_pin_1v8.module,
         &rail_5v.module,
+        &hdl_null_module,
+        &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_1V8,
     .adc_src = &mod_adc_source_5_adc_1v8,

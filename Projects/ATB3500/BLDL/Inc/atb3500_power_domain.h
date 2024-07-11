@@ -31,7 +31,7 @@
 
 /* ADC threshold */
 #define POWER_RAIL_UV_TRHESHOLD_24V             ((uint16_t)21600)  /* -10% from 24v */
-#define POWER_RAIL_UV_TRHESHOLD_24VPOE          ((uint16_t)21600)  /* -10% from 24v poe */
+#define POWER_RAIL_UV_TRHESHOLD_24VPOE          ((uint16_t)15000)  /* ~ -30% from 24v poe */
 #define POWER_RAIL_UV_TRHESHOLD_5V              ((uint16_t)4500)   /* -10% from 5v */
 #define POWER_RAIL_UV_TRHESHOLD_3V3             ((uint16_t)2970)   /* -10% from 3v3 */
 #define POWER_RAIL_UV_TRHESHOLD_2V5             ((uint16_t)2250)   /* -10% from 2v5 */
@@ -55,12 +55,13 @@ typedef enum {
 #define ATB3500_POWER_RAIL_PRV_SIZE      ((6 + POWER_DOMAIN_ADC_FILTER_LENGH) * 4) + 16
 
 
-#define ATB3500_POWER_RAIL_TIMER         0
-#define ATB3500_POWER_RAIL_ADC           1
-#define ATB3500_POWER_RAIL_ADC_PIN       2
-#define ATB3500_POWER_RAIL_SOURSE_RAIL   3
-#define ATB3500_POWER_RAIL_EN_PIN        4
-
+#define ATB3500_POWER_RAIL_TIMER            0
+#define ATB3500_POWER_RAIL_ADC              1
+#define ATB3500_POWER_RAIL_ADC_PIN          2
+#define ATB3500_POWER_RAIL_SOURSE_RAIL      3
+#define ATB3500_POWER_RAIL_EN_PIN           4
+#define ATB3500_POWER_RAIL_FEEDBACK_FAULT   5
+#define ATB3500_POWER_RAIL_FEEDBACK_GOOD    6
 /*
     depends on:
     - timer

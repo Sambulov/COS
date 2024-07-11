@@ -49,16 +49,20 @@ void power_domain_5v_rail(uint32_t event_trigger, void *sender, void *context) {
         smarc_carrier_force_state(&mod_smarc, CARRIER_POWER_ON, HDL_TRUE); 
         smarc_carrier_force_state(&mod_smarc, CARRIER_STANDBY, HDL_TRUE);
     }
-    else 
-        carrier_shutdown((dev_context_t *)context);
+//    else 
+//        carrier_shutdown((dev_context_t *)context);
 }
 
 void power_domain_24v_rail(uint32_t event_trigger, void *sender, void *context) {
-    if(event_trigger == PD_STATE_STABLE) atb3500_power_rail_set(&rail_5v, HDL_TRUE);
+    if(event_trigger == PD_STATE_STABLE) {
+        atb3500_power_rail_set(&rail_24vpoe, HDL_TRUE);
+        atb3500_power_rail_set(&rail_5v, HDL_TRUE);
+    } 
 }
 
 void power_domain_24vpoe_rail(uint32_t event_trigger, void *sender, void *context) {
-
+    if(event_trigger == PD_STATE_FAULT)
+        atb3500_power_rail_set(&rail_24vpoe, HDL_FALSE);
 }
 
 void watchdog_event_handler(uint32_t event_trigger, void *sender, void *context) {

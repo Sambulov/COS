@@ -16,17 +16,19 @@ typedef enum {
 typedef enum {
   HDL_I2C_MESSAGE_START          = 0x01, /* Generate start condition */
   HDL_I2C_MESSAGE_ADDR           = 0x02, /* Send addr */
-  HDL_I2C_MESSAGE_MRSW           = 0x04, /* Receiver mode if option set, else trasmitter mode */
-  HDL_I2C_MESSAGE_ADDR_10        = 0x02, /* Send addr */
-  HDL_I2C_MESSAGE_NACK_LAST      = 0x08, /* Send NACK in the end in receiver mode */
-  HDL_I2C_MESSAGE_STOP           = 0x10, /* Generate stop condition */
-} hdl_i2c_message_options_t;
+  HDL_I2C_MESSAGE_ADDR_10        = 0x04, /* Send addr */
+  HDL_I2C_MESSAGE_MRSW           = 0x08, /* Receiver mode if option set, else trasmitter mode */
+  HDL_I2C_MESSAGE_NACK_LAST      = 0x10, /* Send NACK in the end in receiver mode */
+  HDL_I2C_MESSAGE_STOP           = 0x20, /* Generate stop condition */
+} hdl_i2c_message_flags_t;
 
 typedef struct {
   uint16_t address;
   uint8_t *buffer;
-  uint16_t buffer_size;
-  hdl_i2c_message_options_t options;
+  uint16_t length;
+  uint16_t count;
+  hdl_i2c_message_flags_t status;
+  hdl_i2c_message_flags_t options;
   PRIVATE(hdl, HDL_I2C_HW_MESSAGE_PRV_SIZE);
 } hdl_i2c_message_t;
 

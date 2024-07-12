@@ -10,10 +10,6 @@ typedef struct {
 
 _Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_nvic_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
 
-extern void *__stack_end__;
-extern void *_sidata, *_sdata, *_edata;
-extern void *_sbss, *_ebss;
-
 void __libc_init_array();
 void main();
 hdl_nvic_t *__ic = NULL;

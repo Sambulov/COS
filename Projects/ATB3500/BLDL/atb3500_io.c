@@ -84,5 +84,7 @@ atb3500_io_proto_tx_t *atb3500_io_update(atb3500_io_t *desc, atb3500_io_proto_rx
         _atb3500_io_update_input(io, port);
         port <<= 1;
     }
+    rx_data->set = 0;
+    rx_data->reset = 0;
     return &io->tx_data;
 }

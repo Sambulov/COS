@@ -6,6 +6,11 @@
 
 #define HDL_INTERRUPT_PRV_SIZE       4
 
+extern void *__stack_end__;
+extern void *__flash_end__;
+extern void *_sidata, *_sdata, *_edata;
+extern void *_sbss, *_ebss;
+
 typedef enum
 {
   /* Cortex-M4 processor exceptions numbers */

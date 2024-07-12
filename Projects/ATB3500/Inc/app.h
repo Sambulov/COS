@@ -5,6 +5,7 @@
 #include "atb3500_power_domain.h"
 #include "atb3500_io.h"
 #include "atb3500_watchdog.h"
+#include "atb3500_flash_serial.h"
 #include "mig.h"
 
 typedef struct {

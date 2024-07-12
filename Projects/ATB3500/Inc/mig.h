@@ -22,6 +22,7 @@ extern bldl_smarc_carrier_t mod_smarc;
 extern hdl_button_t power_button;
 extern atb3500_io_t mod_carrier_io;
 extern atb3500_watchdog_t mod_watchdog;
+extern atb3500_flash_serial_t mod_serial;
 extern hdl_module_t power_domain;
 extern hdl_module_t app_module;
 

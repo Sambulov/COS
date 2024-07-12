@@ -14,9 +14,11 @@ atb3500_watchdog_proto_tx_t *atb3500_watchdog_update(atb3500_watchdog_t *desc, a
     atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)desc;
     hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[0];
     if(rx_data->magic_value_reset == ATB3500_WATCHDOG_RESET_MAGIC) {
+        rx_data->magic_value_reset = 0;
         hdl_timer_event_reset(timer);
     }
     if(rx_data->magic_value_config == ATB3500_WATCHDOG_CONFIG_MAGIC) {
+        rx_data->magic_value_config = 0;
         timer->delay = rx_data->delay_ms;
         if(rx_data->delay_ms)
             hdl_timer_event_run_once(timer);

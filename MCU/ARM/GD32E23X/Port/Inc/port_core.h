@@ -3,6 +3,7 @@
 #define PORT_CORE_H_
 
 #include "port_exti.h"
+#include "port_flash.h"
 
 #define HDL_INTERRUPT_PRV_SIZE       4
 

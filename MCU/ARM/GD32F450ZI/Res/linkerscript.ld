@@ -1,6 +1,6 @@
 MEMORY
 {
-  FLASH (rx)            : ORIGIN = 0x08000000, LENGTH = 3072K
+  FLASH (rx)            : ORIGIN = 0x08000000, LENGTH = 1024K
   TCMSRAM (xrw)         : ORIGIN = 0x10000000, LENGTH = 64K
   SRAM (xrw)            : ORIGIN = 0x20000000, LENGTH = 192K
 }

@@ -20,7 +20,7 @@ typedef enum {
 } atb3500_flash_serial_status_t;
 
 typedef struct {
-  atb3500_flash_serial_status_t status;
+  uint32_t status;
   uint8_t serial[ATB3500_SERIAL_SIZE];
 } atb3500_flash_serial_proto_tx_t;
 

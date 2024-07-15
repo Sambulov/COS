@@ -1,7 +1,7 @@
 #include "app.h"
 #include "CodeLib.h"
 
-#define ATB3500_SERIAL_ADDRESS       (((uint8_t *)__flash_end__) - (ATB3500_SERIAL_SIZE + 1))
+#define ATB3500_SERIAL_ADDRESS       (((void *)&__flash_end__) - (ATB3500_SERIAL_SIZE))
 
 typedef struct {
   hdl_module_t module;
@@ -51,21 +51,24 @@ uint8_t burn_flash(uint32_t addr, uint8_t *data, uint8_t len) {
       FMC_CTL &= ~FMC_CTL_PSZ;
       __IO uint32_t* f_ref = (uint32_t *)addr;
       uint32_t f_data;
-      if((len >= 4) && !((uint32_t)data & 0x3)) {
+      if((len >= 4) && !((uint32_t)data & 0x3) && !((uint32_t)addr & 0x3) ) {
         FLASH->CTL |= CTL_PSZ_WORD;
         f_data = *(uint32_t *)data;
         data += 4;
+        addr += 4;
         len -= 4;
-      } else if((len >= 4) && !((uint32_t)data & 0x1)) {
+      } else if((len >= 4) && !((uint32_t)data & 0x1) && !((uint32_t)addr & 0x1)) {
         FLASH->CTL |= CTL_PSZ_HALF_WORD;
         f_data = *(uint16_t *)data;
         data += 2;
+        addr += 2;
         len -= 2;
       }
       else {
         FLASH->CTL |= CTL_PSZ_BYTE;
         f_data = *data;
         data++;
+        addr++;
         len--;
       }
       *f_ref = f_data;
@@ -106,8 +109,34 @@ uint8_t erase_flash(uint32_t addr, uint32_t amount) {
     while ((FLASH->STAT & FMC_STAT_BUSY) != 0) {
 
     }
+    // while ((FLASH->STAT & FMC_STAT_END) == 0) {
+
+    // }
+    //FLASH->STAT |= FMC_STAT_END;
+
     FLASH->PECFG &= ~FMC_PE_EN;
     FLASH->CTL &= ~FMC_CTL_SER;
+		FLASH->CTL |= FMC_CTL_LK;
+    return HDL_TRUE;
+	}
+  return HDL_FALSE;
+}
+
+uint8_t sector_erase_flash(uint32_t fmc_sector) {
+  FMC_t *FLASH = (FMC_t *)FMC;
+	if (flash_unlock()) {
+    /* start sector erase */
+    FMC_CTL &= ~FMC_CTL_SN;
+    FMC_CTL |= (FMC_CTL_SER | fmc_sector);
+    FMC_CTL |= FMC_CTL_START;
+    while ((FLASH->STAT & FMC_STAT_BUSY) != 0) {
+    }
+    // while ((FLASH->STAT & FMC_STAT_END) == 0) {
+    // }
+    /* reset the SER bit */
+    FMC_CTL &= (~FMC_CTL_SER);
+    FMC_CTL &= ~FMC_CTL_SN;
+    //FLASH->STAT |= FMC_STAT_END;
 		FLASH->CTL |= FMC_CTL_LK;
     return HDL_TRUE;
 	}
@@ -118,10 +147,13 @@ atb3500_flash_serial_proto_tx_t *atb3500_flash_serial_update(atb3500_flash_seria
   atb3500_flash_serial_private_t *serial = (atb3500_flash_serial_private_t *)desc;
   if(serial != NULL) {
     if((data->programm_key1 == ATB3500_SERIAL_PROGRAMM_KEY1) && (data->programm_key2 == ATB3500_SERIAL_PROGRAMM_KEY2)) {
-      erase_flash((uint32_t)ATB3500_SERIAL_ADDRESS, ATB3500_SERIAL_SIZE);
+      //erase_flash((uint32_t)ATB3500_SERIAL_ADDRESS, ATB3500_SERIAL_SIZE);
+      sector_erase_flash(CTL_SECTOR_NUMBER_11);
       write_flash((uint32_t)ATB3500_SERIAL_ADDRESS, data->serial, ATB3500_SERIAL_SIZE);
+      data->programm_key1 = 0;
+      data->programm_key2 = 0;
     }
-    serial->tx_buf.status = (*(uint8_t *)(ATB3500_SERIAL_ADDRESS-1) == 0xff)? SERIAL_EMPTY: SERIAL_VALID;
+    serial->tx_buf.status = (*(uint8_t *)(ATB3500_SERIAL_ADDRESS) == 0xff)? SERIAL_EMPTY: SERIAL_VALID;
     mem_cpy(serial->tx_buf.serial, (uint8_t*)ATB3500_SERIAL_ADDRESS, ATB3500_SERIAL_SIZE);
     return &serial->tx_buf;
   }

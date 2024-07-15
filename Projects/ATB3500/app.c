@@ -101,7 +101,6 @@ void main() {
 
     smarc_carrier_boot_select(&mod_smarc, SMARC_CARRIER_BOOT0 | SMARC_CARRIER_BOOT1 | SMARC_CARRIER_BOOT2);
     smarc_carrier_boot(&mod_smarc);
-
     while (1) {
         cooperative_scheduler(false);
         uint8_t pow_stable = context.power_domain_1v8_is_stable && context.power_domain_2v5_is_stable && context.power_domain_3v3_is_stable;

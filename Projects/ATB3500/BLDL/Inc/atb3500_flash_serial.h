@@ -14,9 +14,10 @@ typedef struct {
 } atb3500_flash_serial_proto_rx_t;
 
 typedef enum {
-  SERIAL_VALID     = (uint32_t)0,
-  SERIAL_BURNING   = (uint32_t)1,
-  SERIAL_EMPTY     = (uint32_t)2
+  SERIAL_VALID       = (uint32_t)0,
+  SERIAL_BURNING     = (uint32_t)1,
+  SERIAL_EMPTY       = (uint32_t)2,
+  SERIAL_FLASH_FAULT = (uint32_t)3
 } atb3500_flash_serial_status_t;
 
 typedef struct {

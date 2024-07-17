@@ -346,74 +346,65 @@ static uint8_t _hdl_reg_wait_condition(__IO uint32_t *reg, uint32_t flags, uint8
 void _hdl_hal_i2c_transfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *message) {
   hdl_i2c_client_private_t *_i2c = (hdl_i2c_client_private_t *)i2c;
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
-  i2c_periph->CTL0 &= ~I2C_CTL0_SS;
-  //i2c_periph->CTL0 |= I2C_CTL0_ACKEN;
   uint32_t tmp = 0;
   if(message->options & HDL_I2C_MESSAGE_START) {
+    i2c_periph->CTL0 &= ~I2C_CTL0_SS;
     /* send a start condition to I2C bus */
     i2c_periph->CTL0 |= I2C_CTL0_START;
     /* wait until SBSEND bit is set */
     _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_SBSEND, 1, 10);
   }
-
   if((message->options & HDL_I2C_MESSAGE_ADDR) && (i2c_periph->STAT0 & I2C_STAT0_SBSEND)) {
     /* send slave address */
     i2c_periph->DATA = (message->address << 1) | ((message->options & HDL_I2C_MESSAGE_MRSW)? I2C_RECEIVER: 0);
     /* wait until ADDSEND bit is set */
     _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_ADDSEND, 1, 10);
   }
-
-  if((i2c_periph->STAT0 & (I2C_STAT0_RBNE | I2C_STAT0_TBE | I2C_STAT0_ADDSEND)) || (i2c_periph->CTL0 & I2C_CTL0_ACKEN)) {
-    if((message->length > 0) && (message->buffer != NULL)) {
-      if(message->options & HDL_I2C_MESSAGE_MRSW) {
-        if(i2c_periph->STAT0 & I2C_STAT0_ADDSEND) {
-          i2c_periph->CTL0 |= I2C_CTL0_ACKEN; 
-          message->count = 0;
-          if((message->options & HDL_I2C_MESSAGE_NACK_LAST) || (message->length > 3)) { 
-            tmp = i2c_periph->STAT0;
-            tmp = i2c_periph->STAT1;
-            _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_ADDSEND, 0, 10);
-          }
+  if((message->length > 0) && (message->buffer != NULL)) {  
+    if(message->options & HDL_I2C_MESSAGE_MRSW) {
+      if (!(i2c_periph->STAT0 & I2C_STAT0_ADDSEND)) 
+        _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
+      if(i2c_periph->STAT0 & I2C_STAT0_ADDSEND) {
+        i2c_periph->CTL0 |= I2C_CTL0_ACKEN; 
+        message->count = 0;
+        if((message->options & HDL_I2C_MESSAGE_NACK_LAST) || (message->length > 3)) { 
+          tmp = i2c_periph->STAT0;
+          tmp = i2c_periph->STAT1;
+          _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_ADDSEND, 0, 10);
         }
-
-        if(!(i2c_periph->STAT0 & I2C_STAT0_ADDSEND)) {
-          for (uint32_t i = 0; i < message->length; i++) {
-              if((i == (message->length - 3)) && !(message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
-                //i2c_periph->CTL0 &= ~I2C_CTL0_SS;
-                break;
-              }
-              // if(!(i2c_periph->STAT0 & I2C_STAT0_BTC))
-              //   for(int i =0; i < 2000000; i++) __NOP();
-              if((i == (message->length - 1)) && (message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
-                i2c_periph->CTL0 &= ~I2C_CTL0_ACKEN;
-              }
-              /* wait until byte received */
-              _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
-              message->buffer[i] = i2c_periph->DATA;
-          }
+      }
+      if(!(i2c_periph->STAT0 & I2C_STAT0_ADDSEND)) {
+        for (uint32_t i = 0; i < message->length; i++) {
+            if((i == (message->length - 3)) && !(message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
+              break;
+            }
+            if((i == (message->length - 1)) && (message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
+              i2c_periph->CTL0 &= ~I2C_CTL0_ACKEN;
+            }
+            /* wait until byte received */
+            _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
+            message->buffer[i] = i2c_periph->DATA;
         }
-      }    
-      else {
-        if(i2c_periph->STAT1 & I2C_STAT1_TR) {
-          for (uint32_t i = 0; i < message->length; i++) {
-            _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_TBE, 1, 10);
-            i2c_periph->DATA = message->buffer[i];
-          }
+      }
+    }    
+    else {
+      if(i2c_periph->STAT1 & I2C_STAT1_TR) {
+        for (uint32_t i = 0; i < message->length; i++) {
+          _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_TBE, 1, 10);
+          i2c_periph->DATA = message->buffer[i];
         }
       }
     }
   }
-
   if(message->options & HDL_I2C_MESSAGE_STOP) {
     if((i2c_periph->STAT1 & I2C_STAT1_TR) && (message->length > 0))
       _hdl_reg_wait_condition(&i2c_periph->STAT0, I2C_STAT0_BTC, 1, 10);
     /* send stop condition to I2C bus */
     i2c_periph->CTL0 &= ~I2C_CTL0_ACKEN;
     i2c_periph->CTL0 |= I2C_CTL0_STOP;
-    // if(!(i2c->config->stretch_enable))
-    //   i2c_periph->CTL0 |= I2C_SCLSTRETCH_DISABLE;    
+    if(!(i2c->config->stretch_enable))
+      i2c_periph->CTL0 |= I2C_SCLSTRETCH_DISABLE;    
   }
-  
 }
 
 
@@ -442,6 +433,7 @@ hdl_module_state_t hdl_i2c_client(void *i2c, uint8_t enable) {
     I2C_SADDR1((uint32_t)_i2c->module.reg) |= (_i2c->config->dual_address? I2C_SADDR1_DUADEN : 0);
     I2C_CTL0((uint32_t)_i2c->module.reg) |= 
       (_i2c->config->general_call_enable? I2C_GCEN_ENABLE : I2C_GCEN_DISABLE) |
+      (_i2c->config->stretch_enable? I2C_SCLSTRETCH_ENABLE : I2C_SCLSTRETCH_DISABLE) |
       I2C_I2CMODE_ENABLE;   
     _i2c->ev_isr.context = i2c;
     _i2c->ev_isr.handler = &event_i2c_ev_isr;

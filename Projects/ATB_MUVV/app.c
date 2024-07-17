@@ -304,16 +304,16 @@ void main() {
     .length = sizeof(i2c_buffer_write_data2),
     .options =  HDL_I2C_MESSAGE_STOP,
   };
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_start_condition);
-  for(int i = 0; i < 200000; i++) __NOP();
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_addr);
-  for(int i = 0; i < 200000; i++) __NOP();
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_reg);
-  for(int i = 0; i < 200000; i++) __NOP();
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data1);
-  for(int i = 0; i < 200000; i++) __NOP();
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data2);
-  for(int i = 0; i < 200000; i++) __NOP();
+  // _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_start_condition);
+  // for(int i = 0; i < 200000; i++) __NOP();
+  // _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_addr);
+  // for(int i = 0; i < 200000; i++) __NOP();
+  // _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_reg);
+  // for(int i = 0; i < 200000; i++) __NOP();
+  // _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data1);
+  // for(int i = 0; i < 200000; i++) __NOP();
+  // _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data2);
+  // for(int i = 0; i < 200000; i++) __NOP();
   while (!(TIME_ELAPSED(time_stamp_sys_ms, 1000, hdl_timer_get(&mod_timer_ms))))
   {
 
@@ -326,9 +326,9 @@ void main() {
   };
   hdl_i2c_message_t i2c_msg_read_reg = {
     .address = 0x50,
-    .buffer = i2c_buffer_register_address,
-    .length = sizeof(i2c_buffer_register_address),
-    .options =  HDL_I2C_MESSAGE_ADDR,
+    .buffer = i2c_buffer_read_data1,
+    .length = sizeof(i2c_buffer_read_data1),
+    .options =  HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW,
   };
   hdl_i2c_message_t i2c_msg_read_data1 = {
     .address = 0x50,
@@ -343,11 +343,8 @@ void main() {
     .options =  HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
   };
   _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_start_condition);
-  for(int i = 0; i < 200000; i++) __NOP();
   _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_reg);
-  for(int i = 0; i < 200000; i++) __NOP();
   _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data1);
-  for(int i = 0; i < 200000; i++) __NOP();
   _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data2);
 #endif
 

@@ -1113,7 +1113,7 @@ hdl_i2c_client_config_t mod_i2c_config = {
 hdl_i2c_client_t mod_i2c0_client = {
   .module.init = &hdl_i2c_client,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_i2c0_scl.module, &mod_gpio_i2c0_sda.module,
-                                                 &mod_clock_apb1.module, &mod_nvic.module),
+                                                 &mod_clock_apb1.module, &mod_nvic.module, &mod_timer_ms.module),
   .module.reg = (void *)I2C0,
   .config = &mod_i2c_config,
 };

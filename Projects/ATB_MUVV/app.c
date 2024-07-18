@@ -304,21 +304,7 @@ void main() {
     .length = sizeof(i2c_buffer_write_data2),
     .options =  HDL_I2C_MESSAGE_STOP,
   };
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_start_condition);
-  for(int i = 0; i < 200000; i++) __NOP();
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_addr);
-  for(int i = 0; i < 200000; i++) __NOP();
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_reg);
-  for(int i = 0; i < 200000; i++) __NOP();
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data1);
-  for(int i = 0; i < 200000; i++) __NOP();
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data2);
-  for(int i = 0; i < 200000; i++) __NOP();
-  while (!(TIME_ELAPSED(time_stamp_sys_ms, 1000, hdl_timer_get(&mod_timer_ms))))
-  {
-
-  }
-    hdl_i2c_message_t i2c_msg_read_start_condition = {
+  hdl_i2c_message_t i2c_msg_read_start_condition = {
     .address = 0,
     .buffer = NULL,
     .length = 0,
@@ -342,17 +328,55 @@ void main() {
     .length = sizeof(i2c_buffer_read_data2),
     .options =  HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
   };
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_start_condition);
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_reg);
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data1);
-  hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data2);
 #endif
-
+  uint8_t m_cnt = 0;
   while (1)
   {
+    cooperative_scheduler(false);
+    switch (m_cnt)
+    {
+    case 0:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_start_condition))
+        m_cnt++;
+      break;
+    case 1:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_addr))
+        m_cnt++;
+      break;
+    case 2:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_reg))
+        m_cnt++;
+      break;
+    case 3:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data1))
+        m_cnt++;
+      break;
+    case 4:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data2))
+        m_cnt++;
+      break;
+    case 5:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_start_condition))
+        m_cnt++;
+      break;
+    case 6:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_reg))
+        m_cnt++;
+      break;
+    case 7:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data1))
+        m_cnt++;
+      break;
+    case 8:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data2))
+        m_cnt++;
+      break;
+    default:
+      break;
+    }
+
     if (TIME_ELAPSED(time_stamp_sys_ms, 1000, hdl_timer_get(&mod_timer_ms))){
       time_stamp_sys_ms += 1000;
-      
       hdl_gpio_toggle(&mod_gpo_led);
     }
 

@@ -152,6 +152,7 @@ hdl_i2c_message_status_t _i2c_msg_data_handler(hdl_i2c_client_private_t *i2c, hd
             break;
           }
           message->buffer[i] = i2c_periph->DATA;
+          message->transfered++;
       }
     }
   }
@@ -161,6 +162,7 @@ hdl_i2c_message_status_t _i2c_msg_data_handler(hdl_i2c_client_private_t *i2c, hd
         if(!(_hdl_reg_wait_condition(timer, &i2c_periph->STAT0, I2C_STAT0_TBE, 1, 10)))
           return result | HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
         i2c_periph->DATA = message->buffer[i];
+        message->transfered++;
       }
     }
     else {

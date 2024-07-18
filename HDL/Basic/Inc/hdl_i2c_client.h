@@ -20,16 +20,29 @@ typedef enum {
   HDL_I2C_MESSAGE_MRSW           = 0x08, /* Receiver mode if option set, else trasmitter mode */
   HDL_I2C_MESSAGE_NACK_LAST      = 0x10, /* Send NACK in the end in receiver mode */
   HDL_I2C_MESSAGE_STOP           = 0x20, /* Generate stop condition */
-} hdl_i2c_message_flags_t;
+} hdl_i2c_message_options_t;
+
+typedef enum {
+  HDL_I2C_MESSAGE_STATUS_INITIAL           = 0x0000,
+  HDL_I2C_MESSAGE_STATUS_START_ON_BUS      = 0x0001,
+  HDL_I2C_MESSAGE_STATUS_ADDR_SENT         = 0x0002,
+  HDL_I2C_MESSAGE_STATUS_DATA              = 0x0004,
+  HDL_I2C_MESSAGE_STATUS_NACK              = 0x0008,
+  HDL_I2C_MESSAGE_STATUS_STOP_ON_BUS       = 0x0010,
+  HDL_I2C_MESSAGE_FAULT_ARBITRATION_LOST   = 0x0100,
+  HDL_I2C_MESSAGE_FAULT_BUS_ERROR          = 0x0200,
+  HDL_I2C_MESSAGE_FAULT_BAD_STATE          = 0x0400,
+  HDL_I2C_MESSAGE_FAULT_MASK               = 0x7F00,
+  HDL_I2C_MESSAGE_STATUS_COMPLETE          = 0x8000
+} hdl_i2c_message_status_t;
 
 typedef struct {
-  uint16_t address;
   uint8_t *buffer;
   uint16_t length;
-  uint16_t count;
-  hdl_i2c_message_flags_t status;
-  hdl_i2c_message_flags_t options;
-  PRIVATE(hdl, HDL_I2C_HW_MESSAGE_PRV_SIZE);
+  uint16_t transfered;
+  uint16_t address;
+  hdl_i2c_message_options_t options;
+  hdl_i2c_message_status_t status;
 } hdl_i2c_message_t;
 
 typedef struct {
@@ -47,8 +60,7 @@ typedef struct {
 
 hdl_module_state_t hdl_i2c_client(void *i2c, uint8_t enable);
 
-void _hdl_hal_i2c_transfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *message);
-
+uint8_t hdl_i2c_transfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *message);
 
 
 

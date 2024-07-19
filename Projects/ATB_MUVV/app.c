@@ -29,6 +29,7 @@ void exti0_1_hundler(uint32_t event_trigger, void *sender, void *context) {
 
 void main() {
   static uint32_t time_stamp_sys_ms = 0;
+  static uint32_t time_stamp_msg_ms = 0;
   static uint32_t time_stamp_timer0_ms = 0;
   static uint32_t time_stamp_timer2_ms = 0;
   hdl_enable(&mod_timer_ms.module);
@@ -270,7 +271,7 @@ void main() {
   uint8_t i2c_buffer_write_data1[6] = {0, 1, 2, 3, 4, 5};
   uint8_t i2c_buffer_write_data2[6] = {6, 7, 8, 9, 10, 11};
 
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
+  uint8_t i2c_buffer_register_address[2] = {20, 0};
   uint8_t i2c_buffer_read_data1[6] = {0};
   uint8_t i2c_buffer_read_data2[6] = {0};
 
@@ -312,9 +313,9 @@ void main() {
   };
   hdl_i2c_message_t i2c_msg_read_reg = {
     .address = 0x50,
-    .buffer = i2c_buffer_read_data1,
-    .length = sizeof(i2c_buffer_read_data1),
-    .options =  HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW,
+    .buffer = i2c_buffer_register_address,
+    .length = sizeof(i2c_buffer_register_address),
+    .options =  HDL_I2C_MESSAGE_ADDR,
   };
   hdl_i2c_message_t i2c_msg_read_data1 = {
     .address = 0x50,
@@ -352,22 +353,32 @@ void main() {
         m_cnt++;
       break;
     case 4:
-      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data2))
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data2)) {
         m_cnt++;
+        time_stamp_msg_ms = hdl_timer_get(&mod_timer_ms); 
+      }
       break;
     case 5:
-      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_start_condition))
+      if (TIME_ELAPSED(time_stamp_msg_ms, 1000, hdl_timer_get(&mod_timer_ms)))
         m_cnt++;
       break;
     case 6:
-      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_reg))
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_start_condition))
         m_cnt++;
       break;
     case 7:
-      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data1))
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_reg))
         m_cnt++;
       break;
     case 8:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data1))
+        m_cnt++;
+      break;
+    case 9:
+      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data2))
+        m_cnt++;
+      break;
+    case 10:
       if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data2))
         m_cnt++;
       break;

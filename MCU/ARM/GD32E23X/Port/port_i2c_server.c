@@ -74,8 +74,9 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   }
   /* STOP condition */
   if(tmp & I2C_STAT0_STPDET) { 
+    if((i2c->transceiver != NULL) && (i2c->transceiver->end_of_transmission != NULL))
+      i2c->transceiver->end_of_transmission(i2c->transceiver->proto_context);
     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
-    _i2c_clear_error(i2c_periph);
   }
 }
 
@@ -127,7 +128,6 @@ hdl_module_state_t hdl_i2c_server(void *i2c, uint8_t enable) {
     I2C_CTL1((uint32_t)_i2c->module.reg) |= (I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
     I2C_CTL0((uint32_t)_i2c->module.reg) |= I2C_CTL0_I2CEN;
     i2c_ack_config(((uint32_t)_i2c->module.reg), I2C_ACK_ENABLE);
-    coroutine_add_static(&_i2c->i2c_server_task_buff, &_i2c_server_worker, (void*)_i2c);
     return HDL_MODULE_INIT_OK;
   }
   coroutine_cancel(&_i2c->i2c_server_task_buff);

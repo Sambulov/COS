@@ -177,7 +177,7 @@ static uint8_t _i2c_msg_start_handler(hdl_i2c_private_t *i2c) {
   if(i2c->wrk_state_substate == 0) {
     i2c_periph->CTL1 &= ~(I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
     i2c_ack_config(((uint32_t)i2c->module.reg), I2C_ACK_DISABLE);
-    i2c_periph->CTL0 &= ~I2C_CTL0_SS;
+    i2c_periph->CTL0 &= ~(I2C_CTL0_SS | I2C_CTL0_STOP);
     //_i2c_set_bus_to_default(i2c_periph);
     /* send a start condition to I2C bus */
     i2c_periph->CTL0 |= I2C_CTL0_START;
@@ -412,9 +412,9 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     rcu_periph_clock_enable(rcu);
     i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
     i2c_mode_addr_config((uint32_t)_i2c->module.reg, I2C_I2CMODE_ENABLE, 
-      (_i2c->config->addr_10_bits? I2C_ADDFORMAT_10BITS: I2C_ADDFORMAT_7BITS), _i2c->config->addr0);
+      (_i2c->config->addr_10_bits? I2C_ADDFORMAT_10BITS: I2C_ADDFORMAT_7BITS), (_i2c->config->addr0 << 1));
     i2c_ackpos_config((uint32_t)_i2c->module.reg, I2C_ACKPOS_CURRENT);
-    i2c_periph->SADDR1 = (_i2c->config->addr1 & 0xFE);
+    i2c_periph->SADDR1 = ((_i2c->config->addr1 << 1) & 0xFE);
     i2c_periph->SADDR1 |= (_i2c->config->dual_address? I2C_SADDR1_DUADEN : 0);
     i2c_periph->CTL0 |= 
       (_i2c->config->general_call_enable? I2C_GCEN_ENABLE : I2C_GCEN_DISABLE) |

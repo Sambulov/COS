@@ -135,6 +135,9 @@ static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_client_private_t *
   hdl_timer_t *timer = (hdl_timer_t *)i2c->module.dependencies[4];
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   if(i2c->wrk_state_substate == 1) {
+    if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
+      i2c->message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
+    }
     i2c->message->status |= (i2c->wc_state == WC_STATE_TIMEOUT)? HDL_I2C_MESSAGE_FAULT_BUS_ERROR : HDL_I2C_MESSAGE_STATUS_ADDR_SENT;
     return HDL_TRUE;
   }
@@ -216,6 +219,10 @@ static uint8_t _i2c_msg_data_transmitter_handler(hdl_i2c_client_private_t *i2c) 
   }
 
   if(i2c->wrk_state_substate == 1) { /* Awaiting TBE */
+    if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
+      i2c->message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
+      return HDL_TRUE;
+    }
     if(i2c->wc_state == WC_STATE_TIMEOUT) {
       i2c->message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
       return HDL_TRUE;
@@ -296,15 +303,15 @@ static uint8_t _i2c_client_worker(coroutine_desc_t this, uint8_t cancel, void *a
     } else {
       if(i2c->wrk_state == WRK_STATE_START)
         if(!(i2c->message->options & HDL_I2C_MESSAGE_START) || _i2c_msg_start_handler(i2c)) { i2c->wrk_state++; i2c->wrk_state_substate = 0; }
-      if(i2c->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->wrk_state = WRK_STATE_COMPLETE;
+      if(i2c->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->wrk_state = WRK_STATE_STOP;
 
       if(i2c->wrk_state == WRK_STATE_ADDR)
         if(!(i2c->message->options & HDL_I2C_MESSAGE_ADDR) || _i2c_msg_addr_handler(i2c)) { i2c->wrk_state++; i2c->wrk_state_substate = 0; }
-      if(i2c->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->wrk_state = WRK_STATE_COMPLETE;
+      if(i2c->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->wrk_state = WRK_STATE_STOP;
 
       if(i2c->wrk_state == WRK_STATE_DATA)
         if(!((i2c->message->length > 0) && (i2c->message->buffer != NULL)) || _i2c_msg_data_handler(i2c)) { i2c->wrk_state++; i2c->wrk_state_substate = 0; }
-      if(i2c->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->wrk_state = WRK_STATE_COMPLETE;
+      if(i2c->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->wrk_state = WRK_STATE_STOP;
 
       if(i2c->wrk_state == WRK_STATE_STOP)
         if(!(i2c->message->options & HDL_I2C_MESSAGE_STOP) || _i2c_msg_stop_handler(i2c)) { i2c->wrk_state++; i2c->wrk_state_substate = 0; }

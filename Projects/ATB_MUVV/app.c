@@ -21,6 +21,7 @@ extern hdl_gpio_pin_t mod_gpi_button;
 extern hdl_exti_controller_t mod_exti;
 extern hdl_nvic_t mod_nvic;
 extern hdl_i2c_client_t mod_i2c0_client;
+extern hdl_i2c_server_t mod_i2c1_server;
 
 
 void exti0_1_hundler(uint32_t event_trigger, void *sender, void *context) {
@@ -36,7 +37,8 @@ void main() {
   hdl_enable(&mod_gpo_led.module);
   hdl_enable(&mod_gpi_button.module);
   hdl_enable(&mod_exti.module);
-  hdl_enable(&mod_i2c0_client.module);
+  //hdl_enable(&mod_i2c0_client.module);
+  hdl_enable(&mod_i2c1_server.module);
   //hdl_enable(&mod_timer0_ms.module);
   //hdl_enable(&mod_timer2_ms.module);
   while (!hdl_init_complete()) {
@@ -45,8 +47,24 @@ void main() {
   hdl_delegate_t exti_test = {.context =NULL, .handler = &exti0_1_hundler};
 
   hdl_interrupt_request(&mod_nvic, HDL_NVIC_IRQ5_EXTI0_1, &exti_test);
-  
 
+  uint8_t i2c_isr_rx_buff[4] = {1, 1, 1, 1};
+  uint8_t i2c_isr_tx_buff[4] = {0x11, 0x12, 0x13, 0x14};
+
+  hdl_isr_buffer_t i2s_isr_buffer = {0};
+
+  hdl_isr_buffer_congig_t i2s_isr_buffer_config = {
+  .rx_buffer = i2c_isr_rx_buff,
+  .tx_buffer = i2c_isr_tx_buff,
+  .tx_buffer_size = sizeof(i2c_isr_tx_buff),
+  .rx_buffer_size = sizeof(i2c_isr_rx_buff),
+  };
+
+  hdl_i2c_server_set_transceiver(&mod_i2c1_server, hdl_get_isr_transceiver_handler(&i2s_isr_buffer, &i2s_isr_buffer_config));
+
+  hdl_isr_buffer_write(&i2s_isr_buffer, i2c_isr_tx_buff, sizeof(i2c_isr_tx_buff));
+  //hdl_isr_buffer_read(&i2s_isr_buffer, i2c_isr_rx_buff, sizeof(i2c_isr_rx_buff));
+  //hdl_uart_set_transceiver(&hdl_uart_0, hdl_get_isr_transceiver_handler(&uart_isr_buffer, &usart_isr_buffer_config));
   
 #ifdef TEST_1 /* Perfect message all condition inside one message */
   /* register address */

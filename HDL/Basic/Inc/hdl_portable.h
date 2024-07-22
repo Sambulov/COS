@@ -27,6 +27,7 @@
 #include "hdl_gpio.h"
 #include "hdl_spi.h"
 #include "hdl_i2c_client.h"
+#include "hdl_i2c_server.h"
 #include "hdl_uart.h"
 
 #endif // HDL_PORTABLE_H_

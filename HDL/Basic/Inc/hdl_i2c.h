@@ -54,16 +54,14 @@ typedef struct {
 
 typedef struct {
   hdl_module_t module;
-  hdl_i2c_client_config_t *config;
+  hdl_i2c_config_t *config;
   PRIVATE(hdl, HDL_I2C_CLIENT_PRV_SIZE);
-} hdl_i2c_client_t;
+} hdl_i2c_t;
 
-hdl_module_state_t hdl_i2c_client(void *i2c, uint8_t enable);
-
-uint8_t hdl_i2c_transfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *message);
-
-
-
+hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable);
+uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message);
+void hdl_i2c_set_transceiver(hdl_i2c_t *i2c, hdl_transceiver_t *transceiver);
+uint8_t hdl_i2c_can_transfer(hdl_i2c_t *i2c);
 
 
 
@@ -93,7 +91,7 @@ uint8_t hdl_i2c_transfer_message(hdl_i2c_client_t *i2c, hdl_i2c_message_t *messa
 
 // */
 
-// void hdl_i2c_client_enqueue_transaction(hdl_i2c_client_t *i2c, hdl_i2c_transaction_t *transaction);
-// void hdl_i2c_client_transaction_state(hdl_i2c_transaction_t *transaction, hdl_i2c_transaction_state_t *out_state);
+// void hdl_i2c_client_enqueue_transaction(hdl_i2c_t *i2c, hdl_i2c_transaction_t *transaction);
+// void hdl_i2c_transaction_state(hdl_i2c_transaction_t *transaction, hdl_i2c_transaction_state_t *out_state);
 
 #endif /* HDL_I2C_H_ */

@@ -9,7 +9,7 @@
 #define RK809_REG_PMIC_SYS_CFG3   ((uint16_t)(RK809_REG_OPERATIONAL_BASE + 0x00f4))
 
 typedef struct {
-  hdl_i2c_client_t i2c;
+  hdl_i2c_t i2c;
 
 } hdl_pmic_rk809_t;
 

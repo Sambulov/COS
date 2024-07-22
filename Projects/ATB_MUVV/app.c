@@ -20,8 +20,8 @@ extern hdl_gpio_pin_t mod_gpi_button;
 //extern hdl_timer_t mod_timer2_ms;
 extern hdl_exti_controller_t mod_exti;
 extern hdl_nvic_t mod_nvic;
-extern hdl_i2c_client_t mod_i2c0_client;
-extern hdl_i2c_server_t mod_i2c1_server;
+extern hdl_i2c_t mod_i2c1;
+
 
 
 void exti0_1_hundler(uint32_t event_trigger, void *sender, void *context) {
@@ -37,8 +37,7 @@ void main() {
   hdl_enable(&mod_gpo_led.module);
   hdl_enable(&mod_gpi_button.module);
   hdl_enable(&mod_exti.module);
-  //hdl_enable(&mod_i2c0_client.module);
-  hdl_enable(&mod_i2c1_server.module);
+  hdl_enable(&mod_i2c1.module);
   //hdl_enable(&mod_timer0_ms.module);
   //hdl_enable(&mod_timer2_ms.module);
   while (!hdl_init_complete()) {
@@ -60,233 +59,13 @@ void main() {
   .rx_buffer_size = sizeof(i2c_isr_rx_buff),
   };
 
-  hdl_i2c_server_set_transceiver(&mod_i2c1_server, hdl_get_isr_transceiver_handler(&i2s_isr_buffer, &i2s_isr_buffer_config));
+  hdl_i2c_set_transceiver(&mod_i2c1, hdl_get_isr_transceiver_handler(&i2s_isr_buffer, &i2s_isr_buffer_config));
 
   hdl_isr_buffer_write(&i2s_isr_buffer, i2c_isr_tx_buff, sizeof(i2c_isr_tx_buff));
   //hdl_isr_buffer_read(&i2s_isr_buffer, i2c_isr_rx_buff, sizeof(i2c_isr_rx_buff));
   //hdl_uart_set_transceiver(&hdl_uart_0, hdl_get_isr_transceiver_handler(&uart_isr_buffer, &usart_isr_buffer_config));
-  
-#ifdef TEST_1 /* Perfect message all condition inside one message */
-  /* register address */
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
-  uint8_t i2c_buffer_data[6] = {0, 1, 2, 3};
 
-  hdl_i2c_message_t i2c_msg_receive = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
-  };
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_receive);
-#endif
-
-#ifdef TEST_2 /* Start condition separated from other */
-  /* register address */
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
-  uint8_t i2c_buffer_data[6] = {0, 1, 2, 3};
-  
-  hdl_i2c_message_t i2c_msg_start_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_START,
-  };
-
-  hdl_i2c_message_t i2c_msg_receive = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options = HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
-  };
-
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_start_condition);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_receive);
-#endif
-
-#ifdef TEST_3 /* Start and STOP condition separated from other */
-  /* register address */
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
-  uint8_t i2c_buffer_data[6] = {0, 1, 2, 3};
-  
-  hdl_i2c_message_t i2c_msg_start_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_START,
-  };
-
-  hdl_i2c_message_t i2c_msg_receive = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options = HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST,
-  };
-
-  hdl_i2c_message_t i2c_msg_stop_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_STOP,
-  };
-
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_start_condition);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_receive);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_stop_condition);
-#endif
-
-#ifdef TEST_4 /* Start and STOP condition without data in other message */
-  hdl_i2c_message_t i2c_msg_start_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_START,
-  };
-  hdl_i2c_message_t i2c_msg_stop_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_STOP,
-  };
-
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_start_condition);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_stop_condition);
-#endif
-
-#ifdef TEST_5 /* Start and STOP condition in one message */
-  /* register address */
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
-  uint8_t i2c_buffer_data[6] = {0, 1, 2, 3};
-  
-  hdl_i2c_message_t i2c_msg_start_and_stop_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_STOP,
-  };
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_start_and_stop_condition);
-#endif
-
-#ifdef TEST_6 /* Start and STOP condition in one message and next perfect message */
-  /* register address */
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
-  uint8_t i2c_buffer_data[6] = {0, 1, 2, 3};
-
-  hdl_i2c_message_t i2c_msg_start_and_stop_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_STOP,
-  };
-  hdl_i2c_message_t i2c_msg_receive = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
-  };
-
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_start_and_stop_condition);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_receive);
-#endif
-
-#ifdef TEST_7    /* Double start */
-  /* register address */
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
-  uint8_t i2c_buffer_data[6] = {0, 1, 2, 3};
-
-  hdl_i2c_message_t i2c_msg_start_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_START,
-  };
-  hdl_i2c_message_t i2c_msg_write_register = {
-    .address = 0x50,
-    .buffer = i2c_buffer_register_address,
-    .length = sizeof(i2c_buffer_register_address),
-    .options = HDL_I2C_MESSAGE_ADDR,
-  };
-    hdl_i2c_message_t i2c_msg_read_data = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
-  };
-
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_start_condition);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_register);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data);
-#endif
-
-#ifdef TEST_8  /* Separate data msg */
-  /* register address */
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
-  uint8_t i2c_buffer_data[6] = {0, 1, 2, 3};
-
-
-  hdl_i2c_message_t i2c_msg_read_data_part1 = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW /*| HDL_I2C_MESSAGE_NACK_LAST */ ,
-  };
-  hdl_i2c_message_t i2c_msg_read_data_part2 = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options = HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
-  };
-
-
-
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data_part1);
-  //for(int i = 0; i < 20000;i++) __NOP();
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data_part2);
- 
-
-#endif
-
-#ifdef TEST_9 /* Separate transmiter msg */
-  /* register address */
-  uint8_t i2c_buffer_register_address[2] = {0, 10};
-  uint8_t i2c_buffer_data[6] = {0, 1, 2, 3, 4, 5};
-
-  hdl_i2c_message_t i2c_msg_start_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_START,
-  };
-  hdl_i2c_message_t i2c_msg_read_data_part1 = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options = HDL_I2C_MESSAGE_ADDR  /*| HDL_I2C_MESSAGE_NACK_LAST */ ,
-  };
-  hdl_i2c_message_t i2c_msg_read_data_part2 = {
-    .address = 0x50,
-    .buffer = i2c_buffer_data,
-    .length = sizeof(i2c_buffer_data),
-    .options = 0,
-  };
-  hdl_i2c_message_t i2c_msg_stop_condition = {
-    .address = 0,
-    .buffer = NULL,
-    .length = 0,
-    .options =  HDL_I2C_MESSAGE_STOP,
-  };
-
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_start_condition);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data_part1);
-  //for(int i = 0; i < 10000;i++) __NOP();
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data_part2);
-  _hdl_hal_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_stop_condition);
-
-#endif
-
-#ifdef TEST_10 /* Write and read with streatch */
- /* register address */
-
-  uint8_t i2c_buffer_write_data1[130] = {0, 1, 2, 3, 4, 5};
+  uint8_t i2c_buffer_write_data1[6] = {0, 1, 2, 3, 4, 5};
   uint8_t i2c_buffer_write_data2[6] = {6, 7, 8, 9, 10, 11};
 
   uint8_t i2c_buffer_register_address[2] = {20, 0};
@@ -294,115 +73,115 @@ void main() {
   uint8_t i2c_buffer_read_data2[6] = {0};
 
   hdl_i2c_message_t i2c_msg_write_start_condition = {
-    .address = 0x18,
+    .address = 0x50,
     .buffer = i2c_buffer_write_data1,
     .length = sizeof(i2c_buffer_write_data1),
-    .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
+    .options =  HDL_I2C_MESSAGE_START
   };
-  //   hdl_i2c_message_t i2c_msg_write_addr = {
-  //   .address = 0x18,
-  //   .buffer = 0,
-  //   .length = 0,
-  //   .options =  HDL_I2C_MESSAGE_ADDR,
-  // };
-  // hdl_i2c_message_t i2c_msg_write_reg = {
-  //   .address = 0x50,
-  //   .buffer = i2c_buffer_write_data1,
-  //   .length = sizeof(i2c_buffer_write_data1),
-  //   .options =  0,
-  // };
+    hdl_i2c_message_t i2c_msg_write_addr = {
+    .address = 0x50,
+    .buffer = 0,
+    .length = 0,
+    .options =  HDL_I2C_MESSAGE_ADDR,
+  };
+  hdl_i2c_message_t i2c_msg_write_reg = {
+    .address = 0x50,
+    .buffer = i2c_buffer_write_data1,
+    .length = sizeof(i2c_buffer_write_data1),
+    .options =  0,
+  };
 
-  //   hdl_i2c_message_t i2c_msg_write_data1 = {
-  //   .address = 0x50,
-  //   .buffer = i2c_buffer_write_data1,
-  //   .length = sizeof(i2c_buffer_write_data1),
-  //   .options =  0,
-  // };
-  // hdl_i2c_message_t i2c_msg_write_data2 = {
-  //   .address = 0x50,
-  //   .buffer = i2c_buffer_write_data2,
-  //   .length = sizeof(i2c_buffer_write_data2),
-  //   .options =  HDL_I2C_MESSAGE_STOP,
-  // };
-  // hdl_i2c_message_t i2c_msg_read_start_condition = {
-  //   .address = 0,
-  //   .buffer = NULL,
-  //   .length = 0,
-  //   .options =  HDL_I2C_MESSAGE_START,
-  // };
-  // hdl_i2c_message_t i2c_msg_read_reg = {
-  //   .address = 0x50,
-  //   .buffer = i2c_buffer_register_address,
-  //   .length = sizeof(i2c_buffer_register_address),
-  //   .options =  HDL_I2C_MESSAGE_ADDR,
-  // };
-  // hdl_i2c_message_t i2c_msg_read_data1 = {
-  //   .address = 0x50,
-  //   .buffer = i2c_buffer_read_data1,
-  //   .length = sizeof(i2c_buffer_read_data1),
-  //   .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW,
-  // };
-  //   hdl_i2c_message_t i2c_msg_read_data2 = {
-  //   .address = 0x50,
-  //   .buffer = i2c_buffer_read_data2,
-  //   .length = sizeof(i2c_buffer_read_data2),
-  //   .options =  HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
-  // };
-#endif
-  uint8_t m_cnt = 0;
+    hdl_i2c_message_t i2c_msg_write_data1 = {
+    .address = 0x50,
+    .buffer = i2c_buffer_write_data1,
+    .length = sizeof(i2c_buffer_write_data1),
+    .options =  0,
+  };
+  hdl_i2c_message_t i2c_msg_write_data2 = {
+    .address = 0x50,
+    .buffer = i2c_buffer_write_data2,
+    .length = sizeof(i2c_buffer_write_data2),
+    .options =  HDL_I2C_MESSAGE_STOP,
+  };
+  hdl_i2c_message_t i2c_msg_read_start_condition = {
+    .address = 0,
+    .buffer = NULL,
+    .length = 0,
+    .options =  HDL_I2C_MESSAGE_START,
+  };
+  hdl_i2c_message_t i2c_msg_read_reg = {
+    .address = 0x50,
+    .buffer = i2c_buffer_register_address,
+    .length = sizeof(i2c_buffer_register_address),
+    .options =  HDL_I2C_MESSAGE_ADDR,
+  };
+  hdl_i2c_message_t i2c_msg_read_data1 = {
+    .address = 0x50,
+    .buffer = i2c_buffer_read_data1,
+    .length = sizeof(i2c_buffer_read_data1),
+    .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW,
+  };
+    hdl_i2c_message_t i2c_msg_read_data2 = {
+    .address = 0x50,
+    .buffer = i2c_buffer_read_data2,
+    .length = sizeof(i2c_buffer_read_data2),
+    .options =  HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP,
+  };
+
+  uint8_t m_cnt = 6;
   while (1)
   {
     cooperative_scheduler(false);
+
     switch (m_cnt)
     {
-    case 0:
-      if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_start_condition))
+      case 0:
+        if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && (hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_write_start_condition)))
+          m_cnt++;
+        break;
+    case 1:
+      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_write_addr))
         m_cnt++;
       break;
-    // case 1:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_addr))
-    //     m_cnt++;
-    //   break;
-    // case 2:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_reg))
-    //     m_cnt++;
-    //   break;
-    // case 3:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data1))
-    //     m_cnt++;
-    //   break;
-    // case 4:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_write_data2)) {
-    //     m_cnt++;
-    //     time_stamp_msg_ms = hdl_timer_get(&mod_timer_ms); 
-    //   }
-    //   break;
-    // case 5:
-    //   if (TIME_ELAPSED(time_stamp_msg_ms, 1000, hdl_timer_get(&mod_timer_ms)))
-    //     m_cnt++;
-    //   break;
-    // case 6:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_start_condition))
-    //     m_cnt++;
-    //   break;
-    // case 7:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_reg))
-    //     m_cnt++;
-    //   break;
-    // case 8:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data1))
-    //     m_cnt++;
-    //   break;
-    // case 9:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data2))
-    //     m_cnt++;
-    //   break;
-    // case 10:
-    //   if(hdl_i2c_transfer_message(&mod_i2c0_client, &i2c_msg_read_data2))
-    //     m_cnt++;
-    //   break;
+    case 2:
+      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_write_reg))
+        m_cnt++;
+      break;
+    case 3:
+      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_write_data1))
+        m_cnt++;
+      break;
+    case 4:
+      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_write_data2)) {
+        m_cnt++;
+        time_stamp_msg_ms = hdl_timer_get(&mod_timer_ms); 
+      }
+      break;
+    case 5:
+      if (TIME_ELAPSED(time_stamp_msg_ms, 1000, hdl_timer_get(&mod_timer_ms)))
+        m_cnt++;
+      break;
+    case 6:
+      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_read_start_condition))
+        m_cnt++;
+      break;
+    case 7:
+      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_read_reg))
+        m_cnt++;
+      break;
+    case 8:
+      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_read_data1))
+        m_cnt++;
+      break;
+    case 9:
+      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_read_data2))
+        m_cnt++;
+      break;
     default:
       break;
+    }
+    if(i2c_msg_read_data2.status & HDL_I2C_MESSAGE_STATUS_COMPLETE) {
+      __NOP();
     }
 
     if (TIME_ELAPSED(time_stamp_sys_ms, 1000, hdl_timer_get(&mod_timer_ms))){

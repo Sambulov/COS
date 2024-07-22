@@ -1130,20 +1130,7 @@ hdl_gpio_pin_t mod_gpio_i2c1_sda = {
   .mode = &mod_gpio_i2c_1_server_mode
 };
 
-hdl_i2c_client_config_t mod_i2c_config = {
-  .addr0 = 0,
-  .addr1 = 0,
-  .addr_10_bits = 0,
-  .dtcy = I2C_DTCY_2,
-  .dual_address = 0,
-  .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
-  .ev_interrupt = HDL_NVIC_IRQ23_I2C0_EV,
-  .general_call_enable = 0,
-  .speed = 400000,
-  .stretch_enable = 0
-};
-
-hdl_i2c_client_config_t mod_i2c_server = {
+hdl_i2c_config_t mod_i2c_config = {
   .addr0 = 0x40,
   .addr1 = 0,
   .addr_10_bits = 0,
@@ -1156,21 +1143,21 @@ hdl_i2c_client_config_t mod_i2c_server = {
   .stretch_enable = 1
 };
 
-hdl_i2c_client_t mod_i2c0_client = {
-  .module.init = &hdl_i2c_client,
-  .module.dependencies = hdl_module_dependencies(&mod_gpio_i2c0_scl.module, &mod_gpio_i2c0_sda.module,
-                                                 &mod_clock_apb1.module, &mod_nvic.module, &mod_timer_ms.module),
-  .module.reg = (void *)I2C0,
-  .config = &mod_i2c_config,
-};
-
-hdl_i2c_client_t mod_i2c1_server = {
-  .module.init = &hdl_i2c_server,
+hdl_i2c_t mod_i2c1 = {
+  .module.init = &hdl_i2c,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_i2c1_scl.module, &mod_gpio_i2c1_sda.module,
                                                  &mod_clock_apb1.module, &mod_nvic.module, &mod_timer_ms.module),
   .module.reg = (void *)I2C1,
-  .config = &mod_i2c_server,
+  .config = &mod_i2c_config,
 };
+
+// hdl_i2c_client_t mod_i2c1_server = {
+//   .module.init = &hdl_i2c_server,
+//   .module.dependencies = hdl_module_dependencies(&mod_gpio_i2c1_scl.module, &mod_gpio_i2c1_sda.module,
+//                                                  &mod_clock_apb1.module, &mod_nvic.module, &mod_timer_ms.module),
+//   .module.reg = (void *)I2C1,
+//   .config = &mod_i2c_server,
+// };
 
 // hdl_i2c_client_t mod_i2c0_client = {
 //   .module.init = &hdl_i2c,

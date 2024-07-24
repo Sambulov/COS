@@ -23,14 +23,14 @@ ping_pong_data_t i2c_msg_rx_data;
 hdl_i2c_message_t *pong_msg = NULL;
 
 hdl_i2c_message_t i2c_msg_ping = {
-  .address = 0x23,
+  .address = 0x22,
   .buffer = (uint8_t*)&i2c_msg_ping_data,
   .length = sizeof(i2c_msg_ping_data),
   .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_STOP,
 };
 
 hdl_i2c_message_t i2c_msg_pong = {
-  .address = 0x23,
+  .address = 0x22,
   .buffer = (uint8_t*)&i2c_msg_pong_data,
   .length = sizeof(i2c_msg_pong_data),
   .options =  HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_STOP,

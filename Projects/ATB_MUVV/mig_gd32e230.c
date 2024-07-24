@@ -1131,7 +1131,7 @@ hdl_gpio_pin_t mod_gpio_i2c1_sda = {
 };
 
 hdl_i2c_config_t mod_i2c_config = {
-  .addr0 = 0x22,
+  .addr0 = 0x23,
   .addr1 = 0,
   .addr_10_bits = 0,
   .dtcy = I2C_DTCY_2,

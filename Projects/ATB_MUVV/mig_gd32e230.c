@@ -1056,14 +1056,14 @@ const hdl_gpio_mode_t mod_gpio_alternate_swd_mode = {
   .ospeed = GPIO_OSPEED_2MHZ,
 };
 
-const hdl_gpio_mode_t mod_gpio_i2c_mode = {
+const hdl_gpio_mode_t mod_gpio_i2c_0_mode = {
   .af = GPIO_AF_1,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_OD,
   .ospeed = GPIO_OSPEED_2MHZ
 };
 
-const hdl_gpio_mode_t mod_gpio_i2c_1_server_mode = {
+const hdl_gpio_mode_t mod_gpio_i2c_1_mode = {
   .af = GPIO_AF_5,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_OD,
@@ -1106,28 +1106,28 @@ hdl_gpio_pin_t mod_gpio_i2c0_scl = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .module.reg = (void *)GPIO_PIN_6,
-  .mode = &mod_gpio_i2c_mode
+  .mode = &mod_gpio_i2c_0_mode
 };
 
 hdl_gpio_pin_t mod_gpio_i2c0_sda = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .module.reg = (void *)GPIO_PIN_7,
-  .mode = &mod_gpio_i2c_mode
+  .mode = &mod_gpio_i2c_0_mode
 };
 
 hdl_gpio_pin_t mod_gpio_i2c1_scl = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .module.reg = (void *)GPIO_PIN_11,
-  .mode = &mod_gpio_i2c_1_server_mode
+  .mode = &mod_gpio_i2c_1_mode
 };
 
 hdl_gpio_pin_t mod_gpio_i2c1_sda = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .module.reg = (void *)GPIO_PIN_12,
-  .mode = &mod_gpio_i2c_1_server_mode
+  .mode = &mod_gpio_i2c_1_mode
 };
 
 const hdl_i2c_config_t mod_i2c_config = {

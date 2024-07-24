@@ -45,6 +45,17 @@ hdl_nvic_interrupt_t mod_irq_timer1 = {
   .priority_group = 2,
 };
 
+hdl_nvic_interrupt_t mod_irq_i2c_0_ev = {
+  .irq_type = HDL_NVIC_IRQ31_I2C0_EV,
+  .priority = 0,
+  .priority_group = 1,
+};
+hdl_nvic_interrupt_t mod_irq_i2c_0_err = {
+  .irq_type = HDL_NVIC_IRQ32_I2C0_ER,
+  .priority = 0,
+  .priority_group = 2,
+};
+
 hdl_nvic_interrupt_t mod_irq_exti_4 = {
   .irq_type = HDL_NVIC_IRQ10_EXTI4,
   .priority = 0,
@@ -69,7 +80,8 @@ hdl_nvic_t mod_nvic = {
   .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
   .module.reg = NVIC,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc),
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc,
+                              &mod_irq_i2c_0_ev, &mod_irq_i2c_0_err),
 };
 
 /***********************************************************
@@ -281,9 +293,28 @@ const hdl_gpio_mode_t hdl_gpio_spi_mode = {
     .af = GPIO_AF_5,
     .otype = GPIO_OTYPE_PP,
 };
+const hdl_gpio_mode_t mod_gpio_i2c_0_mode = {
+  .af = GPIO_AF_4,
+  .type = GPIO_MODE_AF,
+  .otype = GPIO_OTYPE_OD,
+  .ospeed = GPIO_OSPEED_2MHZ
+};
 /***********************************************************
  *                          GPIO PIN
 ***********************************************************/
+hdl_gpio_pin_t mod_gpio_i2c0_scl = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .module.reg = (void *)GPIO_PIN_6,
+  .mode = &mod_gpio_i2c_0_mode
+};
+
+hdl_gpio_pin_t mod_gpio_i2c0_sda = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .module.reg = (void *)GPIO_PIN_7,
+  .mode = &mod_gpio_i2c_0_mode
+};
 /***********************************************************
  *                          POWER ADJUST
 ***********************************************************/
@@ -745,6 +776,27 @@ hdl_spi_server_dma_t mod_spi3_server_dma = {
   .nss_iterrupt = HDL_NVIC_IRQ10_EXTI4,
 };
 
+const hdl_i2c_config_t mod_i2c_0_config = {
+  .addr0 = 0x23,
+  .addr1 = 0,
+  .addr_10_bits = 0,
+  .dtcy = I2C_DTCY_2,
+  .dual_address = 0,
+  .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
+  .ev_interrupt = HDL_NVIC_IRQ31_I2C0_EV,
+  .general_call_enable = 0,
+  .speed = 400000,
+  .stretch_enable = 1
+};
+
+hdl_i2c_t mod_i2c0 = {
+  .module.init = &hdl_i2c,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_i2c0_scl.module, &mod_gpio_i2c0_sda.module,
+                                                 &mod_clock_apb1.module, &mod_nvic.module, &mod_systick_timer_ms.module),
+  .module.reg = (void *)I2C0,
+  .config = &mod_i2c_0_config,
+};
+
 /**************************************************************
  *                        BLDL
  *************************************************************/
@@ -934,7 +986,8 @@ hdl_module_t app_module = {
         &mod_carrier_io.module,
         &mod_watchdog.module,
         &mod_serial.module,
-        &mod_spi3_server_dma.module
+        &mod_spi3_server_dma.module,
+        &mod_i2c0.module
    )
 };
 

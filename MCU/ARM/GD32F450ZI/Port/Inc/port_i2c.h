@@ -1,7 +1,7 @@
 #ifndef PORT_I2C_H_
 #define PORT_I2C_H_
 
-#define HDL_I2C_PRV_SIZE                    76
+#define HDL_I2C_PRV_SIZE                    105
 
 typedef struct {
   const uint32_t dtcy;         /* I2C_DTCY_2 or I2C_DTCY_16_9 */
@@ -15,5 +15,6 @@ typedef struct {
   const hdl_nvic_irq_n_t err_interrupt;
   const hdl_nvic_irq_n_t ev_interrupt;
 } hdl_i2c_config_t;
+
 
 #endif // PORT_I2C_H_

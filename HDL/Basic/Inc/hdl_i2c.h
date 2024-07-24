@@ -36,12 +36,12 @@ typedef enum {
 } hdl_i2c_message_status_t;
 
 typedef struct {
-  uint8_t *buffer;
-  uint16_t length;
-  uint16_t transfered;
   uint16_t address;
   hdl_i2c_message_options_t options;
   hdl_i2c_message_status_t status;
+  uint16_t transfered;
+  uint16_t length;
+  uint8_t *buffer;
 } hdl_i2c_message_t;
 
 typedef struct {

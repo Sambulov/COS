@@ -6,6 +6,7 @@
 #include "atb3500_io.h"
 #include "atb3500_watchdog.h"
 #include "atb3500_flash_serial.h"
+#include "atb3500_i2c_gateway.h"
 #include "mig.h"
 
 typedef struct {

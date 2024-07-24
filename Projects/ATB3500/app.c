@@ -77,7 +77,7 @@ void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *con
     }
 }
 
-#define RX_BUFFER_SIZE    2048
+#define RX_BUFFER_SIZE    8192
 
 void main() {
     static uint8_t buf[RX_BUFFER_SIZE];

@@ -5,9 +5,9 @@
 #define IO_CMD             0x00000000D0
 #define SERIAL_CMD         0x0000000065
 
-void spi_event_handler(uint32_t event_trigger, void *sender, void *context) {
+void spi_event_handler(uint32_t recieved, void *sender, void *context) {
     dev_context_t *cont = (dev_context_t *)context;
-    if(event_trigger > 0) {
+    if(recieved > 0) {
         uint32_t cmd = *(uint32_t *)cont->spi_buffer.data;
         uint8_t *res = NULL;
         if(cmd == WDT_CMD) {

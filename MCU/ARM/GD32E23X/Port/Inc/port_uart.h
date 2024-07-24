@@ -2,7 +2,7 @@
 #define PORT_UART_H_
 
 
-#define UART_PRIVATE_SIZE           44
+#define HDL_UART_PRV_SIZE           56
 
 typedef enum{
   HDL_UART_WORD_LEN_8BIT = USART_WL_8BIT,
@@ -37,7 +37,7 @@ typedef struct {
   hdl_uart_word_len_t word_len;
   hdl_uart_parity_t parity;
   hdl_uart_stop_bits_t stop_bits;
-  PRIVATE(hw, UART_PRIVATE_SIZE);
+  PRIVATE(hw, HDL_UART_PRV_SIZE);
 } hdl_uart_t;
 
 #endif // PORT_UART_H_

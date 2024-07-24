@@ -8,10 +8,6 @@ typedef enum {
   GD_ADC_STATE_MACHINE_WORKING,
 } gd_adc_state_machine_e;
 
-typedef struct {
-
-} gd_adc_private_t;
-
 typedef struct{
     hdl_module_t module;
     hdl_adc_resolution_e resolution;

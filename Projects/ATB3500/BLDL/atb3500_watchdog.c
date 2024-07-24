@@ -32,13 +32,6 @@ atb3500_watchdog_proto_tx_t *atb3500_watchdog_update(atb3500_watchdog_t *desc, a
     return &wdt->tx_data;
 }
 
-static uint8_t _watchdog_work(coroutine_desc_t this, uint8_t cancel, void *arg) {
-    atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)arg;
-    hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[0];
-
-    return cancel;
-}
-
 hdl_module_state_t atb3500_watchdog(void *desc, uint8_t enable) {
     if(enable) {
         atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)desc;

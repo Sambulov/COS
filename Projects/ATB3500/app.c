@@ -10,8 +10,8 @@
 
 void carrier_shutdown(dev_context_t *dev) {
     /* This pins aren`t provided, we have to notify driver about this */
-    smarc_carrier_force_state(&mod_smarc, CARRIER_POWER_ON, HDL_FALSE); 
-    smarc_carrier_force_state(&mod_smarc, CARRIER_STANDBY, HDL_FALSE);
+    hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_POWER_ON, HDL_FALSE); 
+    hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_STANDBY, HDL_FALSE);
     atb3500_power_rail_set(&rail_1v8, HDL_FALSE);
     atb3500_power_rail_set(&rail_2v5, HDL_FALSE);
     atb3500_power_rail_set(&rail_3v3, HDL_FALSE);
@@ -44,10 +44,10 @@ void power_domain_2v5_rail(uint32_t event_trigger, void *sender, void *context) 
 
 void power_domain_5v_rail(uint32_t event_trigger, void *sender, void *context) {
     if(event_trigger == PD_STATE_STABLE) {
-        smarc_carrier_force_state(&mod_smarc, POWER_GOOD, HDL_TRUE);
+        hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_POWER_GOOD, HDL_TRUE);
         /* Smarc pins aren`t provided, we have to notify driver about this states */
-        smarc_carrier_force_state(&mod_smarc, CARRIER_POWER_ON, HDL_TRUE); 
-        smarc_carrier_force_state(&mod_smarc, CARRIER_STANDBY, HDL_TRUE);
+        hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_POWER_ON, HDL_TRUE); 
+        hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_STANDBY, HDL_TRUE);
     }
 //    else 
 //        carrier_shutdown((dev_context_t *)context);
@@ -71,8 +71,8 @@ void watchdog_event_handler(uint32_t event_trigger, void *sender, void *context)
 
 void smarc_carrier_event_handler(uint32_t event_trigger, void *sender, void *context) {
     switch (event_trigger) {
-        case SMARC_EVENT_CARRIER_SLEEP_TO_STBY_CIRCUITS: carrier_stby((dev_context_t *)context); break;
-        case SMARC_EVENT_CARRIER_MODULE_RESET: carrier_shutdown((dev_context_t *)context); break;
+        case HDL_SMARC_CARRIER_EVENT_SLEEP_TO_STBY_CIRCUITS: carrier_stby((dev_context_t *)context); break;
+        case HDL_SMARC_CARRIER_EVENT_MODULE_RESET: carrier_shutdown((dev_context_t *)context); break;
         default: break;
     }
 }
@@ -93,28 +93,28 @@ void main() {
     atb3500_power_rail_event_subscribe(&rail_2v5, &power_domain_2v5_rail, &context);
     atb3500_power_rail_event_subscribe(&rail_1v8, &power_domain_1v8_rail, &context);
 
-    smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
+    hdl_smarc_carrier_event_subscribe(&mod_smarc, &smarc_carrier_event_handler, &context);
     hdl_spi_server_dma_set_handler(&mod_spi3_server_dma, &spi_event_handler, &context);
     atb3500_watchdog_event_subscribe(&mod_watchdog, &watchdog_event_handler, &context);
     hdl_spi_server_dma_set_rx_buffer(&mod_spi3_server_dma, &context.spi_buffer);
     atb3500_power_rail_set(&rail_24v, HDL_TRUE);
 
-    smarc_carrier_boot_select(&mod_smarc, SMARC_CARRIER_BOOT0 | SMARC_CARRIER_BOOT1 | SMARC_CARRIER_BOOT2);
-    smarc_carrier_boot(&mod_smarc);
+    hdl_smarc_carrier_boot_select(&mod_smarc, HDL_SMARC_CARRIER_BOOT0 | HDL_SMARC_CARRIER_BOOT1 | HDL_SMARC_CARRIER_BOOT2);
+    hdl_smarc_carrier_boot(&mod_smarc);
     while (1) {
         cooperative_scheduler(false);
         uint8_t pow_stable = context.power_domain_1v8_is_stable && context.power_domain_2v5_is_stable && context.power_domain_3v3_is_stable;
         if(!context.ready && pow_stable)
-            smarc_carrier_force_state(&mod_smarc, CARRIER_READY, HDL_TRUE);
+            hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_READY, HDL_TRUE);
         else if(context.ready && !pow_stable) 
-            smarc_carrier_force_state(&mod_smarc, CARRIER_READY, HDL_FALSE);
+            hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_READY, HDL_FALSE);
 
         if(context.restart_delay != 0) {
             uint32_t time_now = hdl_timer_get(&mod_systick_timer_ms);
             if (TIME_ELAPSED(context.time_stamp, context.restart_delay, time_now)) {
                 context.restart_delay = 0;
                 atb3500_power_rail_set(&rail_5v, HDL_TRUE);
-                smarc_carrier_boot(&mod_smarc);
+                hdl_smarc_carrier_boot(&mod_smarc);
             }
         }
     }

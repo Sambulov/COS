@@ -18,15 +18,14 @@ typedef struct {
   hdl_btn_output_state_t output_state;
   uint32_t output_change_time;
   uint32_t input_change_time;
-  __linked_list_object__;
+  coroutine_t button_worker;
 } hdl_button_private_t;
 
 _Static_assert(sizeof(hdl_button_private_t) == sizeof(hdl_button_t), "In hdl_button.h data structure size of hdl_button_t doesn't match, check HDL_BUTTON_DESC_SIZE");
 _Static_assert(offsetof(hdl_button_private_t, event) == offsetof(hdl_button_t, event), "In hdl_button.h hdl_button_t properties order doesn't match");
 
-
-static void _button_handler(LinkedListItem_t *item, void *arg) {
-  hdl_button_private_t *btn = linked_list_get_object(hdl_button_private_t, item);
+static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
+  hdl_button_private_t *btn = (hdl_button_private_t *)arg;
   hdl_gpio_pin_t *btn_gpio = (hdl_gpio_pin_t *)btn->module.dependencies[0];
   hdl_timer_t *btn_timer = (hdl_timer_t *)btn->module.dependencies[1];
   switch (btn->output_state) {
@@ -92,27 +91,19 @@ static void _button_handler(LinkedListItem_t *item, void *arg) {
       }
       break;
   }
-}
-
-static uint8_t _buttons_handler(coroutine_desc_t this, uint8_t cancel, void *arg) {
-  linked_list_t btn_list = (linked_list_t)arg;
-  linked_list_do_foreach(btn_list, &_button_handler, NULL);
-  return cancel || (btn_list == NULL);
+  return cancel;
 }
 
 hdl_module_state_t hdl_button(void *desc, uint8_t enable) {
-  static coroutine_desc_static_t buttons_worker;
-  static linked_list_t buttons;
   hdl_button_private_t *btn = (hdl_button_private_t *)desc;
   if(desc != NULL) {
     if(enable) {
       btn->input_state = HDL_BTN_RELEASED;
       btn->output_state = HDL_BTN_O_DEFAULT;
-      linked_list_insert_last(&buttons, linked_list_item(btn));
-      coroutine_add_static(&buttons_worker, &_buttons_handler, (void*)buttons);
+      coroutine_add(&btn->button_worker, &_button_handler, desc);
       return HDL_MODULE_INIT_OK;
     }
-    linked_list_unlink(linked_list_item(btn));
+    coroutine_cancel(&btn->button_worker);
   }
   return HDL_MODULE_DEINIT_OK;
 }

@@ -52,7 +52,7 @@ typedef enum {
     PD_STATE_FAULT
 } power_domain_state_e;
 
-#define ATB3500_POWER_RAIL_PRV_SIZE      ((6 + POWER_DOMAIN_ADC_FILTER_LENGH) * 4) + 16
+#define ATB3500_POWER_RAIL_PRV_SIZE      ((6 + POWER_DOMAIN_ADC_FILTER_LENGH) * 4) + 28
 
 
 #define ATB3500_POWER_RAIL_TIMER            0

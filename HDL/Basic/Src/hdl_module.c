@@ -27,7 +27,7 @@ static linked_list_t dev_init_queue = NULL;
 static linked_list_t dev_list = NULL;
 static linked_list_t dev_deinit_queue = NULL;
 
-static uint8_t _hdl_hw_work(CoroutineDesc_t this, uint8_t cancel, void *arg) {
+static uint8_t _hdl_work(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_module_state_t res;
   hdl_module_private_t *dev = linked_list_get_object(hdl_module_private_t, dev_deinit_queue);
   if(dev != NULL) {
@@ -81,14 +81,14 @@ static void _hdl_hw_enable_parents(hdl_module_t *desc) {
 }
 
 void hdl_enable(hdl_module_t *desc) {
-  static coroutine_desc_static_t hw_worker;
+  static coroutine_t hdl_worker;
   hdl_module_private_t *module = (hdl_module_private_t *)desc;
   hdl_module_state_t res = hdl_state(desc);
   if(res < HDL_MODULE_INIT_OK) {
     _hdl_hw_enable_parents(desc);
     module->dependents = 1;
     linked_list_insert_last(&dev_init_queue, linked_list_item(module));
-    coroutine_add_static(&hw_worker, &_hdl_hw_work, NULL);
+    coroutine_add(&hdl_worker, &_hdl_work, NULL);
   }
   else
     module->dependents++; /* check overlap */

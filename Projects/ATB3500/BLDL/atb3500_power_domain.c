@@ -19,7 +19,7 @@ typedef struct {
     uint8_t state;
     uint8_t filter_values_amount;
     uint8_t filter_value_cursor;
-    __linked_list_object__;
+    coroutine_t worker;
 } atb3500_power_rail_private_t;
 
 _Static_assert(sizeof(atb3500_power_rail_private_t) == sizeof(atb3500_power_rail_t), "In atb3500_power_domain.h data structure size of atb3500_power_rail_t doesn't match, check ATB3500_POWER_RAIL_PRV_SIZE");
@@ -96,8 +96,8 @@ static void _feed_rail_filter(atb3500_power_rail_private_t *rail, uint32_t value
     rail->voltage = array_median(rail->voltage_filter, *amount);
 }
 
-static void _power_rail_handler(linked_list_item_t *item, void *arg) {
-    atb3500_power_rail_private_t *rail = linked_list_get_object(atb3500_power_rail_private_t, item);
+static uint8_t _power_rail_work(coroutine_t *this, uint8_t cancel, void *arg) {
+    atb3500_power_rail_private_t *rail = (atb3500_power_rail_private_t *) arg;
     hdl_adc_t *rail_adc = (hdl_adc_t *)rail->module.dependencies[ATB3500_POWER_RAIL_ADC];
     uint32_t adc_current_age = hdl_adc_get_age(rail_adc);
     atb3500_power_rail_private_t *src_rail = (atb3500_power_rail_private_t *)rail->module.dependencies[ATB3500_POWER_RAIL_SOURSE_RAIL];
@@ -145,18 +145,10 @@ static void _power_rail_handler(linked_list_item_t *item, void *arg) {
     if((state_current != rail->state) && (rail->event != NULL))
         rail->event(rail->state, arg, rail->event_context);
     rail->adc_age = adc_current_age;
-}
-
-
-static uint8_t _power_rail_work(coroutine_desc_t this, uint8_t cancel, void *arg) {
-  linked_list_t rails = (linked_list_t)arg;
-  linked_list_do_foreach(rails, &_power_rail_handler, NULL);
   return cancel;
 }
 
 hdl_module_state_t atb3500_power_rail(void *desc, uint8_t enable) {
-    static coroutine_desc_static_t power_task_buf;
-    static linked_list_t rails = NULL;
     atb3500_power_rail_private_t *rail = (atb3500_power_rail_private_t*)desc;
     if(enable) {
         rail->state = PD_STATE_OFF;
@@ -164,11 +156,10 @@ hdl_module_state_t atb3500_power_rail(void *desc, uint8_t enable) {
         rail->filter_values_amount = 0;
         rail->adc_age = hdl_adc_get_age((hdl_adc_t *)rail->module.dependencies[ATB3500_POWER_RAIL_ADC]);
         rail->timestamp = hdl_timer_get((hdl_timer_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER]);
-        linked_list_insert_last(&rails, linked_list_item(rail));
-        coroutine_add_static(&power_task_buf, &_power_rail_work, (void *)rails);
+        coroutine_add(&rail->worker, &_power_rail_work, desc);
         return HDL_MODULE_INIT_OK;
     }
-    linked_list_unlink(linked_list_item(rail));
+    coroutine_cancel(&rail->worker);
     return HDL_MODULE_DEINIT_OK;
 }
 

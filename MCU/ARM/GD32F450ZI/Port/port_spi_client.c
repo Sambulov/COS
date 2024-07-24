@@ -28,7 +28,7 @@ typedef struct {
   hdl_spi_client_config_t *config;
   hdl_nvic_irq_n_t spi_iterrupt;
   /* private */
-  __linked_list_object__;
+  coroutine_t worker;
   hdl_delegate_t spi_isr;
   hdl_spi_message_private_t *current_msg;
   linked_list_t spi_ch_list;
@@ -108,8 +108,8 @@ static uint8_t _spi_client_channel_handler(hdl_spi_client_ch_private_t *ch, hdl_
   return 0;
 }
 
-static void _spi_client_handler(linked_list_item_t *spi_item, void *arg) {
-  hdl_spi_client_private_t *spi = linked_list_get_object(hdl_spi_client_private_t, spi_item);
+static uint8_t _spi_client_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  hdl_spi_client_private_t *spi = (hdl_spi_client_private_t *) arg;
   if(!linked_list_contains(spi->spi_ch_list, spi->curent_spi_ch))
     spi->curent_spi_ch = NULL;
   if(spi->curent_spi_ch == NULL && spi->spi_ch_list != NULL) {
@@ -118,17 +118,10 @@ static void _spi_client_handler(linked_list_item_t *spi_item, void *arg) {
   if(spi->curent_spi_ch != NULL && _spi_client_channel_handler(linked_list_get_object(hdl_spi_client_ch_private_t, spi->curent_spi_ch), spi)) {
       spi->curent_spi_ch = linked_list_find_next_overlap(spi->curent_spi_ch, NULL, NULL);
   }  
-}
-
-static uint8_t _spi_client_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
-  linked_list_t spis = (linked_list_t)arg;
-  linked_list_do_foreach(spis, &_spi_client_handler, NULL);
   return cancel;
 }
 
 hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable) {
-  static coroutine_desc_static_t spi_client_task_buff;
-  static linked_list_t spis = NULL;
   hdl_spi_client_private_t *spi = (hdl_spi_client_private_t*)desc;
   rcu_periph_enum rcu;
   switch ((uint32_t)spi->module.reg) {
@@ -142,7 +135,6 @@ hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable) {
   }
   spi_i2s_deinit((uint32_t)spi->module.reg);
   if(enable) {
-    linked_list_insert_last(&spis, linked_list_item(spi));
     rcu_periph_clock_enable(rcu);
     spi_parameter_struct init;
     init.device_mode = SPI_MASTER;
@@ -161,10 +153,10 @@ hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable) {
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->module.dependencies[4];
     hdl_interrupt_request(ic, spi->spi_iterrupt, &spi->spi_isr);
     spi_enable((uint32_t)spi->module.reg);
-    coroutine_add_static(&spi_client_task_buff, &_spi_client_worker, (void *)spis);
+    coroutine_add(&spi->worker, &_spi_client_worker, desc);
     return HDL_MODULE_INIT_OK;
   }
-  linked_list_unlink(linked_list_item(spi));
+  coroutine_cancel(&spi->worker);
   rcu_periph_clock_disable(rcu);
   return HDL_MODULE_DEINIT_OK;
 }

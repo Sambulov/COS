@@ -59,7 +59,7 @@ typedef struct {
   /* private */
   hdl_delegate_t ev_isr;
   hdl_delegate_t er_isr;
-  coroutine_desc_static_t i2c_client_task_buff;
+  coroutine_t i2c_worker;
   hdl_i2c_message_t *message;
   uint32_t wc_timeout;
   uint32_t wc_ts;
@@ -350,7 +350,7 @@ static hdl_i2c_message_status_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
 
 
 
-static uint8_t _i2c_client_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
+static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *) arg;
   if(i2c->message != NULL) {
     if(i2c->wc_state == WC_STATE_AWAITING) {
@@ -432,10 +432,10 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     i2c_periph->CTL0 |= I2C_CTL0_I2CEN;
     i2c_ack_config(((uint32_t)_i2c->module.reg), ((_i2c->config->addr0 == 0) ? I2C_ACK_DISABLE : I2C_ACK_ENABLE));
     _i2c->wc_state = WC_STATE_HIT;
-    coroutine_add_static(&_i2c->i2c_client_task_buff, &_i2c_client_worker, (void*)_i2c);
+    coroutine_add(&_i2c->i2c_worker, &_i2c_client_worker, (void*)_i2c);
     return HDL_MODULE_INIT_OK;
   }
-  coroutine_cancel(&_i2c->i2c_client_task_buff);
+  coroutine_cancel(&_i2c->i2c_worker);
   rcu_periph_clock_disable(rcu);
   return HDL_MODULE_DEINIT_OK;
 }

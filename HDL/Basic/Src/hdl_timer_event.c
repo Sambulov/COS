@@ -15,13 +15,13 @@ typedef struct {
   uint32_t time_stamp;
   uint32_t delay;
   hdl_timer_event_mode_t mode;
-  coroutine_desc_static_t timer_events_worker;
+  coroutine_t timer_events_worker;
 } hdl_timer_event_private_t;
 
 _Static_assert(sizeof(hdl_timer_event_private_t) == sizeof(hdl_timer_event_t), "In hdl_timer_event.h data structure size of hdl_button_t doesn't match, check HDL_TIMER_EVENT_PRV_SIZE");
 _Static_assert(offsetof(hdl_timer_event_private_t, event) == offsetof(hdl_timer_event_t, event), "In hdl_timer_event.h hdl_timer_event_t properties order doesn't match");
 
-static uint8_t _timer_events_handler(coroutine_desc_t this, uint8_t cancel, void *arg) {
+static uint8_t _timer_events_handler(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_timer_event_private_t *timer_event = (hdl_timer_event_private_t *)arg;
   hdl_timer_t *timer = (hdl_timer_t *)timer_event->module.dependencies[0];
   if(timer_event->mode != HDL_TIMER_EVENT_IDLE) {
@@ -42,7 +42,7 @@ hdl_module_state_t hdl_timer_event(void *desc, uint8_t enable) {
   if(desc != NULL) {
     if(enable) {
       timer_event->mode = HDL_TIMER_EVENT_IDLE;
-      coroutine_add_static(&timer_event->timer_events_worker, &_timer_events_handler, (void*)timer_event);
+      coroutine_add(&timer_event->timer_events_worker, &_timer_events_handler, (void*)timer_event);
       return HDL_MODULE_INIT_OK;
     }
     coroutine_cancel(&timer_event->timer_events_worker);

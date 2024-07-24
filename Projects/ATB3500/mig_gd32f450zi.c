@@ -857,8 +857,8 @@ atb3500_power_rail_t rail_1v8 = {
     .stabilization_delay = POWER_RAIL_STAB_DELAY_1V8,
 };
 
-bldl_smarc_carrier_t mod_smarc = {
-    .module.init = &bldl_smarc_carrier,
+hdl_smarc_carrier_t mod_smarc = {
+    .module.init = &hdl_smarc_carrier,
     .module.dependencies = hdl_module_dependencies(
         &hdl_null_module /* power good */,
         &hdl_null_module /* carrier_power_on */,

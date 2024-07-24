@@ -18,7 +18,7 @@ extern atb3500_power_rail_t rail_5v;
 extern atb3500_power_rail_t rail_3v3;
 extern atb3500_power_rail_t rail_2v5;
 extern atb3500_power_rail_t rail_1v8;
-extern bldl_smarc_carrier_t mod_smarc;
+extern hdl_smarc_carrier_t mod_smarc;
 extern hdl_button_t power_button;
 extern atb3500_io_t mod_carrier_io;
 extern atb3500_watchdog_t mod_watchdog;

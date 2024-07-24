@@ -20,13 +20,13 @@ typedef struct {
   /* private */
   hdl_delegate_t uart_isr;
   hdl_transceiver_t *transceiver;
-  __linked_list_object__;
+  coroutine_t worker;
 } hdl_uart_private_t;
 
-_Static_assert(sizeof(hdl_uart_private_t) == sizeof(hdl_uart_t), "In port_uart.h data structure size of hdl_uart_t doesn't match, check UART_PRIVATE_SIZE");
+_Static_assert(sizeof(hdl_uart_private_t) == sizeof(hdl_uart_t), "In port_uart.h data structure size of hdl_uart_t doesn't match, check HDL_UART_PRV_SIZE");
 
-static void _uart_handler(linked_list_item_t *uart_item, void *arg) {
-  hdl_uart_private_t *uart = linked_list_get_object(hdl_uart_private_t, uart_item);
+static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  hdl_uart_private_t *uart = (hdl_uart_private_t *) arg;
   if((uart->transceiver != NULL) && !(USART_CTL0((uint32_t)uart->module.reg) & USART_CTL0_TBEIE)) {
     uint8_t wl = (USART_CTL0((uint32_t)uart->module.reg) & USART_CTL0_WL)? 2: 1;
     if((uart->transceiver->tx_available != NULL) && (uart->transceiver->tx_empty != NULL) && 
@@ -34,11 +34,6 @@ static void _uart_handler(linked_list_item_t *uart_item, void *arg) {
       USART_CTL0((uint32_t)uart->module.reg) |= USART_CTL0_TBEIE;
     }
   }
-}
-
-static uint8_t _uart_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
-  linked_list_t uarts = (linked_list_t)arg;
-  linked_list_do_foreach(uarts, &_uart_handler, NULL);
   return cancel;
 }
 
@@ -111,8 +106,6 @@ static void _usart_baudrate_set(hdl_uart_private_t *uart) {
 }
 
 hdl_module_state_t hdl_uart(void *desc, uint8_t enable) {
-  static coroutine_desc_static_t uart_task_buf;
-  static linked_list_t uarts = NULL;
   hdl_uart_private_t *uart = (hdl_uart_private_t*)desc;
   rcu_periph_enum rcu;
   switch ((uint32_t)uart->module.reg) {
@@ -126,7 +119,6 @@ hdl_module_state_t hdl_uart(void *desc, uint8_t enable) {
     return HDL_MODULE_INIT_FAILED;
   }
   usart_deinit((uint32_t)uart->module.reg);
-
   if(enable) {
     rcu_periph_clock_enable(rcu);
     _usart_baudrate_set(uart);
@@ -138,8 +130,7 @@ hdl_module_state_t hdl_uart(void *desc, uint8_t enable) {
     USART_CTL0((uint32_t)uart->module.reg) |= USART_CTL0_RBNEIE | USART_CTL0_PERRIE;
     USART_CTL2((uint32_t)uart->module.reg) |= USART_CTL2_ERRIE;
     usart_enable((uint32_t)uart->module.reg);
-    linked_list_insert_last(&uarts, linked_list_item(uart));
-    coroutine_add_static(&uart_task_buf, &_uart_worker, (void *)uarts);
+    coroutine_add(&uart->worker, &_uart_worker, desc);
     uart->transceiver = NULL;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)uart->module.dependencies[3];
     uart->uart_isr.context = desc;
@@ -148,7 +139,7 @@ hdl_module_state_t hdl_uart(void *desc, uint8_t enable) {
     if(hdl_interrupt_request(ic, uart->iterrupt, &uart->uart_isr))
       return HDL_MODULE_INIT_OK;
   }
-  linked_list_unlink(linked_list_item(uart));
+  coroutine_cancel(&uart->worker);
   rcu_periph_clock_disable(rcu);
   return HDL_MODULE_DEINIT_OK;
 }

@@ -11,7 +11,7 @@ typedef struct {
   hdl_nvic_irq_n_t spi_iterrupt;
   hdl_nvic_irq_n_t nss_iterrupt;
   /* private */
-  __linked_list_object__;
+  coroutine_t worker;
   hdl_basic_buffer_t *rx_mem;
   uint32_t received;
   hdl_delegate_t spi_isr;
@@ -50,11 +50,6 @@ void hdl_spi_server_dma_set_handler(hdl_spi_server_dma_t *desc, hdl_event_handle
   }
 }
 
-static void _spi_reset_dma() {
-
-}
-
-
 uint8_t hdl_spi_server_dma_set_rx_buffer(hdl_spi_server_dma_t *desc, hdl_basic_buffer_t *buffer) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)desc;
   if((desc != NULL) && (hdl_state(&desc->module) == HDL_MODULE_INIT_OK)) {
@@ -86,8 +81,8 @@ uint8_t hdl_spi_server_dma_set_tx_data(hdl_spi_server_dma_t *desc, hdl_basic_buf
   return HDL_FALSE;
 }
 
-static void _spi_server_dma_handler(linked_list_item_t *spi_item, void *arg) {
-  hdl_spi_server_dma_private_t *spi = linked_list_get_object(hdl_spi_server_dma_private_t, spi_item);
+static uint8_t _spi_server_dma_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t *) arg;
   if(spi->received != 0) {
     if(spi->spi_cb != NULL) {
       spi->spi_cb(spi->received, spi, spi->context);
@@ -98,17 +93,10 @@ static void _spi_server_dma_handler(linked_list_item_t *spi_item, void *arg) {
       hdl_dma_run(dma_rx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->rx_mem->data , (uint32_t)spi->rx_mem->size);
     }
   }
-}
-
-static uint8_t _spi_server_dma_worker(coroutine_desc_t this, uint8_t cancel, void *arg) {
-  linked_list_t spis = (linked_list_t)arg;
-  linked_list_do_foreach(spis, &_spi_server_dma_handler, NULL);
   return cancel;
 }
 
 hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable) {
-  static coroutine_desc_static_t spi_client_task_buff;
-  static linked_list_t spis = NULL;
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)desc;
   rcu_periph_enum rcu;
   switch ((uint32_t)spi->module.reg) {
@@ -140,11 +128,10 @@ hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable) {
     spi->received = 0;
     SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMATEN | SPI_CTL1_DMAREN;
     spi_enable((uint32_t)spi->module.reg);
-    linked_list_insert_last(&spis, linked_list_item(spi));
-    coroutine_add_static(&spi_client_task_buff, &_spi_server_dma_worker, (void *)spis);
+    coroutine_add(&spi->worker, &_spi_server_dma_worker, desc);
     return HDL_MODULE_INIT_OK;
   }
-  linked_list_unlink(linked_list_item(spi));
+  coroutine_cancel(&spi->worker);
   rcu_periph_clock_disable(rcu);
   return HDL_MODULE_DEINIT_OK;
 }

@@ -1235,18 +1235,18 @@ hdl_exti_t mod_nvic_exti_line_15 = {
     .mode = &mod_gpio_i2c_mode
   };
 
-  const hdl_i2c_client_hw_t mod_i2c_config = {
+  hdl_i2c_config_t mod_i2c_config = {
     .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
     .ev_interrupt = HDL_NVIC_IRQ23_I2C0_EV,
     .dtcy = I2C_DTCY_2,
     .speed = 400000
   };
 
-  hdl_i2c_client_t mod_i2c0_client = {
+  hdl_i2c_t mod_i2c0_client = {
     .module.init = &hdl_i2c,
     .module.reg = (void *)I2C0,
     .module.dependencies = hdl_module_dependencies(&mod_gpio_soc_scl.module, &mod_gpio_soc_sda.module, &mod_clock_apb1.module, &mod_nvic.module),
-    .hw_conf = &mod_i2c_config,
+    .config = &mod_i2c_config,
   };
 
 #endif

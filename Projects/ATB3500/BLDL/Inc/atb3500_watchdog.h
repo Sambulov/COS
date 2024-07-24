@@ -3,7 +3,7 @@
 
 #define ATB3500_WATCHDOG_RESET_MAGIC           ((uint32_t)(0x17AF61EF))
 #define ATB3500_WATCHDOG_CONFIG_MAGIC          ((uint32_t)(0xBADFEED0))
-#define ATB3500_WATCHDOG_PRV_SIZE              36
+#define ATB3500_WATCHDOG_PRV_SIZE              40
 
 #define ATB3500_WATCHDOG_OVN                   ((uint32_t)(0x12345678))
 

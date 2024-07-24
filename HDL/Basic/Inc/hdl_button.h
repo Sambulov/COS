@@ -39,4 +39,4 @@ uint8_t hdl_btn_sw_press(hdl_button_t *btn);
 uint8_t hdl_btn_sw_click(hdl_button_t *btn);
 uint8_t hdl_btn_sw_release(hdl_button_t *btn);
 
-#endif // HDL_BUTTON_H_
+#endif /* HDL_BUTTON_H_ */

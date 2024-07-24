@@ -32,7 +32,7 @@ static inline void *__LinkedListCalcObjPtr(size_t llOffset, void *llPtr) { retur
 	LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t xList, LinkedListMatch_t pfMatch, void *pxMatchArg);
 	LinkedListItem_t *pxLinkedListFindNextOverlap(LinkedListItem_t *pxCurrentItem, LinkedListMatch_t pfMatch, void *pxMatchArg);
 	LinkedListItem_t *pxLinkedListFindNextNoOverlap(LinkedListItem_t *pxCurrentItem, LinkedListMatch_t pfMatch, void *pxMatchArg);
-	void vLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg);
+	uint32_t vLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg);
 	void vLinkedListDoWhile(LinkedList_t xList, LinkedListMatch_t fAction, void *pxArg);
 	void vLinkedListInsert(LinkedList_t *pxList, LinkedListItem_t *pxItem, ListItemComparer_t pfCmp);
 	static inline void vLinkedListInsertLast(LinkedList_t *pxList, LinkedListItem_t *pxItem) {
@@ -61,7 +61,7 @@ typedef LinkedListMatch_t linked_list_match_t;
 linked_list_item_t *linked_list_find_first(linked_list_t linked_list, linked_list_match_t match_fn, void *search_args);
 linked_list_item_t *linked_list_find_next_overlap(linked_list_item_t *current, linked_list_match_t match_fn, void *search_args);
 linked_list_item_t *linked_list_find_next_no_overlap(linked_list_item_t *current, linked_list_match_t match_fn, void *search_args);
-void linked_list_do_foreach(linked_list_t linked_list, linked_list_action_t action_fn, void *arg);
+uint32_t linked_list_do_foreach(linked_list_t linked_list, linked_list_action_t action_fn, void *arg);
 void linked_list_insert(linked_list_t *linked_list_ptr, linked_list_item_t *item, list_item_comparer_t comparer_fn);
 void linked_list_insert_last(linked_list_t *linked_list_ptr, linked_list_item_t *item);
 void linked_list_unlink(linked_list_item_t *item);

@@ -23,7 +23,8 @@ static void _call_isr(IRQn_Type irq, hdl_nvic_interrupt_t **isrs, uint32_t event
     while (*isrs != NULL) {
       if((*isrs)->irq_type == irq) {
         hdl_nvic_interrupt_private_t *isr = (hdl_nvic_interrupt_private_t *)*isrs;
-        hdl_event_raise(&isr->event, __ic, event);
+        if(!hdl_event_raise(&isr->event, __ic, event))
+          NVIC_DisableIRQ(irq);
         return;
       }
       isrs++;

@@ -32,7 +32,6 @@ typedef enum {
   HDL_I2C_MESSAGE_FAULT_ARBITRATION_LOST   = 0x0100,
   HDL_I2C_MESSAGE_FAULT_BUS_ERROR          = 0x0200,
   HDL_I2C_MESSAGE_FAULT_BAD_STATE          = 0x0400,
-  //HDL_I2C_MESSAGE_FAULT_MASK               = 0x7F00,
   HDL_I2C_MESSAGE_STATUS_COMPLETE          = 0x8000
 } hdl_i2c_message_status_t;
 
@@ -55,7 +54,7 @@ typedef struct {
 typedef struct {
   hdl_module_t module;
   hdl_i2c_config_t *config;
-  PRIVATE(hdl, HDL_I2C_CLIENT_PRV_SIZE);
+  PRIVATE(hdl, HDL_I2C_PRV_SIZE);
 } hdl_i2c_t;
 
 hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable);

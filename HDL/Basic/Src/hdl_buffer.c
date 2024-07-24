@@ -9,7 +9,7 @@ typedef struct {
 
 _Static_assert(sizeof(hdl_isr_buffer_private_t) == sizeof(hdl_isr_buffer_t), "In hdl_isr_buffer.h data structure size of hdl_isr_buffer_private_t doesn't match, check HDL_ISR_BUFFER_PRIVATE_SIZE");
 
-int32_t hdl_isr_buffer_rx_cb_t (void *proto, uint8_t *data, uint16_t count) {
+uint32_t hdl_isr_buffer_rx_cb_t (void *proto, uint8_t *data, uint32_t count) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)proto;
   if(buf->rx_buf.pucBuffer != NULL) {
     uint16_t i = count;
@@ -21,7 +21,7 @@ int32_t hdl_isr_buffer_rx_cb_t (void *proto, uint8_t *data, uint16_t count) {
   return count;
 }
 
-int32_t hdl_isr_buffer_tx_cb_t (void *proto, uint8_t *data, uint16_t count) {
+uint32_t hdl_isr_buffer_tx_cb_t (void *proto, uint8_t *data, uint32_t count) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)proto;
   if(buf->tx_buf.pucBuffer != NULL) {
     uint16_t av = scb_available(&buf->tx_buf);
@@ -38,15 +38,15 @@ int32_t hdl_isr_buffer_tx_cb_t (void *proto, uint8_t *data, uint16_t count) {
   return count;
 }
 
-int32_t hdl_isr_buffer_rx_av(void *proto) {
+uint32_t hdl_isr_buffer_rx_av(void *proto) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)proto;
   if(buf->rx_buf.pucBuffer != NULL) {
     return scb_available_free(&buf->rx_buf);
   }
-  return 0xFFFF;
+  return -1;
 }
 
-int32_t hdl_isr_buffer_tx_av(void *proto) {
+uint32_t hdl_isr_buffer_tx_av(void *proto) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)proto;
   if(buf->tx_buf.pucBuffer != NULL) {
     return scb_available(&buf->tx_buf);
@@ -58,7 +58,7 @@ void hdl_isr_buffer_eot(void *proto) {
 
 }
 
-hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_isr_buffer_congig_t *cnf) {
+hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_isr_buffer_config_t *cnf) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)desc;
   if(buf != NULL) {
     vScbInit(&buf->rx_buf, NULL, 0);

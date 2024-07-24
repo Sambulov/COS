@@ -1,7 +1,7 @@
 #ifndef PORT_I2C_H_
 #define PORT_I2C_H_
 
-#define HDL_I2C_CLIENT_PRV_SIZE                    105
+#define HDL_I2C_PRV_SIZE                    105
 
 typedef struct {
   const uint32_t dtcy;         /* I2C_DTCY_2 or I2C_DTCY_16_9 */

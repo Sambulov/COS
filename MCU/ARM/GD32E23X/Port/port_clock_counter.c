@@ -62,7 +62,7 @@ hdl_module_state_t hdl_clock_counter(void *desc, const uint8_t enable) {
   /* TODO init timers */
 }
 
-uint32_t hdl_clock_counter_get_count(hdl_clock_counter_t *desc) {
+uint32_t hdl_clock_counter_get(hdl_clock_counter_t *desc) {
   hdl_clock_counter_t *counter = (hdl_clock_counter_t *)desc;
   if(hdl_state(&counter->module) == HDL_MODULE_INIT_OK) {
     if((uint32_t)counter->module.reg == (uint32_t)SysTick) {

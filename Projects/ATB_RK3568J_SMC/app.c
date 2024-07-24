@@ -348,7 +348,6 @@ hdl_button_t btn = {
 hdl_timer_event_t timer_with_event = {
   .module.dependencies = hdl_module_dependencies(&mod_timer_ms.module),
   .module.init = &hdl_timer_event,
-  .delay = 3000,
 };
 
 hdl_gpio_mode_t hdl_gpio_mode_uart_0_tx = {
@@ -437,7 +436,7 @@ void test() {
 
   //hdl_dma_run(&mod_m2m_dma_ch, (uint32_t)&arr1[0], (uint32_t)&arr1[5], 20);
 
-  hdl_isr_buffer_congig_t usart_isr_buffer_config = {
+  hdl_isr_buffer_config_t usart_isr_buffer_config = {
   .rx_buffer = uart_rx_buff,
   .tx_buffer = uart_tx_buff,
   .tx_buffer_size = sizeof(uart_tx_buff),

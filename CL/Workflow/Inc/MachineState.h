@@ -6,7 +6,7 @@
         e-mail: dmitry.sambulov@gmail.com
  */
 #ifndef MACHINE_STATE_H_INCLUDED
-#define LINKED_LIST_H_INCLUDED
+#define MACHINE_STATE_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,4 +47,4 @@ void vStateMachineHandleEvent(StateMachine_t *pxMachine, uint32_t eTrigger);
 }
 #endif
 
-#endif /* LINKED_LIST_H_INCLUDED */
+#endif /* MACHINE_STATE_H_INCLUDED */

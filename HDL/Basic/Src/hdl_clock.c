@@ -34,6 +34,6 @@ void hdl_clock_calc_div(hdl_clock_t *presc, hdl_clock_t *source, int32_t factor)
 
 float hdl_get_clock(hdl_clock_t *clock) {
   if(clock != NULL)
-    return clock->freq / clock->div;
+    return (float)(clock->freq) / (float)(clock->div);
   return 0;
 }

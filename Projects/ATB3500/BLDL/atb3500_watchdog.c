@@ -5,6 +5,7 @@ typedef struct {
     hdl_module_t module;
     /* private */
     hdl_delegate_t watchdog_delegate;
+    uint32_t delay;
     atb3500_watchdog_proto_tx_t tx_data;
 } atb3500_watchdog_private_t;
 
@@ -15,18 +16,19 @@ atb3500_watchdog_proto_tx_t *atb3500_watchdog_update(atb3500_watchdog_t *desc, a
     hdl_timer_event_t *timer = (hdl_timer_event_t *)wdt->module.dependencies[0];
     if(rx_data->magic_value_reset == ATB3500_WATCHDOG_RESET_MAGIC) {
         rx_data->magic_value_reset = 0;
-        hdl_timer_event_reset(timer);
+        if(hdl_timer_event_mode(timer) != HDL_TIMER_EVENT_IDLE)
+            hdl_timer_event_set(timer, wdt->delay, HDL_TIMER_EVENT_SINGLE);
     }
     if(rx_data->magic_value_config == ATB3500_WATCHDOG_CONFIG_MAGIC) {
         rx_data->magic_value_config = 0;
-        timer->delay = rx_data->delay_ms;
-        if(rx_data->delay_ms)
-            hdl_timer_event_run_once(timer);
+        wdt->delay = rx_data->delay_ms;
+        if(wdt->delay)
+            hdl_timer_event_set(timer, wdt->delay, HDL_TIMER_EVENT_SINGLE);
         else
-            hdl_timer_event_stop(timer);
+            hdl_timer_event_set(timer, 0, HDL_TIMER_EVENT_IDLE);
     }
-    wdt->tx_data.delay_ms = timer->delay;
-    wdt->tx_data.counter = hdl_timer_event_get_timer(timer);
+    wdt->tx_data.delay_ms = wdt->delay;
+    wdt->tx_data.counter = hdl_timer_event_time_left(timer);
     return &wdt->tx_data;
 }
 

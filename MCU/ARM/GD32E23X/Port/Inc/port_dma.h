@@ -1,6 +1,8 @@
 #ifndef PORT_DMA_H_
 #define PORT_DMA_H_
 
+#define HDL_DMA_PRV_SIZE  0
+
 typedef enum {
     HDL_DMA_PRIORITY_LOW = (uint32_t)DMA_PRIORITY_LOW,
     HDL_DMA_PRIORITY_MEDIUM = (uint32_t)DMA_PRIORITY_MEDIUM,

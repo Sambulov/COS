@@ -31,7 +31,7 @@ void hdl_command_end_of_transaction_callback(void *context_base) {
     }
 }
 
-int32_t hdl_command_tx_data_callback(void *context_base, uint8_t *data, uint16_t count) {
+uint32_t hdl_command_tx_data_callback(void *context_base, uint8_t *data, uint32_t count) {
     hdl_command_t *h = (hdl_command_t *)context_base;
     if (h->state_machine == HDL_COMMAND_SM_COMMAND_PROC) {
         /* Call user function trnasfer */
@@ -40,7 +40,7 @@ int32_t hdl_command_tx_data_callback(void *context_base, uint8_t *data, uint16_t
     return 0;
 }
 
-int32_t hdl_command_tx_available_callback(void *context_base) {
+uint32_t hdl_command_tx_available_callback(void *context_base) {
     hdl_command_t *h = (hdl_command_t *)context_base;
     if (h->state_machine == HDL_COMMAND_SM_COMMAND_PROC) {
         /* Call user function trnasfer */
@@ -49,7 +49,7 @@ int32_t hdl_command_tx_available_callback(void *context_base) {
     return 0;
 }
 
-int32_t hdl_command_rx_available_callback(void *context_base) {
+uint32_t hdl_command_rx_available_callback(void *context_base) {
     hdl_command_t *h = (hdl_command_t *)context_base;
     if (h->state_machine == HDL_COMMAND_SM_COMMAND_PROC) {
         /* Call user function trnasfer */
@@ -58,7 +58,7 @@ int32_t hdl_command_rx_available_callback(void *context_base) {
     return (h->state_machine == HDL_COMMAND_SM_WAITING_CMD) ? 1 : 0;
 }
 
-int32_t hdl_command_rx_data_callback(void *context_base, uint8_t *data, uint16_t count) {
+uint32_t hdl_command_rx_data_callback(void *context_base, uint8_t *data, uint32_t count) {
     hdl_command_t *h = (hdl_command_t *)context_base;
     int32_t command_byte = 0;
     switch (h->state_machine) {

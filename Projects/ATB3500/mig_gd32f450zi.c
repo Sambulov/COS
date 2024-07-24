@@ -212,7 +212,6 @@ hdl_timer_t mod_timer1_ms = {
 hdl_timer_event_t mod_watchdog_timer = {
   .module.dependencies = hdl_module_dependencies(&mod_systick_timer_ms.module),
   .module.init = &hdl_timer_event,
-  .delay = 0,
 };
 
 

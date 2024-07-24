@@ -13,6 +13,6 @@ typedef struct {
 } hdl_clock_counter_t;
 
 hdl_module_state_t hdl_clock_counter(void *desc, const uint8_t enable);
-uint32_t hdl_clock_counter_get_count(hdl_clock_counter_t *desc);
+uint32_t hdl_clock_counter_get(hdl_clock_counter_t *desc);
 
-#endif // HDL_CLOCK_COUNTER_H_
+#endif /* HDL_CLOCK_COUNTER_H_ */ 

@@ -10,4 +10,4 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable);
 uint32_t hdl_adc_get_data(hdl_adc_t *hdl_adc, hdl_adc_source_t *src);
 uint32_t hdl_adc_get_age(hdl_adc_t *hdl_adc);
 
-#endif
+#endif /* HDL_ADC_H_ */

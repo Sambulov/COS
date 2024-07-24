@@ -116,8 +116,9 @@ LinkedListItem_t *pxLinkedListFindNextNoOverlap(LinkedListItem_t *pxCurrentItem,
 	return _pxLinkedListFind((__LinkedListItem_t *)pxCurrentItem, pfMatch, pxMatchArg, 0, 0);
 }
 
-void vLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg) {
+uint32_t vLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg) {
 	__LinkedListItem_t *item = (__LinkedListItem_t *)xList;
+	uint32_t amount = 0;
 	if ((fAction != libNULL) && _bIsValidItem(item)) {
 		__LinkedListItem_t **pxRoot = (__LinkedListItem_t **)item->list;
 		__LinkedListItem_t *currentItem = (pxRoot != libNULL) ? *pxRoot : item;
@@ -125,8 +126,10 @@ void vLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *
 			__LinkedListItem_t *nextItem = (currentItem->next == (__LinkedListItem_t *)*pxRoot) ? libNULL : currentItem->next;
 			fAction((LinkedListItem_t *)currentItem, pxArg);
 			currentItem = nextItem;
+			amount++;
 		} while ((currentItem != libNULL) && (*pxRoot != libNULL) && (currentItem->list == (LinkedList_t *)pxRoot));
 	}
+	return amount;
 }
 
 // void vLinkedListDoWhile(LinkedList_t xList, LinkedListMatch_t fAction, void *pxArg) {
@@ -180,7 +183,7 @@ linked_list_item_t *linked_list_find_next_overlap(linked_list_item_t *, linked_l
 linked_list_item_t *linked_list_find_next_no_overlap(linked_list_item_t *, linked_list_match_t, void *)\
                                                       __attribute__ ((alias ("pxLinkedListFindNextNoOverlap")));
 
-void linked_list_do_foreach(linked_list_t, linked_list_action_t, void *)\
+uint32_t linked_list_do_foreach(linked_list_t, linked_list_action_t, void *)\
                                                       __attribute__ ((alias ("vLinkedListDoForeach")));
 
 void linked_list_insert(linked_list_t *, linked_list_item_t *, list_item_comparer_t)\

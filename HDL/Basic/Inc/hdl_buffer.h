@@ -23,7 +23,7 @@ typedef struct {
   uint8_t *tx_buffer;
   uint16_t rx_buffer_size;
   uint16_t tx_buffer_size;    
-} hdl_isr_buffer_congig_t;
+} hdl_isr_buffer_config_t;
 
 static inline void hdl_double_buffer_switch(hdl_double_buffer_t *buffer) {
   if(buffer != NULL) {
@@ -33,6 +33,6 @@ static inline void hdl_double_buffer_switch(hdl_double_buffer_t *buffer) {
 
 uint16_t hdl_isr_buffer_read(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t lenght);
 uint16_t hdl_isr_buffer_write(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t lenght);
-hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_isr_buffer_congig_t *cnf);
+hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_isr_buffer_config_t *cnf);
 
 #endif /* TRANSCEIVER_BUFFER_H_ */

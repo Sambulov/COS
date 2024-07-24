@@ -78,7 +78,7 @@ typedef struct {
 */
 typedef struct {
   hdl_module_t module;
-  hdl_spi_server_config_t *config;
+  const hdl_spi_server_config_t *config;
   hdl_nvic_irq_n_t spi_iterrupt;
   hdl_nvic_irq_n_t nss_iterrupt;
   PRIVATE(hw, SPI_SERVER_DMA_PRIVATE_SIZE);

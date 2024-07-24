@@ -259,22 +259,22 @@ hdl_gpio_port_t hdl_gpio_port_g = {
 /**************************************
  *            GPIO MODE
 ***************************************/
-hdl_gpio_mode_t hdl_gpio_mode_input_floating = {
+const hdl_gpio_mode_t hdl_gpio_mode_input_floating = {
   .type = GPIO_MODE_INPUT,
   .pull = GPIO_PUPD_NONE,
   .ospeed = GPIO_OSPEED_2MHZ
 };
-hdl_gpio_mode_t hdl_gpio_mode_output_no_pull = {
+const hdl_gpio_mode_t hdl_gpio_mode_output_no_pull = {
   .type = GPIO_MODE_OUTPUT,
   .pull = GPIO_PUPD_NONE,
   .ospeed = GPIO_OSPEED_2MHZ,
 };
-hdl_gpio_mode_t hdl_gpio_mode_analog = {
+const hdl_gpio_mode_t hdl_gpio_mode_analog = {
   .type = GPIO_MODE_ANALOG,
   .pull = GPIO_PUPD_NONE,
   .ospeed = GPIO_OSPEED_2MHZ,
 };
-hdl_gpio_mode_t hdl_gpio_spi_mode = {
+const hdl_gpio_mode_t hdl_gpio_spi_mode = {
     .type = GPIO_MODE_AF,
     .pull = GPIO_PUPD_NONE,
     .ospeed = GPIO_OSPEED_MAX,
@@ -729,7 +729,7 @@ hdl_gpio_pin_t mod_spi_3_cs = {
 };
 
 
-hdl_spi_server_config_t hdl_spi_slave_config = {
+const hdl_spi_server_config_t hdl_spi_slave_config = {
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_1EDGE
 };

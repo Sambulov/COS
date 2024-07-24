@@ -116,7 +116,7 @@ LinkedListItem_t *pxLinkedListFindNextNoOverlap(LinkedListItem_t *pxCurrentItem,
 	return _pxLinkedListFind((__LinkedListItem_t *)pxCurrentItem, pfMatch, pxMatchArg, 0, 0);
 }
 
-uint32_t vLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg) {
+uint32_t ulLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg) {
 	__LinkedListItem_t *item = (__LinkedListItem_t *)xList;
 	uint32_t amount = 0;
 	if ((fAction != libNULL) && _bIsValidItem(item)) {
@@ -161,7 +161,7 @@ static inline void _vCountForeachWrap(LinkedListItem_t *pxItem, void *pxArg) {
 
 uint32_t ulLinkedListCount(LinkedList_t xList, LinkedListMatch_t pfMatch, void *pxMatchArg) {
 	__CounterArgTuple_t arg = { .fMatch = pfMatch, .pvMatchArg = pxMatchArg, .ulCounter = 0 };
-	vLinkedListDoForeach(xList, &_vCountForeachWrap, &arg);
+	ulLinkedListDoForeach(xList, &_vCountForeachWrap, &arg);
 	return arg.ulCounter;
 }
 
@@ -170,7 +170,7 @@ static inline void _vUnlinkForeachWrap(LinkedListItem_t *pxItem, void *pxArg) {
 }
 
 void vLinkedListClear(LinkedList_t xList) {
-	vLinkedListDoForeach(xList, &_vUnlinkForeachWrap, libNULL);
+	ulLinkedListDoForeach(xList, &_vUnlinkForeachWrap, libNULL);
 }
 
 
@@ -184,7 +184,7 @@ linked_list_item_t *linked_list_find_next_no_overlap(linked_list_item_t *, linke
                                                       __attribute__ ((alias ("pxLinkedListFindNextNoOverlap")));
 
 uint32_t linked_list_do_foreach(linked_list_t, linked_list_action_t, void *)\
-                                                      __attribute__ ((alias ("vLinkedListDoForeach")));
+                                                      __attribute__ ((alias ("ulLinkedListDoForeach")));
 
 void linked_list_insert(linked_list_t *, linked_list_item_t *, list_item_comparer_t)\
                                                       __attribute__ ((alias ("vLinkedListInsert")));

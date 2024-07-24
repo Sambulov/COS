@@ -99,7 +99,7 @@ void main() {
     hdl_spi_server_dma_set_rx_buffer(&mod_spi3_server_dma, &context.spi_buffer);
     atb3500_power_rail_set(&rail_24v, HDL_TRUE);
 
-    hdl_smarc_carrier_boot_select(&mod_smarc, HDL_SMARC_CARRIER_BOOT0 | HDL_SMARC_CARRIER_BOOT1 | HDL_SMARC_CARRIER_BOOT2);
+    hdl_smarc_carrier_boot_select(&mod_smarc, 0);
     hdl_smarc_carrier_boot(&mod_smarc);
     while (1) {
         cooperative_scheduler(false);

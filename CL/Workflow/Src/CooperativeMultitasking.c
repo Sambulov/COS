@@ -68,7 +68,7 @@ static void _vCoroutineRun(LinkedListItem_t *desc, void *pxArg) {
 
 uint32_t ulCooperativeScheduler(uint8_t bCancelAll) {
   SchedulerArg_t arg = {.bForceCancel = bCancelAll, .bLeft = 0};
-  vLinkedListDoForeach(workList, &_vCoroutineRun, (void *)&arg);
+  ulLinkedListDoForeach(workList, &_vCoroutineRun, (void *)&arg);
   return arg.bLeft;
 }
 

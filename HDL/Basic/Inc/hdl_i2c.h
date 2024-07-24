@@ -53,7 +53,7 @@ typedef struct {
 
 typedef struct {
   hdl_module_t module;
-  hdl_i2c_config_t *config;
+  const hdl_i2c_config_t *config;
   PRIVATE(hdl, HDL_I2C_PRV_SIZE);
 } hdl_i2c_t;
 

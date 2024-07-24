@@ -32,7 +32,7 @@ static inline void *__LinkedListCalcObjPtr(size_t llOffset, void *llPtr) { retur
 	LinkedListItem_t *pxLinkedListFindFirst(LinkedList_t xList, LinkedListMatch_t pfMatch, void *pxMatchArg);
 	LinkedListItem_t *pxLinkedListFindNextOverlap(LinkedListItem_t *pxCurrentItem, LinkedListMatch_t pfMatch, void *pxMatchArg);
 	LinkedListItem_t *pxLinkedListFindNextNoOverlap(LinkedListItem_t *pxCurrentItem, LinkedListMatch_t pfMatch, void *pxMatchArg);
-	uint32_t vLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg);
+	uint32_t ulLinkedListDoForeach(LinkedList_t xList, LinkedListAction_t fAction, void *pxArg);
 	void vLinkedListDoWhile(LinkedList_t xList, LinkedListMatch_t fAction, void *pxArg);
 	void vLinkedListInsert(LinkedList_t *pxList, LinkedListItem_t *pxItem, ListItemComparer_t pfCmp);
 	static inline void vLinkedListInsertLast(LinkedList_t *pxList, LinkedListItem_t *pxItem) {

@@ -1033,37 +1033,37 @@ hdl_gpio_port_t hdl_gpio_port_f = {
   .reg = (void *)GPIOF,
 };
 
-hdl_gpio_mode_t mod_gpio_output_pp_mode = {
+const hdl_gpio_mode_t mod_gpio_output_pp_mode = {
   .type = GPIO_MODE_OUTPUT,
   .otype = GPIO_OTYPE_PP,
   .ospeed = GPIO_OSPEED_2MHZ,
 };
 
-hdl_gpio_mode_t mod_gpio_input_pullup_mode = {
+const hdl_gpio_mode_t mod_gpio_input_pullup_mode = {
   .type = GPIO_MODE_INPUT,
   .pull = GPIO_PUPD_PULLUP,
 };
 
-hdl_gpio_mode_t mod_gpio_input_analog = {
+const hdl_gpio_mode_t mod_gpio_input_analog = {
   .type = GPIO_MODE_ANALOG,
   .pull = GPIO_PUPD_NONE,
 };
 
-hdl_gpio_mode_t mod_gpio_alternate_swd_mode = {
+const hdl_gpio_mode_t mod_gpio_alternate_swd_mode = {
   .af = GPIO_AF_0,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_PP,
   .ospeed = GPIO_OSPEED_2MHZ,
 };
 
-hdl_gpio_mode_t mod_gpio_i2c_mode = {
+const hdl_gpio_mode_t mod_gpio_i2c_mode = {
   .af = GPIO_AF_1,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_OD,
   .ospeed = GPIO_OSPEED_2MHZ
 };
 
-hdl_gpio_mode_t mod_gpio_i2c_1_server_mode = {
+const hdl_gpio_mode_t mod_gpio_i2c_1_server_mode = {
   .af = GPIO_AF_5,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_OD,
@@ -1130,7 +1130,7 @@ hdl_gpio_pin_t mod_gpio_i2c1_sda = {
   .mode = &mod_gpio_i2c_1_server_mode
 };
 
-hdl_i2c_config_t mod_i2c_config = {
+const hdl_i2c_config_t mod_i2c_config = {
   .addr0 = 0x23,
   .addr1 = 0,
   .addr_10_bits = 0,

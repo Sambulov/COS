@@ -23,7 +23,6 @@ extern "C" {
 
 
 #include "hdl_portable.h"
-#include "hdl_command.h"
 #include "hdl_button.h"
 #include "hdl_timer_event.h"
 #include "RK809.h"

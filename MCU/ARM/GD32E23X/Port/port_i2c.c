@@ -1,22 +1,6 @@
-// typedef struct {
-//   /* private */
-//   PRIVATE(hdl, HDL_I2C_MESSAGE_PRV_SIZE);
-//   uint16_t transfered;
-//   hdl_i2c_message_state_t state;
-//   uint32_t ovn;
-//   /* public */
-//   uint16_t address;
-//   uint8_t *buffer;
-//   uint16_t buffer_size;
-//   hdl_i2c_message_options_t options;
-// } hdl_i2c_message_private_t;
 
 
 // // _Static_assert(sizeof(hdl_i2c_message_private_t) == sizeof(hdl_i2c_message_t), "In hdl_i2c.h data structure size of hdl_i2c_message_t doesn't match, check HDL_I2C_MESSAGE_PRV_SIZE");
-// // _Static_assert((offsetof(hdl_i2c_message_private_t, address) == offsetof(hdl_i2c_message_t, address)) ||
-// //                (offsetof(hdl_i2c_message_private_t, options) == offsetof(hdl_i2c_message_t, options)) ||
-// //                (offsetof(hdl_i2c_message_private_t, buffer) == offsetof(hdl_i2c_message_t, buffer)) ||
-// //                (offsetof(hdl_i2c_message_private_t, buffer_size) == offsetof(hdl_i2c_message_t, buffer_size)), "In hdl_i2c.h hdl_i2c_message_t properties order doesn't match");
 
 // // _Static_assert(sizeof(hdl_i2c_transaction_private_t) == sizeof(hdl_i2c_transaction_t), "In hdl_i2c.h data structure size of hdl_i2c_transaction_t doesn't match, check HDL_I2C_TRANSACTION_PRV_SIZE");
 
@@ -74,6 +58,8 @@ typedef struct {
 } hdl_i2c_private_t;
 
 _Static_assert(sizeof(hdl_i2c_private_t) == sizeof(hdl_i2c_t), "In hdl_i2c.h data structure size of hdl_i2c_t doesn't match, check HDL_I2C_CLIENT_PRV_SIZE");
+_Static_assert((offsetof(hdl_i2c_private_t, module) == offsetof(hdl_i2c_t, module)) ||
+               (offsetof(hdl_i2c_private_t, config) == offsetof(hdl_i2c_t, config)), "In hdl_i2c.h hdl_i2c_t properties order doesn't match");
 
 static void _i2c_clear_error(i2c_periph_t *i2c_periph) {
   i2c_periph->STAT0 &= ~(I2C_ERROR_CLEAR_MASK);

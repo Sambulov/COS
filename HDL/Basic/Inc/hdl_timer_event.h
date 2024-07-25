@@ -23,4 +23,4 @@ uint8_t hdl_timer_event_set(hdl_timer_event_t *timer, uint32_t delay, hdl_timer_
 hdl_timer_event_mode_t hdl_timer_event_mode(hdl_timer_event_t *timer);
 uint32_t hdl_timer_event_time_left(hdl_timer_event_t *timer);
 
-#endif // HDL_TIMER_EVENT_H_
+#endif /* HDL_TIMER_EVENT_H_ */

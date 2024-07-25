@@ -969,6 +969,11 @@ atb3500_flash_serial_t mod_serial = {
 
 };
 
+atb3500_i2c_gateway_t mod_i2c_gateway = {
+  .module.init = &atb3500_i2c_gateway,
+  .module.dependencies = hdl_module_dependencies(&mod_i2c0.module)
+};
+
 hdl_module_t power_domain = {
   .dependencies = hdl_module_dependencies( 
     &rail_24v.module,
@@ -987,7 +992,7 @@ hdl_module_t app_module = {
         &mod_watchdog.module,
         &mod_serial.module,
         &mod_spi3_server_dma.module,
-        &mod_i2c0.module
+        &mod_i2c_gateway.module
    )
 };
 

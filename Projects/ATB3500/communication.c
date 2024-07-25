@@ -24,7 +24,7 @@ void spi_event_handler(uint32_t recieved, void *sender, void *context) {
             cont->spi_tx_buffer.size = sizeof(atb3500_flash_serial_proto_tx_t);
         }
         if(cmd == I2C_GW_CMD) {
-            res = (uint8_t *)atb3500_i2c_gateway_update(&mod_i2c_gateway, recieved, (atb3500_i2c_gateway_proto_rx_t *)(cont->spi_buffer.data + 4));
+            res = (uint8_t *)atb3500_i2c_gateway_update(&mod_i2c_gateway, recieved - 4, (atb3500_i2c_gateway_proto_rx_t *)(cont->spi_buffer.data + 4));
             cont->spi_tx_buffer.size = sizeof(atb3500_i2c_gateway_proto_tx_t);
         }
         cont->spi_tx_buffer.data = (uint8_t *)res;        

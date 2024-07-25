@@ -23,6 +23,7 @@ hdl_module_state_t atb3500_i2c_gateway(void *desc, uint8_t enable) {
     atb3500_i2c_gateway_private_t *i2c_gateway = (atb3500_i2c_gateway_private_t *)desc;
     if(enable) {
         i2c_gateway->tx_data.ovn = ATB3500_I2C_GATEWAY_OVN;
+        i2c_gateway->msg.buffer = i2c_gateway->tx_data.buff;
         coroutine_add(&i2c_gateway->worker, &_i2c_gateway_worker, desc);
         return HDL_MODULE_INIT_OK;
     }

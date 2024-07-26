@@ -223,30 +223,30 @@ hdl_tick_counter_t mod_timer1_counter = {
 /***********************************************************
  *                          TIMER
  ***********************************************************/
-hdl_timer_t mod_systick_timer_ms = {
-  .module.init = hdl_timer,
+hdl_time_counter_t mod_systick_timer_ms = {
+  .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
   .module.reg = NULL,
   .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
   .val = 0
 };
-hdl_timer_t mod_timer0_ms = {
-  .module.init = hdl_timer,
+hdl_time_counter_t mod_timer0_ms = {
+  .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
   .module.reg = NULL,
   .reload_iterrupt = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
   .val = 0
 };
-hdl_timer_t mod_timer1_ms = {
-  .module.init = hdl_timer,
+hdl_time_counter_t mod_timer1_ms = {
+  .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
   .module.reg = NULL,
   .reload_iterrupt = HDL_NVIC_IRQ28_TIMER1,
   .val = 0
 };
-hdl_timer_event_t mod_watchdog_timer = {
+hdl_timer_t mod_watchdog_timer = {
   .module.dependencies = hdl_module_dependencies(&mod_systick_timer_ms.module),
-  .module.init = &hdl_timer_event,
+  .module.init = &hdl_timer,
 };
 
 

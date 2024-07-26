@@ -1,16 +1,26 @@
-#ifndef HDL_TIMER_H_
-#define HDL_TIMER_H_
+#ifndef HDL_TIMER_EVENT_H_
+#define HDL_TIMER_EVENT_H_
 
+#define HDL_TIMER_EVENT_PRV_SIZE         40
+typedef enum {
+  HDL_TIMER_EVENT_IDLE,
+  HDL_TIMER_EVENT_LOOP,
+  HDL_TIMER_EVENT_SINGLE,
+} hdl_timer_mode_t;
+
+/* depends on:
+  timer
+ */
 typedef struct {
   hdl_module_t module;
-  hdl_nvic_irq_n_t reload_iterrupt;
-  hdl_delegate_t reload_isr;
-  uint32_t val;
-}hdl_timer_t;
+  hdl_event_t event;
+  PRIVATE(hdl, HDL_TIMER_EVENT_PRV_SIZE);
+} hdl_timer_t;
 
-hdl_module_state_t hdl_timer(void *desc, const uint8_t enable);
-static inline uint32_t hdl_timer_get(hdl_timer_t *desc) {
-  return desc->val;
-}
+hdl_module_state_t hdl_timer(void *desc, uint8_t enable);
 
-#endif // HDL_TIMER_H_
+uint8_t hdl_timer_set(hdl_timer_t *timer, uint32_t delay, hdl_timer_mode_t mode);
+hdl_timer_mode_t hdl_timer_mode(hdl_timer_t *timer);
+uint32_t hdl_timer_left(hdl_timer_t *timer);
+
+#endif /* HDL_TIMER_EVENT_H_ */

@@ -301,7 +301,7 @@
   };
 
 #if TEST_NO >= 9
-  hdl_timer_t mod_timer_ms = {
+  hdl_time_counter_t mod_timer_ms = {
     .module.init = hdl_timer,
     .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
     .module.reg = NULL,
@@ -309,7 +309,7 @@
     .val = 0
   };
 #elif TEST_NO >= 6
-  hdl_timer_t mod_timer_ms = {
+  hdl_time_counter_t mod_timer_ms = {
     .module.init = hdl_timer,
     .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
     .module.reg = NULL,
@@ -317,7 +317,7 @@
     .val = 0
   };
 #else
-  hdl_timer_t mod_timer_ms = {
+  hdl_time_counter_t mod_timer_ms = {
     .module.init = hdl_timer,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,

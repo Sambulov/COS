@@ -26,8 +26,8 @@ _Static_assert(sizeof(hdl_adc_private_t) == sizeof(hdl_adc_t), "In hdl_adc.h dat
 
 static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
     hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
-    hdl_timer_t *timer = (hdl_timer_t *)hdl_adc->module.dependencies[1];
-    hdl_adc->time_stamp = hdl_timer_get(timer);
+    hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
+    hdl_adc->time_stamp = hdl_time_counter_get(timer);
 }
 
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
@@ -37,7 +37,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
     hdl_adc->sources[0] == NULL || hdl_adc->module.dependencies[3] == NULL)
       return HDL_MODULE_INIT_FAILED;
   //hdl_clock_t *clock = (hdl_clock_t *)hdl_adc->module.dependencies[0];
-  hdl_timer_t *timer = (hdl_timer_t *)hdl_adc->module.dependencies[1];
+  hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
   hdl_dma_channel_t *dma = (hdl_dma_channel_t *)hdl_adc->module.dependencies[2];
 
   rcu_periph_enum rcu;
@@ -93,12 +93,12 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         /* TODO: Should amend */
         while ((ADC_CTL1((uint32_t)hdl_adc->module.reg) & ADC_CTL1_RSTCLB));
         ADC_CTL1((uint32_t)hdl_adc->module.reg) |= ADC_CTL1_CLB;
-        hdl_adc->time_stamp = hdl_timer_get(timer);
+        hdl_adc->time_stamp = hdl_time_counter_get(timer);
         hdl_adc->state_machine = GD_ADC_STATE_MACHINE_CALIBRATION;
       }
       case GD_ADC_STATE_MACHINE_CALIBRATION:
         if (ADC_CTL1((uint32_t)hdl_adc->module.reg) & ADC_CTL1_CLB) {
-          if (TIME_ELAPSED(hdl_adc->time_stamp, hdl_adc->init_timeout, hdl_timer_get(timer)))
+          if (TIME_ELAPSED(hdl_adc->time_stamp, hdl_adc->init_timeout, hdl_time_counter_get(timer)))
             return HDL_MODULE_INIT_FAILED;
           return HDL_MODULE_INIT_ONGOING;
         }

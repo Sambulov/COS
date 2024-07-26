@@ -115,8 +115,8 @@ static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
 #define WC_STATE_HIT         1
 
 static void _i2c_reg_set_wait_condition(hdl_i2c_private_t *i2c, __IO uint32_t *reg, uint32_t flags, uint8_t is_set, uint32_t timeout) {
-  hdl_timer_t *timer = (hdl_timer_t *)i2c->module.dependencies[4];
-  i2c->wc_ts = hdl_timer_get(timer);
+  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+  i2c->wc_ts = hdl_time_counter_get(timer);
   i2c->wc_flags = flags;
   i2c->wc_flags_is_set = is_set;
   i2c->wc_timeout = timeout;
@@ -126,8 +126,8 @@ static void _i2c_reg_set_wait_condition(hdl_i2c_private_t *i2c, __IO uint32_t *r
 
 static void _i2c_reg_wait_condition(hdl_i2c_private_t *i2c) {
   if(i2c->wc_state == WC_STATE_AWAITING) {
-    hdl_timer_t *timer = (hdl_timer_t *)i2c->module.dependencies[4];
-    uint32_t now = hdl_timer_get(timer);
+    hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+    uint32_t now = hdl_time_counter_get(timer);
     if(i2c->wc_flags_is_set) {
       if((*i2c->wc_reg & i2c->wc_flags) == i2c->wc_flags) i2c->wc_state = WC_STATE_HIT;
     }
@@ -174,7 +174,7 @@ static uint8_t _i2c_msg_start_handler(hdl_i2c_private_t *i2c) {
 }
 
 static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_private_t *i2c) {
-  hdl_timer_t *timer = (hdl_timer_t *)i2c->module.dependencies[4];
+  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   if(i2c->wrk_state_substate == 1) {
     if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
@@ -198,7 +198,7 @@ static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_private_t *i2c) {
 }
 
 static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_private_t *i2c) {
-  hdl_timer_t *timer = (hdl_timer_t *)i2c->module.dependencies[4];
+  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   uint32_t tmp = 0;
   if(i2c->wrk_state_substate == 1) { /* Awaiting rx byte */
@@ -300,7 +300,7 @@ static uint8_t _i2c_msg_data_handler(hdl_i2c_private_t *i2c) {
 }
 
 static hdl_i2c_message_status_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
-  hdl_timer_t *timer = (hdl_timer_t *)i2c->module.dependencies[4];
+  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   hdl_i2c_message_status_t result = HDL_I2C_MESSAGE_STATUS_INITIAL;
   if(i2c->wrk_state_substate == 1) {

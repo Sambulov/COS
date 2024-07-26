@@ -56,7 +56,7 @@ extern hdl_core_t mod_sys_core;
 extern hdl_adc_t mod_adc;
 extern hdl_gpio_pin_t mod_gpio_adc_channel_3v3;
 extern hdl_gpio_pin_t mod_gpio_adc_channel_1v5;
-extern hdl_timer_t mod_timer_ms;
+extern hdl_time_counter_t mod_timer_ms;
 extern hdl_adc_source_t mod_adc_source_0;
 extern hdl_adc_source_t mod_adc_source_1;
 extern hdl_clock_prescaler_t mod_clock_apb2;
@@ -345,9 +345,9 @@ hdl_button_t btn = {
   .hold_delay = 3000,
 };
 
-hdl_timer_event_t timer_with_event = {
+hdl_timer_t timer_with_event = {
   .module.dependencies = hdl_module_dependencies(&mod_timer_ms.module),
-  .module.init = &hdl_timer_event,
+  .module.init = &hdl_timer,
 };
 
 hdl_gpio_pin_hw_config_t hdl_gpio_mode_uart_0_tx = {
@@ -512,7 +512,7 @@ void test() {
     //adc_raw[0] = hdl_adc_get_data(&mod_adc, &mod_adc_source_0);
     //adc_raw[1] = hdl_adc_get_data(&mod_adc, &mod_adc_source_1);
     
-    if (TIME_ELAPSED(time_stamp_ms, 1000, hdl_timer_get(&mod_timer_ms)))
+    if (TIME_ELAPSED(time_stamp_ms, 1000, hdl_time_counter_get(&mod_timer_ms)))
     {
         __NOP();
     }

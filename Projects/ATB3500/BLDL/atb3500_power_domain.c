@@ -30,10 +30,10 @@ void atb3500_power_rail_set(atb3500_power_rail_t *desc, uint8_t enable) {
         hdl_gpio_pin_t *en_pin = (hdl_gpio_pin_t *)rail->module.dependencies[ATB3500_POWER_RAIL_EN_PIN];
         if(HDL_IS_NULL_MODULE(en_pin))
             en_pin = NULL;
-        hdl_timer_t *timer = (hdl_timer_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER];
+        hdl_time_counter_t *timer = (hdl_time_counter_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER];
         if(enable) {
             if (rail->state == PD_STATE_OFF) {
-                rail->timestamp = hdl_timer_get(timer);
+                rail->timestamp = hdl_time_counter_get(timer);
                 if(en_pin != NULL) hdl_gpio_set_active(en_pin);   
                 rail->state = PD_STATE_ENABLED;
                 if(rail->event != NULL)
@@ -101,8 +101,8 @@ static uint8_t _power_rail_work(coroutine_t *this, uint8_t cancel, void *arg) {
     hdl_adc_t *rail_adc = (hdl_adc_t *)rail->module.dependencies[ATB3500_POWER_RAIL_ADC];
     uint32_t adc_current_age = hdl_adc_get_age(rail_adc);
     atb3500_power_rail_private_t *src_rail = (atb3500_power_rail_private_t *)rail->module.dependencies[ATB3500_POWER_RAIL_SOURSE_RAIL];
-    hdl_timer_t *timer = (hdl_timer_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER];
-    uint32_t time_now = hdl_timer_get(timer);
+    hdl_time_counter_t *timer = (hdl_time_counter_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER];
+    uint32_t time_now = hdl_time_counter_get(timer);
     if(HDL_IS_NULL_MODULE(src_rail))
         src_rail = NULL;
 
@@ -155,7 +155,7 @@ hdl_module_state_t atb3500_power_rail(void *desc, uint8_t enable) {
         rail->filter_value_cursor = 0;
         rail->filter_values_amount = 0;
         rail->adc_age = hdl_adc_get_age((hdl_adc_t *)rail->module.dependencies[ATB3500_POWER_RAIL_ADC]);
-        rail->timestamp = hdl_timer_get((hdl_timer_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER]);
+        rail->timestamp = hdl_time_counter_get((hdl_time_counter_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER]);
         coroutine_add(&rail->worker, &_power_rail_work, desc);
         return HDL_MODULE_INIT_OK;
     }

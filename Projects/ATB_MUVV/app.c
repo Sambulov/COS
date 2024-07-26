@@ -1,7 +1,7 @@
 #include "app.h"
 #include "CodeLib.h"
 
-extern hdl_timer_t mod_timer_ms;
+extern hdl_time_counter_t mod_timer_ms;
 extern hdl_gpio_pin_t mod_gpo_led;
 extern hdl_gpio_pin_t mod_gpi_button;
 extern hdl_exti_controller_t mod_exti;
@@ -49,18 +49,18 @@ uint32_t castom_rand(uint32_t max) {
 }
 
 void sw_timer_handler(uint32_t event_trigger, void *sender, void *context) {
-  hdl_timer_event_t *timer = (hdl_timer_event_t *)sender;
+  hdl_timer_t *timer = (hdl_timer_t *)sender;
   if((hdl_i2c_can_transfer(&mod_i2c1) != HDL_TRUE) || !(hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_ping))) {
-    hdl_timer_event_set(timer, 1, HDL_TIMER_EVENT_SINGLE);
+    hdl_timer_set(timer, 1, HDL_TIMER_EVENT_SINGLE);
   }
   else {
-    hdl_timer_event_set(timer, castom_rand(1000), HDL_TIMER_EVENT_SINGLE);
+    hdl_timer_set(timer, castom_rand(1000), HDL_TIMER_EVENT_SINGLE);
     hdl_gpio_toggle(&mod_gpo_led);
   }
 }
 
-hdl_timer_event_t sw_timer = {
-  .module.init = hdl_timer_event,
+hdl_timer_t sw_timer = {
+  .module.init = hdl_timer,
   .module.dependencies = hdl_module_dependencies(&mod_timer_ms.module)
 };
 
@@ -114,7 +114,7 @@ void main() {
     cooperative_scheduler(false);
   }
   hdl_event_subscribe(&sw_timer.event, &sw_timer_deleagate);
-  hdl_timer_event_set(&sw_timer, 10000, HDL_TIMER_EVENT_SINGLE);
+  hdl_timer_set(&sw_timer, 10000, HDL_TIMER_EVENT_SINGLE);
 
   hdl_i2c_set_transceiver(&mod_i2c1, &i2c_transiver);
 

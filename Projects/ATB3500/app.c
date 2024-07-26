@@ -18,7 +18,7 @@ void carrier_shutdown(dev_context_t *dev) {
     atb3500_power_rail_set(&rail_5v, HDL_FALSE);
     smarc_carrier_shutdown(&mod_smarc);
     dev->restart_delay = 3000;
-    dev->time_stamp = hdl_timer_get(&mod_systick_timer_ms);
+    dev->time_stamp = hdl_time_counter_get(&mod_systick_timer_ms);
 }
 
 void carrier_stby(dev_context_t *dev) {
@@ -110,7 +110,7 @@ void main() {
             hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_READY, HDL_FALSE);
 
         if(context.restart_delay != 0) {
-            uint32_t time_now = hdl_timer_get(&mod_systick_timer_ms);
+            uint32_t time_now = hdl_time_counter_get(&mod_systick_timer_ms);
             if (TIME_ELAPSED(context.time_stamp, context.restart_delay, time_now)) {
                 context.restart_delay = 0;
                 atb3500_power_rail_set(&rail_5v, HDL_TRUE);

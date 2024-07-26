@@ -27,16 +27,16 @@ _Static_assert(offsetof(hdl_button_private_t, event) == offsetof(hdl_button_t, e
 static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_button_private_t *btn = (hdl_button_private_t *)arg;
   hdl_gpio_pin_t *btn_gpio = (hdl_gpio_pin_t *)btn->module.dependencies[0];
-  hdl_timer_t *btn_timer = (hdl_timer_t *)btn->module.dependencies[1];
+  hdl_time_counter_t *btn_timer = (hdl_time_counter_t *)btn->module.dependencies[1];
   switch (btn->output_state) {
     case HDL_BTN_O_CLICK_PRESS:
       btn->output_state = HDL_BTN_O_CLICK_DEBOUNCE;
-      btn->output_change_time = hdl_timer_get(btn_timer);
+      btn->output_change_time = hdl_time_counter_get(btn_timer);
     case HDL_BTN_O_PRESS:
       hdl_gpio_set_active(btn_gpio);
       break;
     case HDL_BTN_O_CLICK_DEBOUNCE: {
-      uint8_t debounce_timeout = TIME_ELAPSED(btn->output_change_time, btn->debounce_delay, hdl_timer_get(btn_timer));
+      uint8_t debounce_timeout = TIME_ELAPSED(btn->output_change_time, btn->debounce_delay, hdl_time_counter_get(btn_timer));
       if(debounce_timeout) {
         btn->output_state = HDL_BTN_O_RELEASE;
       }
@@ -55,14 +55,14 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
     case HDL_BTN_RELEASED:
       if(!btn_active) 
         break;
-      btn->input_change_time = hdl_timer_get(btn_timer);
+      btn->input_change_time = hdl_time_counter_get(btn_timer);
       btn->input_state = HDL_BTN_PRESS_DEBOUNCE;
     case HDL_BTN_PRESS_DEBOUNCE: {
       if(!btn_active) {
         btn->input_state = HDL_BTN_RELEASED;
         break;
       }
-      uint8_t debounce_timeout = TIME_ELAPSED(btn->input_change_time, btn->debounce_delay, hdl_timer_get(btn_timer));
+      uint8_t debounce_timeout = TIME_ELAPSED(btn->input_change_time, btn->debounce_delay, hdl_time_counter_get(btn_timer));
       if(debounce_timeout) {
         btn->input_state = HDL_BTN_PRESSED;
         hdl_event_raise(&btn->event, (void *)btn, HDL_BTN_EVENT_PRESS);
@@ -70,7 +70,7 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
     }
     case HDL_BTN_PRESSED:
       if(btn_active) {
-        uint8_t hold_timeout = btn->hold_delay && TIME_ELAPSED(btn->input_change_time, btn->hold_delay, hdl_timer_get(btn_timer));
+        uint8_t hold_timeout = btn->hold_delay && TIME_ELAPSED(btn->input_change_time, btn->hold_delay, hdl_time_counter_get(btn_timer));
         if(hold_timeout) {
           btn->input_state = HDL_BTN_HOLDING;
           hdl_event_raise(&btn->event, (void *)btn, HDL_BTN_EVENT_HOLD);

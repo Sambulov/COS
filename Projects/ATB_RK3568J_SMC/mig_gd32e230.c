@@ -983,22 +983,22 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
     .config = &mod_systick_counter_cnf
   };
 
-  hdl_timer_t mod_timer_ms = {
-    .module.init = hdl_timer,
+  hdl_time_counter_t mod_timer_ms = {
+    .module.init = hdl_time_counter,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
     .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
     .val = 0
   };
-  hdl_timer_t mod_timer0_ms = {
-    .module.init = hdl_timer,
+  hdl_time_counter_t mod_timer0_ms = {
+    .module.init = hdl_time_counter,
     .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
     .module.reg = NULL,
     .reload_iterrupt = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
     .val = 0
   };
-  hdl_timer_t mod_timer2_ms = {
-    .module.init = hdl_timer,
+  hdl_time_counter_t mod_timer2_ms = {
+    .module.init = hdl_time_counter,
     .module.dependencies = hdl_module_dependencies(&mod_timer2_counter.module, &mod_nvic.module),
     .module.reg = NULL,
     .reload_iterrupt = HDL_NVIC_IRQ16_TIMER2,

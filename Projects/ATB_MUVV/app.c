@@ -7,7 +7,7 @@ extern hdl_gpio_pin_t mod_gpi_button;
 extern hdl_exti_controller_t mod_exti;
 extern hdl_nvic_t mod_nvic;
 extern hdl_i2c_t mod_i2c1;
-extern hdl_clock_counter_t mod_systick_counter;
+extern hdl_tick_counter_t mod_systick_counter;
 
 typedef struct {
   uint32_t msg_no;
@@ -40,7 +40,7 @@ uint32_t castom_rand(uint32_t max) {
   static uint32_t state = 0;
   static uint8_t init = 0;
   if(!init) {
-    state = (hdl_clock_counter_get(&mod_systick_counter)) ^ 0xff15ea13;
+    state = (hdl_tick_counter_get(&mod_systick_counter)) ^ 0xff15ea13;
     init = 1;
   }
   state = 214013 * state + 2531011;

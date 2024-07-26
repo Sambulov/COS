@@ -176,26 +176,49 @@ hdl_clock_prescaler_t mod_clock_apb2 = {
 /***********************************************************
  *                          COUNTER
 ***********************************************************/
-hdl_clock_counter_t mod_systick_counter = {
-  .module.init = &hdl_clock_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),  // add ahb
+const hdl_tick_counter_hw_config_t mod_tick_counter0_cnf = {
+  .alignedmode = TIMER_COUNTER_EDGE,
+  .clockdivision = TIMER_CKDIV_DIV1,
+  .counterdirection = TIMER_COUNTER_UP,
+  .period = 16000 - 1,
+  .prescaler = 0,
+  .repetitioncounter = 0,
+  .rcu = RCU_TIMER0
+};
+
+const hdl_tick_counter_hw_config_t mod_tick_counter1_cnf = {
+  .alignedmode = TIMER_COUNTER_EDGE,
+  .clockdivision = TIMER_CKDIV_DIV1,
+  .counterdirection = TIMER_COUNTER_UP,
+  .period = 16000 - 1,
+  .prescaler = 0,
+  .repetitioncounter = 0,
+  .rcu = RCU_TIMER1
+};
+
+const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
+  .period = 240000 - 1
+};
+
+hdl_tick_counter_t mod_systick_counter = {
+  .module.init = &hdl_tick_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)SysTick,
-  .diction = HDL_DOWN_COUNTER,
-  .counter_reload = 240000 - 1,
+  .config = &mod_systick_counter_cnf
 };
-hdl_clock_counter_t mod_timer0_counter = {
-  .module.init = &hdl_clock_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module), // add ahb
+
+hdl_tick_counter_t mod_timer0_counter = {
+  .module.init = &hdl_tick_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module),
   .module.reg = (void *)TIMER0,
-  .diction = HDL_DOWN_COUNTER,
-  .counter_reload = 16000 - 1,
+  .config = &mod_tick_counter0_cnf
 };
-hdl_clock_counter_t mod_timer1_counter = {
-.module.init = &hdl_clock_counter,
-.module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module), // add ahb
-.module.reg = (void *)TIMER1,
-.diction = HDL_DOWN_COUNTER,
-.counter_reload = 16000 - 1,
+
+hdl_tick_counter_t mod_timer1_counter = {
+  .module.init = &hdl_tick_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module),
+  .module.reg = (void *)TIMER1,
+  .config = &mod_tick_counter1_cnf
 };
 /***********************************************************
  *                          TIMER

@@ -2,13 +2,13 @@
 #include "CodeLib.h"
 
 typedef struct {
-  /* private */
-  __linked_list_object__
-  uint32_t dependents;
   /* public */
   hdl_module_initializer_t init;
   hdl_module_t **dependencies;
   void *reg;
+  /* private */
+  __linked_list_object__
+  uint32_t dependents;
 } hdl_module_private_t;
 
 hdl_module_state_t hdl_null_module_init(void *desc, const uint8_t enable) {

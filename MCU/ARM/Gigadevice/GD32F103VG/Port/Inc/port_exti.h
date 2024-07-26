@@ -1,6 +1,10 @@
 #ifndef PORT_EXTI_H_
 #define PORT_EXTI_H_
 
+/* cmsis compatibility define */
+#define syscfg_exti_line_config   gpio_exti_source_select
+
+
 #define EXTI_LINES_ALL            EXTI_0  | EXTI_1  | EXTI_2  |  EXTI_3 | \
                                   EXTI_4  | EXTI_5  | EXTI_6  |  EXTI_7 | \
                                   EXTI_8  | EXTI_9  | EXTI_10 | EXTI_11 | \

@@ -326,36 +326,50 @@
   };
 #endif
 
+const hdl_dma_config_t mod_dma_config = {
+  .rcu = RCU_DMA0
+};
+
 hdl_dma_t mod_dma = {
   .module.init = &hdl_dma,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
-  .module.reg = (void*)DMA_BASE,
+  .module.reg = (void*)DMA0,
+  .config = &mod_dma_config
+};
+
+const hdl_dma_channel_config_t mod_adc_dma_ch_config = {
+  .priority = DMA_PRIORITY_LOW,
+  .direction = DMA_PERIPHERAL_TO_MEMORY,
+  .memory_width = DMA_MEMORY_WIDTH_32BIT,
+  .periph_width = DMA_MEMORY_WIDTH_16BIT,
+  .memory_inc = 1,
+  .periph_inc = 0,
+  .circular = 1
 };
 
 hdl_dma_channel_t mod_adc_dma_ch = {
   .module.init = &hdl_dma_ch,
   .module.dependencies = hdl_module_dependencies(&mod_dma.module),
   .module.reg = (void*)DMA_CH0,
-  .direction = HDL_DMA_DIRECTION_P2M,
-  .memory_inc = HDL_DMA_INCREMENT_ON,
-  .memory_width = HDL_DMA_SIZE_OF_MEMORY_32_BIT,
-  .periph_inc = HDL_DMA_INCREMENT_OFF,
-  .periph_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT,
-  .mode = HDL_DMA_MODE_CIRCULAR,
-  .priority = HDL_DMA_PRIORITY_LOW
+  .config = &mod_adc_dma_ch_config
+};
+
+const hdl_dma_channel_config_t mod_m2m_dma_ch_config = {
+  .priority = DMA_PRIORITY_LOW,
+  .direction = DMA_PERIPHERAL_TO_MEMORY,
+  .memory_width = DMA_MEMORY_WIDTH_32BIT,
+  .periph_width = DMA_MEMORY_WIDTH_32BIT,
+  .memory_inc = 1,
+  .periph_inc = 1,
+  .m2m_direction = 1,
+  .circular = 0
 };
 
 hdl_dma_channel_t mod_m2m_dma_ch = {
   .module.init = &hdl_dma_ch,
   .module.dependencies = hdl_module_dependencies(&mod_dma.module),
   .module.reg = (void*)DMA_CH1,
-  .direction = HDL_DMA_DIRECTION_M2M,
-  .memory_inc = HDL_DMA_INCREMENT_ON,
-  .memory_width = HDL_DMA_SIZE_OF_MEMORY_32_BIT,
-  .periph_inc = HDL_DMA_INCREMENT_ON,
-  .periph_width = HDL_DMA_SIZE_OF_MEMORY_32_BIT,
-  .mode = HDL_DMA_MODE_SINGLE,
-  .priority = HDL_DMA_PRIORITY_LOW
+  .config = &mod_m2m_dma_ch_config
 };
 
 hdl_gpio_port_hw_config_t mod_gpio_port_config_a = {

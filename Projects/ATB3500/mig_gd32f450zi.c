@@ -657,64 +657,87 @@ hdl_gpio_pin_t mod_adc_pin_1v8 = {
 /***********************************************************
  *                          DMA
 ***********************************************************/
+const hdl_dma_config_t mod_dma_config = {
+  .rcu = RCU_DMA1
+};
+
 hdl_dma_t mod_dma = {
   .module.init = &hdl_dma,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void*)DMA1,
+  .config = &mod_dma_config
 };
+
+const hdl_dma_channel_config_t mod_adc_dma_ch_config = {
+  .priority = DMA_PRIORITY_LOW,
+  .channel_periphery = DMA_SUBPERI0,
+  .direction = DMA_PERIPH_TO_MEMORY,
+  .memory_width = DMA_MEMORY_WIDTH_16BIT,
+  .periph_width = DMA_MEMORY_WIDTH_16BIT,
+  .memory_inc = 1,
+  .periph_inc = 0,
+  .circular = 1
+};
+
+const hdl_dma_channel_config_t mod_m2m_dma_ch_config = {
+  .priority = DMA_PRIORITY_ULTRA_HIGH,
+  .channel_periphery = DMA_SUBPERI0,
+  .direction = DMA_MEMORY_TO_MEMORY,
+  .memory_width = DMA_MEMORY_WIDTH_8BIT,
+  .periph_width = DMA_MEMORY_WIDTH_8BIT,
+  .memory_inc = 1,
+  .periph_inc = 1,
+  .circular = 0
+};
+
 hdl_dma_channel_t mod_adc_dma_ch = {
   .module.init = &hdl_dma_ch,
   .module.dependencies = hdl_module_dependencies(&mod_dma.module),
   .module.reg = (void*)DMA_CH0,
-  .direction = HDL_DMA_DIRECTION_P2M,
-  .memory_inc = HDL_DMA_INCREMENT_ON,
-  .memory_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT,
-  .periph_inc = HDL_DMA_INCREMENT_OFF,
-  .periph_width = HDL_DMA_SIZE_OF_MEMORY_16_BIT,
-  .mode = HDL_DMA_MODE_CIRCULAR,
-  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_0,
-  .priority = HDL_DMA_PRIORITY_LOW
+  .config = &mod_adc_dma_ch_config
 };
+
+const hdl_dma_channel_config_t mod_dma_ch_spi_3_rx_config = {
+  .priority = DMA_PRIORITY_MEDIUM,
+  .channel_periphery = DMA_SUBPERI5,
+  .direction = DMA_PERIPH_TO_MEMORY,
+  .memory_width = DMA_MEMORY_WIDTH_8BIT,
+  .periph_width = DMA_MEMORY_WIDTH_8BIT,
+  .memory_inc = 1,
+  .periph_inc = 0,
+  .circular = 0
+};
+
 hdl_dma_channel_t mod_dma_ch_spi_3_rx = {
   .module.init = &hdl_dma_ch,
   .module.dependencies = hdl_module_dependencies(&mod_dma.module),
   .module.reg = (void*)DMA_CH3,
-  .direction = HDL_DMA_DIRECTION_P2M,
-  .memory_inc = HDL_DMA_INCREMENT_ON,
-  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
-  .periph_inc = HDL_DMA_INCREMENT_OFF,
-  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
-  .mode = HDL_DMA_MODE_SINGLE,
-  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
-  .priority = HDL_DMA_PRIORITY_MEDIUM
+  .config = &mod_dma_ch_spi_3_rx_config
 };
 
-  hdl_dma_channel_t mod_dma_ch_spi_3_tx = {
+const hdl_dma_channel_config_t mod_dma_ch_spi_3_tx_config = {
+  .priority = DMA_PRIORITY_MEDIUM,
+  .channel_periphery = DMA_SUBPERI5,
+  .direction = DMA_MEMORY_TO_PERIPH,
+  .memory_width = DMA_MEMORY_WIDTH_8BIT,
+  .periph_width = DMA_MEMORY_WIDTH_8BIT,
+  .memory_inc = 1,
+  .periph_inc = 0,
+  .circular = 0
+};
+
+hdl_dma_channel_t mod_dma_ch_spi_3_tx = {
   .module.init = &hdl_dma_ch,
   .module.dependencies = hdl_module_dependencies(&mod_dma.module),
   .module.reg = (void*)DMA_CH4,
-  .direction = HDL_DMA_DIRECTION_M2P,
-  .memory_inc = HDL_DMA_INCREMENT_ON,
-  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
-  .periph_inc = HDL_DMA_INCREMENT_OFF,
-  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
-  .mode = HDL_DMA_MODE_SINGLE,
-  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_5,
-  .priority = HDL_DMA_PRIORITY_ULTRA_HIGH,
+  .config = &mod_dma_ch_spi_3_tx_config
 };
 
   hdl_dma_channel_t mod_dma_ch_spi_3_m2m = {
   .module.init = &hdl_dma_ch,
   .module.dependencies = hdl_module_dependencies(&mod_dma.module),
   .module.reg = (void*)DMA_CH1,
-  .direction = HDL_DMA_DIRECTION_M2M,
-  .memory_inc = HDL_DMA_INCREMENT_ON,
-  .memory_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
-  .periph_inc = HDL_DMA_INCREMENT_ON,
-  .periph_width = HDL_DMA_SIZE_OF_MEMORY_8_BIT,
-  .mode = HDL_DMA_MODE_SINGLE,
-  .channel_periphery = HDL_DMA_CHANNEL_PERIPHERY_0,
-  .priority = HDL_DMA_PRIORITY_ULTRA_HIGH
+  .config = &mod_m2m_dma_ch_config
 };
 /**************************************************************
  *                        ADC

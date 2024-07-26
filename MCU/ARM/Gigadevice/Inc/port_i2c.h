@@ -14,6 +14,7 @@ typedef struct {
   const uint16_t addr1;
   const hdl_nvic_irq_n_t err_interrupt;
   const hdl_nvic_irq_n_t ev_interrupt;
+  const rcu_periph_enum rcu;
 } hdl_i2c_config_t;
 
 

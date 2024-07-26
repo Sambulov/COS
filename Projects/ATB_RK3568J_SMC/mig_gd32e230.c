@@ -1239,7 +1239,8 @@ hdl_exti_t mod_nvic_exti_line_15 = {
     .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
     .ev_interrupt = HDL_NVIC_IRQ23_I2C0_EV,
     .dtcy = I2C_DTCY_2,
-    .speed = 400000
+    .speed = 400000,
+    .rcu = RCU_I2C0
   };
 
   hdl_i2c_t mod_i2c0_client = {

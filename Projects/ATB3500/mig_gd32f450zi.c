@@ -786,7 +786,8 @@ const hdl_i2c_config_t mod_i2c_0_config = {
   .ev_interrupt = HDL_NVIC_IRQ31_I2C0_EV,
   .general_call_enable = 0,
   .speed = 400000,
-  .stretch_enable = 1
+  .stretch_enable = 1,
+  .rcu = RCU_I2C0
 };
 
 hdl_i2c_t mod_i2c0 = {

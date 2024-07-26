@@ -381,23 +381,9 @@ uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message) {
 hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
   hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
   i2c_periph_t *i2c_periph = (i2c_periph_t *)_i2c->module.reg;
-  rcu_periph_enum rcu;
-  switch ((uint32_t)_i2c->module.reg) {
-    case I2C0:
-      rcu = RCU_I2C0;
-      break;
-    case I2C1:
-      rcu = RCU_I2C1;
-      break;
-    case I2C2:
-      rcu = RCU_I2C2;
-      break;   
-    default:
-      break;
-  }
   i2c_deinit((uint32_t)_i2c->module.reg);
   if(enable) {
-    rcu_periph_clock_enable(rcu);
+    rcu_periph_clock_enable(_i2c->config->rcu);
     i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
     i2c_mode_addr_config((uint32_t)_i2c->module.reg, I2C_I2CMODE_ENABLE, 
       (_i2c->config->addr_10_bits? I2C_ADDFORMAT_10BITS: I2C_ADDFORMAT_7BITS), (_i2c->config->addr0 << 1));
@@ -424,7 +410,7 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     return HDL_MODULE_INIT_OK;
   }
   coroutine_cancel(&_i2c->i2c_worker);
-  rcu_periph_clock_disable(rcu);
+  rcu_periph_clock_disable(_i2c->config->rcu);
   return HDL_MODULE_DEINIT_OK;
 }
 

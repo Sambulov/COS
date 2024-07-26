@@ -37,13 +37,13 @@
             }
         },
         {
-            "name": "ATB_USPD20K_D",
-            "displayName": "ATB_USPD20K Debug",
+            "name": "ATB_USPD_MPC_D",
+            "displayName": "ATB_USPD_MPC Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_USPD20K"
+                "BOARD": "ATB_USPD_MPC"
             }
         },
         {

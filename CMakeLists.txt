@@ -41,74 +41,62 @@ endif()
 
 # Set terget core name
 if(BOARD STREQUAL "ATB_RK3568J_SMC_R3")
+  set(VENDOR "Nuvoton")
   set(MCU  "NUM46X")
   set(CORE "ARM")
   set(MCPU cortex-m4)
-  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/Inc"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/Inc")
-  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/*.c"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/*.c")
+  set(PROJECT "ATB_RK3568J_SMC")
+  # set(SPECIFIC_BUSINESS_LOGIC_INC_PATH ...)
+  # set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH ...)
   add_compile_definitions("__MCU_HAL_HDR__=<m460.h>")
 elseif(BOARD STREQUAL "ATB_RK3568J_SMC_R1")
+  set(VENDOR "Gigadevice")
   set(MCU "GD32E23X")
   set(CORE "ARM")
   set(MCPU cortex-m23)
-  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/Inc"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/Inc")
-  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/*.c"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/*.c")
+  set(PROJECT "ATB_RK3568J_SMC")
+  # set(SPECIFIC_BUSINESS_LOGIC_INC_PATH ...)
+  # set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH ...)
   add_compile_definitions("__MCU_HAL_HDR__=<gd32e23x.h>")
 elseif(BOARD STREQUAL "ATB_RK3568J_SMC_R0")
+  set(VENDOR "ST")
   set(MCU "STM32L0XX")
   set(CORE "ARM")
   set(MCPU cortex-m0)
-  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/Inc"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/Inc")
-  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/*.c"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_RK3568J_SMC/BLDL/*.c")
+  set(PROJECT "ATB_RK3568J_SMC")
+  # set(SPECIFIC_BUSINESS_LOGIC_INC_PATH ...)
+  # set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH ...)
   add_compile_definitions("__MCU_HAL_HDR__=<stm32l0xx_hal.h>")
   add_compile_definitions("STM32L071KB")
   add_compile_definitions("STM32L071xx")
-elseif(BOARD STREQUAL "ATB_USPD20K")
+elseif(BOARD STREQUAL "ATB_USPD_MPC")
+  set(VENDOR "Gigadevice")
   set(MCU "GD32F103VG")
   set(CORE "ARM")
   set(MCPU cortex-m3)
-  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_USPD20K/Inc"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_USPD20K/BLDL/Inc")
-  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_USPD20K/*.c"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_USPD20K/BLDL/*.c")
+  set(PROJECT "ATB_USPD_MPC")
+  # set(SPECIFIC_BUSINESS_LOGIC_INC_PATH ...)
+  # set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH ...)
   add_compile_definitions("__MCU_HAL_HDR__=<gd32f10x.h>")
   add_compile_definitions("GD32F10X_XD")
 elseif(BOARD STREQUAL "ATB_3500")
+  set(VENDOR "Gigadevice")
   set(MCU "GD32F450ZI")
   set(CORE "ARM")
   set(MCPU cortex-m4)
-  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB3500/Inc"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB3500/BLDL/Inc")
-  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB3500/*.c"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB3500/BLDL/*.c")
+  set(PROJECT "ATB3500")
+  # set(SPECIFIC_BUSINESS_LOGIC_INC_PATH ...)
+  # set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH ...)
   add_compile_definitions("__MCU_HAL_HDR__=<gd32f4xx.h>")
   add_compile_definitions("GD32F450")
 elseif(BOARD STREQUAL "ATB_MUVV")
+  set(VENDOR "Gigadevice")
   set(MCU "GD32E23X")
   set(CORE "ARM")
   set(MCPU cortex-m23)
-  set(SPECIFIC_BUSINESS_LOGIC_INC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_MUVV/Inc"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_MUVV/BLDL/Inc")
-  set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_MUVV/*.c"
-  "${CMAKE_SOURCE_DIR}/Projects/ATB_MUVV/BLDL/*.c")
+  set(PROJECT "ATB_MUVV")
+  # set(SPECIFIC_BUSINESS_LOGIC_INC_PATH ...)
+  # set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH ...)
   add_compile_definitions("__MCU_HAL_HDR__=<gd32e23x.h>")  
 else()
   message( SEND_ERROR "Board not supported!" )
@@ -118,7 +106,7 @@ add_compile_definitions("${BOARD}")
 
 if (CORE STREQUAL "ARM")
   # Set linker script file
-  set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Res/linkerscript.ld")
+  set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/${MCU}/Res/linkerscript.ld")
 
   # Set compiler options
   add_compile_options(-mfloat-abi=soft -mthumb -mlittle-endian -mthumb-interwork -ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
@@ -193,21 +181,25 @@ if (CORE STREQUAL "ARM")
 
   # Add Include directories
   include_directories(
-      "${CMAKE_SOURCE_DIR}/CL"
-      "${CMAKE_SOURCE_DIR}/CL/Inc"
-      "${CMAKE_SOURCE_DIR}/CL/DataStructures/Inc"
-      "${CMAKE_SOURCE_DIR}/CL/Workflow/Inc"
-      "${CMAKE_SOURCE_DIR}/CL/Math/Inc"
-      "${CMAKE_SOURCE_DIR}/HDL"
-      "${CMAKE_SOURCE_DIR}/HDL/Basic/Inc"
-      "${CMAKE_SOURCE_DIR}/HDL/ATB/Inc"
-      "${CMAKE_SOURCE_DIR}/HDL/PMIC/Inc"
-      "${CMAKE_SOURCE_DIR}/HDL/Smarc/Inc"
-      "${CMAKE_SOURCE_DIR}/MCU/ARM/CMSIS"
-      "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Port/Inc"
-      "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/Inc"
-      "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/Drivers/Inc"
-       ${SPECIFIC_BUSINESS_LOGIC_INC_PATH}
+    "${CMAKE_SOURCE_DIR}/CL"
+    "${CMAKE_SOURCE_DIR}/CL/Inc"
+    "${CMAKE_SOURCE_DIR}/CL/DataStructures/Inc"
+    "${CMAKE_SOURCE_DIR}/CL/Workflow/Inc"
+    "${CMAKE_SOURCE_DIR}/CL/Math/Inc"
+    "${CMAKE_SOURCE_DIR}/HDL"
+    "${CMAKE_SOURCE_DIR}/HDL/Basic/Inc"
+    "${CMAKE_SOURCE_DIR}/HDL/ATB/Inc"
+    "${CMAKE_SOURCE_DIR}/HDL/PMIC/Inc"
+    "${CMAKE_SOURCE_DIR}/HDL/Smarc/Inc"
+    "${CMAKE_SOURCE_DIR}/MCU/ARM/CMSIS"
+    "${CMAKE_SOURCE_DIR}/MCU/ARM/CMSIS"
+    "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/Inc"
+    "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/${MCU}/Port/Inc"
+    "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/${MCU}/Sys/Inc"
+    "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/${MCU}/Sys/Drivers/Inc"
+    "${CMAKE_SOURCE_DIR}/Projects/${PROJECT}/Inc"
+    "${CMAKE_SOURCE_DIR}/Projects/${PROJECT}/BLDL/Inc"
+    ${SPECIFIC_BUSINESS_LOGIC_INC_PATH}
   )
 
   # Add you source file
@@ -220,9 +212,12 @@ if (CORE STREQUAL "ARM")
   "${CMAKE_SOURCE_DIR}/HDL/ATB/Src/*.c"
   "${CMAKE_SOURCE_DIR}/HDL/PMIC/Src/*.c"
   "${CMAKE_SOURCE_DIR}/HDL/Smarc/Src/*.c"
-  "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Port/*.c"
-  "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/*.c"
-  "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/Drivers/Src/*.c"
+  "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/*.c"
+  "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/${MCU}/Port/*.c"
+  "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/${MCU}/Sys/*.c"
+  "${CMAKE_SOURCE_DIR}/MCU/ARM/${VENDOR}/${MCU}/Sys/Drivers/Src/*.c"
+  "${CMAKE_SOURCE_DIR}/Projects/${PROJECT}/*.c"
+  "${CMAKE_SOURCE_DIR}/Projects/${PROJECT}/BLDL/*.c"
    ${SPECIFIC_BUSINESS_LOGIC_SRC_PATH}
   )
 

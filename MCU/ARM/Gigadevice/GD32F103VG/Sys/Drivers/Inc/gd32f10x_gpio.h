@@ -466,6 +466,8 @@ void gpio_bit_reset(uint32_t gpio_periph, uint32_t pin);
 void gpio_bit_write(uint32_t gpio_periph, uint32_t pin, bit_status bit_value);
 /* write data to the specified GPIO port */
 void gpio_port_write(uint32_t gpio_periph, uint16_t data);
+/* toggle GPIO pin bit */
+void gpio_bit_toggle(uint32_t gpio_periph, uint32_t pin);
 
 /* get GPIO pin input status */
 FlagStatus gpio_input_bit_get(uint32_t gpio_periph, uint32_t pin);

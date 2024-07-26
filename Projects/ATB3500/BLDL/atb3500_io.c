@@ -19,7 +19,7 @@ static hdl_gpio_pin_t *_atb3500_get_gpio_pin(atb3500_io_private_t *io, atb3500_i
 static uint8_t _atb3500_io_update_input(atb3500_io_private_t *io, atb3500_io_port_t port) {
     uint32_t in = io->tx_data.input;
     hdl_gpio_pin_t *gpio = _atb3500_get_gpio_pin(io, port);
-    if(((gpio != NULL) && (hdl_gpio_read(gpio) != gpio->inactive_default)) ||
+    if(((gpio != NULL) && hdl_gpio_is_active(gpio)) ||
        ((gpio == NULL) && (io->tx_data.output & port))) {
         io->tx_data.input |= port;
     }
@@ -33,7 +33,7 @@ static uint8_t _atb3500_io_update_output(atb3500_io_private_t *io, atb3500_io_po
     hdl_gpio_pin_t *gpio = _atb3500_get_gpio_pin(io, port);
     uint32_t out = io->tx_data.output;
     if(gpio != NULL) {
-        hdl_gpio_write(gpio, active? !gpio->inactive_default: gpio->inactive_default);
+        active? hdl_gpio_set_active(gpio): hdl_gpio_set_inactive(gpio);
     }
     if(active) {
         io->tx_data.output |= port;
@@ -59,7 +59,7 @@ hdl_module_state_t atb3500_io(void *desc, uint8_t enable) {
         while(port) {
             //TODO: check all
             hdl_gpio_pin_t *gpio = _atb3500_get_gpio_pin(desc, port);
-            if(gpio != NULL && (hdl_gpio_read_output(gpio) != gpio->inactive_default) )
+            if(gpio != NULL && hdl_gpio_is_active(gpio))
                 io->tx_data.output |= port;
             else {
                 io->tx_data.output &= ~port;

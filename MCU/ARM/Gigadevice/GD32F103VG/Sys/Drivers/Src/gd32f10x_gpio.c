@@ -261,6 +261,25 @@ void gpio_port_write(uint32_t gpio_periph,uint16_t data)
 }
 
 /*!
+    \brief      toggle GPIO pin status
+    \param[in]  gpio_periph: GPIOx(x = A,B,C,F) 
+                only one parameter can be selected which is shown as below:
+      \arg        GPIOx(x = A,B,C,F) 
+    \param[in]  pin: GPIO pin
+                one or more parameters can be selected which are shown as below:
+      \arg        GPIO_PIN_x(x=0..15), GPIO_PIN_ALL
+    \param[out] none
+    \retval     none
+*/
+void gpio_bit_toggle(uint32_t gpio_periph, uint32_t pin)
+{
+    if(GPIO_OCTL(gpio_periph) & pin)
+        GPIO_BC(gpio_periph) = (uint32_t)pin;
+    else 
+        GPIO_BOP(gpio_periph) = (uint32_t)pin;
+}
+
+/*!
     \brief      get GPIO pin input status
     \param[in]  gpio_periph: GPIOx(x = A,B,C,D,E,F,G) 
     \param[in]  pin: GPIO pin

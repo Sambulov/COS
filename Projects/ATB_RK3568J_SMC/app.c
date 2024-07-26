@@ -102,39 +102,41 @@ extern  hdl_dma_channel_t mod_m2m_dma_ch;
    __NOP();
  }
 
+
+
 hdl_gpio_port_t hdl_gpio_port_a1 = {
-  .init = &hdl_gpio_port,
-  .dependencies = NULL,
-  .reg = (void *)GPIOA,
+  .module.init = &hdl_gpio_port,
+  .module.dependencies = NULL,
+  .module.reg = (void *)GPIOA,
+  .config = hdl_gpio_port_config(.hwc = &hdl_gpio_port_config_a)
 };
 
 hdl_gpio_port_t hdl_gpio_port_b1 = {
-  .init = &hdl_gpio_port,
-  .dependencies = NULL,
-  .reg = (void *)GPIOB,
+  .module.init = &hdl_gpio_port,
+  .module.dependencies = NULL,
+  .module.reg = (void *)GPIOB,
+  .config = hdl_gpio_port_config(.hwc = &hdl_gpio_port_config_b)
 };
 
-hdl_gpio_mode_t gpio_input_np = {
+hdl_gpio_pin_hw_config_t gpio_input_np = {
     .type = GPIO_MODE_INPUT,
     .pull = GPIO_PUPD_NONE,
 };
 
-hdl_gpio_mode_t mod_gpio_output_pp = {
+hdl_gpio_pin_hw_config_t mod_gpio_output_pp = {
   .type = GPIO_MODE_OUTPUT,
   .otype = GPIO_OTYPE_PP,
   .ospeed = GPIO_OSPEED_2MHZ,
   .pull = GPIO_PUPD_NONE,
 };
 
-hdl_gpio_mode_t gpio_spi_mode = {
+hdl_gpio_pin_hw_config_t gpio_spi_mode = {
     .type = GPIO_MODE_AF,
     .pull = GPIO_PUPD_NONE,
     .ospeed = GPIO_OSPEED_50MHZ,
     .af = GPIO_AF_0,
     .otype = GPIO_OTYPE_PP,
 };
-
-
 
 
 #ifdef SPI_CLIENT
@@ -274,33 +276,32 @@ hdl_spi_client_ch_t spi_master_0_ch_0 = {
 };
 
 #else
-  hdl_gpio_pin_t gpio_pin_spi_mosi = {
-    .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
-    .module.reg = (void *)GPIO_PIN_5,
-    .mode = &gpio_spi_mode
+hdl_gpio_pin_t gpio_pin_spi_mosi = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1.module),
+  .module.reg = (void *)GPIO_PIN_5,
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &gpio_spi_mode)
 };
 
 hdl_gpio_pin_t gpio_pin_spi_miso = {
-    .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
-    .module.reg = (void *)GPIO_PIN_4,
-    .mode = &gpio_spi_mode
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1.module),
+  .module.reg = (void *)GPIO_PIN_4,
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &gpio_spi_mode)
 };
 
 hdl_gpio_pin_t gpio_pin_spi_sck = {
-    .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
-    .module.reg = (void *)GPIO_PIN_3,
-    .mode = &gpio_spi_mode
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1.module),
+  .module.reg = (void *)GPIO_PIN_3,
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &gpio_spi_mode)
 };
 
 hdl_gpio_pin_t gpio_pin_spi_cs = {
-    .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
-    .module.reg = (void *)GPIO_PIN_15,
-    .mode = &gpio_spi_mode,
-    .inactive_default = HDL_GPIO_LOW,
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1.module),
+  .module.reg = (void *)GPIO_PIN_15,
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &gpio_spi_mode)
 };
 
 hdl_spi_server_config_t spi_server_config = {
@@ -324,17 +325,16 @@ hdl_spi_server_t mod_spi_slave = {
 
 hdl_gpio_pin_t pin_pa0 = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1.module),
     .module.reg = (void *)GPIO_PIN_0,
-    .mode = &gpio_input_np,
-    .inactive_default = HDL_GPIO_HIGH,
+    .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &gpio_input_np)
 };
 
 hdl_gpio_pin_t pin_pb8 = {
     .module.init = &hdl_gpio_pin,
-    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1),
+    .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b1.module),
     .module.reg = (void *)GPIO_PIN_8,
-    .mode = &gpio_input_np
+    .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &gpio_input_np)
 };
 
 
@@ -350,14 +350,14 @@ hdl_timer_event_t timer_with_event = {
   .module.init = &hdl_timer_event,
 };
 
-hdl_gpio_mode_t hdl_gpio_mode_uart_0_tx = {
+hdl_gpio_pin_hw_config_t hdl_gpio_mode_uart_0_tx = {
   .af = GPIO_AF_1,
   .pull = GPIO_PUPD_NONE,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_PP,
   .ospeed = GPIO_OSPEED_10MHZ
 };
-hdl_gpio_mode_t hdl_gpio_mode_uart_0_rx = {
+hdl_gpio_pin_hw_config_t hdl_gpio_mode_uart_0_rx = {
   .af = GPIO_AF_1,
   .pull = GPIO_PUPD_NONE,
   .type = GPIO_MODE_AF,
@@ -368,15 +368,15 @@ hdl_gpio_mode_t hdl_gpio_mode_uart_0_rx = {
 
 hdl_gpio_pin_t hdl_gpio_pin_uart_0_tx = {
   .module.init = &hdl_gpio_pin,
-  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1.module),
   .module.reg = (void *)GPIO_PIN_9,
-  .mode = &hdl_gpio_mode_uart_0_tx,
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_uart_0_tx)
 };
 hdl_gpio_pin_t hdl_gpio_pin_uart_0_rx = {
   .module.init = &hdl_gpio_pin,
-  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1),
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a1.module),
   .module.reg = (void *)GPIO_PIN_10,
-  .mode = &hdl_gpio_mode_uart_0_rx,
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_uart_0_rx)
 };
 
 hdl_uart_t hdl_uart_0 = {

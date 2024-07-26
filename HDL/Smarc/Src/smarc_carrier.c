@@ -67,9 +67,9 @@ void hdl_smarc_carrier_boot_select(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_
     hdl_gpio_pin_t *boot0 = _smarc_get_ctrl_pin((hdl_smarc_carrier_private_t *)desc, HDL_SMARC_CARRIER_DEPENDENCY_BOOT0_PIN);
     hdl_gpio_pin_t *boot1 = _smarc_get_ctrl_pin((hdl_smarc_carrier_private_t *)desc, HDL_SMARC_CARRIER_DEPENDENCY_BOOT1_PIN);
     hdl_gpio_pin_t *boot2 = _smarc_get_ctrl_pin((hdl_smarc_carrier_private_t *)desc, HDL_SMARC_CARRIER_DEPENDENCY_BOOT2_PIN);
-    if(boot0) hdl_gpio_write(boot0, (select & HDL_SMARC_CARRIER_BOOT0)? !boot0->inactive_default: boot0->inactive_default);
-    if(boot1) hdl_gpio_write(boot1, (select & HDL_SMARC_CARRIER_BOOT1)? !boot1->inactive_default: boot1->inactive_default);
-    if(boot2) hdl_gpio_write(boot2, (select & HDL_SMARC_CARRIER_BOOT2)? !boot2->inactive_default: boot2->inactive_default);
+    if(boot0) hdl_gpio_write(boot0, (select & HDL_SMARC_CARRIER_BOOT0)? !boot0->config->inactive_default: boot0->config->inactive_default);
+    if(boot1) hdl_gpio_write(boot1, (select & HDL_SMARC_CARRIER_BOOT1)? !boot1->config->inactive_default: boot1->config->inactive_default);
+    if(boot2) hdl_gpio_write(boot2, (select & HDL_SMARC_CARRIER_BOOT2)? !boot2->config->inactive_default: boot2->config->inactive_default);
 }
 
 static uint8_t _smarc_carrier_work(coroutine_t *this, uint8_t cancel, void *arg) {

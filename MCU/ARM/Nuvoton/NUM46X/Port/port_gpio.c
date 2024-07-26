@@ -3,42 +3,12 @@
 hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
   /* Casting desc to hdl_gpio_port_t* type */
   hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;
-  if(port->reg == NULL)
+  if(port->module.reg == NULL)
     return HDL_MODULE_INIT_FAILED;
-  uint32_t rcu;
-  switch((uint32_t)port->reg) {
-    case (uint32_t)PA:
-      rcu = CLK_AHBCLK0_GPACKEN_Msk;
-    break;
-    case (uint32_t)PB:
-      rcu = CLK_AHBCLK0_GPBCKEN_Msk;
-    break;
-    case (uint32_t)PC:
-      rcu = CLK_AHBCLK0_GPCCKEN_Msk;
-    break;
-    case (uint32_t)PD:
-      rcu = CLK_AHBCLK0_GPDCKEN_Msk;
-    break;
-    case (uint32_t)PE:
-      rcu = CLK_AHBCLK0_GPECKEN_Msk;
-    break;
-    case (uint32_t)PF:
-      rcu = CLK_AHBCLK0_GPFCKEN_Msk;
-    break;
-    case (uint32_t)PG:
-      rcu = CLK_AHBCLK0_GPGCKEN_Msk;
-    break;
-    case (uint32_t)PH:
-      rcu = CLK_AHBCLK0_GPHCKEN_Msk;
-    break;
-    default:
-      return HDL_MODULE_INIT_FAILED;
-  }
-
   if(enable)
-    CLK->AHBCLK0 |= rcu;
+    CLK->AHBCLK0 |= port->config->hwc->rcu;
   else{
-    CLK->AHBCLK0 &= ~rcu;
+    CLK->AHBCLK0 &= ~(port->config->hwc->rcu);
     return HDL_MODULE_DEINIT_OK;
   }
   return HDL_MODULE_INIT_OK;
@@ -80,11 +50,11 @@ void hdl_gpio_toggle(const hdl_gpio_pin_t *gpio){
 
 hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
-  if (gpio->mode == NULL || gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
+  if (gpio->config->hwc == NULL || gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
     return HDL_MODULE_INIT_FAILED;
   GPIO_T *gpio_port = (GPIO_T *)gpio->module.dependencies[0]->reg;
 
-  if(gpio->inactive_default == HDL_GPIO_LOW) {
+  if(gpio->config->inactive_default == HDL_GPIO_LOW) {
     gpio_port->DOUT &= ~((uint32_t)gpio->module.reg);
   }
   else {
@@ -92,9 +62,9 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
   }
 
   if(enable) {
-    GPIO_SetMode(gpio_port, (uint32_t)gpio->module.reg, gpio->mode->func);
-    GPIO_SetPullCtl(gpio_port, (uint32_t)gpio->module.reg, gpio->mode->pull_mode);
-    GPIO_SetSlewCtl(gpio_port, (uint32_t)gpio->module.reg, gpio->mode->slew_mode);
+    GPIO_SetMode(gpio_port, (uint32_t)gpio->module.reg, gpio->config->hwc->func);
+    GPIO_SetPullCtl(gpio_port, (uint32_t)gpio->module.reg, gpio->config->hwc->pull_mode);
+    GPIO_SetSlewCtl(gpio_port, (uint32_t)gpio->module.reg, gpio->config->hwc->slew_mode);
   }
   else{
     GPIO_SetMode(gpio_port, (uint32_t)gpio->module.reg, GPIO_MODE_QUASI);

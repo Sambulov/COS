@@ -1,5 +1,9 @@
 #ifndef MIG_ATB_RK3568J_SMC_H_
 #define MIG_ATB_RK3568J_SMC_H_
 
+extern const hdl_gpio_port_hw_config_t hdl_gpio_port_config_a;
+extern const hdl_gpio_port_hw_config_t hdl_gpio_port_config_b;
+extern const hdl_gpio_port_hw_config_t hdl_gpio_port_config_c;
+extern const hdl_gpio_port_hw_config_t hdl_gpio_port_config_f;
 
 #endif // MIG_ATB_RK3568J_SMC_H_

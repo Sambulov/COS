@@ -33,7 +33,7 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
       btn->output_state = HDL_BTN_O_CLICK_DEBOUNCE;
       btn->output_change_time = hdl_timer_get(btn_timer);
     case HDL_BTN_O_PRESS:
-      hdl_gpio_write(btn_gpio, !btn_gpio->inactive_default);
+      hdl_gpio_set_active(btn_gpio);
       break;
     case HDL_BTN_O_CLICK_DEBOUNCE: {
       uint8_t debounce_timeout = TIME_ELAPSED(btn->output_change_time, btn->debounce_delay, hdl_timer_get(btn_timer));
@@ -43,15 +43,14 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
       break;
     }
     case HDL_BTN_O_RELEASE:
-      hdl_gpio_write(btn_gpio, btn_gpio->inactive_default);
+      hdl_gpio_set_inactive(btn_gpio);
       btn->output_state = HDL_BTN_O_DEFAULT;
     case HDL_BTN_O_DEFAULT:
     default:
       break;
   }
 
-  uint8_t btn_active = 0;
-  btn_active = (hdl_gpio_read(btn_gpio) != btn_gpio->inactive_default);
+  uint8_t btn_active = hdl_gpio_is_active(btn_gpio);
   switch (btn->input_state) {
     case HDL_BTN_RELEASED:
       if(!btn_active) 

@@ -25,7 +25,7 @@ _Static_assert(sizeof(hdl_spi_server_dma_private_t) == sizeof(hdl_spi_server_dma
 static void event_spi_nss(uint32_t event, void *sender, void *context) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)context;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->module.dependencies[3];
-  if((event & (uint32_t)nss->module.reg) && (hdl_gpio_read(nss) == nss->inactive_default)) {
+  if((event & (uint32_t)nss->module.reg) && hdl_gpio_is_inactive(nss)) {
     if(spi->rx_mem) {
       hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];
       spi->received = (spi->rx_mem->size - hdl_dma_get_counter(dma_rx));

@@ -4,24 +4,47 @@
   // const hdl_sys_t mod_sys_cnf = {
 
   // };
+hdl_gpio_port_hw_config_t mod_port_config_a = {
+  .rcu = RCC_IOPENR_GPIOAEN
+};
 
-  const hdl_gpio_mode_t mod_gpio_output_pp_mode = {
+hdl_gpio_port_hw_config_t mod_port_config_b = {
+  .rcu = RCC_IOPENR_GPIOBEN
+};
+
+hdl_gpio_port_hw_config_t mod_port_config_c = {
+  .rcu = RCC_IOPENR_GPIOCEN
+};
+
+hdl_gpio_port_hw_config_t mod_port_config_d = {
+  .rcu = RCC_IOPENR_GPIODEN
+};
+
+hdl_gpio_port_hw_config_t mod_port_config_e = {
+  .rcu = RCC_IOPENR_GPIOEEN
+};
+
+hdl_gpio_port_hw_config_t mod_port_config_h = {
+  .rcu = RCC_IOPENR_GPIOHEN
+};
+
+  const hdl_gpio_pin_hw_config_t mod_gpio_output_pp_mode = {
     .type = GPIO_MODE_OUTPUT_PP,
     .ospeed = GPIO_SPEED_FREQ_MEDIUM,
   };
 
-  const hdl_gpio_mode_t mod_gpio_input_pullup_mode = {
+  const hdl_gpio_pin_hw_config_t mod_gpio_input_pullup_mode = {
     .pull = GPIO_PULLUP,
     .type = GPIO_MODE_INPUT,
   };
 
-  hdl_gpio_mode_t mod_gpio_swd_mode = {
+  hdl_gpio_pin_hw_config_t mod_gpio_swd_mode = {
     .af = GPIO_AF0_SWDIO,
     .type = GPIO_MODE_AF_PP,
     .ospeed = GPIO_SPEED_FREQ_VERY_HIGH,
   };
 
-  hdl_gpio_mode_t mod_gpio_i2c_mode = {
+  hdl_gpio_pin_hw_config_t mod_gpio_i2c_mode = {
     .af = GPIO_AF6_I2C1,
     .type = GPIO_MODE_AF_OD,
     .ospeed = GPIO_SPEED_FREQ_MEDIUM

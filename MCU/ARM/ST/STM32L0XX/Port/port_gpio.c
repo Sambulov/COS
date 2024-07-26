@@ -3,34 +3,10 @@
 hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
   /* Casting desc to hdl_gpio_port_t* type */
   hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;
-  uint32_t rcu;
-  switch((uint32_t)port->reg) {
-    case (uint32_t)GPIOA:
-      rcu = RCC_IOPENR_GPIOAEN;
-    break;
-    case (uint32_t)GPIOB:
-      rcu = RCC_IOPENR_GPIOBEN;
-    break;
-    case (uint32_t)GPIOC:
-      rcu = RCC_IOPENR_GPIOCEN;
-    break;
-    case (uint32_t)GPIOD:
-      rcu = RCC_IOPENR_GPIODEN;
-    break;
-    case (uint32_t)GPIOE:
-      rcu = RCC_IOPENR_GPIOEEN;
-    break;
-    case (uint32_t)GPIOH:
-      rcu = RCC_IOPENR_GPIOHEN;
-    break;
-    default:
-    return HDL_MODULE_INIT_FAILED;
-  }
-
   if(enable)
-    SET_BIT(RCC->IOPENR, rcu);
+    SET_BIT(RCC->IOPENR, port->config->hwc->rcu);
   else{
-    CLEAR_BIT(RCC->IOPENR, rcu);
+    CLEAR_BIT(RCC->IOPENR, port->config->hwc->rcu);
     return HDL_MODULE_DEINIT_OK;
   }
   return HDL_MODULE_INIT_OK;
@@ -67,17 +43,17 @@ void hdl_gpio_toggle(const hdl_gpio_pin_t *gpio){
 
 hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
-  if (gpio->mode == NULL || gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
+  if (gpio->config->hwc == NULL || gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
     return HDL_MODULE_INIT_FAILED;
   GPIO_TypeDef *gpio_port = (GPIO_TypeDef *)gpio->module.dependencies[0]->reg;
-  HAL_GPIO_WritePin(gpio_port, (uint32_t)gpio->module.reg, (gpio->inactive_default == HDL_GPIO_HIGH)? GPIO_PIN_SET: GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(gpio_port, (uint32_t)gpio->module.reg, (gpio->config->inactive_default == HDL_GPIO_HIGH)? GPIO_PIN_SET: GPIO_PIN_RESET);
   GPIO_InitTypeDef GPIO_InitStructure;
   if(enable) {
     GPIO_InitStructure.Pin = (uint32_t)gpio->module.reg;
-    GPIO_InitStructure.Mode = gpio->mode->type;
-    GPIO_InitStructure.Speed = gpio->mode->ospeed;
-    GPIO_InitStructure.Pull = gpio->mode->pull;
-    GPIO_InitStructure.Alternate = gpio->mode->af;
+    GPIO_InitStructure.Mode = gpio->config->hwc->type;
+    GPIO_InitStructure.Speed = gpio->config->hwc->ospeed;
+    GPIO_InitStructure.Pull = gpio->config->hwc->pull;
+    GPIO_InitStructure.Alternate = gpio->config->hwc->af;
     HAL_GPIO_Init(gpio_port, &GPIO_InitStructure);
   }
   else{

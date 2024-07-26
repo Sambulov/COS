@@ -88,7 +88,7 @@ static uint8_t _spi_client_channel_handler(hdl_spi_client_ch_private_t *ch, hdl_
       msg->state = HDL_SPI_TRANSACTION_EXECUTED;
       linked_list_unlink(linked_list_item(msg));
       ch->curent_msg = NULL;
-      hdl_gpio_write(pin_cs, pin_cs->inactive_default);
+      hdl_gpio_write(pin_cs, pin_cs->config->inactive_default);
     }
     if(ch->curent_msg == NULL && ch->msgs != NULL) {  
       ch->curent_msg = ch->msgs;
@@ -100,7 +100,7 @@ static uint8_t _spi_client_channel_handler(hdl_spi_client_ch_private_t *ch, hdl_
       msg->rx_cursor = 0;
       msg->tx_cursor = 0;
       spi->current_msg = msg;
-      hdl_gpio_write(pin_cs, !pin_cs->inactive_default);
+      hdl_gpio_write(pin_cs, !pin_cs->config->inactive_default);
       SPI_CTL1((uint32_t)spi->module.reg) |= (SPI_CTL1_TBEIE | SPI_CTL1_RBNEIE);
     }
     return 1;

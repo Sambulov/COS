@@ -123,15 +123,9 @@ static uint8_t _spi_client_worker(coroutine_t *this, uint8_t cancel, void *arg) 
 
 hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable) {
   hdl_spi_client_private_t *spi = (hdl_spi_client_private_t*)desc;
-  rcu_periph_enum rcu;
-  switch ((uint32_t)spi->module.reg) {
-    case SPI0: rcu = RCU_SPI0; break;
-    case SPI1: rcu = RCU_SPI1; break;
-    default: return HDL_MODULE_INIT_FAILED;
-  }
   spi_i2s_deinit((uint32_t)spi->module.reg);
   if(enable) {
-    rcu_periph_clock_enable(rcu);
+    rcu_periph_clock_enable(spi->config->rcu);
     spi_parameter_struct init;
     init.device_mode = SPI_MASTER;
     init.trans_mode = SPI_TRANSMODE_FULLDUPLEX;
@@ -153,7 +147,7 @@ hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable) {
     return HDL_MODULE_INIT_OK;
   }
   coroutine_cancel(&spi->worker);
-  rcu_periph_clock_disable(rcu);
+  rcu_periph_clock_disable(spi->config->rcu);
   return HDL_MODULE_DEINIT_OK;
 }
 

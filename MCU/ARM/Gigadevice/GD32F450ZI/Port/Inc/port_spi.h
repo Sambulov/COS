@@ -42,6 +42,7 @@ void hdl_spi_reset_status(uint32_t spi_module_reg);
 /**************** vvv  SPI slave vvv  ******************/
 
 typedef struct {
+  rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
 } hdl_spi_server_config_t;
@@ -89,6 +90,7 @@ typedef struct {
 #define HDl_SPI_CLIENT_CH_PRIVATE_SIZE 24
 
 typedef struct {
+  rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
   hdl_spi_prescale_t prescale;

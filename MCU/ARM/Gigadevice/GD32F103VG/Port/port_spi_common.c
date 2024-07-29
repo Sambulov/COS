@@ -1,9 +1,0 @@
-#include "hdl_portable.h"
-
-void hdl_spi_reset_status (uint32_t spi_reg) {
-  __IO uint32_t tmpreg = SPI_DATA(spi_reg);
-  tmpreg = SPI_STAT(spi_reg);
-  SPI_CTL0(spi_reg) = SPI_CTL0(spi_reg);
-  SPI_STAT(spi_reg) &= ~(SPI_STAT_CRCERR);
-  (void)tmpreg;
-}

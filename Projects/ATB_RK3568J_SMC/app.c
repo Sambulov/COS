@@ -171,6 +171,7 @@ hdl_gpio_pin_t gpio_pin_spi_cs = {
 
 
 hdl_spi_client_config_t spi_master_config = {
+  .rcu = RCU_SPI0
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_2EDGE,
   .prescale = HDL_SPI_PSC_256,
@@ -305,6 +306,7 @@ hdl_gpio_pin_t gpio_pin_spi_cs = {
 };
 
 hdl_spi_server_config_t spi_server_config = {
+  .rcu = RCU_SPI0,
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_2EDGE,
 };

@@ -810,6 +810,7 @@ hdl_gpio_pin_t mod_spi_3_cs = {
 
 
 const hdl_spi_server_config_t hdl_spi_slave_config = {
+  .rcu = RCU_SPI3,
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_LOW_PH_1EDGE
 };

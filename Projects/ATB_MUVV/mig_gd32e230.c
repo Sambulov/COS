@@ -740,7 +740,7 @@ hdl_nvic_interrupt_t mod_irq_i2c1_er = {
 };
 
 
-hdl_nvic_config_t mod_nvic_cnf = {
+const hdl_nvic_config_t mod_nvic_cnf = {
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .irq_latency = 0, /* TODO: define static assert */
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,
@@ -818,7 +818,7 @@ hdl_nvic_t mod_nvic = {
   .module.init = &hdl_interrupt_controller,
   .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
   .module.reg = NVIC,
-
+  .config = &mod_nvic_cnf,
 };
 
 /**************************************************************
@@ -970,7 +970,7 @@ const hdl_dma_channel_config_t mod_adc_dma_ch_config = {
   .priority = DMA_PRIORITY_LOW,
   .direction = DMA_PERIPHERAL_TO_MEMORY,
   .memory_width = DMA_MEMORY_WIDTH_32BIT,
-  .periph_width = DMA_PERIPH_WIDTH_16BIT,
+  .periph_width = DMA_PERIPHERAL_WIDTH_16BIT,
   .memory_inc = 1,
   .periph_inc = 0,
   .circular = 1
@@ -980,7 +980,7 @@ const hdl_dma_channel_config_t mod_m2m_dma_ch_config = {
   .priority = DMA_PRIORITY_LOW,
   .direction = DMA_PERIPHERAL_TO_MEMORY,
   .memory_width = DMA_MEMORY_WIDTH_32BIT,
-  .periph_width = DMA_PERIPH_WIDTH_32BIT,
+  .periph_width = DMA_PERIPHERAL_WIDTH_32BIT,
   .memory_inc = 1,
   .periph_inc = 1,
   .m2m_direction = 1,

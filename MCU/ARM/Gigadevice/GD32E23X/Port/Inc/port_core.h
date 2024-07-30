@@ -76,12 +76,12 @@ typedef struct {
   uint32_t prio_bits;
   hdl_nvic_interrupt_t **interrupts;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
-  void* vector[];
+  void* vector[] __attribute__((aligned(128))); 
 } hdl_nvic_config_t;
 
 typedef struct {
   hdl_module_t module;
-  hdl_nvic_config_t *config;
+  const hdl_nvic_config_t *config;
 } hdl_nvic_t;
 
 typedef struct{
@@ -95,7 +95,6 @@ typedef hdl_nvic_t hdl_interrupt_controller_t;
 typedef hdl_nvic_interrupt_t hdl_interrupt_t;
 typedef hdl_nvic_irq_n_t hdl_irq_n_t;
 
-extern void *g_pfnVectors[];
 extern void *_estack;
 extern void *_sidata, *_sdata, *_edata;
 extern void *_sbss, *_ebss;

@@ -23,7 +23,7 @@ void svc_handler();
 void pend_sv_handler()                  { call_isr(HDL_NVIC_EXCEPTION_PSV, 0); }
 void systick_handler()                  { call_isr(HDL_NVIC_EXCEPTION_SysTick, 0); }
 
-void * g_pfnVectors[0x40] __attribute__ ((section (".isr_vector"), used)) = {
+void * g_pfnVectors[0x2] __attribute__ ((section (".isr_vector"), used)) = {
   &_estack,
   &Reset_Handler,
 };
@@ -36,7 +36,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_LR(void)  {
 } 
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
-  hdl_nvic_config_t *ic = (hdl_nvic_config_t *)SCB->VTOR - offsetof(hdl_nvic_config_t, vector);
+  hdl_nvic_config_t *ic = (hdl_nvic_config_t *)((uint8_t *)SCB->VTOR - offsetof(hdl_nvic_config_t, vector));
   hdl_nvic_interrupt_t **isrs = ic->interrupts;
   if(isrs != NULL) {
     while (*isrs != NULL) {
@@ -149,7 +149,10 @@ hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
     /* NVIC_SetPriorityGrouping   not available for Cortex-M23 */
     nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0);
     SYSCFG_CPU_IRQ_LAT = nvic->config->irq_latency;
-    SCB->VTOR = (uint32_t)nvic->config->vector;
+    uint32_t a = (uint32_t)(void *)&nvic->config->vector;
+    uint32_t b = (uint32_t)nvic->config->vector; 
+    uint32_t c = (uint32_t)&nvic->config->vector;
+    SCB->VTOR = (uint32_t)&nvic->config->vector;
     /* TODO: find wokaround to save context for interrupt vector */
     return HDL_MODULE_INIT_OK;
   }

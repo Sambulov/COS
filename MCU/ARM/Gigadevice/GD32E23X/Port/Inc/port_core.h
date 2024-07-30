@@ -73,10 +73,15 @@ typedef struct {
 } hdl_nvic_interrupt_t;
 
 typedef struct {
-  hdl_module_t module;
   uint32_t prio_bits;
   hdl_nvic_interrupt_t **interrupts;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
+  void* vector[];
+} hdl_nvic_config_t;
+
+typedef struct {
+  hdl_module_t module;
+  hdl_nvic_config_t *config;
 } hdl_nvic_t;
 
 typedef struct{
@@ -89,5 +94,50 @@ typedef struct{
 typedef hdl_nvic_t hdl_interrupt_controller_t;
 typedef hdl_nvic_interrupt_t hdl_interrupt_t;
 typedef hdl_nvic_irq_n_t hdl_irq_n_t;
+
+extern void *g_pfnVectors[];
+extern void *_estack;
+extern void *_sidata, *_sdata, *_edata;
+extern void *_sbss, *_ebss;
+
+void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
+
+void Reset_Handler();
+void irq_n_handler();
+void nmi_handler();
+void hard_fault_handler();
+void svc_handler();
+void pend_sv_handler();
+void systick_handler();
+
+void WWDGT_IRQHandler();
+void LVD_IRQHandler();
+void RTC_IRQHandler();
+void FMC_IRQHandler();
+void RCU_IRQHandler();
+void EXTI0_1_IRQHandler();
+void EXTI2_3_IRQHandler();
+void EXTI4_15_IRQHandler();
+void DMA_Channel0_IRQHandler();
+void DMA_Channel1_2_IRQHandler();
+void DMA_Channel3_4_IRQHandler();
+void ADC_CMP_IRQHandler();
+void TIMER0_BRK_UP_TRG_COM_IRQHandler();
+void TIMER0_Channel_IRQHandler();
+void TIMER2_IRQHandler();
+void TIMER5_IRQHandler();
+void TIMER13_IRQHandler();
+void TIMER14_IRQHandler();
+void TIMER15_IRQHandler();
+void TIMER16_IRQHandler();
+void I2C0_EV_IRQHandler();
+void I2C1_EV_IRQHandler();
+void SPI0_IRQHandler();
+void SPI1_IRQHandler();
+void USART0_IRQHandler();
+void USART1_IRQHandler();
+void I2C0_ER_IRQHandler();
+void I2C1_ER_IRQHandler();
+
 
 #endif // PORT_CORE_H_

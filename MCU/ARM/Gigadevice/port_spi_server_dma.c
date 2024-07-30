@@ -22,6 +22,25 @@ typedef struct {
 
 _Static_assert(sizeof(hdl_spi_server_dma_private_t) == sizeof(hdl_spi_server_dma_t), "In port_spi.h data structure size of hdl_spi_mem_server_t doesn't match, check SPI_SERVER_DMA_PRIVATE_SIZE");
 
+static void _hdl_spi_mem_full_reset(hdl_spi_server_dma_private_t *spi) {
+  hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];
+  hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->module.dependencies[7];
+  spi_i2s_deinit((uint32_t)spi->module.reg);
+  hdl_dma_stop(dma_rx);
+  hdl_dma_stop(dma_tx);
+  spi_parameter_struct init;
+  init.device_mode = SPI_SLAVE;
+  init.trans_mode = SPI_TRANSMODE_FULLDUPLEX;
+  init.frame_size = SPI_FRAMESIZE_8BIT;
+  init.endian = spi->config->endian;
+  init.clock_polarity_phase = spi->config->polarity;
+  init.nss = SPI_NSS_HARD;
+  init.prescale = HDL_SPI_PSC_2;
+  spi_init((uint32_t)spi->module.reg, &init);
+  SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_ERRIE;
+  SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMATEN | SPI_CTL1_DMAREN;
+}
+
 static void event_spi_nss(uint32_t event, void *sender, void *context) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)context;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->module.dependencies[3];
@@ -84,6 +103,7 @@ uint8_t hdl_spi_server_dma_set_tx_data(hdl_spi_server_dma_t *desc, hdl_basic_buf
 static uint8_t _spi_server_dma_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t *) arg;
   if(spi->received != 0) {
+    _hdl_spi_mem_full_reset(spi);
     if(spi->spi_cb != NULL) {
       spi->spi_cb(spi->received, spi, spi->context);
     }
@@ -92,6 +112,7 @@ static uint8_t _spi_server_dma_worker(coroutine_t *this, uint8_t cancel, void *a
       hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];
       hdl_dma_run(dma_rx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)spi->rx_mem->data , (uint32_t)spi->rx_mem->size);
     }
+    spi_enable((uint32_t)spi->module.reg);
   }
   return cancel;
 }

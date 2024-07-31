@@ -11,18 +11,18 @@ typedef enum {
 
 typedef struct {
   hdl_module_t module;
+  /* private */
   hdl_event_t event;
   uint32_t time_stamp;
   uint32_t delay;
   hdl_timer_mode_t mode;
   coroutine_t timer_events_worker;
-} hdl_timer_event_private_t;
+} hdl_timer_private_t;
 
-_Static_assert(sizeof(hdl_timer_event_private_t) == sizeof(hdl_timer_t), "In hdl_timer.h data structure size of hdl_button_t doesn't match, check HDL_TIMER_EVENT_PRV_SIZE");
-_Static_assert(offsetof(hdl_timer_event_private_t, event) == offsetof(hdl_timer_t, event), "In hdl_timer.h hdl_timer_t properties order doesn't match");
+_Static_assert(sizeof(hdl_timer_private_t) == sizeof(hdl_timer_t), "In hdl_timer.h data structure size of hdl_button_t doesn't match, check HDL_TIMER_PRV_SIZE");
 
 static uint8_t _timer_events_handler(coroutine_t *this, uint8_t cancel, void *arg) {
-  hdl_timer_event_private_t *timer_event = (hdl_timer_event_private_t *)arg;
+  hdl_timer_private_t *timer_event = (hdl_timer_private_t *)arg;
   hdl_time_counter_t *timer = (hdl_time_counter_t *)timer_event->module.dependencies[0];
   if(timer_event->mode != HDL_TIMER_EVENT_IDLE) {
     uint32_t now = hdl_time_counter_get(timer);
@@ -38,7 +38,7 @@ static uint8_t _timer_events_handler(coroutine_t *this, uint8_t cancel, void *ar
 }
 
 hdl_module_state_t hdl_timer(void *desc, uint8_t enable) {
-  hdl_timer_event_private_t *timer_event = (hdl_timer_event_private_t *)desc;
+  hdl_timer_private_t *timer_event = (hdl_timer_private_t *)desc;
   if(desc != NULL) {
     if(enable) {
       timer_event->mode = HDL_TIMER_EVENT_IDLE;
@@ -51,7 +51,7 @@ hdl_module_state_t hdl_timer(void *desc, uint8_t enable) {
 }
 
 uint8_t hdl_timer_set(hdl_timer_t *timer, uint32_t delay, hdl_timer_mode_t mode) {
-  hdl_timer_event_private_t *timer_event = (hdl_timer_event_private_t *)timer;
+  hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
   if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_INIT_OK)) {
     hdl_time_counter_t *timer = (hdl_time_counter_t *)timer_event->module.dependencies[0];
     timer_event->time_stamp = hdl_time_counter_get(timer);
@@ -63,7 +63,7 @@ uint8_t hdl_timer_set(hdl_timer_t *timer, uint32_t delay, hdl_timer_mode_t mode)
 }
 
 hdl_timer_mode_t hdl_timer_mode(hdl_timer_t *timer) {
-  hdl_timer_event_private_t *timer_event = (hdl_timer_event_private_t *)timer;
+  hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
   if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_INIT_OK)) {
     return timer_event->mode;
   }
@@ -71,10 +71,17 @@ hdl_timer_mode_t hdl_timer_mode(hdl_timer_t *timer) {
 }
 
 uint32_t hdl_timer_left(hdl_timer_t *timer) {
-  hdl_timer_event_private_t *timer_event = (hdl_timer_event_private_t *)timer;
+  hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
   if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_INIT_OK)) {
     hdl_time_counter_t *timer = (hdl_time_counter_t *)timer_event->module.dependencies[0];
     return timer_event->delay - (timer_event->mode != HDL_TIMER_EVENT_IDLE)? (hdl_time_counter_get(timer) - timer_event->time_stamp): 0;
   }
   return 0;
+}
+
+uint8_t hdl_timer_subscribe(hdl_timer_t *timer, hdl_delegate_t *delegate) {
+  hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
+  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_INIT_OK)) {
+    hdl_event_subscribe(&timer_event->event, delegate);
+  }
 }

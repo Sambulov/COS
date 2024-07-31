@@ -655,166 +655,164 @@
 
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
+const hdl_core_config_t mod_sys_core_cnf = {
+  .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
+};
+
 hdl_core_t mod_sys_core = {
   .module.init = &hdl_core,
   .module.dependencies = NULL,
   .module.reg = (void *)SCB_BASE,
-  .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
-  /* TODO: ... */
+  .config = &mod_sys_core_cnf
 };
 
 /**************************************************************
  *  NVIC, IRQ, EXTI
  *************************************************************/
 
-hdl_nvic_interrupt_t mod_irq_systick = {
+hdl_interrupt_t mod_irq_systick = {
   .irq_type = HDL_NVIC_EXCEPTION_SysTick,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_timer0 = {
+hdl_interrupt_t mod_irq_timer0 = {
   .irq_type = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
   .priority = 0,
   .priority_group = 1,
 };
 
-hdl_nvic_interrupt_t mod_irq_timer2 = {
+hdl_interrupt_t mod_irq_timer2 = {
   .irq_type = HDL_NVIC_IRQ16_TIMER2,
   .priority = 2,
   .priority_group = 2,
 };
 
-hdl_nvic_interrupt_t mod_irq_exti_0_1 = {
+hdl_interrupt_t mod_irq_exti_0_1 = {
   .irq_type = HDL_NVIC_IRQ5_EXTI0_1,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_exti_2_3 = {
+hdl_interrupt_t mod_irq_exti_2_3 = {
   .irq_type = HDL_NVIC_IRQ6_EXTI2_3,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_exti_4_15 = {
+hdl_interrupt_t mod_irq_exti_4_15 = {
   .irq_type = HDL_NVIC_IRQ7_EXTI4_15,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_usart_0 = {
+hdl_interrupt_t mod_irq_usart_0 = {
   .irq_type = HDL_NVIC_IRQ27_USART0,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_spi_0 = {
+hdl_interrupt_t mod_irq_spi_0 = {
   .irq_type = HDL_NVIC_IRQ25_SPI0,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_i2c0_ev = {
+hdl_interrupt_t mod_irq_i2c0_ev = {
   .irq_type = HDL_NVIC_IRQ23_I2C0_EV,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_i2c0_er = {
+hdl_interrupt_t mod_irq_i2c0_er = {
   .irq_type = HDL_NVIC_IRQ32_I2C0_ER,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_i2c1_ev = {
+hdl_interrupt_t mod_irq_i2c1_ev = {
   .irq_type = HDL_NVIC_IRQ24_I2C1_EV,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_i2c1_er = {
+hdl_interrupt_t mod_irq_i2c1_er = {
   .irq_type = HDL_NVIC_IRQ34_I2C1_ER,
   .priority = 0,
   .priority_group = 0,
 };
 
+extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
-const hdl_nvic_config_t mod_nvic_cnf = {
+const void *main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
+  &mod_nvic_cnf,
+  &reset_handler,
+};
+
+const void* other_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
+  &mod_nvic_cnf,
+  &reset_handler,
+  &nmi_handler,
+  &hard_fault_handler,
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  &svc_handler,
+  ((void *)0),
+  ((void *)0),
+  &pend_sv_handler,
+  &systick_handler,
+  &wwdgt_handler,                    /* IRQ0 */ 
+  &lvd_handler,                      /* IRQ1 */
+  &rtc_handler,                      /* IRQ2 */
+  &fmc_handler,                      /* IRQ3 */
+  &rcu_handler,                      /* IRQ4 */
+  &exti0_1_handler,                  /* IRQ5 */
+  &exti2_3_IRQHandler,               /* IRQ6 */
+  &exti4_15_handler,                 /* IRQ7 */
+  &irq_n_handler,                    /* IRQ8 */
+  &dma_channel0_handler,             /* IRQ9 */
+  &dma_channel1_2_handler,           /* IRQ10 */
+  &dma_channel3_4_handler,           /* IRQ11 */
+  &adc_cmp_handler,                  /* IRQ12 */
+  &timer0_brk_up_trg_com_handler,    /* IRQ13 */
+  &timer0_channel_handler,           /* IRQ14 */
+  &irq_n_handler,                    /* IRQ15 */
+  &timer2_handler,                   /* IRQ16 */
+  &timer5_handler,                   /* IRQ17 */
+  &irq_n_handler,                    /* IRQ18 */
+  &timer13_handler,                  /* IRQ19 */
+  &timer14_handler,                  /* IRQ21 */
+  &timer15_handler,                  /* IRQ22 */
+  &timer16_handler,                  /* IRQ23 */
+  &i2c0_ev_handler,                  /* IRQ24 */
+  &i2c1_ev_handler,                  /* IRQ25 */
+  &spi0_handler,                     /* IRQ26 */
+  &spi1_handler,                     /* IRQ27 */
+  &usart0_handler,                   /* IRQ28 */
+  &usart1_handler,                   /* IRQ29 */
+  &irq_n_handler,                    /* IRQ30 */
+  &irq_n_handler,                    /* IRQ31 */
+  &irq_n_handler,                    /* IRQ32 */
+  &i2c0_er_handler,                  /* IRQ33 */
+  &irq_n_handler,                    /* IRQ34 */
+  &i2c1_er_handler,                  /* IRQ35 */
+};
+
+const hdl_interrupt_controller_config_t mod_nvic_cnf = {
+  .vector = &other_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .irq_latency = 0, /* TODO: define static assert */
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,
                                &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0, 
                                &mod_irq_i2c0_ev, &mod_irq_i2c0_er, &mod_irq_i2c1_ev, &mod_irq_i2c1_er),
-  .vector = {
-    &_estack,
-    &Reset_Handler,
-    &nmi_handler,
-    &hard_fault_handler,
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    &svc_handler,
-    ((void *)0),
-    ((void *)0),
-    &pend_sv_handler,
-    &systick_handler,
-    &WWDGT_IRQHandler,                    /* IRQ0 */ 
-    &LVD_IRQHandler,                      /* IRQ1 */
-    &RTC_IRQHandler,                      /* IRQ2 */
-    &FMC_IRQHandler,                      /* IRQ3 */
-    &RCU_IRQHandler,                      /* IRQ4 */
-    &EXTI0_1_IRQHandler,                  /* IRQ5 */
-    &EXTI2_3_IRQHandler,                  /* IRQ6 */
-    &EXTI4_15_IRQHandler,                 /* IRQ7 */
-    &irq_n_handler,                       /* IRQ8 */
-    &DMA_Channel0_IRQHandler,             /* IRQ9 */
-    &DMA_Channel1_2_IRQHandler,           /* IRQ10 */
-    &DMA_Channel3_4_IRQHandler,           /* IRQ11 */
-    &ADC_CMP_IRQHandler,                  /* IRQ12 */
-    &TIMER0_BRK_UP_TRG_COM_IRQHandler,    /* IRQ13 */
-    &TIMER0_Channel_IRQHandler,           /* IRQ14 */
-    &irq_n_handler,                       /* IRQ15 */
-    &TIMER2_IRQHandler,                   /* IRQ16 */
-    &TIMER5_IRQHandler,                   /* IRQ17 */
-    &irq_n_handler,                       /* IRQ18 */
-    &TIMER13_IRQHandler,                  /* IRQ19 */
-    &TIMER14_IRQHandler,                  /* IRQ21 */
-    &TIMER15_IRQHandler,                  /* IRQ22 */
-    &TIMER16_IRQHandler,                  /* IRQ23 */
-    &I2C0_EV_IRQHandler,                  /* IRQ24 */
-    &I2C1_EV_IRQHandler,                  /* IRQ25 */
-    &SPI0_IRQHandler,                     /* IRQ26 */
-    &SPI1_IRQHandler,                     /* IRQ27 */
-    &USART0_IRQHandler,                   /* IRQ28 */
-    &USART1_IRQHandler,                   /* IRQ29 */
-    &irq_n_handler,                       /* IRQ30 */
-    &irq_n_handler,                       /* IRQ31 */
-    &irq_n_handler,                       /* IRQ32 */
-    &I2C0_ER_IRQHandler,                  /* IRQ33 */
-    &irq_n_handler,                       /* IRQ34 */
-    &I2C1_ER_IRQHandler,                  /* IRQ35 */
-    &irq_n_handler,                       /* IRQ36 */
-    &irq_n_handler,                       /* IRQ37 */
-    &irq_n_handler,                       /* IRQ38 */
-    &irq_n_handler,                       /* IRQ39 */
-    &irq_n_handler,                       /* IRQ40 */
-    &irq_n_handler,                       /* IRQ41 */
-    &irq_n_handler,                       /* IRQ42 */
-    &irq_n_handler,                       /* IRQ43 */
-    &irq_n_handler,                       /* IRQ44 */
-    &irq_n_handler,                       /* IRQ45 */
-    &irq_n_handler,                       /* IRQ46 */
-    &irq_n_handler,                       /* IRQ47 */
-    &irq_n_handler,                       /* IRQ48 */
-  }
 };
 
-hdl_nvic_t mod_nvic = {
+hdl_interrupt_controller_t mod_nvic = {
   .module.init = &hdl_interrupt_controller,
   .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
   .module.reg = NVIC,
@@ -1008,7 +1006,7 @@ hdl_clock_prescaler_t mod_clock_timer0 = {
   .muldiv_factor = 72,
 };
 
-const hdl_tick_counter_hw_config_t mod_tick_counter0_cnf = {
+const hdl_tick_counter_timer_config_t mod_tick_counter0_cnf = {
   .alignedmode = TIMER_COUNTER_EDGE,
   .clockdivision = TIMER_CKDIV_DIV1,
   .counterdirection = TIMER_COUNTER_UP,
@@ -1018,7 +1016,7 @@ const hdl_tick_counter_hw_config_t mod_tick_counter0_cnf = {
   .rcu = RCU_TIMER0
 };
 
-const hdl_tick_counter_hw_config_t mod_tick_counter2_cnf = {
+const hdl_tick_counter_timer_config_t mod_tick_counter2_cnf = {
   .alignedmode = TIMER_COUNTER_EDGE,
   .clockdivision = TIMER_CKDIV_DIV1,
   .counterdirection = TIMER_COUNTER_UP,
@@ -1050,14 +1048,14 @@ hdl_tick_counter_t mod_systick_counter = {
   .module.init = &hdl_tick_counter,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)SysTick,
-  .config = &mod_systick_counter_cnf
+  .config.systick = &mod_systick_counter_cnf
 };
 
 hdl_time_counter_t mod_timer_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
+  .reload_interrupt = &mod_irq_systick,
   .val = 0
 };
 
@@ -1065,7 +1063,7 @@ hdl_time_counter_t mod_timer0_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_tick_counter0.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_iterrupt = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
+  .reload_interrupt = &mod_irq_timer0,
   .val = 0
 };
 
@@ -1073,7 +1071,7 @@ hdl_time_counter_t mod_timer2_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_tick2_counter.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_iterrupt = HDL_NVIC_IRQ16_TIMER2,
+  .reload_interrupt = &mod_irq_timer2,
   .val = 0
 };
 
@@ -1216,7 +1214,7 @@ hdl_gpio_pin_t mod_gpi_button = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a.module),
   .module.reg = (void *)GPIO_PIN_0,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &mod_gpio_input_pullup_mode)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &mod_gpio_input_pullup_mode)
 };
 
 hdl_gpio_pin_t mod_gpo_led = {
@@ -1260,8 +1258,8 @@ const hdl_i2c_config_t mod_i2c_config = {
   .addr_10_bits = 0,
   .dtcy = I2C_DTCY_2,
   .dual_address = 0,
-  .err_interrupt = HDL_NVIC_IRQ34_I2C1_ER,
-  .ev_interrupt = HDL_NVIC_IRQ24_I2C1_EV,
+  .err_interrupt = &mod_irq_i2c1_er,
+  .ev_interrupt = &mod_irq_i2c1_ev,
   .general_call_enable = 0,
   .speed = 400000,
   .stretch_enable = 1,

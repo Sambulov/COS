@@ -26,7 +26,7 @@ typedef struct {
 typedef struct {
   hdl_module_t module;
   hdl_spi_client_config_t *config;
-  hdl_nvic_irq_n_t spi_iterrupt;
+  hdl_interrupt_t *spi_interrupt;
   /* private */
   coroutine_t worker;
   hdl_delegate_t spi_isr;
@@ -141,7 +141,7 @@ hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable) {
     spi->spi_isr.context = desc;
     spi->spi_isr.handler = &event_spi_isr_client;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->module.dependencies[4];
-    hdl_interrupt_request(ic, spi->spi_iterrupt, &spi->spi_isr);
+    hdl_interrupt_request(ic, spi->spi_interrupt, &spi->spi_isr);
     spi_enable((uint32_t)spi->module.reg);
     coroutine_add(&spi->worker, &_spi_client_worker, desc);
     return HDL_MODULE_INIT_OK;

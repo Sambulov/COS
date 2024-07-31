@@ -11,7 +11,7 @@ hdl_module_state_t hdl_time_counter(void *desc, const uint8_t enable) {
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)timer->module.dependencies[1];
     timer->reload_isr.context = desc;
     timer->reload_isr.handler = &event_timer_isr;
-    if(hdl_interrupt_request(ic, timer->reload_iterrupt, &timer->reload_isr))
+    if(hdl_interrupt_request(ic, timer->reload_interrupt, &timer->reload_isr))
       return HDL_MODULE_INIT_OK;
   }
   return HDL_MODULE_DEINIT_OK;

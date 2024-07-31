@@ -5,7 +5,7 @@
 
 typedef struct {
   hdl_module_t module;
-  const void *config;
+  const hdl_tick_counter_config_t config;
 } hdl_tick_counter_t;
 
 hdl_module_state_t hdl_tick_counter(void *desc, const uint8_t enable);

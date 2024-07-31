@@ -5,7 +5,7 @@
 
 typedef struct {
   rcu_periph_enum rcu;
-  hdl_nvic_irq_n_t interrupt;
+  hdl_interrupt_t *interrupt;
   uint32_t baudrate;
   uint32_t word_len;          /* USART_WL_8BIT, USART_WL_9BIT */
   uint32_t parity;            /* USART_PM_NONE, USART_PM_ODD, USART_PM_EVEN */

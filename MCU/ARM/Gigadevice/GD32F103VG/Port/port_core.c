@@ -49,12 +49,12 @@ void DebugMon_Handler()                 { _call_isr(HDL_NVIC_EXCEPTION_DebugMoni
 void PendSV_Handler()                   { _call_isr(HDL_NVIC_EXCEPTION_PendSV, __ic->interrupts, 0); }
 void SysTick_Handler()                  { _call_isr(HDL_NVIC_EXCEPTION_SysTick, __ic->interrupts, 0); }
 
-void WWDGT_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ0_WWDGT, __ic->interrupts, 0); }
-void LVD_IRQHandler()                   { _call_isr(HDL_NVIC_IRQ1_LVD, __ic->interrupts, 0); }
+void wwdgt_handler()                    { _call_isr(HDL_NVIC_IRQ0_WWDGT, __ic->interrupts, 0); }
+void lvd_handler()                      { _call_isr(HDL_NVIC_IRQ1_LVD, __ic->interrupts, 0); }
 void TAMPER_IRQHandler()                { _call_isr(HDL_NVIC_IRQ2_TAMPER, __ic->interrupts, 0); }   
-void RTC_IRQHandler()                   { _call_isr(HDL_NVIC_IRQ3_RTC, __ic->interrupts, 0); }
-void FMC_IRQHandler()                   { _call_isr(HDL_NVIC_IRQ4_FMC, __ic->interrupts, 0); }
-void RCU_IRQHandler()                   { _call_isr(HDL_NVIC_IRQ5_RCU_CTC, __ic->interrupts, 0); }
+void rtc_handler()                      { _call_isr(HDL_NVIC_IRQ3_RTC, __ic->interrupts, 0); }
+void fmc_handler()                      { _call_isr(HDL_NVIC_IRQ4_FMC, __ic->interrupts, 0); }
+void rcu_handler()                      { _call_isr(HDL_NVIC_IRQ5_RCU_CTC, __ic->interrupts, 0); }
 void EXTI0_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ6_EXTI0, __ic->interrupts, EXTI_0); EXTI_PD |= EXTI_0; }
 void EXTI1_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ7_EXTI1, __ic->interrupts, EXTI_1); EXTI_PD |= EXTI_1; }
 void EXTI2_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ8_EXTI2, __ic->interrupts, EXTI_2); EXTI_PD |= EXTI_2; }
@@ -78,18 +78,18 @@ void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic
 void TIMER0_BRK_IRQHandler()            { _call_isr(HDL_NVIC_IRQ24_TIMER0_BRK, __ic->interrupts, 0); } /* IRQ24 */
 void TIMER0_UP_IRQHandler()             { _call_isr(HDL_NVIC_IRQ25_TIMER0_UP, __ic->interrupts, 0); } /* IRQ25 */
 void TIMER0_TRG_CMT_IRQHandler()        { _call_isr(HDL_NVIC_IRQ26_TIMER0_TRG_CMT, __ic->interrupts, 0); } /* IRQ26 */
-void TIMER0_Channel_IRQHandler()        { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
+void timer0_channel_handler()           { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
 void TIMER1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0); } /* IRQ28 */
-void TIMER2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
+void timer2_handler()                   { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
 void TIMER3_IRQHandler()                { _call_isr(HDL_NVIC_IRQ30_TIMER3, __ic->interrupts, 0); } /* IRQ30 */
-void I2C0_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */
-void I2C0_ER_IRQHandler()               { _call_isr(HDL_NVIC_IRQ32_I2C0_ER, __ic->interrupts, 0); } /* IRQ32 */
-void I2C1_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ33_I2C1_EV, __ic->interrupts, 0); } /* IRQ33 */
-void I2C1_ER_IRQHandler()               { _call_isr(HDL_NVIC_IRQ34_I2C1_ER, __ic->interrupts, 0); } /* IRQ34 */
-void SPI0_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ35_SPI0, __ic->interrupts, 0); } /* IRQ35 */
-void SPI1_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); } /* IRQ36 */
-void USART0_IRQHandler()                { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
-void USART1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
+void i2c0_ev_handler()                  { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */
+void i2c0_er_handler()                  { _call_isr(HDL_NVIC_IRQ32_I2C0_ER, __ic->interrupts, 0); } /* IRQ32 */
+void i2c1_ev_handler()                  { _call_isr(HDL_NVIC_IRQ33_I2C1_EV, __ic->interrupts, 0); } /* IRQ33 */
+void i2c1_er_handler()                  { _call_isr(HDL_NVIC_IRQ34_I2C1_ER, __ic->interrupts, 0); } /* IRQ34 */
+void spi0_handler()                     { _call_isr(HDL_NVIC_IRQ35_SPI0, __ic->interrupts, 0); } /* IRQ35 */
+void spi1_handler()                     { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); } /* IRQ36 */
+void usart0_handler()                   { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
+void usart1_handler()                   { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); } /* IRQ39 */
 void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { _call_isr(HDL_NVIC_IRQ41_RTC_Alarm, __ic->interrupts, 0); } /* IRQ41 */
@@ -105,18 +105,18 @@ void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic
 void TIMER0_BRK_IRQHandler()            { _call_isr(HDL_NVIC_IRQ24_TIMER0_BRK, __ic->interrupts, 0); } /* IRQ24 */
 void TIMER0_UP_IRQHandler()             { _call_isr(HDL_NVIC_IRQ25_TIMER0_UP, __ic->interrupts, 0); } /* IRQ25 */
 void TIMER0_TRG_CMT_IRQHandler()        { _call_isr(HDL_NVIC_IRQ26_TIMER0_TRG_CMT, __ic->interrupts, 0); } /* IRQ26 */
-void TIMER0_Channel_IRQHandler()        { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
+void timer0_channel_handler()           { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
 void TIMER1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0); } /* IRQ28 */
-void TIMER2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
+void timer2_handler()                   { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
 void TIMER3_IRQHandler()                { _call_isr(HDL_NVIC_IRQ30_TIMER3, __ic->interrupts, 0); } /* IRQ30 */
-void I2C0_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */
-void I2C0_ER_IRQHandler()               { _call_isr(HDL_NVIC_IRQ32_I2C0_ER, __ic->interrupts, 0); } /* IRQ32 */
-void I2C1_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ33_I2C1_EV, __ic->interrupts, 0); } /* IRQ33 */
-void I2C1_ER_IRQHandler()               { _call_isr(HDL_NVIC_IRQ34_I2C1_ER, __ic->interrupts, 0); } /* IRQ34 */
-void SPI0_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ35_SPI0, __ic->interrupts, 0); } /* IRQ35 */
-void SPI1_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); } /* IRQ36 */
-void USART0_IRQHandler()                { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
-void USART1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
+void i2c0_ev_handler()                  { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */
+void i2c0_er_handler()                  { _call_isr(HDL_NVIC_IRQ32_I2C0_ER, __ic->interrupts, 0); } /* IRQ32 */
+void i2c1_ev_handler()                  { _call_isr(HDL_NVIC_IRQ33_I2C1_EV, __ic->interrupts, 0); } /* IRQ33 */
+void i2c1_er_handler()                  { _call_isr(HDL_NVIC_IRQ34_I2C1_ER, __ic->interrupts, 0); } /* IRQ34 */
+void spi0_handler()                     { _call_isr(HDL_NVIC_IRQ35_SPI0, __ic->interrupts, 0); } /* IRQ35 */
+void spi1_handler()                     { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); } /* IRQ36 */
+void usart0_handler()                   { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
+void usart1_handler()                   { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); } /* IRQ39 */
 void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { _call_isr(HDL_NVIC_IRQ41_RTC_Alarm, __ic->interrupts, 0); } /* IRQ41 */
@@ -132,7 +132,7 @@ void TIMER4_IRQHandler()                { _call_isr(HDL_NVIC_IRQ50_TIMER4, __ic-
 void SPI2_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ51_SPI2, __ic->interrupts, 0); } /* IRQ51 */
 void UART3_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ52_UART3, __ic->interrupts, 0); } /* IRQ52 */
 void UART4_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ53_UART4, __ic->interrupts, 0); } /* IRQ53 */
-void TIMER5_IRQHandler()                { _call_isr(HDL_NVIC_IRQ54_TIMER5, __ic->interrupts, 0); } /* IRQ54 */
+void timer5_handler()                   { _call_isr(HDL_NVIC_IRQ54_TIMER5, __ic->interrupts, 0); } /* IRQ54 */
 void TIMER6_IRQHandler()                { _call_isr(HDL_NVIC_IRQ55_TIMER6, __ic->interrupts, 0); } /* IRQ55 */
 void DMA1_Channel0_IRQHandler()         { _call_isr(HDL_NVIC_IRQ56_DMA1_Channel0, __ic->interrupts, 0); } /* IRQ56 */
 void DMA1_Channel1_IRQHandler()         { _call_isr(HDL_NVIC_IRQ57_DMA1_Channel1, __ic->interrupts, 0); } /* IRQ57 */
@@ -146,27 +146,25 @@ void CAN0_RX1_IRQHandler()              { _call_isr(HDL_NVIC_IRQ21_CAN0_RX1, __i
 void CAN0_EWMC_IRQHandler()             { _call_isr(HDL_NVIC_IRQ22_CAN0_EWMC, __ic->interrupts, 0); }  /* IRQ22 */
 void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic->interrupts, EXTI_PD & EXTI_LINES_5_9); EXTI_PD |= EXTI_LINES_5_9; } /* IRQ23 */
 void TIMER0_BRK_TIMER8_IRQHandler()     { _call_isr(HDL_NVIC_IRQ24_TIMER0_BRK_TIMER8, __ic->interrupts, 0); } /* IRQ24 */
-void TIMER0_UP_TIMER9_IRQHandler() { 
-  _call_isr(HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, __ic->interrupts, 0);
-  TIMER_INTF(TIMER0) &= ~TIMER_INTF_UPIF;
-  TIMER_INTF(TIMER9) &= ~TIMER_INTF_UPIF;
-} /* IRQ25 */
+void TIMER0_UP_TIMER9_IRQHandler()      { _call_isr(HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, __ic->interrupts, 0);
+                                          TIMER_INTF(TIMER0) &= ~TIMER_INTF_UPIF;
+                                          TIMER_INTF(TIMER9) &= ~TIMER_INTF_UPIF;
+                                        } /* IRQ25 */
 void TIMER0_TRG_CMT_TIMER10_IRQHandler(){ _call_isr(HDL_NVIC_IRQ26_TIMER0_TRG_CMT_TIMER10, __ic->interrupts, 0); } /* IRQ26 */
-void TIMER0_Channel_IRQHandler()        { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
-void TIMER1_IRQHandler() {
-  _call_isr(HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0);
-  TIMER_INTF(TIMER1) &= ~TIMER_INTF_UPIF;
-} /* IRQ28 */
-void TIMER2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
+void timer0_channel_handler()           { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
+void TIMER1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0);
+                                          TIMER_INTF(TIMER1) &= ~TIMER_INTF_UPIF;
+                                        } /* IRQ28 */
+void timer2_handler()                   { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
 void TIMER3_IRQHandler()                { _call_isr(HDL_NVIC_IRQ30_TIMER3, __ic->interrupts, 0); } /* IRQ30 */
-void I2C0_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */
-void I2C0_ER_IRQHandler()               { _call_isr(HDL_NVIC_IRQ32_I2C0_ER, __ic->interrupts, 0); } /* IRQ32 */
-void I2C1_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ33_I2C1_EV, __ic->interrupts, 0); } /* IRQ33 */
-void I2C1_ER_IRQHandler()               { _call_isr(HDL_NVIC_IRQ34_I2C1_ER, __ic->interrupts, 0); } /* IRQ34 */
-void SPI0_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ35_SPI0, __ic->interrupts, 0); } /* IRQ35 */
-void SPI1_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); } /* IRQ36 */
-void USART0_IRQHandler()                { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
-void USART1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
+void i2c0_ev_handler()                  { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */
+void i2c0_er_handler()                  { _call_isr(HDL_NVIC_IRQ32_I2C0_ER, __ic->interrupts, 0); } /* IRQ32 */
+void i2c1_ev_handler()                  { _call_isr(HDL_NVIC_IRQ33_I2C1_EV, __ic->interrupts, 0); } /* IRQ33 */
+void i2c1_er_handler()                  { _call_isr(HDL_NVIC_IRQ34_I2C1_ER, __ic->interrupts, 0); } /* IRQ34 */
+void spi0_handler()                     { _call_isr(HDL_NVIC_IRQ35_SPI0, __ic->interrupts, 0); } /* IRQ35 */
+void spi1_handler()                     { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); } /* IRQ36 */
+void usart0_handler()                   { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
+void usart1_handler()                   { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); } /* IRQ39 */
 void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { _call_isr(HDL_NVIC_IRQ41_RTC_Alarm, __ic->interrupts, 0); } /* IRQ41 */
@@ -182,7 +180,7 @@ void TIMER4_IRQHandler()                { _call_isr(HDL_NVIC_IRQ50_TIMER4, __ic-
 void SPI2_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ51_SPI2, __ic->interrupts, 0); } /* IRQ51 */
 void UART3_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ52_UART3, __ic->interrupts, 0); } /* IRQ52 */
 void UART4_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ53_UART4, __ic->interrupts, 0); } /* IRQ53 */
-void TIMER5_IRQHandler()                { _call_isr(HDL_NVIC_IRQ54_TIMER5, __ic->interrupts, 0); } /* IRQ54 */
+void timer5_handler()                   { _call_isr(HDL_NVIC_IRQ54_TIMER5, __ic->interrupts, 0); } /* IRQ54 */
 void TIMER6_IRQHandler()                { _call_isr(HDL_NVIC_IRQ55_TIMER6, __ic->interrupts, 0); } /* IRQ55 */
 void DMA1_Channel0_IRQHandler()         { _call_isr(HDL_NVIC_IRQ56_DMA1_Channel0, __ic->interrupts, 0); } /* IRQ56 */
 void DMA1_Channel1_IRQHandler()         { _call_isr(HDL_NVIC_IRQ57_DMA1_Channel1, __ic->interrupts, 0); } /* IRQ57 */
@@ -198,18 +196,18 @@ void EXTI5_9_IRQHandler()               { _call_isr(HDL_NVIC_IRQ23_EXTI5_9, __ic
 void TIMER0_BRK_IRQHandler()            { _call_isr(HDL_NVIC_IRQ24_TIMER0_BRK, __ic->interrupts, 0); } /* IRQ24 */
 void TIMER0_UP_IRQHandler()             { _call_isr(HDL_NVIC_IRQ25_TIMER0_UP, __ic->interrupts, 0); } /* IRQ25 */
 void TIMER0_TRG_CMT_IRQHandler()        { _call_isr(HDL_NVIC_IRQ26_TIMER0_TRG_CMT, __ic->interrupts, 0); } /* IRQ26 */
-void TIMER0_Channel_IRQHandler()        { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
+void timer0_channel_handler()           { _call_isr(HDL_NVIC_IRQ27_TIMER0_Channel, __ic->interrupts, 0); } /* IRQ27 */
 void TIMER1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ28_TIMER1, __ic->interrupts, 0); } /* IRQ28 */
-void TIMER2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
+void timer2_handler()                   { _call_isr(HDL_NVIC_IRQ29_TIMER2, __ic->interrupts, 0); } /* IRQ29 */
 void TIMER3_IRQHandler()                { _call_isr(HDL_NVIC_IRQ30_TIMER3, __ic->interrupts, 0); } /* IRQ30 */
-void I2C0_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */
-void I2C0_ER_IRQHandler()               { _call_isr(HDL_NVIC_IRQ32_I2C0_ER, __ic->interrupts, 0); } /* IRQ32 */
-void I2C1_EV_IRQHandler()               { _call_isr(HDL_NVIC_IRQ33_I2C1_EV, __ic->interrupts, 0); } /* IRQ33 */
-void I2C1_ER_IRQHandler()               { _call_isr(HDL_NVIC_IRQ34_I2C1_ER, __ic->interrupts, 0); } /* IRQ34 */
-void SPI0_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ35_SPI0, __ic->interrupts, 0); } /* IRQ35 */
-void SPI1_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); } /* IRQ36 */
-void USART0_IRQHandler()                { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
-void USART1_IRQHandler()                { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
+void i2c0_ev_handler()                  { _call_isr(HDL_NVIC_IRQ31_I2C0_EV, __ic->interrupts, 0); } /* IRQ31 */
+void i2c0_er_handler()                  { _call_isr(HDL_NVIC_IRQ32_I2C0_ER, __ic->interrupts, 0); } /* IRQ32 */
+void i2c1_ev_handler()                  { _call_isr(HDL_NVIC_IRQ33_I2C1_EV, __ic->interrupts, 0); } /* IRQ33 */
+void i2c1_er_handler()                  { _call_isr(HDL_NVIC_IRQ34_I2C1_ER, __ic->interrupts, 0); } /* IRQ34 */
+void spi0_handler()                     { _call_isr(HDL_NVIC_IRQ35_SPI0, __ic->interrupts, 0); } /* IRQ35 */
+void spi1_handler()                     { _call_isr(HDL_NVIC_IRQ36_SPI1, __ic->interrupts, 0); } /* IRQ36 */
+void usart0_handler()                   { _call_isr(HDL_NVIC_IRQ37_USART0, __ic->interrupts, 0); } /* IRQ37 */
+void usart1_handler()                   { _call_isr(HDL_NVIC_IRQ38_USART1, __ic->interrupts, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { _call_isr(HDL_NVIC_IRQ39_USART2, __ic->interrupts, 0); } /* IRQ39 */
 void EXTI10_15_IRQHandler()             { _call_isr(HDL_NVIC_IRQ40_EXTI10_15, __ic->interrupts, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { _call_isr(HDL_NVIC_IRQ41_RTC_ALARM, __ic->interrupts, 0); } /* IRQ41 */
@@ -223,7 +221,7 @@ void TIMER4_IRQHandler()                { _call_isr(HDL_NVIC_IRQ50_TIMER4, __ic-
 void SPI2_IRQHandler()                  { _call_isr(HDL_NVIC_IRQ51_SPI2, __ic->interrupts, 0); } /* IRQ51 */
 void UART3_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ52_UART3, __ic->interrupts, 0); } /* IRQ52 */
 void UART4_IRQHandler()                 { _call_isr(HDL_NVIC_IRQ53_UART4, __ic->interrupts, 0); } /* IRQ53 */
-void TIMER5_IRQHandler()                { _call_isr(HDL_NVIC_IRQ54_TIMER5, __ic->interrupts, 0); } /* IRQ54 */
+void timer5_handler()                   { _call_isr(HDL_NVIC_IRQ54_TIMER5, __ic->interrupts, 0); } /* IRQ54 */
 void TIMER6_IRQHandler()                { _call_isr(HDL_NVIC_IRQ55_TIMER6, __ic->interrupts, 0); } /* IRQ55 */
 void DMA1_Channel0_IRQHandler()         { _call_isr(HDL_NVIC_IRQ56_DMA1_Channel0, __ic->interrupts, 0); } /* IRQ56 */
 void DMA1_Channel1_IRQHandler()         { _call_isr(HDL_NVIC_IRQ57_DMA1_Channel1, __ic->interrupts, 0); } /* IRQ57 */
@@ -257,12 +255,12 @@ void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
   &PendSV_Handler,
   &SysTick_Handler,
 
-  &WWDGT_IRQHandler,                    /* IRQ0 */
-  &LVD_IRQHandler,                      /* IRQ1 */
+  &wwdgt_handler,                    /* IRQ0 */
+  &lvd_handler,                      /* IRQ1 */
   &TAMPER_IRQHandler,                   /* IRQ2 */
-  &RTC_IRQHandler,                      /* IRQ3 */
-  &FMC_IRQHandler,                      /* IRQ4 */
-  &RCU_IRQHandler,                      /* IRQ5 */
+  &rtc_handler,                      /* IRQ3 */
+  &fmc_handler,                      /* IRQ4 */
+  &rcu_handler,                      /* IRQ5 */
   &EXTI0_IRQHandler,                    /* IRQ6 */
   &EXTI1_IRQHandler,                    /* IRQ7 */
   &EXTI2_IRQHandler,                    /* IRQ8 */
@@ -285,18 +283,18 @@ void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
   &TIMER0_BRK_IRQHandler,               /* IRQ24 */
   &TIMER0_UP_IRQHandler,                /* IRQ25 */
   &TIMER0_TRG_CMT_IRQHandler,           /* IRQ26 */
-  &TIMER0_Channel_IRQHandler,           /* IRQ27 */
+  &timer0_channel_handler,           /* IRQ27 */
   &TIMER1_IRQHandler,                   /* IRQ28 */
-  &TIMER2_IRQHandler,                   /* IRQ29 */
+  &timer2_handler,                   /* IRQ29 */
   &TIMER3_IRQHandler,                   /* IRQ30 */
-  &I2C0_EV_IRQHandler,                  /* IRQ31 */
-  &I2C0_ER_IRQHandler,                  /* IRQ32 */
-  &I2C1_EV_IRQHandler,                  /* IRQ33 */
-  &I2C1_ER_IRQHandler,                  /* IRQ34 */
-  &SPI0_IRQHandler,                     /* IRQ35 */
-  &SPI1_IRQHandler,                     /* IRQ36 */
-  &USART0_IRQHandler,                   /* IRQ37 */
-  &USART1_IRQHandler,                   /* IRQ38 */
+  &i2c0_ev_handler,                  /* IRQ31 */
+  &i2c0_er_handler,                  /* IRQ32 */
+  &i2c1_ev_handler,                  /* IRQ33 */
+  &i2c1_er_handler,                  /* IRQ34 */
+  &spi0_handler,                     /* IRQ35 */
+  &spi1_handler,                     /* IRQ36 */
+  &usart0_handler,                   /* IRQ37 */
+  &usart1_handler,                   /* IRQ38 */
   &USART2_IRQHandler,                   /* IRQ39 */
   &EXTI10_15_IRQHandler,                /* IRQ40 */
   &RTC_Alarm_IRQHandler,                /* IRQ41 */
@@ -336,18 +334,18 @@ void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
   &TIMER0_BRK_IRQHandler,               /* IRQ24 */
   &TIMER0_UP_IRQHandler,                /* IRQ25 */
   &TIMER0_TRG_CMT_IRQHandler,           /* IRQ26 */
-  &TIMER0_Channel_IRQHandler,           /* IRQ27 */
+  &timer0_channel_handler,           /* IRQ27 */
   &TIMER1_IRQHandler,                   /* IRQ28 */
-  &TIMER2_IRQHandler,                   /* IRQ29 */
+  &timer2_handler,                   /* IRQ29 */
   &TIMER3_IRQHandler,                   /* IRQ30 */
-  &I2C0_EV_IRQHandler,                  /* IRQ31 */
-  &I2C0_ER_IRQHandler,                  /* IRQ32 */
-  &I2C1_EV_IRQHandler,                  /* IRQ33 */
-  &I2C1_ER_IRQHandler,                  /* IRQ34 */
-  &SPI0_IRQHandler,                     /* IRQ35 */
-  &SPI1_IRQHandler,                     /* IRQ36 */
-  &USART0_IRQHandler,                   /* IRQ37 */
-  &USART1_IRQHandler,                   /* IRQ38 */
+  &i2c0_ev_handler,                  /* IRQ31 */
+  &i2c0_er_handler,                  /* IRQ32 */
+  &i2c1_ev_handler,                  /* IRQ33 */
+  &i2c1_er_handler,                  /* IRQ34 */
+  &spi0_handler,                     /* IRQ35 */
+  &spi1_handler,                     /* IRQ36 */
+  &usart0_handler,                   /* IRQ37 */
+  &usart1_handler,                   /* IRQ38 */
   &USART2_IRQHandler,                   /* IRQ39 */
   &EXTI10_15_IRQHandler,                /* IRQ40 */
   &RTC_Alarm_IRQHandler,                /* IRQ41 */
@@ -363,7 +361,7 @@ void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
   &SPI2_IRQHandler,                     /* IRQ51 */
   &UART3_IRQHandler,                    /* IRQ52 */
   &UART4_IRQHandler,                    /* IRQ53 */
-  &TIMER5_IRQHandler,                   /* IRQ54 */
+  &timer5_handler,                   /* IRQ54 */
   &TIMER6_IRQHandler,                   /* IRQ55 */
   &DMA1_Channel0_IRQHandler,            /* IRQ56 */
   &DMA1_Channel1_IRQHandler,            /* IRQ57 */
@@ -387,18 +385,18 @@ void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
   &TIMER0_BRK_TIMER8_IRQHandler,        /* IRQ24 */
   &TIMER0_UP_TIMER9_IRQHandler,         /* IRQ25 */
   &TIMER0_TRG_CMT_TIMER10_IRQHandler,   /* IRQ26 */
-  &TIMER0_Channel_IRQHandler,           /* IRQ27 */
+  &timer0_channel_handler,           /* IRQ27 */
   &TIMER1_IRQHandler,                   /* IRQ28 */
-  &TIMER2_IRQHandler,                   /* IRQ29 */
+  &timer2_handler,                   /* IRQ29 */
   &TIMER3_IRQHandler,                   /* IRQ30 */
-  &I2C0_EV_IRQHandler,                  /* IRQ31 */
-  &I2C0_ER_IRQHandler,                  /* IRQ32 */
-  &I2C1_EV_IRQHandler,                  /* IRQ33 */
-  &I2C1_ER_IRQHandler,                  /* IRQ34 */
-  &SPI0_IRQHandler,                     /* IRQ35 */
-  &SPI1_IRQHandler,                     /* IRQ36 */
-  &USART0_IRQHandler,                   /* IRQ37 */
-  &USART1_IRQHandler,                   /* IRQ38 */
+  &i2c0_ev_handler,                  /* IRQ31 */
+  &i2c0_er_handler,                  /* IRQ32 */
+  &i2c1_ev_handler,                  /* IRQ33 */
+  &i2c1_er_handler,                  /* IRQ34 */
+  &spi0_handler,                     /* IRQ35 */
+  &spi1_handler,                     /* IRQ36 */
+  &usart0_handler,                   /* IRQ37 */
+  &usart1_handler,                   /* IRQ38 */
   &USART2_IRQHandler,                   /* IRQ39 */
   &EXTI10_15_IRQHandler,                /* IRQ40 */
   &RTC_Alarm_IRQHandler,                /* IRQ41 */
@@ -414,7 +412,7 @@ void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
   &SPI2_IRQHandler,                     /* IRQ51 */
   &UART3_IRQHandler,                    /* IRQ52 */
   &UART4_IRQHandler,                    /* IRQ53 */
-  &TIMER5_IRQHandler,                   /* IRQ54 */
+  &timer5_handler,                   /* IRQ54 */
   &TIMER6_IRQHandler,                   /* IRQ55 */
   &DMA1_Channel0_IRQHandler,            /* IRQ56 */
   &DMA1_Channel1_IRQHandler,            /* IRQ57 */
@@ -438,18 +436,18 @@ void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
   &TIMER0_BRK_IRQHandler,               /* IRQ24 */
   &TIMER0_UP_IRQHandler,                /* IRQ25 */
   &TIMER0_TRG_CMT_IRQHandler,           /* IRQ26 */
-  &TIMER0_Channel_IRQHandler,           /* IRQ27 */
+  &timer0_channel_handler,           /* IRQ27 */
   &TIMER1_IRQHandler,                   /* IRQ28 */
-  &TIMER2_IRQHandler,                   /* IRQ29 */
+  &timer2_handler,                   /* IRQ29 */
   &TIMER3_IRQHandler,                   /* IRQ30 */
-  &I2C0_EV_IRQHandler,                  /* IRQ31 */
-  &I2C0_ER_IRQHandler,                  /* IRQ32 */
-  &I2C1_EV_IRQHandler,                  /* IRQ33 */
-  &I2C1_ER_IRQHandler,                  /* IRQ34 */
-  &SPI0_IRQHandler,                     /* IRQ35 */
-  &SPI1_IRQHandler,                     /* IRQ36 */
-  &USART0_IRQHandler,                   /* IRQ37 */
-  &USART1_IRQHandler,                   /* IRQ38 */
+  &i2c0_ev_handler,                  /* IRQ31 */
+  &i2c0_er_handler,                  /* IRQ32 */
+  &i2c1_ev_handler,                  /* IRQ33 */
+  &i2c1_er_handler,                  /* IRQ34 */
+  &spi0_handler,                     /* IRQ35 */
+  &spi1_handler,                     /* IRQ36 */
+  &usart0_handler,                   /* IRQ37 */
+  &usart1_handler,                   /* IRQ38 */
   &USART2_IRQHandler,                   /* IRQ39 */
   &EXTI10_15_IRQHandler,                /* IRQ40 */
   &RTC_Alarm_IRQHandler,                /* IRQ41 */
@@ -465,7 +463,7 @@ void * g_pfnVectors[0x60] __attribute__ ((section (".isr_vector"), used)) = {
   &SPI2_IRQHandler,                     /* IRQ51 */
   &UART3_IRQHandler,                    /* IRQ52 */
   &UART4_IRQHandler,                    /* IRQ53 */
-  &TIMER5_IRQHandler,                   /* IRQ54 */
+  &timer5_handler,                   /* IRQ54 */
   &TIMER6_IRQHandler,                   /* IRQ55 */
   &DMA1_Channel0_IRQHandler,            /* IRQ56 */
   &DMA1_Channel1_IRQHandler,            /* IRQ57 */

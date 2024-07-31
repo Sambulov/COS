@@ -1,11 +1,8 @@
 /* Entry Point */
-ENTRY(Reset_Handler)
+ENTRY(reset_handler)
 
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
-
-_Min_Heap_Size = 0x000; /* required amount of heap */
-_Min_Stack_Size = 0x400; /* required amount of stack */
 
 /* Memories definition */
 MEMORY
@@ -20,9 +17,11 @@ SECTIONS
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {
+    _sisrv = .;
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
+    _eisrv = .;
   } >FLASH
 
   /* The program code and other data into "FLASH" Rom type memory */
@@ -128,7 +127,9 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
-  /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left */
+  /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left 
+  _Min_Heap_Size = 0x000;
+  _Min_Stack_Size = 0x000;
   ._user_heap_stack :
   {
     . = ALIGN(8);
@@ -138,6 +139,7 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
+  */
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :

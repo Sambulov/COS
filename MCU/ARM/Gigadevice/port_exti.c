@@ -35,8 +35,6 @@ void _hdl_exti_set(hdl_exti_controller_t *ext_ctrl) {
 hdl_module_state_t hdl_exti(void *desc, uint8_t enable) {
   if(enable) {
     hdl_exti_controller_t *exti = (hdl_exti_controller_t *)desc;
-    hdl_nvic_t *ic = (hdl_nvic_t *)exti->module.dependencies[0];
-    /* TODO: finde wokaround to save context for interrupt vector */
     _hdl_exti_set(exti);
     return HDL_MODULE_INIT_OK;
   }

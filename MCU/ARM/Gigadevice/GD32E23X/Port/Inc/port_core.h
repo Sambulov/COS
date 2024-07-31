@@ -5,6 +5,8 @@
 #include "port_exti.h"
 #include "port_flash.h"
 
+#define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
+
 #define HDL_INTERRUPT_PRV_SIZE       4
 
 typedef enum {
@@ -70,30 +72,75 @@ typedef struct {
   uint8_t priority_group;
   uint8_t priority;
   PRIVATE(hw, HDL_INTERRUPT_PRV_SIZE);
-} hdl_nvic_interrupt_t;
+} hdl_interrupt_t;
 
+/* GD32E230 interrupt vector
+  .vector = {
+    &_estack,
+    &reset_handler,
+    &nmi_handler,
+    &hard_fault_handler,
+    ((void *)0),
+    ((void *)0),
+    ((void *)0),
+    ((void *)0),
+    ((void *)0),
+    ((void *)0),
+    ((void *)0),
+    &svc_handler,
+    ((void *)0),
+    ((void *)0),
+    &pend_sv_handler,
+    &systick_handler,
+    &wwdgt_handler, 
+    &lvd_handler,
+    &rtc_handler,
+    &fmc_handler,
+    &rcu_handler,
+    &exti0_1_handler,
+    &exti2_3_IRQHandler,
+    &exti4_15_handler,
+    &irq_n_handler,
+    &dma_channel0_handler,
+    &dma_channel1_2_handler,
+    &dma_channel3_4_handler,
+    &adc_cmp_handler,
+    &timer0_brk_up_trg_com_handler,
+    &timer0_channel_handler,
+    &irq_n_handler,
+    &timer2_handler,
+    &timer5_handler,
+    &irq_n_handler,
+    &timer13_handler,
+    &timer14_handler,
+    &timer15_handler,
+    &timer16_handler,
+    &i2c0_ev_handler,
+    &i2c1_ev_handler,
+    &spi0_handler,
+    &spi1_handler,
+    &usart0_handler,
+    &usart1_handler,
+    &irq_n_handler,
+    &irq_n_handler,
+    &irq_n_handler,
+    &i2c0_er_handler,
+    &irq_n_handler,
+    &i2c1_er_handler,
+  }
+ */
 typedef struct {
   uint32_t prio_bits;
-  hdl_nvic_interrupt_t **interrupts;
+  hdl_interrupt_t **interrupts;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
-  void* vector[] __attribute__((aligned(128))); 
-} hdl_nvic_config_t;
+  void *vector;
+} hdl_interrupt_controller_config_t;
 
-typedef struct {
-  hdl_module_t module;
-  const hdl_nvic_config_t *config;
-} hdl_nvic_t;
+#define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
 
 typedef struct{
-  hdl_module_t module;
   uint32_t flash_latency;
-} hdl_core_t;
-
-#define hdl_interrupts(...) ((hdl_nvic_interrupt_t *[]){__VA_ARGS__, NULL})
-
-typedef hdl_nvic_t hdl_interrupt_controller_t;
-typedef hdl_nvic_interrupt_t hdl_interrupt_t;
-typedef hdl_nvic_irq_n_t hdl_irq_n_t;
+} hdl_core_config_t;
 
 extern void *_estack;
 extern void *_sidata, *_sdata, *_edata;
@@ -101,7 +148,7 @@ extern void *_sbss, *_ebss;
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
 
-void Reset_Handler();
+void reset_handler();
 void irq_n_handler();
 void nmi_handler();
 void hard_fault_handler();
@@ -109,34 +156,33 @@ void svc_handler();
 void pend_sv_handler();
 void systick_handler();
 
-void WWDGT_IRQHandler();
-void LVD_IRQHandler();
-void RTC_IRQHandler();
-void FMC_IRQHandler();
-void RCU_IRQHandler();
-void EXTI0_1_IRQHandler();
-void EXTI2_3_IRQHandler();
-void EXTI4_15_IRQHandler();
-void DMA_Channel0_IRQHandler();
-void DMA_Channel1_2_IRQHandler();
-void DMA_Channel3_4_IRQHandler();
-void ADC_CMP_IRQHandler();
-void TIMER0_BRK_UP_TRG_COM_IRQHandler();
-void TIMER0_Channel_IRQHandler();
-void TIMER2_IRQHandler();
-void TIMER5_IRQHandler();
-void TIMER13_IRQHandler();
-void TIMER14_IRQHandler();
-void TIMER15_IRQHandler();
-void TIMER16_IRQHandler();
-void I2C0_EV_IRQHandler();
-void I2C1_EV_IRQHandler();
-void SPI0_IRQHandler();
-void SPI1_IRQHandler();
-void USART0_IRQHandler();
-void USART1_IRQHandler();
-void I2C0_ER_IRQHandler();
-void I2C1_ER_IRQHandler();
+void wwdgt_handler();
+void lvd_handler();
+void rtc_handler();
+void fmc_handler();
+void rcu_handler();
+void exti0_1_handler();
+void exti2_3_IRQHandler();
+void exti4_15_handler();
+void dma_channel0_handler();
+void dma_channel1_2_handler();
+void dma_channel3_4_handler();
+void adc_cmp_handler();
+void timer0_brk_up_trg_com_handler();
+void timer0_channel_handler();
+void timer2_handler();
+void timer5_handler();
+void timer13_handler();
+void timer14_handler();
+void timer15_handler();
+void timer16_handler();
+void i2c0_ev_handler();
+void i2c1_ev_handler();
+void spi0_handler();
+void spi1_handler();
+void usart0_handler();
+void usart1_handler();
+void i2c0_er_handler();
+void i2c1_er_handler();
 
-
-#endif // PORT_CORE_H_
+#endif /* PORT_CORE_H_ */ 

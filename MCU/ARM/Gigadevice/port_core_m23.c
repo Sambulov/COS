@@ -10,23 +10,15 @@ typedef struct {
   hdl_event_t event;
 } hdl_nvic_interrupt_private_t;
 
-_Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_nvic_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
+_Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
 
 void __libc_init_array();
 void main();
 
-void Reset_Handler();
-void irq_n_handler();
 void nmi_handler()                      { call_isr(HDL_NVIC_EXCEPTION_NMI, 0); }
 void hard_fault_handler()               { call_isr(HDL_NVIC_EXCEPTION_HF, 0); }
-void svc_handler();
 void pend_sv_handler()                  { call_isr(HDL_NVIC_EXCEPTION_PSV, 0); }
 void systick_handler()                  { call_isr(HDL_NVIC_EXCEPTION_SysTick, 0); }
-
-void * g_pfnVectors[0x2] __attribute__ ((section (".isr_vector"), used)) = {
-  &_estack,
-  &Reset_Handler,
-};
 
 /* Returns the current value of the Link Register (LR). */ 
 __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_LR(void)  { 
@@ -36,8 +28,8 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_LR(void)  {
 } 
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
-  hdl_nvic_config_t *ic = (hdl_nvic_config_t *)((uint8_t *)SCB->VTOR - offsetof(hdl_nvic_config_t, vector));
-  hdl_nvic_interrupt_t **isrs = ic->interrupts;
+  hdl_interrupt_controller_config_t *ic = (hdl_interrupt_controller_config_t *)((uint32_t *)SCB->VTOR)[0];
+  hdl_interrupt_t **isrs = ic->interrupts;
   if(isrs != NULL) {
     while (*isrs != NULL) {
       if((*isrs)->irq_type == irq) {
@@ -75,8 +67,9 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
 //   asm("BX LR");
 // }
 
-__attribute__((naked, noreturn)) void Reset_Handler() {
-	//asm ("ldr sp, =_estack");
+__attribute__((naked, noreturn)) void reset_handler() {
+	asm ("ldr r0, =_estack");
+	asm ("mov r13, r0");
 	void **pSource, **pDest;
 	for (pSource = &_sidata, pDest = &_sdata; pDest != &_edata; pSource++, pDest++)
 	  *pDest = *pSource;
@@ -134,7 +127,7 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   /* TODO: */
   if(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
-    FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->flash_latency;
+    FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
     rcu_periph_clock_enable(RCU_CFGCMP);
     return HDL_MODULE_INIT_OK;
   }
@@ -145,16 +138,12 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
 
 hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
   if(enable) {
-    hdl_nvic_t *nvic = (hdl_nvic_t *)desc;
+    hdl_interrupt_controller_t *nvic = (hdl_interrupt_controller_t *)desc;
     /* NVIC_SetPriorityGrouping   not available for Cortex-M23 */
-    nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0);
     SYSCFG_CPU_IRQ_LAT = nvic->config->irq_latency;
-    uint32_t a = (uint32_t)(void *)&nvic->config->vector;
-    uint32_t b = (uint32_t)nvic->config->vector; 
-    uint32_t c = (uint32_t)&nvic->config->vector;
-    SCB->VTOR = (uint32_t)&nvic->config->vector;
-    /* TODO: find wokaround to save context for interrupt vector */
-    return HDL_MODULE_INIT_OK;
+    if(nvic->config->vector != NULL)
+      SCB->VTOR = (uint32_t)nvic->config->vector;
+    return HDL_MODULE_INIT_OK; 
   }
   else {
     //TODO: disable nvic
@@ -162,24 +151,22 @@ hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
-uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t irq, hdl_delegate_t *delegate) {
-  if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->config->interrupts == NULL) || (delegate == NULL))
+uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrupt_t *isr, hdl_delegate_t *delegate) {
+  if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->config->interrupts == NULL) || (delegate == NULL) || (isr == NULL))
     return HDL_FALSE;
-  hdl_nvic_interrupt_private_t **isr = (hdl_nvic_interrupt_private_t **)ic->config->interrupts;
-  while ((isr != NULL) && (*isr != NULL) && (*isr)->irq_type != irq) isr++;
-  if((isr == NULL) || (*isr == NULL)) return HDL_FALSE;
-  hdl_event_subscribe(&(*isr)->event, delegate);
-  uint32_t prio = (((*isr)->priority_group << (8U - ic->config->prio_bits)) | 
-                  ((*isr)->priority & (0xFF >> ic->config->prio_bits)) & 
+  hdl_nvic_interrupt_private_t *_isr = (hdl_nvic_interrupt_private_t *)isr;
+  hdl_event_subscribe(&_isr->event, delegate);
+  uint32_t prio = ((_isr->priority_group << (8U - ic->config->prio_bits)) | 
+                  (_isr->priority & (0xFF >> ic->config->prio_bits)) & 
                   0xFFUL);
-  uint32_t shift = _BIT_SHIFT((*isr)->irq_type);
-  volatile uint32_t *ipr = ((*isr)->irq_type < 0)? &(SCB->SHPR[_SHP_IDX((*isr)->irq_type)]):
-                                                    &(NVIC->IPR[_IP_IDX((*isr)->irq_type)]);
+  uint32_t shift = _BIT_SHIFT(_isr->irq_type);
+  volatile uint32_t *ipr = (_isr->irq_type < 0)? &(SCB->SHPR[_SHP_IDX(_isr->irq_type)]):
+                                                    &(NVIC->IPR[_IP_IDX(_isr->irq_type)]);
   /* set priority for interrupt */
   *ipr = (*ipr & ~(0xFFUL << shift)) | (prio << shift);
   /* interrupt enable */
-  if((*isr)->irq_type < 0) {
-    switch ((*isr)->irq_type) {
+  if(_isr->irq_type < 0) {
+    switch (_isr->irq_type) {
       case SysTick_IRQn:
         SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;                  /* Enable SysTick IRQ */
         break;
@@ -200,7 +187,7 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, hdl_irq_n_t irq, h
     }
   }
   else {
-    NVIC_EnableIRQ((*isr)->irq_type);
+    NVIC_EnableIRQ(_isr->irq_type);
   }
   return HDL_TRUE;
 }

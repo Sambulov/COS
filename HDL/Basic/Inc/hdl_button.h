@@ -21,7 +21,7 @@ typedef enum {
 
 /* depends on:
   gpio
-  timer
+  time_counter
  */
 typedef struct {
   hdl_module_t module;

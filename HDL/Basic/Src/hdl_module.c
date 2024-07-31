@@ -53,9 +53,7 @@ static uint8_t _hdl_work(coroutine_t *this, uint8_t cancel, void *arg) {
         break;
     }
   }
-  return cancel; /* todo */
-  /* ??? stop worker if no dev ??? */
-  /* ??? run driver worker ??? */
+  return cancel;
 }
 
 hdl_module_state_t hdl_state(const hdl_module_t *desc) {
@@ -123,7 +121,6 @@ static hdl_module_private_t *_hdl_hw_deep_search_dependent(hdl_module_private_t 
 }
 
 static void _hdl_hw_free(hdl_module_private_t *desc) {
-  /* ??? call dev deinit first time here ??? */
   linked_list_insert_last(&dev_deinit_queue, linked_list_item(desc));
   hdl_module_private_t **parent = (hdl_module_private_t **)desc->dependencies;
   if(parent != NULL) {

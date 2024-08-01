@@ -10,7 +10,7 @@ typedef enum {
 
 typedef struct{
     hdl_module_t module;
-    hdl_nvic_irq_n_t adc_iterrupt;
+    hdl_interrupt_t *adc_interrupt;
     hdl_delegate_t adc_end_of_conversion;
     hdl_adc_resolution_e resolution;
     hdl_adc_data_alignment_t data_alignment;
@@ -84,7 +84,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)hdl_adc->module.dependencies[3];
         hdl_adc->adc_end_of_conversion.context = desc;
         hdl_adc->adc_end_of_conversion.handler = &event_adc_end_of_conversion;
-        hdl_interrupt_request(ic, hdl_adc->adc_iterrupt, &hdl_adc->adc_end_of_conversion);
+        hdl_interrupt_request(ic, hdl_adc->adc_interrupt, &hdl_adc->adc_end_of_conversion);
         /* There must be 14 CK_ADC tact */
         for(uint16_t i = 0; i < 10 * 14; i++)
           __NOP();

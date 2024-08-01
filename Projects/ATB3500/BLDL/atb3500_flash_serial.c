@@ -1,7 +1,7 @@
 #include "app.h"
 #include "CodeLib.h"
 
-#define ATB3500_SERIAL_ADDRESS       (((void *)&__flash_end__) - (ATB3500_SERIAL_SIZE))
+#define ATB3500_SERIAL_ADDRESS       (((void *)&_eflash) - (ATB3500_SERIAL_SIZE))
 
 typedef struct {
   hdl_module_t module;

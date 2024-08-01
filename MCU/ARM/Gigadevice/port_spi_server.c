@@ -6,9 +6,7 @@
 
 typedef struct {
   hdl_module_t module;
-  hdl_spi_server_config_t *config;
-  hdl_interrupt_t *spi_interrupt;
-  hdl_interrupt_t *nss_interrupt;
+  const hdl_spi_server_config_t *config;
   /* private */
   hdl_delegate_t spi_isr;
   hdl_delegate_t nss_isr;
@@ -74,8 +72,8 @@ hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable) {
     spi->spi_isr.context = desc;
     spi->spi_isr.handler = &event_spi_isr_server;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->module.dependencies[5];
-    hdl_interrupt_request(ic, spi->spi_interrupt, &spi->spi_isr);
-    hdl_interrupt_request(ic, spi->nss_interrupt, &spi->nss_isr);
+    hdl_interrupt_request(ic, spi->config->spi_interrupt, &spi->spi_isr);
+    hdl_interrupt_request(ic, spi->config->nss_interrupt, &spi->nss_isr);
     spi_enable((uint32_t)spi->module.reg);
     return HDL_MODULE_INIT_OK;
   }

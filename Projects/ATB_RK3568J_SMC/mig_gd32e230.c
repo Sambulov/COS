@@ -660,72 +660,75 @@
 
   #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
-  hdl_core_t mod_sys_core = {
-    .module.init = &hdl_core,
-    .module.dependencies = NULL,
-    .module.reg = (void *)SCB_BASE,
-    .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
-    /* TODO: ... */
-  };
+hdl_core_config_t mod_sys_core_cnf = {
+  .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
+};
+
+hdl_core_t mod_sys_core = {
+  .module.init = &hdl_core,
+  .module.dependencies = NULL,
+  .module.reg = (void *)SCB_BASE,
+  .config = &mod_sys_core_cnf
+};
 
   /**************************************************************
    *  NVIC, IRQ, EXTI
    *************************************************************/
-hdl_nvic_interrupt_t mod_irq_systick = {
+hdl_interrupt_t mod_irq_systick = {
   .irq_type = HDL_NVIC_EXCEPTION_SysTick,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_timer0 = {
+hdl_interrupt_t mod_irq_timer0 = {
   .irq_type = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
   .priority = 0,
   .priority_group = 1,
 };
 
-hdl_nvic_interrupt_t mod_irq_timer2 = {
+hdl_interrupt_t mod_irq_timer2 = {
   .irq_type = HDL_NVIC_IRQ16_TIMER2,
   .priority = 2,
   .priority_group = 2,
 };
 
-hdl_nvic_interrupt_t mod_irq_exti_0_1 = {
+hdl_interrupt_t mod_irq_exti_0_1 = {
   .irq_type = HDL_NVIC_IRQ5_EXTI0_1,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_exti_2_3 = {
+hdl_interrupt_t mod_irq_exti_2_3 = {
   .irq_type = HDL_NVIC_IRQ6_EXTI2_3,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_exti_4_15 = {
+hdl_interrupt_t mod_irq_exti_4_15 = {
   .irq_type = HDL_NVIC_IRQ7_EXTI4_15,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_usart_0 = {
+hdl_interrupt_t mod_irq_usart_0 = {
   .irq_type = HDL_NVIC_IRQ27_USART0,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_spi_0 = {
+hdl_interrupt_t mod_irq_spi_0 = {
   .irq_type = HDL_NVIC_IRQ25_SPI0,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_i2c0_ev = {
+hdl_interrupt_t mod_irq_i2c0_ev = {
   .irq_type = HDL_NVIC_IRQ23_I2C0_EV,
   .priority = 0,
   .priority_group = 0,
 };
 
-hdl_nvic_interrupt_t mod_irq_i2c0_er = {
+hdl_interrupt_t mod_irq_i2c0_er = {
   .irq_type = HDL_NVIC_IRQ32_I2C0_ER,
   .priority = 0,
   .priority_group = 0,
@@ -752,16 +755,19 @@ hdl_exti_t mod_nvic_exti_line_15 = {
   .trigger = HDL_EXTI_TRIGGER_RISING
 };
 
-  hdl_nvic_t mod_nvic = {
-    .module.init = &hdl_interrupt_controller,
-    .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
-    .module.reg = NVIC,
-    .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-    .irq_latency = 0, /* TODO: define static assert */
-    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,
-     &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0, &mod_irq_i2c0_ev, &mod_irq_i2c0_er),
-    //.exti_lines = hdl_exti_lines(&mod_nvic_exti_line_0, &mod_nvic_exti_line_8, &mod_nvic_exti_line_15)
-  };
+const hdl_interrupt_controller_config_t mod_nvic_cnf = {
+  .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
+  .irq_latency = 0, /* TODO: define static assert */
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,
+    &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0, &mod_irq_i2c0_ev, &mod_irq_i2c0_er),
+};
+
+hdl_interrupt_controller_t mod_nvic = {
+  .module.init = &hdl_interrupt_controller,
+  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
+  .module.reg = NVIC,
+  .config = &mod_nvic_cnf
+};
 
   /**************************************************************
    *  Oscillator
@@ -900,7 +906,7 @@ const hdl_dma_channel_config_t mod_adc_dma_ch_config = {
   .priority = DMA_PRIORITY_LOW,
   .direction = DMA_PERIPHERAL_TO_MEMORY,
   .memory_width = DMA_MEMORY_WIDTH_32BIT,
-  .periph_width = DMA_PERIPH_WIDTH_16BIT,
+  .periph_width = DMA_PERIPHERAL_WIDTH_16BIT,
   .memory_inc = 1,
   .periph_inc = 0,
   .circular = 1
@@ -910,7 +916,7 @@ const hdl_dma_channel_config_t mod_m2m_dma_ch_config = {
   .priority = DMA_PRIORITY_LOW,
   .direction = DMA_PERIPHERAL_TO_MEMORY,
   .memory_width = DMA_MEMORY_WIDTH_32BIT,
-  .periph_width = DMA_PERIPH_WIDTH_32BIT,
+  .periph_width = DMA_PERIPHERAL_WIDTH_32BIT,
   .memory_inc = 1,
   .periph_inc = 1,
   .m2m_direction = 1,
@@ -938,7 +944,7 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
     .muldiv_factor = 72,
   };
 
-  const hdl_tick_counter_hw_config_t mod_tick_counter0_cnf = {
+  const hdl_tick_counter_timer_config_t mod_tick_counter0_cnf = {
     .alignedmode = TIMER_COUNTER_EDGE,
     .clockdivision = TIMER_CKDIV_DIV1,
     .counterdirection = TIMER_COUNTER_UP,
@@ -948,7 +954,7 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
     .rcu = RCU_TIMER0
   };
 
-  const hdl_tick_counter_hw_config_t mod_tick_counter2_cnf = {
+  const hdl_tick_counter_timer_config_t mod_tick_counter2_cnf = {
     .alignedmode = TIMER_COUNTER_EDGE,
     .clockdivision = TIMER_CKDIV_DIV1,
     .counterdirection = TIMER_COUNTER_UP,
@@ -980,28 +986,28 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
     .module.init = &hdl_tick_counter,
     .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)SysTick,
-    .config = &mod_systick_counter_cnf
+    .config.systick = &mod_systick_counter_cnf
   };
 
   hdl_time_counter_t mod_timer_ms = {
     .module.init = hdl_time_counter,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
     .module.reg = NULL,
-    .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
+    .reload_interrupt = &mod_irq_systick,
     .val = 0
   };
   hdl_time_counter_t mod_timer0_ms = {
     .module.init = hdl_time_counter,
     .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
     .module.reg = NULL,
-    .reload_iterrupt = HDL_NVIC_IRQ13_TIMER0_BRK_UP_TRG_COM,
+    .reload_interrupt = &mod_irq_timer0,
     .val = 0
   };
   hdl_time_counter_t mod_timer2_ms = {
     .module.init = hdl_time_counter,
     .module.dependencies = hdl_module_dependencies(&mod_timer2_counter.module, &mod_nvic.module),
     .module.reg = NULL,
-    .reload_iterrupt = HDL_NVIC_IRQ16_TIMER2,
+    .reload_interrupt = &mod_irq_timer2,
     .val = 0
   };
 
@@ -1290,8 +1296,8 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
   };
 
   hdl_i2c_config_t mod_i2c_config = {
-    .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
-    .ev_interrupt = HDL_NVIC_IRQ23_I2C0_EV,
+    .err_interrupt = &mod_irq_i2c0_er,
+    .ev_interrupt = &mod_irq_i2c0_ev,
     .dtcy = I2C_DTCY_2,
     .speed = 400000,
     .rcu = RCU_I2C0

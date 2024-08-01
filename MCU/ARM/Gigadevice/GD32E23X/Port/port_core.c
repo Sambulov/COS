@@ -1,5 +1,4 @@
 #include "hdl_portable.h"
-#include "CodeLib.h"
 
 void wwdgt_handler()                 { call_isr(WWDGT_IRQn, 0); }
 void lvd_handler()                   { call_isr(LVD_IRQn, 0); }
@@ -30,3 +29,14 @@ void usart1_handler()                { call_isr(USART1_IRQn, 0); }
 void i2c0_er_handler()               { call_isr(I2C0_ER_IRQn, 0); }
 void i2c1_er_handler()               { call_isr(I2C1_ER_IRQn, 0); }
 
+hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
+  if(enable) {
+    hdl_core_t *core = (hdl_core_t *)desc;
+    FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
+    rcu_periph_clock_enable(RCU_CFGCMP);
+    return HDL_MODULE_INIT_OK;
+  }
+  rcu_periph_clock_disable(RCU_CFGCMP);
+  FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
+  return HDL_MODULE_DEINIT_OK;
+}

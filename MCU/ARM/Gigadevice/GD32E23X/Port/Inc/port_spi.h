@@ -45,6 +45,8 @@ typedef struct {
   rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
+  hdl_interrupt_t *spi_interrupt;
+  hdl_interrupt_t *nss_interrupt;
 } hdl_spi_server_config_t;
 
 /* depends on:
@@ -58,8 +60,6 @@ typedef struct {
 typedef struct {
   hdl_module_t module;
   hdl_spi_server_config_t *config;
-  hdl_interrupt_t *spi_interrupt;
-  hdl_interrupt_t *nss_interrupt;
   PRIVATE(hw, SPI_SERVER_PRIVATE_SIZE);
 } hdl_spi_server_t;
 
@@ -79,8 +79,6 @@ typedef struct {
 typedef struct {
   hdl_module_t module;
   hdl_spi_server_config_t *config;
-  hdl_interrupt_t *spi_interrupt;
-  hdl_interrupt_t *nss_interrupt;
   PRIVATE(hw, SPI_SERVER_DMA_PRIVATE_SIZE);
 } hdl_spi_server_dma_t;
 

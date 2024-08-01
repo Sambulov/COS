@@ -7,9 +7,7 @@
 
 typedef struct {
   hdl_module_t module;
-  hdl_spi_server_config_t *config;
-  hdl_interrupt_t *spi_interrupt;
-  hdl_interrupt_t *nss_interrupt;
+  const hdl_spi_server_config_t *config;
   /* private */
   coroutine_t worker;
   hdl_basic_buffer_t *rx_mem;
@@ -137,8 +135,8 @@ hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable) {
     spi->spi_isr.context = desc;
     spi->spi_isr.handler = &event_spi_isr;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->module.dependencies[5];
-    hdl_interrupt_request(ic, spi->spi_interrupt, &spi->spi_isr);
-    hdl_interrupt_request(ic, spi->nss_interrupt, &spi->nss_isr);
+    hdl_interrupt_request(ic, spi->config->spi_interrupt, &spi->spi_isr);
+    hdl_interrupt_request(ic, spi->config->nss_interrupt, &spi->nss_isr);
     spi->received = 0;
     SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMATEN | SPI_CTL1_DMAREN;
     spi_enable((uint32_t)spi->module.reg);

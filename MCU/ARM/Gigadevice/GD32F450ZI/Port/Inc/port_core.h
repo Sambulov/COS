@@ -6,11 +6,6 @@
 
 #define HDL_INTERRUPT_PRV_SIZE       4
 
-extern void *__stack_end__;
-extern void *__flash_end__;
-extern void *_sidata, *_sdata, *_edata;
-extern void *_sbss, *_ebss;
-
 typedef enum
 {
   /* Cortex-M4 processor exceptions numbers */
@@ -214,29 +209,207 @@ typedef enum
   HDL_NVIC_IRQ95 = 95,
 } hdl_nvic_irq_n_t;
 
+
 typedef struct {
   hdl_nvic_irq_n_t irq_type;
   uint8_t priority_group;
   uint8_t priority;
   PRIVATE(hw, HDL_INTERRUPT_PRV_SIZE);
-} hdl_nvic_interrupt_t;
+} hdl_interrupt_t;
+
 
 typedef struct {
-  hdl_module_t module;
   uint32_t prio_bits;
-  hdl_nvic_interrupt_t **interrupts;
-  //uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
-} hdl_nvic_t;
+  hdl_interrupt_t **interrupts;
+  uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
+  void *vector;
+} hdl_interrupt_controller_config_t;
+
+#define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
 
 typedef struct{
-  hdl_module_t module;
   uint32_t flash_latency;
-} hdl_core_t;
+} hdl_core_config_t;
 
-#define hdl_interrupts(...) ((hdl_nvic_interrupt_t *[]){__VA_ARGS__, NULL})
+extern void *_estack;
+extern void *_sidata, *_sdata, *_edata;
+extern void *_sbss, *_ebss;
+extern void *_eflash; 
 
-typedef hdl_nvic_t hdl_interrupt_controller_t;
-typedef hdl_nvic_interrupt_t hdl_interrupt_t;
-typedef hdl_nvic_irq_n_t hdl_irq_n_t;
+void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
+
+void reset_handler();
+
+void irq_n_handler();
+
+void NMI_Handler();
+void HardFault_Handler();
+void MemManage_Handler();
+void BusFault_Handler();
+void UsageFault_Handler();
+void SVC_Handler();
+void DebugMon_Handler();
+void PendSV_Handler();
+void SysTick_Handler();
+
+void wwdgt_handler();
+void lvd_handler();
+void TAMPER_STAMP_IRQHandler();
+void RTC_WKUP_IRQHandler();
+void fmc_handler();
+void RCU_CTC_IRQHandler();
+void EXTI0_IRQHandler();
+void EXTI1_IRQHandler();
+void EXTI2_IRQHandler();
+void EXTI3_IRQHandler();
+void EXTI4_IRQHandler();
+void DMA0_Channel0_IRQHandler();
+void DMA0_Channel1_IRQHandler();
+void DMA0_Channel2_IRQHandler();
+void DMA0_Channel3_IRQHandler();
+void DMA0_Channel4_IRQHandler();
+void DMA0_Channel5_IRQHandler();
+void DMA0_Channel6_IRQHandler();
+void ADC_IRQHandler();
+void CAN0_TX_IRQHandler();
+void CAN0_RX0_IRQHandler();
+void CAN0_RX1_IRQHandler();
+void CAN0_EWMC_IRQHandler();
+void EXTI5_9_IRQHandler();
+void TIMER0_BRK_TIMER8_IRQHandler();
+void TIMER0_UP_TIMER9_IRQHandler();
+void TIMER0_TRG_CMT_TIMER10_IRQHandler();
+void timer0_channel_handler();
+void TIMER1_IRQHandler();
+void timer2_handler();
+void TIMER3_IRQHandler();
+void i2c0_ev_handler();
+void i2c0_er_handler();
+void i2c1_ev_handler();
+void i2c1_er_handler();
+void spi0_handler();
+void spi1_handler();
+void usart0_handler();
+void usart1_handler();
+void USART2_IRQHandler();
+void EXTI10_15_IRQHandler();
+void RTC_Alarm_IRQHandler();
+void USBFS_WKUP_IRQHandler();
+void TIMER7_BRK_TIMER11_IRQHandler();
+void TIMER7_UP_TIMER12_IRQHandler();
+void TIMER7_TRG_CMT_TIMER13_IRQHandler();
+void TIMER7_Channel_IRQHandler();
+void DMA0_Channel7_IRQHandler();
+#if defined (GD32F450) || defined (GD32F470)
+void EXMC_IRQHandler();
+void SDIO_IRQHandler();
+void TIMER4_IRQHandler();
+void SPI2_IRQHandler();
+void UART3_IRQHandler();
+void UART4_IRQHandler();
+void TIMER5_DAC_IRQHandler();
+void TIMER6_IRQHandler();
+void DMA1_Channel0_IRQHandler();
+void DMA1_Channel1_IRQHandler();
+void DMA1_Channel2_IRQHandler();
+void DMA1_Channel3_IRQHandler();
+void DMA1_Channel4_IRQHandler();
+void ENET_IRQHandler();
+void ENET_WKUP_IRQHandler();
+void CAN1_TX_IRQHandler();
+void CAN1_RX0_IRQHandler();
+void CAN1_RX1_IRQHandler();
+void CAN1_EWMC_IRQHandler();
+void USBFS_IRQHandler();
+void DMA1_Channel5_IRQHandler();
+void DMA1_Channel6_IRQHandler();
+void DMA1_Channel7_IRQHandler();
+void USART5_IRQHandler();
+void I2C2_EV_IRQHandler();
+void I2C2_ER_IRQHandler();
+void USBHS_EP1_Out_IRQHandler();
+void USBHS_EP1_In_IRQHandler();
+void USBHS_WKUP_IRQHandler();
+void USBHS_IRQHandler();
+void DCI_IRQHandler();
+void TRNG_IRQHandler();
+void FPU_IRQHandler();
+void UART6_IRQHandler();
+void UART7_IRQHandler();
+void SPI3_IRQHandler();
+void SPI4_IRQHandler();
+void SPI5_IRQHandler();
+void TLI_IRQHandler();
+void TLI_ER_IRQHandler();
+void IPA_IRQHandler();
+#endif /* GD32F450_470 */
+#if defined (GD32F405) || defined (GD32F425)
+void SDIO_IRQHandler();
+void TIMER4_IRQHandler();
+void SPI2_IRQHandler();
+void UART3_IRQHandler();
+void UART4_IRQHandler();
+void TIMER5_DAC_IRQHandler();
+void TIMER6_IRQHandler();
+void DMA1_Channel0_IRQHandler();
+void DMA1_Channel1_IRQHandler();
+void DMA1_Channel2_IRQHandler();
+void DMA1_Channel3_IRQHandler();
+void DMA1_Channel4_IRQHandler();
+void CAN1_TX_IRQHandler();
+void CAN1_RX0_IRQHandler();
+void CAN1_RX1_IRQHandler();
+void CAN1_EWMC_IRQHandler();
+void USBFS_IRQHandler();
+void DMA1_Channel5_IRQHandler();
+void DMA1_Channel6_IRQHandler();
+void DMA1_Channel7_IRQHandler();
+void USART5_IRQHandler();
+void I2C2_EV_IRQHandler();
+void I2C2_ER_IRQHandler();
+void USBHS_EP1_Out_IRQHandler();
+void USBHS_EP1_In_IRQHandler();
+void USBHS_WKUP_IRQHandler();
+void USBHS_IRQHandler();
+void DCI_IRQHandler();
+void TRNG_IRQHandler();
+void FPU_IRQHandler();
+#endif /* GD32F405_425 */
+#if defined (GD32F407) || defined (GD32F427)
+void EXMC_IRQHandler();
+void SDIO_IRQHandler();
+void TIMER4_IRQHandler();
+void SPI2_IRQHandler();
+void UART3_IRQHandler();
+void UART4_IRQHandler();
+void TIMER5_DAC_IRQHandler();
+void TIMER6_IRQHandler();
+void DMA1_Channel0_IRQHandler();
+void DMA1_Channel1_IRQHandler();
+void DMA1_Channel2_IRQHandler();
+void DMA1_Channel3_IRQHandler();
+void DMA1_Channel4_IRQHandler();
+void ENET_IRQHandler();
+void ENET_WKUP_IRQHandler();
+void CAN1_TX_IRQHandler();
+void CAN1_RX0_IRQHandler();
+void CAN1_RX1_IRQHandler();
+void CAN1_EWMC_IRQHandler();
+void USBFS_IRQHandler();
+void DMA1_Channel5_IRQHandler();
+void DMA1_Channel6_IRQHandler();
+void DMA1_Channel7_IRQHandler();
+void USART5_IRQHandler();
+void I2C2_EV_IRQHandler();
+void I2C2_ER_IRQHandler();
+void USBHS_EP1_Out_IRQHandler();
+void USBHS_EP1_In_IRQHandler();
+void USBHS_WKUP_IRQHandler();
+void USBHS_IRQHandler();
+void DCI_IRQHandler();
+void TRNG_IRQHandler();
+void FPU_IRQHandler();
+#endif /* GD32F407_427 */
+
 
 #endif // PORT_CORE_H_

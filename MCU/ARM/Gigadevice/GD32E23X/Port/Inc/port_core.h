@@ -10,11 +10,11 @@
 #define HDL_INTERRUPT_PRV_SIZE       4
 
 typedef enum {
-  HDL_NVIC_EXCEPTION_NMI               = NonMaskableInt_IRQn,        /*!< non maskable interrupt                                   */
-  HDL_NVIC_EXCEPTION_HF                = HardFault_IRQn,             /*!< hardfault interrupt                                      */
-  HDL_NVIC_EXCEPTION_SVC               = SVCall_IRQn,                /*!< sv call interrupt                                        */
-  HDL_NVIC_EXCEPTION_PSV               = PendSV_IRQn,                /*!< pend sv interrupt                                        */
-  HDL_NVIC_EXCEPTION_SysTick           = SysTick_IRQn,               /*!< system tick interrupt                                    */
+  HDL_NVIC_EXCEPTION_NonMaskableInt    = NonMaskableInt_IRQn,   /*!< Non maskable interrupt                                 */
+  HDL_NVIC_EXCEPTION_HardFault         = HardFault_IRQn,        /*!< Hardfault interrupt                                      */
+  HDL_NVIC_EXCEPTION_SVCall            = SVCall_IRQn,            /*!< SV call interrupt                           */
+  HDL_NVIC_EXCEPTION_PendSV            = PendSV_IRQn,            /*!< Pend SV interrupt                           */
+  HDL_NVIC_EXCEPTION_SysTick           = SysTick_IRQn,           /*!< System tick interrupt                       */
   /* interruput numbers */
   HDL_NVIC_IRQ0_WWDGT                  = WWDGT_IRQn,                 /*!< window watchdog timer interrupt                          */
   HDL_NVIC_IRQ1_LVD                    = LVD_IRQn,                   /*!< LVD through EXTI line detect interrupt                   */

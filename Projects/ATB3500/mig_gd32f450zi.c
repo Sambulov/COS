@@ -19,54 +19,57 @@
 #define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_APB2_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
+const hdl_core_config_t mod_sys_core_cnf = {
+  .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
+};
+
 hdl_core_t mod_sys_core = {
   .module.init = &hdl_core,
   .module.dependencies = NULL,
   .module.reg = (void *)SCB_BASE,
-  .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
-  /* TODO: ... */
+  .config = &mod_sys_core_cnf
 };
 /***********************************************************
  *                          IRQ
 ***********************************************************/
-hdl_nvic_interrupt_t mod_irq_systick = {
+hdl_interrupt_t mod_irq_systick = {
   .irq_type = HDL_NVIC_EXCEPTION_SysTick,
   .priority = 0,
   .priority_group = 0,
 };
-hdl_nvic_interrupt_t mod_irq_timer0 = {
+hdl_interrupt_t mod_irq_timer0 = {
   .irq_type = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
   .priority = 0,
   .priority_group = 1,
 };
-hdl_nvic_interrupt_t mod_irq_timer1 = {
+hdl_interrupt_t mod_irq_timer1 = {
   .irq_type = HDL_NVIC_IRQ28_TIMER1,
   .priority = 0,
   .priority_group = 2,
 };
 
-hdl_nvic_interrupt_t mod_irq_i2c_0_ev = {
+hdl_interrupt_t mod_irq_i2c_0_ev = {
   .irq_type = HDL_NVIC_IRQ31_I2C0_EV,
   .priority = 0,
   .priority_group = 1,
 };
-hdl_nvic_interrupt_t mod_irq_i2c_0_err = {
+hdl_interrupt_t mod_irq_i2c_0_err = {
   .irq_type = HDL_NVIC_IRQ32_I2C0_ER,
   .priority = 0,
   .priority_group = 2,
 };
 
-hdl_nvic_interrupt_t mod_irq_exti_4 = {
+hdl_interrupt_t mod_irq_exti_4 = {
   .irq_type = HDL_NVIC_IRQ10_EXTI4,
   .priority = 0,
   .priority_group = 1,
 };
-hdl_nvic_interrupt_t mod_irq_spi_3 = {
+hdl_interrupt_t mod_irq_spi_3 = {
   .irq_type = HDL_NVIC_IRQ84_SPI3,
   .priority = 0,
   .priority_group = 0,
 };
-hdl_nvic_interrupt_t mod_irq_adc = {
+hdl_interrupt_t mod_irq_adc = {
   .irq_type = HDL_NVIC_IRQ18_ADC,
   .priority = 0,
   .priority_group = 0,
@@ -75,13 +78,226 @@ hdl_nvic_interrupt_t mod_irq_adc = {
 /***********************************************************
  *                          NVIC
 ***********************************************************/
-hdl_nvic_t mod_nvic = {
-  .module.init = &hdl_interrupt_controller,
-  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
-  .module.reg = NVIC,
+const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc,
                               &mod_irq_i2c_0_ev, &mod_irq_i2c_0_err),
+};
+
+hdl_interrupt_controller_t mod_nvic = {
+  .module.init = &hdl_interrupt_controller,
+  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
+  .module.reg = NVIC,
+  .config = &mod_nvic_cnf
+};
+
+void * vector[0x70] __attribute__ ((section (".isr_vector"), used)) = {
+  /* Vector in Cortex - M4 */
+  &_estack,                           /* Vector 0 */
+  &reset_handler,                           /* Vector 1 */
+  &NMI_Handler,                             /* Vector 2 IRQ -14 */
+  &HardFault_Handler,                       /* Vector 3 IRQ -13 */
+  &MemManage_Handler,                       /* Vector 4 IRQ -12 */
+  &BusFault_Handler,                        /* Vector 5 IRQ -11 */
+  &UsageFault_Handler,                      /* Vector 6 IRQ -10 */
+  (void *)NULL,                             /* Vector 7 IRQ -9 */
+  (void *)NULL,                             /* Vector 8 IRQ -8 */
+  (void *)NULL,                             /* Vector 9 IRQ -7 */
+  (void *)NULL,                             /* Vector 10 IRQ -6 */
+  &SVC_Handler,                             /* Vector 11 IRQ -5 */
+  &DebugMon_Handler,                        /* Vector 12 IRQ -4 */
+  (void *)NULL,                             /* Vector 13 IRQ -3 */
+  &PendSV_Handler,                          /* Vector 14 IRQ -2 */
+  &SysTick_Handler,                         /* Vector 15 IRQ -1 */
+  /* Peripheral */
+  &wwdgt_handler,                        /* Vector 16 IRQ 0 */
+  &lvd_handler,                          /* Vector 17 IRQ 1 */
+  &TAMPER_STAMP_IRQHandler,                 /* Vector 18 IRQ 2 */
+  &RTC_WKUP_IRQHandler,                     /* Vector 19 IRQ 3 */
+  &fmc_handler,                          /* Vector 20 IRQ 4 */
+  &RCU_CTC_IRQHandler,                      /* Vector 21 IRQ 5 */
+  &EXTI0_IRQHandler,                        /* Vector 22 IRQ 6 */
+  &EXTI1_IRQHandler,                        /* Vector 23 IRQ 7 */
+  &EXTI2_IRQHandler,                        /* Vector 24 IRQ 8 */
+  &EXTI3_IRQHandler,                        /* Vector 25 IRQ 9 */
+  &EXTI4_IRQHandler,                        /* Vector 26 IRQ 10 */
+  &DMA0_Channel0_IRQHandler,                /* Vector 27 IRQ 11 */
+  &DMA0_Channel1_IRQHandler,                /* Vector 28 IRQ 12 */
+  &DMA0_Channel2_IRQHandler,                /* Vector 29 IRQ 13 */
+  &DMA0_Channel3_IRQHandler,                /* Vector 30 IRQ 14 */
+  &DMA0_Channel4_IRQHandler,                /* Vector 31 IRQ 15 */
+  &DMA0_Channel5_IRQHandler,                /* Vector 32 IRQ 16 */
+  &DMA0_Channel6_IRQHandler,                /* Vector 33 IRQ 17 */
+  &ADC_IRQHandler,                          /* Vector 34 IRQ 18 */
+  &CAN0_TX_IRQHandler,                      /* Vector 35 IRQ 19 */
+  &CAN0_RX0_IRQHandler,                     /* Vector 36 IRQ 20 */
+  &CAN0_RX1_IRQHandler,                     /* Vector 37 IRQ 21 */
+  &CAN0_EWMC_IRQHandler,                    /* Vector 38 IRQ 22 */
+  &EXTI5_9_IRQHandler,                      /* Vector 39 IRQ 23 */
+  &TIMER0_BRK_TIMER8_IRQHandler,            /* Vector 40 IRQ 24 */
+  &TIMER0_UP_TIMER9_IRQHandler,             /* Vector 41 IRQ 25 */
+  &TIMER0_TRG_CMT_TIMER10_IRQHandler,       /* Vector 42 IRQ 26 */
+  &timer0_channel_handler,               /* Vector 43 IRQ 27 */
+  &TIMER1_IRQHandler,                       /* Vector 44 IRQ 28 */
+  &timer2_handler,                       /* Vector 45 IRQ 29 */
+  &TIMER3_IRQHandler,                       /* Vector 46 IRQ 30 */
+  &i2c0_ev_handler,                      /* Vector 47 IRQ 31 */
+  &i2c0_er_handler,                      /* Vector 48 IRQ 32 */
+  &i2c1_ev_handler,                      /* Vector 49 IRQ 33 */
+  &i2c1_er_handler,                      /* Vector 50 IRQ 34 */
+  &spi0_handler,                         /* Vector 51 IRQ 35 */
+  &spi1_handler,                         /* Vector 52 IRQ 36 */
+  &usart0_handler,                       /* Vector 53 IRQ 37 */
+  &usart1_handler,                       /* Vector 54 IRQ 38 */
+  &USART2_IRQHandler,                       /* Vector 55 IRQ 39 */
+  &EXTI10_15_IRQHandler,                    /* Vector 56 IRQ 40 */
+  &RTC_Alarm_IRQHandler,                    /* Vector 57 IRQ 41 */
+  &USBFS_WKUP_IRQHandler,                   /* Vector 58 IRQ 42 */
+  &TIMER7_BRK_TIMER11_IRQHandler,           /* Vector 59 IRQ 43 */
+  &TIMER7_UP_TIMER12_IRQHandler,            /* Vector 60 IRQ 44 */
+  &TIMER7_TRG_CMT_TIMER13_IRQHandler,       /* Vector 61 IRQ 45 */
+  &TIMER7_Channel_IRQHandler,               /* Vector 62 IRQ 46 */
+  &DMA0_Channel7_IRQHandler,                /* Vector 63 IRQ 47 */
+#if defined (GD32F450) || defined (GD32F470)
+  &EXMC_IRQHandler,                         /* Vector 64 IRQ 48 */
+  &SDIO_IRQHandler,                         /* Vector 65 IRQ 49 */
+  &TIMER4_IRQHandler,                       /* Vector 66 IRQ 50 */
+  &SPI2_IRQHandler,                         /* Vector 67 IRQ 51 */
+  &UART3_IRQHandler,                        /* Vector 68 IRQ 52 */
+  &UART4_IRQHandler,                        /* Vector 69 IRQ 53 */
+  &TIMER5_DAC_IRQHandler,                   /* Vector 70 IRQ 54 */
+  &TIMER6_IRQHandler,                       /* Vector 71 IRQ 55 */
+  &DMA1_Channel0_IRQHandler,                /* Vector 72 IRQ 56 */
+  &DMA1_Channel1_IRQHandler,                /* Vector 73 IRQ 57 */
+  &DMA1_Channel2_IRQHandler,                /* Vector 74 IRQ 58 */
+  &DMA1_Channel3_IRQHandler,                /* Vector 75 IRQ 59 */
+  &DMA1_Channel4_IRQHandler,                /* Vector 76 IRQ 60 */
+  &ENET_IRQHandler,                         /* Vector 77 IRQ 61 */
+  &ENET_WKUP_IRQHandler,                    /* Vector 78 IRQ 62 */
+  &CAN1_TX_IRQHandler,                      /* Vector 79 IRQ 63 */
+  &CAN1_RX0_IRQHandler,                     /* Vector 80 IRQ 64 */
+  &CAN1_RX1_IRQHandler,                     /* Vector 81 IRQ 65 */
+  &CAN1_EWMC_IRQHandler,                    /* Vector 82 IRQ 66 */
+  &USBFS_IRQHandler,                        /* Vector 83 IRQ 67 */
+  &DMA1_Channel5_IRQHandler,                /* Vector 84 IRQ 68 */
+  &DMA1_Channel6_IRQHandler,                /* Vector 85 IRQ 69 */
+  &DMA1_Channel7_IRQHandler,                /* Vector 86 IRQ 70 */
+  &USART5_IRQHandler,                       /* Vector 87 IRQ 71 */
+  &I2C2_EV_IRQHandler,                      /* Vector 88 IRQ 72 */
+  &I2C2_ER_IRQHandler,                      /* Vector 89 IRQ 73 */
+  &USBHS_EP1_Out_IRQHandler,                /* Vector 90 IRQ 74 */
+  &USBHS_EP1_In_IRQHandler,                 /* Vector 91 IRQ 75 */
+  &USBHS_WKUP_IRQHandler,                   /* Vector 92 IRQ 76 */
+  &USBHS_IRQHandler,                        /* Vector 93 IRQ 77 */
+  &DCI_IRQHandler,                          /* Vector 94 IRQ 78 */
+  &irq_n_handler,                           /* Vector 95 IRQ 79 */
+  &TRNG_IRQHandler,                         /* Vector 96 IRQ 80 */
+  &FPU_IRQHandler,                          /* Vector 97 IRQ 81 */
+  &UART6_IRQHandler,                        /* Vector 98 IRQ 82 */
+  &UART7_IRQHandler,                        /* Vector 99 IRQ 83 */
+  &SPI3_IRQHandler,                         /* Vector 100 IRQ 84 */
+  &SPI4_IRQHandler,                         /* Vector 101 IRQ 85 */
+  &SPI5_IRQHandler,                         /* Vector 102 IRQ 86 */
+  &irq_n_handler,                           /* Vector 103 IRQ 87 */
+  &TLI_IRQHandler,                          /* Vector 104 IRQ 88 */
+  &TLI_ER_IRQHandler,                       /* Vector 105 IRQ 89 */
+  &IPA_IRQHandler,                          /* Vector 106 IRQ 90 */
+#endif /* GD32F450_470 */
+#if defined (GD32F405) || defined (GD32F425)
+  &irq_n_handler,                           /* Vector 64 IRQ 48 */
+  &SDIO_IRQHandler,                         /* Vector 65 IRQ 49 */
+  &TIMER4_IRQHandler,                       /* Vector 66 IRQ 50 */
+  &SPI2_IRQHandler,                         /* Vector 67 IRQ 51 */
+  &UART3_IRQHandler,                        /* Vector 68 IRQ 52 */
+  &UART4_IRQHandler,                        /* Vector 69 IRQ 53 */
+  &TIMER5_DAC_IRQHandler,                   /* Vector 70 IRQ 54 */
+  &TIMER6_IRQHandler,                       /* Vector 71 IRQ 55 */
+  &DMA1_Channel0_IRQHandler,                /* Vector 72 IRQ 56 */
+  &DMA1_Channel1_IRQHandler,                /* Vector 73 IRQ 57 */
+  &DMA1_Channel2_IRQHandler,                /* Vector 74 IRQ 58 */
+  &DMA1_Channel3_IRQHandler,                /* Vector 75 IRQ 59 */
+  &DMA1_Channel4_IRQHandler,                /* Vector 76 IRQ 60 */
+  &irq_n_handler,                           /* Vector 77 IRQ 61 */
+  &irq_n_handler,                           /* Vector 78 IRQ 62 */
+  &CAN1_TX_IRQHandler,                      /* Vector 79 IRQ 63 */
+  &CAN1_RX0_IRQHandler,                     /* Vector 80 IRQ 64 */
+  &CAN1_RX1_IRQHandler,                     /* Vector 81 IRQ 65 */
+  &CAN1_EWMC_IRQHandler,                    /* Vector 82 IRQ 66 */
+  &USBFS_IRQHandler,                        /* Vector 83 IRQ 67 */
+  &DMA1_Channel5_IRQHandler,                /* Vector 84 IRQ 68 */
+  &DMA1_Channel6_IRQHandler,                /* Vector 85 IRQ 69 */
+  &DMA1_Channel7_IRQHandler,                /* Vector 86 IRQ 70 */
+  &USART5_IRQHandler,                       /* Vector 87 IRQ 71 */
+  &I2C2_EV_IRQHandler,                      /* Vector 88 IRQ 72 */
+  &I2C2_ER_IRQHandler,                      /* Vector 89 IRQ 73 */
+  &USBHS_EP1_Out_IRQHandler,                /* Vector 90 IRQ 74 */
+  &USBHS_EP1_In_IRQHandler,                 /* Vector 91 IRQ 75 */
+  &USBHS_WKUP_IRQHandler,                   /* Vector 92 IRQ 76 */
+  &USBHS_IRQHandler,                        /* Vector 93 IRQ 77 */
+  &DCI_IRQHandler,                          /* Vector 94 IRQ 78 */
+  &irq_n_handler,                           /* Vector 95 IRQ 79 */
+  &TRNG_IRQHandler,                         /* Vector 96 IRQ 80 */
+  &FPU_IRQHandler,                          /* Vector 97 IRQ 81 */
+  &irq_n_handler,                           /* Vector 98 IRQ 82 */
+  &irq_n_handler,                           /* Vector 99 IRQ 83 */
+  &irq_n_handler,                           /* Vector 100 IRQ 84 */
+  &irq_n_handler,                           /* Vector 101 IRQ 85 */
+  &irq_n_handler,                           /* Vector 102 IRQ 86 */
+  &irq_n_handler,                           /* Vector 103 IRQ 87 */
+  &irq_n_handler,                           /* Vector 104 IRQ 88 */
+  &irq_n_handler,                           /* Vector 105 IRQ 89 */
+  &irq_n_handler,                           /* Vector 106 IRQ 90 */
+#endif /* GD32F405_425 */
+#if defined (GD32F407) || defined (GD32F427)
+  &EXMC_IRQHandler,                         /* Vector 64 IRQ 48 */
+  &SDIO_IRQHandler,                         /* Vector 65 IRQ 49 */
+  &TIMER4_IRQHandler,                       /* Vector 66 IRQ 50 */
+  &SPI2_IRQHandler,                         /* Vector 67 IRQ 51 */
+  &UART3_IRQHandler,                        /* Vector 68 IRQ 52 */
+  &UART4_IRQHandler,                        /* Vector 69 IRQ 53 */
+  &TIMER5_DAC_IRQHandler,                   /* Vector 70 IRQ 54 */
+  &TIMER6_IRQHandler,                       /* Vector 71 IRQ 55 */
+  &DMA1_Channel0_IRQHandler,                /* Vector 72 IRQ 56 */
+  &DMA1_Channel1_IRQHandler,                /* Vector 73 IRQ 57 */
+  &DMA1_Channel2_IRQHandler,                /* Vector 74 IRQ 58 */
+  &DMA1_Channel3_IRQHandler,                /* Vector 75 IRQ 59 */
+  &DMA1_Channel4_IRQHandler,                /* Vector 76 IRQ 60 */
+  &ENET_IRQHandler,                         /* Vector 77 IRQ 61 */
+  &ENET_WKUP_IRQHandler,                    /* Vector 78 IRQ 62 */
+  &CAN1_TX_IRQHandler,                      /* Vector 79 IRQ 63 */
+  &CAN1_RX0_IRQHandler,                     /* Vector 80 IRQ 64 */
+  &CAN1_RX1_IRQHandler,                     /* Vector 81 IRQ 65 */
+  &CAN1_EWMC_IRQHandler,                    /* Vector 82 IRQ 66 */
+  &USBFS_IRQHandler,                        /* Vector 83 IRQ 67 */
+  &DMA1_Channel5_IRQHandler,                /* Vector 84 IRQ 68 */
+  &DMA1_Channel6_IRQHandler,                /* Vector 85 IRQ 69 */
+  &DMA1_Channel7_IRQHandler,                /* Vector 86 IRQ 70 */
+  &USART5_IRQHandler,                       /* Vector 87 IRQ 71 */
+  &I2C2_EV_IRQHandler,                      /* Vector 88 IRQ 72 */
+  &I2C2_ER_IRQHandler,                      /* Vector 89 IRQ 73 */
+  &USBHS_EP1_Out_IRQHandler,                /* Vector 90 IRQ 74 */
+  &USBHS_EP1_In_IRQHandler,                 /* Vector 91 IRQ 75 */
+  &USBHS_WKUP_IRQHandler,                   /* Vector 92 IRQ 76 */
+  &USBHS_IRQHandler,                        /* Vector 93 IRQ 77 */
+  &DCI_IRQHandler,                          /* Vector 94 IRQ 78 */
+  &irq_n_handler,                           /* Vector 95 IRQ 79 */
+  &TRNG_IRQHandler,                         /* Vector 96 IRQ 80 */
+  &FPU_IRQHandler,                          /* Vector 97 IRQ 81 */
+  &irq_n_handler,                           /* Vector 98 IRQ 82 */
+  &irq_n_handler,                           /* Vector 99 IRQ 83 */
+  &irq_n_handler,                           /* Vector 100 IRQ 84 */
+  &irq_n_handler,                           /* Vector 101 IRQ 85 */
+  &irq_n_handler,                           /* Vector 102 IRQ 86 */
+  &irq_n_handler,                           /* Vector 103 IRQ 87 */
+  &irq_n_handler,                           /* Vector 104 IRQ 88 */
+  &irq_n_handler,                           /* Vector 105 IRQ 89 */
+  &IPA_IRQHandler,                          /* Vector 106 IRQ 90 */  
+#endif /* GD32F407_427 */
+  &irq_n_handler,                           /* Vector 107 IRQ 91 */
+  &irq_n_handler,                           /* Vector 108 IRQ 92 */
+  &irq_n_handler,                           /* Vector 109 IRQ 93 */
+  &irq_n_handler,                           /* Vector 110 IRQ 94 */
+  &irq_n_handler,                           /* Vector 111 IRQ 95 */
 };
 
 /***********************************************************
@@ -176,7 +392,7 @@ hdl_clock_prescaler_t mod_clock_apb2 = {
 /***********************************************************
  *                          COUNTER
 ***********************************************************/
-const hdl_tick_counter_hw_config_t mod_tick_counter0_cnf = {
+const hdl_tick_counter_timer_config_t mod_tick_counter0_cnf = {
   .alignedmode = TIMER_COUNTER_EDGE,
   .clockdivision = TIMER_CKDIV_DIV1,
   .counterdirection = TIMER_COUNTER_UP,
@@ -186,7 +402,7 @@ const hdl_tick_counter_hw_config_t mod_tick_counter0_cnf = {
   .rcu = RCU_TIMER0
 };
 
-const hdl_tick_counter_hw_config_t mod_tick_counter1_cnf = {
+const hdl_tick_counter_timer_config_t mod_tick_counter1_cnf = {
   .alignedmode = TIMER_COUNTER_EDGE,
   .clockdivision = TIMER_CKDIV_DIV1,
   .counterdirection = TIMER_COUNTER_UP,
@@ -204,7 +420,7 @@ hdl_tick_counter_t mod_systick_counter = {
   .module.init = &hdl_tick_counter,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)SysTick,
-  .config = &mod_systick_counter_cnf
+  .config.systick = &mod_systick_counter_cnf
 };
 
 hdl_tick_counter_t mod_timer0_counter = {
@@ -227,21 +443,21 @@ hdl_time_counter_t mod_systick_timer_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_iterrupt = HDL_NVIC_EXCEPTION_SysTick,
+  .reload_interrupt = &mod_irq_systick,
   .val = 0
 };
 hdl_time_counter_t mod_timer0_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_iterrupt = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
+  .reload_interrupt = &mod_irq_timer0,
   .val = 0
 };
 hdl_time_counter_t mod_timer1_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_iterrupt = HDL_NVIC_IRQ28_TIMER1,
+  .reload_interrupt = &mod_irq_timer1,
   .val = 0
 };
 hdl_timer_t mod_watchdog_timer = {
@@ -812,7 +1028,9 @@ hdl_gpio_pin_t mod_spi_3_cs = {
 const hdl_spi_server_config_t hdl_spi_slave_config = {
   .rcu = RCU_SPI3,
   .endian = HDL_SPI_ENDIAN_MSB,
-  .polarity = SPI_CK_PL_LOW_PH_1EDGE
+  .polarity = SPI_CK_PL_LOW_PH_1EDGE,
+  .spi_interrupt = &mod_irq_spi_3,
+  .nss_interrupt = &mod_irq_exti_4,
 };
 
 hdl_spi_server_dma_t mod_spi3_server_dma = {
@@ -822,8 +1040,6 @@ hdl_spi_server_dma_t mod_spi3_server_dma = {
                                                   &mod_dma_ch_spi_3_rx.module, &mod_dma_ch_spi_3_tx.module, &mod_exti.module),
   .module.init = &hdl_spi_server_dma,
   .config = &hdl_spi_slave_config,
-  .spi_iterrupt = HDL_NVIC_IRQ84_SPI3,
-  .nss_iterrupt = HDL_NVIC_IRQ10_EXTI4,
 };
 
 const hdl_i2c_config_t mod_i2c_0_config = {
@@ -832,8 +1048,8 @@ const hdl_i2c_config_t mod_i2c_0_config = {
   .addr_10_bits = 0,
   .dtcy = I2C_DTCY_2,
   .dual_address = 0,
-  .err_interrupt = HDL_NVIC_IRQ32_I2C0_ER,
-  .ev_interrupt = HDL_NVIC_IRQ31_I2C0_EV,
+  .err_interrupt = &mod_irq_i2c_0_err,
+  .ev_interrupt = &mod_irq_i2c_0_ev,
   .general_call_enable = 0,
   .speed = 400000,
   .stretch_enable = 1,

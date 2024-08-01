@@ -6,11 +6,11 @@ MEMORY
 }
 
 /* Entry Point */
-ENTRY(Reset_Handler)
+ENTRY(reset_handler)
 
 /* Highest address of the user mode stack */
-__stack_end__ = ORIGIN(SRAM) + LENGTH(SRAM);      /* end of RAM */
-__flash_end__ = ORIGIN(FLASH) + LENGTH(FLASH);    /* end of FLASH */
+_estack = ORIGIN(SRAM) + LENGTH(SRAM);      /* end of RAM */
+_eflash = ORIGIN(FLASH) + LENGTH(FLASH);    /* end of FLASH */
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x400 ;      /* required amount of heap  */
 _Min_Stack_Size = 0x400 ; /* required amount of stack */

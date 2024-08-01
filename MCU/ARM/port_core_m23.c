@@ -1,5 +1,4 @@
 #include "hdl_portable.h"
-#include "CodeLib.h"
 
 #if defined(__CORE_CM23_H_DEPENDANT)
 
@@ -15,9 +14,9 @@ _Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_interrupt_t), 
 void __libc_init_array();
 void main();
 
-void nmi_handler()                      { call_isr(HDL_NVIC_EXCEPTION_NMI, 0); }
-void hard_fault_handler()               { call_isr(HDL_NVIC_EXCEPTION_HF, 0); }
-void pend_sv_handler()                  { call_isr(HDL_NVIC_EXCEPTION_PSV, 0); }
+void nmi_handler()                      { call_isr(HDL_NVIC_EXCEPTION_NonMaskableInt, 0); }
+void hard_fault_handler()               { call_isr(HDL_NVIC_EXCEPTION_HardFault, 0); }
+void pend_sv_handler()                  { call_isr(HDL_NVIC_EXCEPTION_PendSV, 0); }
 void systick_handler()                  { call_isr(HDL_NVIC_EXCEPTION_SysTick, 0); }
 
 /* Returns the current value of the Link Register (LR). */ 
@@ -73,10 +72,8 @@ __attribute__((naked, noreturn)) void reset_handler() {
 	void **pSource, **pDest;
 	for (pSource = &_sidata, pDest = &_sdata; pDest != &_edata; pSource++, pDest++)
 	  *pDest = *pSource;
-
   for (pDest = &_sbss; pDest != &_ebss; pDest++)
     *pDest = 0;
-  //TODO: turn off JTAG;
   __libc_init_array();
   main();
   for (;;) ;
@@ -123,19 +120,6 @@ void irq_n_handler() {
   call_isr(irq, 0);
 }
 
-hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
-  /* TODO: */
-  if(enable) {
-    hdl_core_t *core = (hdl_core_t *)desc;
-    FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
-    rcu_periph_clock_enable(RCU_CFGCMP);
-    return HDL_MODULE_INIT_OK;
-  }
-  rcu_periph_clock_disable(RCU_CFGCMP);
-  FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
-  return HDL_MODULE_DEINIT_OK;
-}
-
 hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
   if(enable) {
     hdl_interrupt_controller_t *nvic = (hdl_interrupt_controller_t *)desc;
@@ -167,19 +151,19 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrup
   /* interrupt enable */
   if(_isr->irq_type < 0) {
     switch (_isr->irq_type) {
-      case SysTick_IRQn:
+      case HDL_NVIC_EXCEPTION_SysTick:
         SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;                  /* Enable SysTick IRQ */
         break;
-      case PendSV_IRQn:
+      case HDL_NVIC_EXCEPTION_PendSV:
         // TODO: enable if possible, ;
         break;
-      case SVCall_IRQn:
+      case HDL_NVIC_EXCEPTION_SVCall:
         // TODO: enable if possible, ;
         break;
-      case HardFault_IRQn:
+      case HDL_NVIC_EXCEPTION_HardFault:
         // TODO: enable if possible, ;
         break;
-      case NonMaskableInt_IRQn:
+      case HDL_NVIC_EXCEPTION_NonMaskableInt:
         // TODO: enable if possible, ;
         break;
       default:

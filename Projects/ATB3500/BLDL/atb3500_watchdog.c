@@ -39,7 +39,7 @@ hdl_module_state_t atb3500_watchdog(void *desc, uint8_t enable) {
         wdt->watchdog_delegate.context = NULL;
         wdt->watchdog_delegate.handler = NULL;
         wdt->tx_data.ovn = ATB3500_WATCHDOG_OVN;
-        hdl_event_subscribe(&timer->event, &wdt->watchdog_delegate);
+        hdl_timer_subscribe(timer, &wdt->watchdog_delegate);
         return HDL_MODULE_INIT_OK;
     }
     return HDL_MODULE_DEINIT_OK;
@@ -50,6 +50,6 @@ hdl_module_state_t atb3500_watchdog_event_subscribe(atb3500_watchdog_t *desc, hd
     hdl_timer_t *timer = (hdl_timer_t *)wdt->module.dependencies[0];
     wdt->watchdog_delegate.context = context;
     wdt->watchdog_delegate.handler = handler;
-    hdl_event_subscribe(&timer->event, &wdt->watchdog_delegate);
+    hdl_timer_subscribe(timer, &wdt->watchdog_delegate);
 }
 

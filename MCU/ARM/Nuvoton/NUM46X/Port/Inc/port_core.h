@@ -2,20 +2,22 @@
 #ifndef PORT_CORE_H_
 #define PORT_CORE_H_
 
+#define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
+
 #define HDL_INTERRUPT_PRV_SIZE       4
 
 typedef enum
 {
   /* Cortex-M4 processor exceptions numbers */
-  HDL_NVIC_EXCEPTION_NonMaskableInt = -14,   /*!< 2 non maskable interrupt                                 */
-  HDL_NVIC_EXCEPTION_HardFault = -13,        /*!< hardfault interrupt                                      */
-  HDL_NVIC_EXCEPTION_MemoryManagement = -12, /*!< 4 Cortex-M3 memory management interrupt                  */
-  HDL_NVIC_EXCEPTION_BusFault = -11,         /*!< 5 Cortex-M3 bus fault interrupt                          */
-  HDL_NVIC_EXCEPTION_UsageFault = -10,       /*!< 6 Cortex-M3 usage fault interrupt                        */
-  HDL_NVIC_EXCEPTION_SVCall = -5,            /*!< 11 Cortex-M3 SV call interrupt                           */
-  HDL_NVIC_EXCEPTION_DebugMonitor = -4,      /*!< 12 Cortex-M3 debug monitor interrupt                     */
-  HDL_NVIC_EXCEPTION_PendSV = -2,            /*!< 14 Cortex-M3 pend SV interrupt                           */
-  HDL_NVIC_EXCEPTION_SysTick = -1,           /*!< 15 Cortex-M3 system tick interrupt                       */
+  HDL_NVIC_EXCEPTION_NonMaskableInt = -14,   /*!< Non maskable interrupt                                 */
+  HDL_NVIC_EXCEPTION_HardFault = -13,        /*!< Hardfault interrupt                                      */
+  HDL_NVIC_EXCEPTION_MemoryManagement = -12, /*!< Memory management interrupt                  */
+  HDL_NVIC_EXCEPTION_BusFault = -11,         /*!< Bus fault interrupt                          */
+  HDL_NVIC_EXCEPTION_UsageFault = -10,       /*!< Usage fault interrupt                        */
+  HDL_NVIC_EXCEPTION_SVCall = -5,            /*!< SV call interrupt                           */
+  HDL_NVIC_EXCEPTION_DebugMonitor = -4,      /*!< Debug monitor interrupt                     */
+  HDL_NVIC_EXCEPTION_PendSV = -2,            /*!< Pend SV interrupt                           */
+  HDL_NVIC_EXCEPTION_SysTick = -1,           /*!< System tick interrupt                       */
   /* interruput numbers */
   HDL_NVIC_IRQ0_BOD_IRQn                      = 0,        /*!< Brown Out detection Interrupt                    */
   HDL_NVIC_IRQ1_IRC_IRQn                      = 1,        /*!< Internal RC Interrupt                            */
@@ -152,31 +154,170 @@ typedef struct {
   uint8_t priority_group;
   uint8_t priority;
   PRIVATE(hw, HDL_INTERRUPT_PRV_SIZE);
-} hdl_nvic_interrupt_t;
-
-typedef enum {
-  HDL_EXTI_TRIGGER_FALLING        = 0x01,
-  HDL_EXTI_TRIGGER_RISING         = 0x02,
-  HDL_EXTI_TRIGGER_RISING_FALLING = HDL_EXTI_TRIGGER_RISING | HDL_EXTI_TRIGGER_FALLING,
-  HDL_EXTI_TRIGGER_NONE           = !(HDL_EXTI_TRIGGER_RISING | HDL_EXTI_TRIGGER_FALLING)
-} hdl_exti_trig_type_t;
+} hdl_interrupt_t;
 
 typedef struct {
-  hdl_module_t module;
   uint32_t prio_bits;
-  hdl_nvic_interrupt_t **interrupts;
-  //uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
-} hdl_nvic_t;
+  uint32_t prio_group;
+  hdl_interrupt_t **interrupts;
+  uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
+  void *vector;
+} hdl_interrupt_controller_config_t;
 
 typedef struct{
-  hdl_module_t module;
   uint32_t flash_latency;
-} hdl_core_t;
+} hdl_core_config_t;
+
+extern void *_estack;
+extern void *_sidata, *_sdata, *_edata;
+extern void *_sbss, *_ebss;
 
 #define hdl_interrupts(...) ((hdl_nvic_interrupt_t *[]){__VA_ARGS__, NULL})
 
-typedef hdl_nvic_t hdl_interrupt_controller_t;
-typedef hdl_nvic_interrupt_t hdl_interrupt_t;
-typedef hdl_nvic_irq_n_t hdl_irq_n_t;
+void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
+
+void irq_n_handler();
+
+void reset_handler();
+
+void NMI_Handler();
+void HardFault_Handler();
+void MemManage_Handler();
+void BusFault_Handler();
+void UsageFault_Handler();
+void SVC_Handler();
+void DebugMon_Handler();
+void PendSV_Handler();
+void SysTick_Handler();
+
+
+void BOD_IRQHandler();
+void IRC_IRQHandler();
+void PWRWU_IRQHandler();
+void RAMPE_IRQHandler();
+void CKFAIL_IRQHandler();
+void ISP_IRQHandler();
+void RTC_IRQHandler();
+void TAMPER_IRQHandler();
+void WDT_IRQHandler();
+void WWDT_IRQHandler();
+void EINT0_IRQHandler();
+void EINT1_IRQHandler();
+void EINT2_IRQHandler();
+void EINT3_IRQHandler();
+void EINT4_IRQHandler();
+void EINT5_IRQHandler();
+void GPA_IRQHandler();
+void GPB_IRQHandler();
+void GPC_IRQHandler();
+void GPD_IRQHandler();
+void GPE_IRQHandler();
+void GPF_IRQHandler();
+void QSPI0_IRQHandler();
+void SPI0_IRQHandler();
+void BRAKE0_IRQHandler();
+void EPWM0P0_IRQHandler();
+void EPWM0P1_IRQHandler();
+void EPWM0P2_IRQHandler();
+void BRAKE1_IRQHandler();
+void EPWM1P0_IRQHandler();
+void EPWM1P1_IRQHandler();
+void EPWM1P2_IRQHandler();
+void TMR0_IRQHandler();
+void TMR1_IRQHandler();
+void TMR2_IRQHandler();
+void TMR3_IRQHandler();
+void UART0_IRQHandler();
+void UART1_IRQHandler();
+void I2C0_IRQHandler();
+void I2C1_IRQHandler();
+void PDMA0_IRQHandler();
+void DAC_IRQHandler();
+void EADC00_IRQHandler();
+void EADC01_IRQHandler();
+void ACMP01_IRQHandler();
+void ACMP23_IRQHandler();
+void EADC02_IRQHandler();
+void EADC03_IRQHandler();
+void UART2_IRQHandler();
+void UART3_IRQHandler();
+void QSPI1_IRQHandler();
+void SPI1_IRQHandler();
+void SPI2_IRQHandler();
+void USBD_IRQHandler();
+void OHCI_IRQHandler();
+void USBOTG_IRQHandler();
+void BMC_IRQHandler();
+void SPI5_IRQHandler();
+void SC0_IRQHandler();
+void SC1_IRQHandler();
+void SC2_IRQHandler();
+void GPJ_IRQHandler();
+void SPI3_IRQHandler();
+void SPI4_IRQHandler();
+void SDH0_IRQHandler();
+void USBD20_IRQHandler();
+void EMAC0_IRQHandler();
+void I2S0_IRQHandler();
+void I2S1_IRQHandler();
+void SPI6_IRQHandler();
+void CRPT_IRQHandler();
+void GPG_IRQHandler();
+void EINT6_IRQHandler();
+void UART4_IRQHandler();
+void UART5_IRQHandler();
+void USCI0_IRQHandler();
+void SPI7_IRQHandler();
+void BPWM0_IRQHandler();
+void BPWM1_IRQHandler();
+void SPIM_IRQHandler();
+void CCAP_IRQHandler();
+void I2C2_IRQHandler();
+void I2C3_IRQHandler();
+void EQEI0_IRQHandler();
+void EQEI1_IRQHandler();
+void ECAP0_IRQHandler();
+void ECAP1_IRQHandler();
+void GPH_IRQHandler();
+void EINT7_IRQHandler();
+void SDH1_IRQHandler();
+void PSIO_IRQHandler();
+void EHCI_IRQHandler();
+void USBOTG20_IRQHandler();
+void ECAP2_IRQHandler();
+void ECAP3_IRQHandler();
+void KPI_IRQHandler();
+void HBI_IRQHandler();
+void PDMA1_IRQHandler();
+void UART8_IRQHandler();
+void UART9_IRQHandler();
+void TRNG_IRQHandler();
+void UART6_IRQHandler();
+void UART7_IRQHandler();
+void EADC10_IRQHandler();
+void EADC11_IRQHandler();
+void EADC12_IRQHandler();
+void EADC13_IRQHandler();
+void SPI8_IRQHandler();
+void KS_IRQHandler();
+void GPI_IRQHandler();
+void SPI9_IRQHandler();
+void CANFD00_IRQHandler();
+void CANFD01_IRQHandler();
+void CANFD10_IRQHandler();
+void CANFD11_IRQHandler();
+void EQEI2_IRQHandler();
+void EQEI3_IRQHandler();
+void I2C4_IRQHandler();
+void SPI10_IRQHandler();
+void CANFD20_IRQHandler();
+void CANFD21_IRQHandler();
+void CANFD30_IRQHandler();
+void CANFD31_IRQHandler();
+void EADC20_IRQHandler();
+void EADC21_IRQHandler();
+void EADC22_IRQHandler();
+void EADC23_IRQHandler();
+
 
 #endif // PORT_CORE_H_

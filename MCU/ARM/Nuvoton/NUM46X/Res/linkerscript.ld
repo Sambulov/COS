@@ -20,27 +20,27 @@ GROUP(libgcc.a libc.a libm.a libnosys.a)
  *   __copy_table_end__
  *   __zero_table_start__
  *   __zero_table_end__
- *   __etext
- *   __data_start__
+ *   _sidata
+ *   _sdata
  *   __preinit_array_start
  *   __preinit_array_end
  *   __init_array_start
  *   __init_array_end
  *   __fini_array_start
  *   __fini_array_end
- *   __data_end__
- *   __bss_start__
- *   __bss_end__
+ *   _edata
+ *   _sbss
+ *   _ebss
  *   __end__
  *   end
  *   __HeapLimit
  *   __StackLimit
- *   __StackTop
+ *   _estack
  *   __stack
  *   __Vectors_End
  *   __Vectors_Size
  */
-ENTRY(Reset_Handler)
+ENTRY(reset_handler)
 
 SECTIONS
 {
@@ -95,9 +95,9 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
-		LONG (__etext)
-		LONG (__data_start__)
-		LONG (__data_end__ - __data_start__)
+		LONG (_sidata)
+		LONG (_sdata)
+		LONG (_edata - _sdata)
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
@@ -113,19 +113,19 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		__zero_table_start__ = .;
-		LONG (__bss_start__)
-		LONG (__bss_end__ - __bss_start__)
+		LONG (_sbss)
+		LONG (_ebss - _sbss)
 		LONG (__bss2_start__)
 		LONG (__bss2_end__ - __bss2_start__)
 		__zero_table_end__ = .;
 	} > FLASH
 	*/
 
-	__etext = .;
+	_sidata = .;
 
-	.data : AT (__etext)
+	.data : AT (_sidata)
 	{
-		__data_start__ = .;
+		_sdata = .;
 		*(vtable)
 		*(.data*)
 
@@ -153,18 +153,18 @@ SECTIONS
 		KEEP(*(.jcr*))
 		. = ALIGN(4);
 		/* All data end */
-		__data_end__ = .;
+		_edata = .;
 
 	} > RAM
 
 	.bss :
 	{
 		. = ALIGN(4);
-		__bss_start__ = .;
+		_sbss = .;
 		*(.bss*)
 		*(COMMON)
 		. = ALIGN(4);
-		__bss_end__ = .;
+		_ebss = .;
 	} > RAM
 
 	.heap (COPY):
@@ -186,9 +186,9 @@ SECTIONS
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
-	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
-	PROVIDE(__stack = __StackTop);
+	_estack = ORIGIN(RAM) + LENGTH(RAM);
+	__StackLimit = _estack - SIZEOF(.stack_dummy);
+	PROVIDE(__stack = _estack);
 
 	/* Check if data + heap + stack exceeds RAM limit */
 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")

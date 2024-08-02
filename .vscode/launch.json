@@ -117,7 +117,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "STM32L071KB",
-			"svdFile": "${workspaceFolder}/MCU/ARM/ST/STM32L071KB/Res/mcu.svd",
+			"svdFile": "${workspaceFolder}/MCU/ARM/ST/STM32L0XX/Res/mcu.svd",
 			"preLaunchTask": "J-Link Flash STM32L071KB",
 			//"liveWatch": {
 			//	"enabled": true,

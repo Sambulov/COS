@@ -128,20 +128,6 @@ void EADC21_IRQHandler()     { call_isr(HDL_NVIC_IRQ125_EADC21_IRQn, 0); }
 void EADC22_IRQHandler()     { call_isr(HDL_NVIC_IRQ126_EADC22_IRQn, 0); }
 void EADC23_IRQHandler()     { call_isr(HDL_NVIC_IRQ127_EADC23_IRQn, 0); }
 
-hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
-  if(enable) {
-    hdl_interrupt_controller_t *nvic = (hdl_interrupt_controller_t *)desc;
-    NVIC_SetPriorityGrouping(nvic->config->prio_group);
-    if(nvic->config->vector != NULL)
-      SCB->VTOR = (uint32_t)nvic->config->vector;
-    return HDL_MODULE_INIT_OK; 
-  }
-  else {
-    //TODO: disable nvic
-  }
-  return HDL_MODULE_DEINIT_OK;
-}
-
 hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   if(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;

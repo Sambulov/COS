@@ -220,6 +220,7 @@ typedef struct {
 
 typedef struct {
   uint32_t prio_bits;
+  uint32_t prio_group;
   hdl_interrupt_t **interrupts;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
   void *vector;
@@ -242,15 +243,16 @@ void reset_handler();
 
 void irq_n_handler();
 
-void NMI_Handler();
-void HardFault_Handler();
-void MemManage_Handler();
-void BusFault_Handler();
-void UsageFault_Handler();
-void SVC_Handler();
-void DebugMon_Handler();
-void PendSV_Handler();
-void SysTick_Handler();
+
+void svc_handler();
+void nmi_handler();
+void hard_fault_handler();
+void pend_sv_handler();
+void systick_handler();
+void mem_manage_handler();
+void bus_fault_handler();
+void usage_fault_handler();
+void debug_mon_handler();
 
 void wwdgt_handler();
 void lvd_handler();

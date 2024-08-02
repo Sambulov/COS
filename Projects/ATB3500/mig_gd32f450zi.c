@@ -91,24 +91,23 @@ hdl_interrupt_controller_t mod_nvic = {
   .config = &mod_nvic_cnf
 };
 
-void * vector[0x70] __attribute__ ((section (".isr_vector"), used)) = {
-  /* Vector in Cortex - M4 */
-  &_estack,                           /* Vector 0 */
+const void * vector[] __attribute__ ((section (".isr_vector"), used)) = {
+  &mod_nvic_cnf,
   &reset_handler,                           /* Vector 1 */
-  &NMI_Handler,                             /* Vector 2 IRQ -14 */
-  &HardFault_Handler,                       /* Vector 3 IRQ -13 */
-  &MemManage_Handler,                       /* Vector 4 IRQ -12 */
-  &BusFault_Handler,                        /* Vector 5 IRQ -11 */
-  &UsageFault_Handler,                      /* Vector 6 IRQ -10 */
+  &nmi_handler,                             /* Vector 2 IRQ -14 */
+  &hard_fault_handler,                       /* Vector 3 IRQ -13 */
+  &mem_manage_handler,                       /* Vector 4 IRQ -12 */
+  &bus_fault_handler,                        /* Vector 5 IRQ -11 */
+  &usage_fault_handler,                      /* Vector 6 IRQ -10 */
   (void *)NULL,                             /* Vector 7 IRQ -9 */
   (void *)NULL,                             /* Vector 8 IRQ -8 */
   (void *)NULL,                             /* Vector 9 IRQ -7 */
   (void *)NULL,                             /* Vector 10 IRQ -6 */
-  &SVC_Handler,                             /* Vector 11 IRQ -5 */
-  &DebugMon_Handler,                        /* Vector 12 IRQ -4 */
+  &svc_handler,                             /* Vector 11 IRQ -5 */
+  &debug_mon_handler,                        /* Vector 12 IRQ -4 */
   (void *)NULL,                             /* Vector 13 IRQ -3 */
-  &PendSV_Handler,                          /* Vector 14 IRQ -2 */
-  &SysTick_Handler,                         /* Vector 15 IRQ -1 */
+  &pend_sv_handler,                          /* Vector 14 IRQ -2 */
+  &systick_handler,                         /* Vector 15 IRQ -1 */
   /* Peripheral */
   &wwdgt_handler,                        /* Vector 16 IRQ 0 */
   &lvd_handler,                          /* Vector 17 IRQ 1 */

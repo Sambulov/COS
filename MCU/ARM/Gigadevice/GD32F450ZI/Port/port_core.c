@@ -189,19 +189,3 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   return HDL_MODULE_DEINIT_OK;
 }
 
-hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
-  if(enable) {
-    //hdl_nvic_t *nvic = (hdl_nvic_t *)desc;
-    /* TODO: NVIC_SetPriorityGrouping  */
-    //nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0);
-    //SYSCFG_CPU_IRQ_LAT = nvic->irq_latency;
-    //__ic = (hdl_nvic_t *)desc;
-    /* TODO: fing wokaround to save context for interrupt vector */
-    return HDL_MODULE_INIT_OK;
-  }
-  else {
-    //TODO: disable envic
-  }
-  return HDL_MODULE_DEINIT_OK;
-}
-

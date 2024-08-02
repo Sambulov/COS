@@ -96,6 +96,20 @@ void irq_n_handler() {
   call_isr(irq, 0);
 }
 
+hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
+  if(enable) {
+    hdl_interrupt_controller_t *nvic = (hdl_interrupt_controller_t *)desc;
+    NVIC_SetPriorityGrouping(nvic->config->prio_group);
+    if(nvic->config->vector != NULL)
+      SCB->VTOR = (uint32_t)nvic->config->vector;
+    return HDL_MODULE_INIT_OK; 
+  }
+  else {
+    //TODO: disable nvic
+  }
+  return HDL_MODULE_DEINIT_OK;
+}
+
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrupt_t *isr, hdl_delegate_t *delegate) {
   if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->config->interrupts == NULL) || (delegate == NULL) || (isr == NULL))
     return HDL_FALSE;

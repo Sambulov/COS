@@ -272,6 +272,7 @@ typedef struct {
 
 typedef struct {
   uint32_t prio_bits;
+  uint32_t prio_group;
   hdl_interrupt_t **interrupts;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
   void *vector;

@@ -1,6 +1,6 @@
 #include "hdl.h"
 
-#if defined ( NUM46X )
+#if defined ( ATB_RK3568J_SMC_R3 )
 
 void * __Vectors[0x90] __attribute__ ((section (".vectors"), used)) = {
 	&_estack,            /* Top of Stack */

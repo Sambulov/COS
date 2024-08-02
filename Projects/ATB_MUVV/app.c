@@ -152,17 +152,23 @@ void button_handler(uint32_t event_trigger, void *sender, void *context) {
   }
 }
 
+void test_svc(uint32_t event_trigger, void *sender, void *context) {
+  hdl_gpio_toggle(&mod_gpo_led);
+}
+
 void button_int() {
   hdl_delegate_t sw_timer_deleagate = {
     .handler = led_timer_handler,
     .context = NULL,
   };
-
   hdl_delegate_t button_deleagate = {
     .handler = button_handler,
     .context = NULL,
   };
-
+  hdl_delegate_t svc_deleagate = {
+    .handler = test_svc,
+    .context = NULL,
+  };
   hdl_enable(&mod_timer_ms.module);
   hdl_enable(&mod_gpo_led.module);
   hdl_enable(&sw_timer.module);
@@ -171,6 +177,10 @@ void button_int() {
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
+  extern hdl_interrupt_t mod_irq_svc;
+  hdl_interrupt_request(&mod_nvic, &mod_irq_svc, &svc_deleagate);
+  asm("SVC 44");
+
   hdl_timer_subscribe(&sw_timer, &sw_timer_deleagate);
   hdl_event_subscribe(&button.event, &button_deleagate);
   hdl_timer_set(&sw_timer, 1000, HDL_TIMER_EVENT_SINGLE);

@@ -5,20 +5,20 @@
 void * __Vectors[0x90] __attribute__ ((section (".vectors"), used)) = {
 	&_estack,            /* Top of Stack */
 	&reset_handler,         /* Reset Handler */
-	&NMI_Handler,           /* NMI Handler */
-	&HardFault_Handler,     /* Hard Fault Handler */
-	&MemManage_Handler,     /* MPU Fault Handler */
-	&BusFault_Handler,      /* Bus Fault Handler */
-	&UsageFault_Handler,    /* Usage Fault Handler */
+	&nmi_handler,           /* NMI Handler */
+	&hard_fault_handler,     /* Hard Fault Handler */
+	&mem_manage_handler,     /* MPU Fault Handler */
+	&bus_fault_handler,      /* Bus Fault Handler */
+	&usage_fault_handler,    /* Usage Fault Handler */
 	((void *)0),            /* Reserved */
 	((void *)0),            /* Reserved */
 	((void *)0),            /* Reserved */
 	((void *)0),            /* Reserved */
-	&SVC_Handler,           /* SVCall Handler */
-	&DebugMon_Handler,      /* Debug Monitor Handler */
+	&svc_handler,           /* SVCall Handler */
+	&debug_mon_handler,      /* Debug Monitor Handler */
 	((void *)0),            /* Reserved */
-	&PendSV_Handler,        /* PendSV Handler */
-	&SysTick_Handler,       /* SysTick Handler */
+	&pend_sv_handler,        /* PendSV Handler */
+	&systick_handler,       /* SysTick Handler */
 	/* External interrupts */
 	&BOD_IRQHandler,        /*  0: BOD                        */
 	&IRC_IRQHandler,        /*  1: IRC                        */

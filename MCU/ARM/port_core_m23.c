@@ -79,26 +79,23 @@ __attribute__((naked, noreturn)) void reset_handler() {
   for (;;) ;
 }
 
-/* TODO: check sv call, exapmple call: asm("SVC #6"); */
-__attribute__ ((naked)) void svc_handler(void) {
-  //asm("TST LR, 4"); // check LR to know which stack is used
-  //asm("ITE EQ"); // 2 next instructions are conditional
-  //asm("MRSEQ R0, MSP"); // save MSP if bit 2 is 0
-  //asm("MRSNE R0, PSP"); // save PSP if bit 2 is 1
-
-  asm("MRS R0, MSP"); // save MSP stack pointer value
-
-  asm("B svc_handler_main"); // pass R0 as the argument
-}
-
-/* TODO: test with __attribute__ ((naked)) */
-static void svc_handler_main(uint32_t *sp) {
-  /* get the address of the instruction saved in PC */
-  uint8_t *instruction = (uint8_t *)(sp[6]);
-  /* go back 2 bytes (16-bit opcode) */
-  instruction -= 2;
-  /* get the opcode, in little endian */
-  call_isr(SVCall_IRQn, (uint8_t)*instruction);
+void svc_handler() {
+  register uint32_t result;
+  //__ASM volatile ("MRS %0, msp" : "=r" (result) );
+  asm ("MRS            R1, MSP");
+  //__ASM volatile ("MOV %0, LR\n" : "=r" (result) );
+  asm ("MOV            R3, LR");
+  //if(lr & 4) {
+  asm ("LDR            R2, =4");
+  asm ("AND            R3, R2");
+  asm ("CBZ            R3, test");
+  asm ("MRS            R1, PSP");
+  asm ("test:\n\
+        ADD            R1, R1, #40");
+  asm ("MOV            %0, R1" : "=r" (result));
+  result = *(uint32_t*)result;
+  result = (uint8_t)(*(uint16_t*)(result - 2));
+  call_isr(HDL_NVIC_EXCEPTION_SVCall, result);
 }
 
 void irq_n_handler() {

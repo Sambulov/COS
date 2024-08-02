@@ -2,21 +2,40 @@
 
 #if defined(__CORE_CM4_H_DEPENDANT)
 
-void NMI_Handler()           __attribute__ ((weak, alias ("default_handler")));
-void HardFault_Handler()     __attribute__ ((weak, alias ("default_handler")));
-void MemManage_Handler()     __attribute__ ((weak, alias ("default_handler")));
-void BusFault_Handler()      __attribute__ ((weak, alias ("default_handler")));
-void UsageFault_Handler()    __attribute__ ((weak, alias ("default_handler")));
-void SVC_Handler()           __attribute__ ((weak, alias ("default_handler")));
-void DebugMon_Handler()      __attribute__ ((weak, alias ("default_handler")));
-void PendSV_Handler()        __attribute__ ((weak, alias ("default_handler")));
-void SysTick_Handler()       __attribute__ ((weak, alias ("default_handler")));
+void nmi_handler()                      { call_isr(HDL_NVIC_EXCEPTION_NonMaskableInt, 0); }
+void hard_fault_handler()               { call_isr(HDL_NVIC_EXCEPTION_HardFault, 0); }
+void pend_sv_handler()                  { call_isr(HDL_NVIC_EXCEPTION_PendSV, 0); }
+void systick_handler()                  { call_isr(HDL_NVIC_EXCEPTION_SysTick, 0); }
+
+void mem_manage_handler()               { call_isr(HDL_NVIC_EXCEPTION_MemoryManagement, 0); }
+void bus_fault_handler()                { call_isr(HDL_NVIC_EXCEPTION_BusFault, 0); }
+void usage_fault_handler()              { call_isr(HDL_NVIC_EXCEPTION_UsageFault, 0); }
+void debug_mon_handler()                { call_isr(HDL_NVIC_EXCEPTION_DebugMonitor, 0); }
+
+void svc_handler() {
+  register uint32_t result;
+  //__ASM volatile ("MRS %0, msp" : "=r" (result) );
+  asm ("MRS            R1, MSP");
+  //__ASM volatile ("MOV %0, LR\n" : "=r" (result) );
+  asm ("MOV            R3, LR");
+  //if(lr & 4) {
+  asm ("LDR            R2, =4");
+  asm ("AND            R3, R2");
+  asm ("CBZ            R3, test");
+  asm ("MRS            R1, PSP");
+  asm ("test:\n\
+        ADD            R1, R1, #40");
+  asm ("MOV            %0, R1" : "=r" (result));
+  result = *(uint32_t*)result;
+  result = (uint8_t)(*(uint16_t*)(result - 2));
+  call_isr(HDL_NVIC_EXCEPTION_SVCall, result);
+}
 
 void __libc_init_array();
 void main();
 
 __attribute__((naked, noreturn)) void reset_handler() {
-	asm ("ldr sp, =_estack");
+	asm("ldr sp, =_estack");
 	void **pSource, **pDest;
 	for (pSource = &_sidata, pDest = &_sdata; pDest != &_edata; pSource++, pDest++)
 	  *pDest = *pSource;

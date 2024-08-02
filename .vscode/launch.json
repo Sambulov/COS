@@ -14,7 +14,7 @@
             //"showDevDebugOutput": "parsed",
             "windows": {
                 "searchDir": [ 
-                    "./MCU/NUM46X/Res"
+                    "./MCU/ARM/Nuvoton/NUM46X/Res"
                 ],
                 "serverpath": "C:/NuOpenOCD/bin/openocd.exe",
                 "serverArgs": [],
@@ -33,10 +33,10 @@
             "rtos": "auto",
             "runToEntryPoint": "main",
             "device": "M463KGCAE",
-            "svdFile": "${workspaceFolder}/MCU/ARM/Nuvaton/NUM46X/Res/mcu.svd",
+            "svdFile": "${workspaceFolder}/MCU/ARM/Nuvoton/NUM46X/Res/mcu.svd",
             "configFiles": [
-                "./MCU/Nuvaton/NUM46X/Res/tool.cfg",
-                "./MCU/Nuvaton/NUM46X/Res/mcu.cfg"
+                "./MCU/ARM/Nuvoton/NUM46X/Res/tool.cfg",
+                "./MCU/ARM/Nuvoton/NUM46X/Res/mcu.cfg"
             ],
             "preRestartCommands": [
                 "set remotetimeout 200",
@@ -67,7 +67,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "M463KGCAE",
-			"svdFile": "${workspaceFolder}/MCU/ARM/Nuvaton/NUM46X/Res/mcu.svd",
+			"svdFile": "${workspaceFolder}/MCU/ARM/Nuvoton/NUM46X/Res/mcu.svd",
 			//"preLaunchTask": "J-Link Flash NUM463KG",
 			//"liveWatch": {
 			//	"enabled": true,

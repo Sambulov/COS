@@ -742,6 +742,12 @@ hdl_interrupt_t mod_irq_i2c1_er = {
   .priority_group = 0,
 };
 
+hdl_interrupt_t mod_irq_svc = {
+  .irq_type = HDL_NVIC_EXCEPTION_SVCall,
+  .priority = 0,
+  .priority_group = 0,
+};
+
 extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
 const void *main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
@@ -809,7 +815,7 @@ const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .irq_latency = 0, /* TODO: define static assert */
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,
                                &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0, 
-                               &mod_irq_i2c0_ev, &mod_irq_i2c0_er, &mod_irq_i2c1_ev, &mod_irq_i2c1_er),
+                               &mod_irq_i2c0_ev, &mod_irq_i2c0_er, &mod_irq_i2c1_ev, &mod_irq_i2c1_er, &mod_irq_svc),
 };
 
 hdl_interrupt_controller_t mod_nvic = {

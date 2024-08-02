@@ -180,16 +180,15 @@ void irq_n_handler();
 
 void reset_handler();
 
-void NMI_Handler();
-void HardFault_Handler();
-void MemManage_Handler();
-void BusFault_Handler();
-void UsageFault_Handler();
-void SVC_Handler();
-void DebugMon_Handler();
-void PendSV_Handler();
-void SysTick_Handler();
-
+void nmi_handler();
+void hard_fault_handler();
+void pend_sv_handler();
+void systick_handler();
+void mem_manage_handler();
+void bus_fault_handler();
+void usage_fault_handler();
+void debug_mon_handler();
+void svc_handler();
 
 void BOD_IRQHandler();
 void IRC_IRQHandler();

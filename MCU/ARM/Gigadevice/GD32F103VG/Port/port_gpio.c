@@ -4,22 +4,22 @@
 hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
   hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;
   if(port->config->hwc == NULL)
-    return HDL_MODULE_INIT_FAILED;
+    return HDL_MODULE_FAULT;
   if(enable) {
     rcu_periph_clock_enable(RCU_AF);
     rcu_periph_clock_enable(port->config->hwc->rcu);
   }
   else {
     rcu_periph_clock_disable(port->config->hwc->rcu);
-    return HDL_MODULE_DEINIT_OK;
+    return HDL_MODULE_UNLOADED;
   }
-  return HDL_MODULE_INIT_OK;
+  return HDL_MODULE_ACTIVE;
 }
 
 hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable) {
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
   if (gpio->config->hwc == NULL || gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
-    return HDL_MODULE_INIT_FAILED;
+    return HDL_MODULE_FAULT;
   uint32_t gpio_port = (uint32_t)gpio->module.dependencies[0]->reg;
   gpio_bit_write(gpio_port, (uint32_t)gpio->module.reg, (gpio->config->inactive_default == HDL_GPIO_LOW) ? RESET : SET);
   if(enable) {
@@ -38,7 +38,7 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable) {
   }
   else {
     gpio_init(gpio_port, GPIO_MODE_IN_FLOATING, GPIO_OSPEED_2MHZ, (uint32_t)gpio->module.reg);
-    return HDL_MODULE_DEINIT_OK;
+    return HDL_MODULE_UNLOADED;
   }
-  return HDL_MODULE_INIT_OK;
+  return HDL_MODULE_ACTIVE;
 }

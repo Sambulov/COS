@@ -651,6 +651,6 @@ hdl_spi_client_ch_t mod_spi0_ch0 = {
   .module.dependencies = hdl_module_dependencies(&mod_spi0.module, &mod_spi_0_cs.module),
 };
 
-extern hdl_spi_client_ch_t uuspd20k_adc_spi __attribute__ ((alias ("mod_spi0_ch0")));
+extern hdl_spi_client_ch_t uspd20k_adc_spi __attribute__ ((alias ("mod_spi0_ch0")));
 extern hdl_i2c_t uspd20k_i2c_som           __attribute__ ((alias ("mod_i2c0")));
 extern hdl_i2c_t uspd20k_i2c_eeprom        __attribute__ ((alias ("mod_i2c1")));

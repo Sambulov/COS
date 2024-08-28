@@ -100,11 +100,11 @@ hdl_module_state_t hdl_button(void *desc, uint8_t enable) {
       btn->input_state = HDL_BTN_RELEASED;
       btn->output_state = HDL_BTN_O_DEFAULT;
       coroutine_add(&btn->button_worker, &_button_handler, desc);
-      return HDL_MODULE_INIT_OK;
+      return HDL_MODULE_ACTIVE;
     }
     coroutine_cancel(&btn->button_worker);
   }
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 hdl_btn_state_t hdl_btn_state_get(hdl_button_t *desc) {

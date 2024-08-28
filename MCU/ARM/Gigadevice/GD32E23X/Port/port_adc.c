@@ -27,7 +27,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   if(hdl_adc->module.reg == NULL || hdl_adc->module.dependencies == NULL || hdl_adc->module.dependencies[0] == NULL ||
     hdl_adc->module.dependencies[1] == NULL || hdl_adc->module.dependencies[2] == NULL || hdl_adc->sources == NULL || 
     hdl_adc->sources[0] == NULL)
-    return HDL_MODULE_INIT_FAILED;
+    return HDL_MODULE_FAULT;
   //hdl_clock_t *clock = (hdl_clock_t *)hdl_adc->module.dependencies[0];
   hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
   hdl_dma_channel_t *dma = (hdl_dma_channel_t *)hdl_adc->module.dependencies[2];
@@ -66,8 +66,8 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
       case GD_ADC_STATE_MACHINE_CALIBRATION:
         if (ADC_CTL1 & ADC_CTL1_CLB) {
           if (TIME_ELAPSED(hdl_adc->time_stamp, hdl_adc->init_timeout, hdl_time_counter_get(timer)))
-            return HDL_MODULE_INIT_FAILED;
-          return HDL_MODULE_INIT_ONGOING;
+            return HDL_MODULE_FAULT;
+          return HDL_MODULE_LOADING;
         }
       case GD_ADC_STATE_MACHINE_RUN:
         adc_dma_mode_enable();
@@ -75,9 +75,9 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
         hdl_adc->state_machine = GD_ADC_STATE_MACHINE_WORKING;        
       case GD_ADC_STATE_MACHINE_WORKING:
-        return HDL_MODULE_INIT_OK;
+        return HDL_MODULE_ACTIVE;
       default:
-        return HDL_MODULE_INIT_FAILED;
+        return HDL_MODULE_FAULT;
     }
   }
   else {
@@ -85,7 +85,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
     adc_dma_mode_disable();
     rcu_periph_clock_disable(RCU_ADC);
     hdl_adc->state_machine = GD_ADC_STATE_MACHINE_INITIAL;
-    return HDL_MODULE_DEINIT_OK;
+    return HDL_MODULE_UNLOADED;
   }
 }
 

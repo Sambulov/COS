@@ -43,16 +43,16 @@ hdl_module_state_t hdl_timer(void *desc, uint8_t enable) {
     if(enable) {
       timer_event->mode = HDL_TIMER_EVENT_IDLE;
       coroutine_add(&timer_event->timer_events_worker, &_timer_events_handler, (void*)timer_event);
-      return HDL_MODULE_INIT_OK;
+      return HDL_MODULE_ACTIVE;
     }
     coroutine_cancel(&timer_event->timer_events_worker);
   }
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 uint8_t hdl_timer_set(hdl_timer_t *timer, uint32_t delay, hdl_timer_mode_t mode) {
   hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
-  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_INIT_OK)) {
+  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_ACTIVE)) {
     hdl_time_counter_t *timer = (hdl_time_counter_t *)timer_event->module.dependencies[0];
     timer_event->time_stamp = hdl_time_counter_get(timer);
     timer_event->mode = mode;
@@ -64,7 +64,7 @@ uint8_t hdl_timer_set(hdl_timer_t *timer, uint32_t delay, hdl_timer_mode_t mode)
 
 hdl_timer_mode_t hdl_timer_mode(hdl_timer_t *timer) {
   hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
-  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_INIT_OK)) {
+  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_ACTIVE)) {
     return timer_event->mode;
   }
   return HDL_TIMER_EVENT_IDLE;
@@ -72,7 +72,7 @@ hdl_timer_mode_t hdl_timer_mode(hdl_timer_t *timer) {
 
 uint32_t hdl_timer_left(hdl_timer_t *timer) {
   hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
-  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_INIT_OK)) {
+  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_ACTIVE)) {
     hdl_time_counter_t *timer = (hdl_time_counter_t *)timer_event->module.dependencies[0];
     return timer_event->delay - (timer_event->mode != HDL_TIMER_EVENT_IDLE)? (hdl_time_counter_get(timer) - timer_event->time_stamp): 0;
   }
@@ -81,7 +81,7 @@ uint32_t hdl_timer_left(hdl_timer_t *timer) {
 
 uint8_t hdl_timer_subscribe(hdl_timer_t *timer, hdl_delegate_t *delegate) {
   hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
-  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_INIT_OK)) {
+  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_ACTIVE)) {
     hdl_event_subscribe(&timer_event->event, delegate);
   }
 }

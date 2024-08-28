@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#define CO_ROUTINE_DESC_SIZE  28
+#define CO_ROUTINE_DESC_SIZE  24
 
 typedef struct {
   CL_PRIVATE(CO_ROUTINE_DESC_SIZE);

@@ -143,11 +143,11 @@ hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable) {
     hdl_interrupt_request(ic, spi->config->spi_interrupt, &spi->spi_isr);
     spi_enable((uint32_t)spi->module.reg);
     coroutine_add(&spi->worker, &_spi_client_worker, desc);
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   coroutine_cancel(&spi->worker);
   rcu_periph_clock_disable(spi->config->rcu);
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 
@@ -156,10 +156,10 @@ hdl_module_state_t hdl_spi_ch(void *desc, uint8_t enable) {
   hdl_spi_client_private_t *spi_hw = (hdl_spi_client_private_t *)spi_ch->module.dependencies[0];
   if(enable) {
     linked_list_insert_last(&spi_hw->spi_ch_list, linked_list_item(spi_ch));
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   linked_list_unlink(linked_list_item(spi_ch));
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 hdl_spi_message_state_t hdl_spi_client_xfer(hdl_spi_client_ch_t *spi_ch, hdl_spi_message_t *message) {

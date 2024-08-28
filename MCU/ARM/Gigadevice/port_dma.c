@@ -7,10 +7,10 @@ hdl_module_state_t hdl_dma(void *desc, uint8_t enable) {
   hdl_dma_t *dma = (hdl_dma_t *)desc;
   if(enable) {
     rcu_periph_clock_enable(dma->config->rcu);
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   rcu_periph_clock_disable(dma->config->rcu);
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 // hdl_dma_status_e hdl_dma_status(hdl_dma_channel_t *channel) {
@@ -43,12 +43,12 @@ hdl_module_state_t hdl_dma_ch(void *desc, uint8_t enable) {
   if(dma != NULL) {
     if(enable) {
       //dma_channel_enable(dma_ch_no(channel));
-      return HDL_MODULE_INIT_OK;
+      return HDL_MODULE_ACTIVE;
     }
     dma_deinit((uint32_t)dma->module.reg, dma_ch_no(channel));
     dma_channel_disable((uint32_t)dma->module.reg, dma_ch_no(channel));
   }
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 uint8_t hdl_dma_stop(hdl_dma_channel_t *channel) {

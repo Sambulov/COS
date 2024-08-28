@@ -13,7 +13,7 @@ hdl_module_state_t hdl_tick_counter(void *desc, const uint8_t enable) {
       /* TODO: check if clock source valid */
       SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |                     /* Set AHB clock source*/
                       SysTick_CTRL_ENABLE_Msk;                         /* Enable SysTick Timer */
-      return HDL_MODULE_INIT_OK;
+      return HDL_MODULE_ACTIVE;
     }
     rcu_periph_clock_enable(config->rcu);
     timer_parameter_struct init_p = {
@@ -26,7 +26,7 @@ hdl_module_state_t hdl_tick_counter(void *desc, const uint8_t enable) {
     };
     timer_init(periph, &init_p);
     timer_enable(periph);
-    return HDL_MODULE_INIT_OK; 
+    return HDL_MODULE_ACTIVE; 
   }
   if(periph == (uint32_t)SysTick) {
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
@@ -40,7 +40,7 @@ hdl_module_state_t hdl_tick_counter(void *desc, const uint8_t enable) {
       rcu_periph_clock_disable(config->rcu);
     }
   }
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
   /* TODO init timers */
 }
 
@@ -48,7 +48,7 @@ uint32_t hdl_tick_counter_get(hdl_tick_counter_t *desc) {
   hdl_tick_counter_t *counter = (hdl_tick_counter_t *)desc;
   uint32_t periph = (uint32_t)counter->module.reg;
   const hdl_tick_counter_timer_config_t *config = counter->config.timer;
-  if(hdl_state(&counter->module) == HDL_MODULE_INIT_OK) {
+  if(hdl_state(&counter->module) == HDL_MODULE_ACTIVE) {
     if(periph == (uint32_t)SysTick) {
       return (SysTick->LOAD - SysTick->VAL);
     }

@@ -1,7 +1,7 @@
 #ifndef HDL_TIMER_H_
 #define HDL_TIMER_H_
 
-#define HDL_TIMER_EVENT_PRV_SIZE         44
+#define HDL_TIMER_EVENT_PRV_SIZE         40
 
 typedef enum {
   HDL_TIMER_EVENT_IDLE,

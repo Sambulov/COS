@@ -7,7 +7,7 @@
 #define HDL_SPI_MESSAGE_PRV_SIZE           28
 #define SPI_SERVER_PRIVATE_SIZE            52
 #define SPI_MEM_SERVER_PRIVATE_SIZE        56
-#define SPI_SERVER_DMA_PRIVATE_SIZE        92
+#define SPI_SERVER_DMA_PRIVATE_SIZE        88
 #define SPI_CH_PRIVATE_SIZE                20
 
 #define SPI_ERROR_MASK      (uint32_t)(SPI_STAT_RXORERR | SPI_STAT_CONFERR | SPI_STAT_CRCERR | SPI_STAT_TXURERR)
@@ -86,7 +86,7 @@ typedef struct {
 } hdl_spi_server_dma_t;
 
 /**************** vvv  SPI master vvv  ******************/
-#define HDL_SPI_CLIENT_PRIVATE_SIZE    64
+#define HDL_SPI_CLIENT_PRIVATE_SIZE    60
 #define HDL_SPI_CLIENT_CH_PRIVATE_SIZE 24
 
 typedef struct {
@@ -94,6 +94,7 @@ typedef struct {
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
   hdl_spi_prescale_t prescale;
+  hdl_interrupt_t *spi_interrupt;
 } hdl_spi_client_config_t;
 
 /* depends on:
@@ -106,7 +107,6 @@ typedef struct {
 typedef struct {
   hdl_module_t module;
   hdl_spi_client_config_t *config;
-  hdl_nvic_irq_n_t spi_iterrupt;
   PRIVATE(hw, HDL_SPI_CLIENT_PRIVATE_SIZE);
 } hdl_spi_client_t;
 

@@ -22,7 +22,7 @@ static hdl_gpio_pin_t *_smarc_get_ctrl_pin(hdl_smarc_carrier_private_t *carrier,
 }
 
 uint8_t hdl_smarc_carrier_event_subscribe(hdl_smarc_carrier_t *desc, hdl_event_handler_t handler, void *context) {
-    if(hdl_state(&desc->module) != HDL_MODULE_INIT_OK)
+    if(hdl_state(&desc->module) != HDL_MODULE_ACTIVE)
         return HDL_FALSE;
     hdl_smarc_carrier_private_t *carrier = (hdl_smarc_carrier_private_t *)desc;
     carrier->event = handler;
@@ -31,28 +31,28 @@ uint8_t hdl_smarc_carrier_event_subscribe(hdl_smarc_carrier_t *desc, hdl_event_h
 }
 
 void hdl_smarc_carrier_set_target_state(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_sate_t state) {
-    if(hdl_state(&desc->module) != HDL_MODULE_INIT_OK)
+    if(hdl_state(&desc->module) != HDL_MODULE_ACTIVE)
         return;
     hdl_smarc_carrier_private_t *carrier = (hdl_smarc_carrier_private_t *)desc;
     carrier->target_state = state;
 }
 
 hdl_smarc_carrier_sate_t hdl_smarc_carrier_get_target_state(hdl_smarc_carrier_t *desc) {
-    if(hdl_state(&desc->module) != HDL_MODULE_INIT_OK)
+    if(hdl_state(&desc->module) != HDL_MODULE_ACTIVE)
         return HDL_SMARC_CARRIER_STATE_INITIAL;
     hdl_smarc_carrier_private_t *carrier = (hdl_smarc_carrier_private_t *)desc;
     return carrier->target_state;
 }
 
 hdl_smarc_carrier_sate_t hdl_smarc_carrier_get_current_state(hdl_smarc_carrier_t *desc) {
-    if(hdl_state(&desc->module) != HDL_MODULE_INIT_OK)
+    if(hdl_state(&desc->module) != HDL_MODULE_ACTIVE)
         return HDL_SMARC_CARRIER_STATE_INITIAL;
     hdl_smarc_carrier_private_t *carrier = (hdl_smarc_carrier_private_t *)desc;
     return carrier->state;
 }
 
 void hdl_smarc_carrier_force_state(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_sate_t state, uint8_t active) {
-    if(hdl_state(&desc->module) != HDL_MODULE_INIT_OK)
+    if(hdl_state(&desc->module) != HDL_MODULE_ACTIVE)
         return;
     hdl_smarc_carrier_private_t *carrier = (hdl_smarc_carrier_private_t *)desc;
     if(active)
@@ -62,7 +62,7 @@ void hdl_smarc_carrier_force_state(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_
 }
 
 void hdl_smarc_carrier_boot_select(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_boot_select_t select) {
-    if(hdl_state(&desc->module) != HDL_MODULE_INIT_OK)
+    if(hdl_state(&desc->module) != HDL_MODULE_ACTIVE)
         return;
     hdl_gpio_pin_t *boot0 = _smarc_get_ctrl_pin((hdl_smarc_carrier_private_t *)desc, HDL_SMARC_CARRIER_DEPENDENCY_BOOT0_PIN);
     hdl_gpio_pin_t *boot1 = _smarc_get_ctrl_pin((hdl_smarc_carrier_private_t *)desc, HDL_SMARC_CARRIER_DEPENDENCY_BOOT1_PIN);
@@ -203,7 +203,7 @@ hdl_module_state_t hdl_smarc_carrier(void *desc, uint8_t enable) {
         carrier->state = HDL_SMARC_CARRIER_STATE_INITIAL;
         carrier->target_state = HDL_SMARC_CARRIER_STATE_INITIAL;
         coroutine_add(&carrier->worker, &_smarc_carrier_work, (void *)desc);
-        return HDL_MODULE_INIT_OK;
+        return HDL_MODULE_ACTIVE;
     }
-    return HDL_MODULE_DEINIT_OK;
+    return HDL_MODULE_UNLOADED;
 }

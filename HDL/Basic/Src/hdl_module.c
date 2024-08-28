@@ -13,8 +13,8 @@ typedef struct {
 
 hdl_module_state_t hdl_null_module_init(void *desc, const uint8_t enable) {
   if(enable)
-    return HDL_MODULE_INIT_OK;
-  return HDL_MODULE_DEINIT_OK;
+    return HDL_MODULE_ACTIVE;
+  return HDL_MODULE_UNLOADED;
 }
 
 hdl_module_t hdl_null_module = {
@@ -23,30 +23,30 @@ hdl_module_t hdl_null_module = {
 
 _Static_assert(sizeof(hdl_module_private_t) == sizeof(hdl_module_t), "In hdl_hw.h data structure size of hdl_module_t doesn't match, check HDL_MODULE_DESC_PRIVATE_SIZE");
 
-static linked_list_t dev_init_queue = NULL;
-static linked_list_t dev_list = NULL;
-static linked_list_t dev_deinit_queue = NULL;
+static linked_list_t _mod_load = NULL;
+static linked_list_t _mod_active = NULL;
+static linked_list_t _mod_unload = NULL;
 
-static uint8_t _hdl_work(coroutine_t *this, uint8_t cancel, void *arg) {
+static uint8_t _hdl_module_work(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_module_state_t res;
-  hdl_module_private_t *dev = linked_list_get_object(hdl_module_private_t, dev_deinit_queue);
+  hdl_module_private_t *dev = linked_list_get_object(hdl_module_private_t, _mod_unload);
   if(dev != NULL) {
-    res = HDL_MODULE_DEINIT_OK;
+    res = HDL_MODULE_UNLOADED;
     if(dev->init != NULL)
       res = dev->init(dev, HDL_FALSE);
-    if(res == HDL_MODULE_DEINIT_OK)
+    if(res == HDL_MODULE_UNLOADED)
       linked_list_unlink(linked_list_item(dev));
   }
-  dev = linked_list_get_object(hdl_module_private_t, dev_init_queue);
+  dev = linked_list_get_object(hdl_module_private_t, _mod_load);
   if(dev != NULL) {
-    res = HDL_MODULE_INIT_OK;
+    res = HDL_MODULE_ACTIVE;
     if(dev->init != NULL)
       res = dev->init(dev, HDL_TRUE);
     switch (res) {
-      case HDL_MODULE_INIT_OK:
-        linked_list_insert_last(&dev_list, linked_list_item(dev));
+      case HDL_MODULE_ACTIVE:
+        linked_list_insert_last(&_mod_active, linked_list_item(dev));
         break;
-      case HDL_MODULE_INIT_ONGOING:
+      case HDL_MODULE_LOADING:
         break;
       default:
         hdl_kill((hdl_module_t *)dev);
@@ -57,15 +57,14 @@ static uint8_t _hdl_work(coroutine_t *this, uint8_t cancel, void *arg) {
 }
 
 hdl_module_state_t hdl_state(const hdl_module_t *desc) {
-  hdl_module_state_t res = HDL_MODULE_INIT_UNKNOWN;
   if(desc != NULL) {
     hdl_module_private_t *module = (hdl_module_private_t *)desc;
-    res = linked_list_contains(dev_list, linked_list_item(module))? HDL_MODULE_INIT_OK:
-          linked_list_contains(dev_init_queue, linked_list_item(module))? HDL_MODULE_INIT_ONGOING:
-          linked_list_contains(dev_deinit_queue, linked_list_item(module))? HDL_MODULE_INIT_TERMINATING:
-          HDL_MODULE_INIT_UNKNOWN;
+    return linked_list_contains(_mod_active, linked_list_item(module))? HDL_MODULE_ACTIVE:
+           linked_list_contains(_mod_load, linked_list_item(module))? HDL_MODULE_LOADING:
+           linked_list_contains(_mod_unload, linked_list_item(module))? HDL_MODULE_UNLOADING:
+           HDL_MODULE_FAULT;
   }
-  return res;
+  return HDL_MODULE_FAULT;
 }
 
 static void _hdl_hw_enable_parents(hdl_module_t *desc) {
@@ -79,14 +78,14 @@ static void _hdl_hw_enable_parents(hdl_module_t *desc) {
 }
 
 void hdl_enable(hdl_module_t *desc) {
-  static coroutine_t hdl_worker;
+  static coroutine_t hdl_module_worker;
   hdl_module_private_t *module = (hdl_module_private_t *)desc;
   hdl_module_state_t res = hdl_state(desc);
-  if(res < HDL_MODULE_INIT_OK) {
+  if(res < HDL_MODULE_ACTIVE) {
     _hdl_hw_enable_parents(desc);
     module->dependents = 1;
-    linked_list_insert_last(&dev_init_queue, linked_list_item(module));
-    coroutine_add(&hdl_worker, &_hdl_work, NULL);
+    linked_list_insert_last(&_mod_load, linked_list_item(module));
+    coroutine_add(&hdl_module_worker, &_hdl_module_work, NULL);
   }
   else
     module->dependents++; /* check overlap */
@@ -111,9 +110,9 @@ static hdl_module_private_t *_hdl_hw_deep_search_dependent(hdl_module_private_t 
   do {
     desc = linked_list_get_object(hdl_module_private_t, 
       linked_list_find_next_no_overlap(linked_list_item(dependent), &_dev_parent_match, (void*)dependent));
-    if((desc == NULL) && linked_list_contains(dev_list, linked_list_item(dependent)))
+    if((desc == NULL) && linked_list_contains(_mod_active, linked_list_item(dependent)))
       desc = linked_list_get_object(hdl_module_private_t,
-        linked_list_find_first(dev_init_queue, &_dev_parent_match, (void*)dependent));
+        linked_list_find_first(_mod_load, &_dev_parent_match, (void*)dependent));
     if(desc != NULL)
       dependent = desc;
   } while (desc != NULL);
@@ -121,7 +120,7 @@ static hdl_module_private_t *_hdl_hw_deep_search_dependent(hdl_module_private_t 
 }
 
 static void _hdl_hw_free(hdl_module_private_t *desc) {
-  linked_list_insert_last(&dev_deinit_queue, linked_list_item(desc));
+  linked_list_insert_last(&_mod_unload, linked_list_item(desc));
   hdl_module_private_t **parent = (hdl_module_private_t **)desc->dependencies;
   if(parent != NULL) {
     while(*parent != NULL) {
@@ -134,12 +133,12 @@ static void _hdl_hw_free(hdl_module_private_t *desc) {
 }
 
 void hdl_kill(hdl_module_t *desc) {
-  while(hdl_state(desc) >= HDL_MODULE_INIT_OK) {
+  while(hdl_state(desc) >= HDL_MODULE_ACTIVE) {
     hdl_module_private_t * dependent = _hdl_hw_deep_search_dependent((hdl_module_private_t *)desc);
     _hdl_hw_free(dependent);
   }
 }
 
 uint8_t hdl_init_complete() {
-  return (dev_init_queue == NULL)? HDL_TRUE: HDL_FALSE;
+  return (_mod_load == NULL)? HDL_TRUE: HDL_FALSE;
 }

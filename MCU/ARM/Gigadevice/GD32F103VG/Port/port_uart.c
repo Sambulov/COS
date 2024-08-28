@@ -275,7 +275,7 @@
 //     is_usart = HDL_FALSE;
 //     break;
 //     default:
-//     return HDL_MODULE_INIT_FAILED;
+//     return HDL_MODULE_FAULT;
 //   }
 //   usart_deinit((uint32_t)uart->module.reg);
 
@@ -298,11 +298,11 @@
 //     uart->idleTimer = 0;
 //     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)uart->module.dependencies[3];
 //     if(hdl_interrupt_request(ic, uart->iterrupt, &event_uart_isr, desc))
-//       return HDL_MODULE_INIT_OK;
+//       return HDL_MODULE_ACTIVE;
 //   }
 //   linked_list_unlink(linked_list_item(uart));
 //   rcu_periph_clock_disable(rcu);
-//   return HDL_MODULE_DEINIT_OK;
+//   return HDL_MODULE_UNLOADED;
 // }
 
 // void hdl_uart_set_transceiver(hdl_uart_t *uart, hdl_transceiver_t *transceiver) {
@@ -448,7 +448,7 @@
 //     rcu = RCU_USART1;
 //     break;
 //     default:
-//     return HDL_MODULE_INIT_FAILED;
+//     return HDL_MODULE_FAULT;
 //   }
 //   usart_deinit((uint32_t)uart->module.reg);
 
@@ -470,11 +470,11 @@
 //     uart->uart_isr.context = desc;
 //     uart->uart_isr.handler = &event_uart_isr;
 //     if(hdl_interrupt_request(ic, uart->iterrupt, &uart->uart_isr))
-//       return HDL_MODULE_INIT_OK;
+//       return HDL_MODULE_ACTIVE;
 //   }
 //   linked_list_unlink(linked_list_item(uart));
 //   rcu_periph_clock_disable(rcu);
-//   return HDL_MODULE_DEINIT_OK;
+//   return HDL_MODULE_UNLOADED;
 // }
 
 // void hdl_uart_set_transceiver(hdl_uart_t *uart, hdl_transceiver_t *transceiver) {

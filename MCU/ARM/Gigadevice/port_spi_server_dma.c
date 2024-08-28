@@ -69,7 +69,7 @@ void hdl_spi_server_dma_set_handler(hdl_spi_server_dma_t *desc, hdl_event_handle
 
 uint8_t hdl_spi_server_dma_set_rx_buffer(hdl_spi_server_dma_t *desc, hdl_basic_buffer_t *buffer) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)desc;
-  if((desc != NULL) && (hdl_state(&desc->module) == HDL_MODULE_INIT_OK)) {
+  if((desc != NULL) && (hdl_state(&desc->module) == HDL_MODULE_ACTIVE)) {
     hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];
     spi->rx_mem = buffer;
     if(buffer != NULL) {
@@ -85,7 +85,7 @@ uint8_t hdl_spi_server_dma_set_rx_buffer(hdl_spi_server_dma_t *desc, hdl_basic_b
 
 uint8_t hdl_spi_server_dma_set_tx_data(hdl_spi_server_dma_t *desc, hdl_basic_buffer_t *buffer) {
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)desc;
-  if((desc != NULL) && (hdl_state(&desc->module) == HDL_MODULE_INIT_OK)) {
+  if((desc != NULL) && (hdl_state(&desc->module) == HDL_MODULE_ACTIVE)) {
     hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->module.dependencies[7];
     if(buffer != NULL) {
       hdl_dma_run(dma_tx, (uint32_t)&SPI_DATA((uint32_t)spi->module.reg), (uint32_t)buffer->data , (uint32_t)buffer->size);
@@ -141,9 +141,9 @@ hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable) {
     SPI_CTL1((uint32_t)spi->module.reg) |= SPI_CTL1_DMATEN | SPI_CTL1_DMAREN;
     spi_enable((uint32_t)spi->module.reg);
     coroutine_add(&spi->worker, &_spi_server_dma_worker, desc);
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   coroutine_cancel(&spi->worker);
   rcu_periph_clock_disable(spi->config->rcu);
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }

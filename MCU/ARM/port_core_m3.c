@@ -97,16 +97,16 @@ hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
     NVIC_SetPriorityGrouping(nvic->config->prio_group);
     if(nvic->config->vector != NULL)
       SCB->VTOR = (uint32_t)nvic->config->vector;
-    return HDL_MODULE_INIT_OK; 
+    return HDL_MODULE_ACTIVE; 
   }
   else {
     //TODO: disable nvic
   }
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrupt_t *isr, hdl_delegate_t *delegate) {
-  if((hdl_state(&ic->module) != HDL_MODULE_INIT_OK) || (ic->config->interrupts == NULL) || (delegate == NULL) || (isr == NULL))
+  if((hdl_state(&ic->module) != HDL_MODULE_ACTIVE) || (ic->config->interrupts == NULL) || (delegate == NULL) || (isr == NULL))
     return HDL_FALSE;
   hdl_nvic_interrupt_private_t *_isr = (hdl_nvic_interrupt_private_t *)isr;
   hdl_event_subscribe(&_isr->event, delegate);

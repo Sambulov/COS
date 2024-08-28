@@ -1,6 +1,8 @@
 #ifndef ATB_USPD_MPC2_H_
 #define ATB_USPD_MPC2_H_
 
+extern hdl_time_counter_t mod_timer_ms;
+
 extern hdl_gpio_pin_t uspd_mpc_in1; //(PA3)
 extern hdl_gpio_pin_t uspd_mpc_in2; //(PA2)
 extern hdl_gpio_pin_t uspd_mpc_in3; //(PB1)

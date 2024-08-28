@@ -52,7 +52,7 @@ void atb3500_power_rail_set(atb3500_power_rail_t *desc, uint8_t enable) {
 
 uint8_t atb3500_power_rail_event_subscribe(atb3500_power_rail_t *desc, hdl_event_handler_t handler, void *context) {
     atb3500_power_rail_private_t *rail = (atb3500_power_rail_private_t *)desc;
-    if(hdl_state(&rail->module) == HDL_MODULE_INIT_OK) {
+    if(hdl_state(&rail->module) == HDL_MODULE_ACTIVE) {
         rail->event = handler;
         rail->event_context = context;
         if(handler != NULL)
@@ -157,10 +157,10 @@ hdl_module_state_t atb3500_power_rail(void *desc, uint8_t enable) {
         rail->adc_age = hdl_adc_get_age((hdl_adc_t *)rail->module.dependencies[ATB3500_POWER_RAIL_ADC]);
         rail->timestamp = hdl_time_counter_get((hdl_time_counter_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER]);
         coroutine_add(&rail->worker, &_power_rail_work, desc);
-        return HDL_MODULE_INIT_OK;
+        return HDL_MODULE_ACTIVE;
     }
     coroutine_cancel(&rail->worker);
-    return HDL_MODULE_DEINIT_OK;
+    return HDL_MODULE_UNLOADED;
 }
 
 

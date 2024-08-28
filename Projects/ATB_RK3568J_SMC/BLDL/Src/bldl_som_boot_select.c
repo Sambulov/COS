@@ -1,4 +1,4 @@
-#include "bldl.h"
+#include "app.h"
 
 bldl_boot_select_t bldl_som_boot_sel_get(const bldl_som_boot_sel_t *desc) {
   static uint8_t init = 1;

@@ -182,10 +182,10 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
     rcu_periph_clock_enable(RCU_SYSCFG);
     rcu_periph_clock_enable(RCU_PMU);
     //FMC_WS = (FMC_WS & (~FMC_WC_WSCNT)) | core->flash_latency;
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   rcu_periph_clock_disable(RCU_SYSCFG);
   //FMC_WS = (FMC_WS & (~FMC_WC_WSCNT)) | WS_WSCNT_0;
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 

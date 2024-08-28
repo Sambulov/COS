@@ -368,7 +368,7 @@ static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) 
 
 uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message) {
   hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
-  if((message != NULL) && (i2c != NULL) && (hdl_state(&i2c->module) == HDL_MODULE_INIT_OK) && (_i2c->message == NULL)) {
+  if((message != NULL) && (i2c != NULL) && (hdl_state(&i2c->module) == HDL_MODULE_ACTIVE) && (_i2c->message == NULL)) {
     message->status = 0;
     message->transfered = 0;
     _i2c->message = message;
@@ -407,17 +407,17 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     i2c_ack_config(((uint32_t)_i2c->module.reg), ((_i2c->config->addr0 == 0) ? I2C_ACK_DISABLE : I2C_ACK_ENABLE));
     _i2c->wc_state = WC_STATE_HIT;
     coroutine_add(&_i2c->i2c_worker, &_i2c_client_worker, (void*)_i2c);
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   coroutine_cancel(&_i2c->i2c_worker);
   rcu_periph_clock_disable(_i2c->config->rcu);
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 // uint8_t hdl_i2c_can_transfer(hdl_i2c_t *i2c) {
 //   hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
 //   i2c_periph_t *i2c_periph = (i2c_periph_t *)_i2c->module.reg;
-//   if((hdl_state(&i2c->module) == HDL_MODULE_INIT_OK)) {
+//   if((hdl_state(&i2c->module) == HDL_MODULE_ACTIVE)) {
 //     if(_i2c->is_master || !(i2c_periph->STAT1 & I2C_STAT1_I2CBSY)) {
 //       return HDL_TRUE;
 //     }

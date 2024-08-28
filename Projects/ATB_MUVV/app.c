@@ -62,7 +62,7 @@ uint32_t castom_rand(uint32_t max) {
 
 void sw_timer_handler(uint32_t event_trigger, void *sender, void *context) {
   hdl_timer_t *timer = (hdl_timer_t *)sender;
-  if((hdl_i2c_can_transfer(&mod_i2c1) != HDL_TRUE) || !(hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_ping))) {
+  if(!hdl_i2c_transfer_message(&mod_i2c1, &i2c_msg_ping)) {
     hdl_timer_set(timer, 1, HDL_TIMER_EVENT_SINGLE);
   }
   else {
@@ -123,13 +123,10 @@ void i2c_pingpong() {
 
   hdl_i2c_set_transceiver(&mod_i2c1, &i2c_transiver);
 
-  while (1)
-  {
+  while (1) {
     cooperative_scheduler(false);
-    if(pong_msg != NULL) {
-      if((hdl_i2c_can_transfer(&mod_i2c1) == HDL_TRUE) && (hdl_i2c_transfer_message(&mod_i2c1, pong_msg))) {
-        pong_msg = NULL;
-      }
+    if((pong_msg != NULL) && hdl_i2c_transfer_message(&mod_i2c1, pong_msg)) {
+      pong_msg = NULL;
     }
   }
 }

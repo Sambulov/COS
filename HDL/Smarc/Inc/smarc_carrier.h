@@ -32,7 +32,7 @@
        App notifies module about power fault state.
 */
 
-#define HDL_SMARC_CARRIER_PRV_SIZE    (40)
+#define HDL_SMARC_CARRIER_PRV_SIZE    (36)
 
 typedef enum {
     HDL_SMARC_CARRIER_BOOT0 = 0x01,

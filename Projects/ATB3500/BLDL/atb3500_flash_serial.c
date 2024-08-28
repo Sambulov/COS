@@ -12,9 +12,9 @@ _Static_assert(sizeof(atb3500_flash_serial_private_t) == sizeof(atb3500_flash_se
 
 hdl_module_state_t atb3500_flash_serial(void *desc, uint8_t enable) {
   if(enable) {
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 typedef struct

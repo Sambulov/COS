@@ -4,12 +4,11 @@
 #define HDL_MODULE_DESC_PRIVATE_SIZE 20
 
 typedef enum {
-  HDL_MODULE_INIT_ONGOING     = 1,
-  HDL_MODULE_INIT_OK          = 0,
-  HDL_MODULE_INIT_TERMINATING = -1,
-  HDL_MODULE_INIT_FAILED      = -2,
-  HDL_MODULE_INIT_UNKNOWN     = HDL_MODULE_INIT_FAILED,
-  HDL_MODULE_DEINIT_OK        = HDL_MODULE_INIT_FAILED
+  HDL_MODULE_LOADING   = 1,
+  HDL_MODULE_ACTIVE    = 0,
+  HDL_MODULE_UNLOADING = -1,
+  HDL_MODULE_FAULT     = -2,
+  HDL_MODULE_UNLOADED  = HDL_MODULE_FAULT
 } hdl_module_state_t;
 
 typedef hdl_module_state_t (*hdl_module_initializer_t)(void *desc, uint8_t enable);

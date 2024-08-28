@@ -66,9 +66,9 @@ hdl_module_state_t atb3500_io(void *desc, uint8_t enable) {
             }
             port <<= 1;
         }
-        return HDL_MODULE_INIT_OK;
+        return HDL_MODULE_ACTIVE;
     }
-    return HDL_MODULE_DEINIT_OK;
+    return HDL_MODULE_UNLOADED;
 }
 
 atb3500_io_proto_tx_t *atb3500_io_update(atb3500_io_t *desc, atb3500_io_proto_rx_t *rx_data) {

@@ -195,9 +195,9 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
     rcu_periph_clock_enable(RCU_AF);
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   rcu_periph_clock_disable(RCU_AF);
   FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }

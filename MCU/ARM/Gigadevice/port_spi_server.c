@@ -75,10 +75,10 @@ hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable) {
     hdl_interrupt_request(ic, spi->config->spi_interrupt, &spi->spi_isr);
     hdl_interrupt_request(ic, spi->config->nss_interrupt, &spi->nss_isr);
     spi_enable((uint32_t)spi->module.reg);
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   rcu_periph_clock_disable(spi->config->rcu);
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 void hdl_spi_server_set_transceiver(hdl_spi_server_t *spi, hdl_transceiver_t *transceiver) {

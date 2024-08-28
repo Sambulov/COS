@@ -27,7 +27,7 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 
 #define false	               0
 #define true	               !false
-#define CL_PRIVATE(size)                        uint32_t __private[(size + sizeof(void *) - 1) >> 2]
+#define CL_PRIVATE(size)       uint32_t __private[(size + sizeof(void *) - 1) >> 2]
 
 #define libNULL                ((void *)0)
 

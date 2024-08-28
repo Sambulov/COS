@@ -36,7 +36,7 @@ hdl_module_state_t hdl_exti(void *desc, uint8_t enable) {
   if(enable) {
     hdl_exti_controller_t *exti = (hdl_exti_controller_t *)desc;
     _hdl_exti_set(exti);
-    return HDL_MODULE_INIT_OK;
+    return HDL_MODULE_ACTIVE;
   }
   else {
     //TODO: disable nvic
@@ -46,7 +46,7 @@ hdl_module_state_t hdl_exti(void *desc, uint8_t enable) {
     HDL_REG_CLEAR(EXTI_EVEN, EXTI_LINES_ALL);
     hdl_exti_clear_pending(EXTI_LINES_ALL);
   }
-  return HDL_MODULE_DEINIT_OK;
+  return HDL_MODULE_UNLOADED;
 }
 
 void hdl_exti_sw_trigger(hdl_exti_controller_t *desc, hdl_exti_line_t line) {

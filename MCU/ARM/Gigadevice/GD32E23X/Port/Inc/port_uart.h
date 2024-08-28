@@ -1,7 +1,7 @@
 #ifndef PORT_UART_H_
 #define PORT_UART_H_
 
-#define HDL_UART_PRV_SIZE           56
+#define HDL_UART_PRV_SIZE           52
 
 typedef struct {
   rcu_periph_enum rcu;

@@ -10,7 +10,7 @@ typedef enum {
   HDL_BTN_CLICKED,
 } hdl_btn_state_t;
 
-#define HDL_BUTTON_PRV_SIZE    40
+#define HDL_BUTTON_PRV_SIZE    36
 
 typedef enum {
   HDL_BTN_EVENT_RELEASE = 0x01,

@@ -13,6 +13,7 @@ typedef struct {
 
 typedef struct {
     uint32_t period;                            /*!< counter auto reload value */
+    //TODO: prediv 8
 } hdl_tick_counter_systick_config_t;
 
 typedef union {

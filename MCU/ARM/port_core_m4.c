@@ -46,11 +46,6 @@ __attribute__((naked, noreturn)) void reset_handler() {
   for (;;) ;
 }
 
-void __attribute__((naked, noreturn)) default_handler() {
-	//If you get stuck here, your code is missing a handler for some interrupt.
-	asm("bkpt 255");
-}
-
 typedef struct {
   hdl_nvic_irq_n_t irq_type;
   uint8_t priority_group;

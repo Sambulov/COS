@@ -100,6 +100,31 @@
 			//},
 		},
         {
+			"name": "Debug JLink GD32E230C6",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"executable": "./build/bmc.elf",
+			"windows": {
+				"serverpath": "JLinkGDBServerCL.exe",
+			},
+			"linux": {
+				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
+				"gdbPath": "/usr/bin/gdb-multiarch"
+			},
+			"runToEntryPoint": "main",
+			//"showDevDebugOutput": "raw",
+			"servertype": "jlink",
+			"interface": "swd",
+			"device": "GD32E230C6",
+			"svdFile": "${workspaceFolder}/MCU/ARM/Gigadevice/GD32E23X/Res/mcu.svd",
+			"preLaunchTask": "J-Link Flash GD32E230C6",
+			//"liveWatch": {
+			//	"enabled": true,
+			//	"samplesPerSecond": 4
+			//},
+		},
+        {
 			"name": "Debug JLink STM32L071KB",
 			"type": "cortex-debug",
 			"request": "launch",

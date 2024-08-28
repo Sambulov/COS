@@ -91,6 +91,7 @@ typedef struct {
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
   hdl_spi_prescale_t prescale;
+  hdl_interrupt_t *spi_interrupt;
 } hdl_spi_client_config_t;
 
 /* depends on:
@@ -102,13 +103,12 @@ typedef struct {
  */
 typedef struct {
   hdl_module_t module;
-  hdl_spi_client_config_t *config;
-  hdl_interrupt_t *spi_interrupt;
+  const hdl_spi_client_config_t *config;
   PRIVATE(hw, HDl_SPI_CLIENT_PRIVATE_SIZE);
 } hdl_spi_client_t;
 
 /* depends on:
-  hdl_spi_t
+  hdl_spi_client_t
   gpio cs
  */
 typedef struct {

@@ -67,20 +67,23 @@ static hdl_module_state_t _hdl_clock_osc_en(hdl_clock_t* hdl_clock, rcu_osci_typ
 }
 
 hdl_module_state_t hdl_clock_hxtal(void *desc, uint8_t enable) {
-  if(enable)
+  if(enable) {
     return _hdl_clock_osc_en((hdl_clock_t *)desc, RCU_HXTAL, RCU_FLAG_HXTALSTB, HXTAL_STARTUP_TIMEOUT);
+  }
   return HDL_MODULE_DEINIT_OK;
 }
 
 hdl_module_state_t hdl_clock_lxtal(void *desc, uint8_t enable) {
-  if(enable)
+  if(enable) {
     return _hdl_clock_osc_en((hdl_clock_t *)desc, RCU_LXTAL, RCU_FLAG_LXTALSTB, LXTAL_STARTUP_TIMEOUT);
+  }
   return HDL_MODULE_DEINIT_OK;
 }
 
 hdl_module_state_t hdl_clock_irc16m(void *desc, uint8_t enable) {
-  if(enable)
+  if(enable) {
     return _hdl_clock_osc_en((hdl_clock_t *)desc, RCU_IRC16M, RCU_FLAG_IRC16MSTB, IRC16M_STARTUP_TIMEOUT);
+  }
   return HDL_MODULE_DEINIT_OK;
 }
 

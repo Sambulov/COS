@@ -47,6 +47,26 @@
             }
         },
         {
+            "name": "ATB_USPD_MPC2_D",
+            "displayName": "ATB_USPD_MPC2 Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_USPD_MPC2"
+            }
+        },
+        {
+            "name": "ATB_USPD20K_D",
+            "displayName": "ATB_USPD20K Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_USPD20K"
+            }
+        },
+        {
             "name": "ATB3500_D",
             "displayName": "ATB3500 Debug",
             "generator": "Ninja",

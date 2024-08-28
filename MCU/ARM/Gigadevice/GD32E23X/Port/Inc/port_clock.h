@@ -1,6 +1,16 @@
 #ifndef PORT_CLOCK_H_
 #define PORT_CLOCK_H_
 
+#define MAX_SYS_CLOCK                72000000UL
+#define MAX_AHB_CLOCK                72000000UL
+#define MAX_APB1_CLOCK               72000000UL
+#define MAX_APB2_CLOCK               72000000UL
+
+#define IRC8M_CLOCK                  8000000UL
+#define IRC28M_CLOCK                 28000000UL
+#define IRC40K_CLOCK                 40000UL
+
+
 typedef struct {
 hdl_module_t module;
   uint32_t freq;

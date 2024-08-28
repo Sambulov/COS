@@ -113,6 +113,18 @@
 			"group": "build"
 		},
 		{
+			"type": "shell",
+			"label": "J-Link Flash GD32E230C6",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
 			"label": "J-Link Erase GD32E230K6",
 			"type": "shell",
 			"linux": {

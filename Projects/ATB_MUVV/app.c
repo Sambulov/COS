@@ -122,7 +122,7 @@ void i2c_pingpong() {
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
-  hdl_timer_subscribe(&sw_timer, &sw_timer_deleagate);
+  hdl_event_subscribe(&sw_timer.event, &sw_timer_deleagate);
   hdl_timer_set(&sw_timer, 10000, HDL_TIMER_EVENT_SINGLE);
 
   hdl_i2c_set_transceiver(&mod_i2c1, &i2c_transiver);
@@ -181,8 +181,7 @@ void button_int() {
   extern hdl_interrupt_t mod_irq_svc;
   hdl_interrupt_request(&mod_nvic, &mod_irq_svc, &svc_deleagate);
   asm("SVC 44");
-
-  hdl_timer_subscribe(&sw_timer, &sw_timer_deleagate);
+  hdl_event_subscribe(&sw_timer.event, &sw_timer_deleagate);
   hdl_event_subscribe(&button.event, &button_deleagate);
   hdl_timer_set(&sw_timer, 1000, HDL_TIMER_EVENT_SINGLE);
   while (1) {

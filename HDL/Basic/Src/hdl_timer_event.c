@@ -11,8 +11,8 @@ typedef enum {
 
 typedef struct {
   hdl_module_t module;
-  /* private */
   hdl_event_t event;
+  /* private */
   uint32_t time_stamp;
   uint32_t delay;
   hdl_timer_mode_t mode;
@@ -77,11 +77,4 @@ uint32_t hdl_timer_left(hdl_timer_t *timer) {
     return timer_event->delay - (timer_event->mode != HDL_TIMER_EVENT_IDLE)? (hdl_time_counter_get(timer) - timer_event->time_stamp): 0;
   }
   return 0;
-}
-
-uint8_t hdl_timer_subscribe(hdl_timer_t *timer, hdl_delegate_t *delegate) {
-  hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
-  if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_ACTIVE)) {
-    hdl_event_subscribe(&timer_event->event, delegate);
-  }
 }

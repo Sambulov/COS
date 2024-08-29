@@ -222,6 +222,14 @@
     .priority_group = 0,
   };
 
+  hdl_interrupt_t mod_irq_adc0_1 = {
+    .irq_type = HDL_NVIC_IRQ18_ADC0_1,
+    .priority = 0,
+    .priority_group = 0,
+  };
+
+
+
   extern hdl_interrupt_controller_config_t mod_nvic_cnf;
 
 void * g_pfnVectors[] __attribute__ ((section (".isr_vector"), used)) = {
@@ -481,7 +489,7 @@ void * g_pfnVectors[] __attribute__ ((section (".isr_vector"), used)) = {
 
   hdl_interrupt_controller_config_t mod_nvic_cnf = {
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0_update, &mod_irq_timer1),
+    .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0_update, &mod_irq_timer1, &mod_irq_adc0_1),
   };
 
   hdl_interrupt_controller_t mod_nvic = {
@@ -1180,13 +1188,18 @@ hdl_adc_source_t mod_adc_source_3 = {
   .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
 };
 
-hdl_adc_t mod_adc = {
-  .module.init = &hdl_adc,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_adc.module, &mod_timer_ms.module, &mod_adc_dma_ch.module),
-  .module.reg = (void*)ADC0,
+const hdl_adc_config_t mod_adc_cnf = {
+  .adc_interrupt = &mod_irq_adc0_1,
   .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
   .init_timeout = 3000,
   .sources = hdl_adc_src(&mod_adc_source_0, &mod_adc_source_1, &mod_adc_source_2, &mod_adc_source_3),
+};
+
+hdl_adc_t mod_adc = {
+  .module.init = &hdl_adc,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_adc.module, &mod_timer_ms.module, &mod_adc_dma_ch.module, &mod_nvic.module),
+  .module.reg = (void*)ADC0,
+  .config = &mod_adc_cnf
 };
 
 hdl_plc_port_config_t mod_uspd_port_default_cnf_ain = {

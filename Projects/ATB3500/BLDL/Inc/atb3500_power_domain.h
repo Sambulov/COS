@@ -73,7 +73,7 @@ typedef enum {
 typedef struct {
     hdl_module_t module;
     uint32_t adc_scale;
-    hdl_adc_source_t *adc_src;
+    uint32_t adc_ch;
     uint32_t ov_threshold;
     uint32_t uv_threshold;
     uint32_t raise_delay;

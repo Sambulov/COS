@@ -981,16 +981,21 @@ hdl_adc_source_t mod_adc_source_5_adc_1v8 = {
   .channel = HDL_ADC_CHANNEL_5,
   .sample_time = HDL_ADC_SAMPLETIME_3,
 };
-hdl_adc_t mod_adc = {
-  .module.init = &hdl_adc,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module, &mod_nvic.module),
-  .module.reg = (void *)ADC0,
-  .adc_iterrupt = HDL_NVIC_IRQ18_ADC,
+
+const hdl_adc_config_t mod_adc_cnf = {
+  .adc_interrupt = &mod_irq_adc,
   .resolution = HDL_ADC_RESOLUTION_12BIT,
   .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
   .init_timeout = 3000,
   .sources = hdl_adc_src(&mod_adc_source_0_adc_24v, &mod_adc_source_1_adc_24v_poe, &mod_adc_source_2_adc_5v,
                           &mod_adc_source_3_adc_3v3, &mod_adc_source_4_adc_2v5, &mod_adc_source_5_adc_1v8),
+};
+
+hdl_adc_t mod_adc = {
+  .module.init = &hdl_adc,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module, &mod_nvic.module),
+  .module.reg = (void *)ADC0,
+  .config = &mod_adc_cnf
 };
 /**************************************************************
  *                        SPI
@@ -1078,7 +1083,7 @@ atb3500_power_rail_t rail_24v = {
         &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_24V,
-    .adc_src = &mod_adc_source_0_adc_24v,
+    .adc_ch = 0,
     .uv_threshold = POWER_RAIL_UV_TRHESHOLD_24V,
     .ov_threshold = POWER_RAIL_OV_TRHESHOLD_24V,
     .raise_delay = POWER_RAIL_RAISE_DELAY_24V,
@@ -1096,7 +1101,7 @@ atb3500_power_rail_t rail_24vpoe = {
         &mod_di_24v_poe_power_fault.module, 
         &mod_di_24v_poe_power_good.module),
     .adc_scale = POWER_RAIL_ADC_SCALE_24V,
-    .adc_src = &mod_adc_source_0_adc_24v,
+    .adc_ch = 1,
     .uv_threshold = POWER_RAIL_UV_TRHESHOLD_24V,
     .ov_threshold = POWER_RAIL_OV_TRHESHOLD_24V,
     .raise_delay = POWER_RAIL_RAISE_DELAY_24V,
@@ -1114,7 +1119,7 @@ atb3500_power_rail_t rail_5v = {
         &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_5V,
-    .adc_src = &mod_adc_source_2_adc_5v,
+    .adc_ch = 2,
     .uv_threshold = POWER_RAIL_UV_TRHESHOLD_5V,
     .ov_threshold = POWER_RAIL_OV_TRHESHOLD_5V,
     .raise_delay = POWER_RAIL_RAISE_DELAY_5V,
@@ -1132,7 +1137,7 @@ atb3500_power_rail_t rail_3v3 = {
         &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_3V3,
-    .adc_src = &mod_adc_source_3_adc_3v3,
+    .adc_ch = 3,
     .uv_threshold = POWER_RAIL_UV_TRHESHOLD_3V3,
     .ov_threshold = POWER_RAIL_OV_TRHESHOLD_3V3,
     .raise_delay = POWER_RAIL_RAISE_DELAY_3V3,
@@ -1150,7 +1155,7 @@ atb3500_power_rail_t rail_2v5 = {
         &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_2V5,
-    .adc_src = &mod_adc_source_4_adc_2v5,
+    .adc_ch = 4,
     .uv_threshold = POWER_RAIL_UV_TRHESHOLD_2V5,
     .ov_threshold = POWER_RAIL_OV_TRHESHOLD_2V5,
     .raise_delay = POWER_RAIL_RAISE_DELAY_2V5,
@@ -1168,7 +1173,7 @@ atb3500_power_rail_t rail_1v8 = {
         &hdl_null_module,
         &hdl_null_module),
     .adc_scale = POWER_RAIL_ADC_SCALE_1V8,
-    .adc_src = &mod_adc_source_5_adc_1v8,
+    .adc_ch = 5,
     .uv_threshold = POWER_RAIL_UV_TRHESHOLD_1V8,
     .ov_threshold = POWER_RAIL_OV_TRHESHOLD_1V8,
     .raise_delay = POWER_RAIL_RAISE_DELAY_1V8,
@@ -1189,11 +1194,15 @@ hdl_smarc_carrier_t mod_smarc = {
         &mod_systick_timer_ms.module),
 };
 
+const hdl_button_config_t power_button_cnf = {
+  .debounce_delay = 50,
+  .hold_delay = 0,
+};
+
 hdl_button_t power_button = {
     .module.init = &hdl_button,
     .module.dependencies = hdl_module_dependencies(&mod_do_smarc_power_btn.module, &mod_systick_timer_ms.module ),
-    .debounce_delay = 50,
-    .hold_delay = 0,
+    .config = &power_button_cnf
 };
 
 atb3500_io_t mod_carrier_io = {

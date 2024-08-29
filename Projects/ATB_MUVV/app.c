@@ -14,11 +14,15 @@ hdl_timer_t sw_timer = {
   .module.dependencies = hdl_module_dependencies(&mod_timer_ms.module)
 };
 
+const hdl_button_config_t button_cnf = {  
+  .debounce_delay = 30,
+  .hold_delay = 3000
+};
+
 hdl_button_t button = {
   .module.dependencies = hdl_module_dependencies(&mod_gpi_button.module, &mod_timer_ms.module),
   .module.init = &hdl_button,
-  .debounce_delay = 30,
-  .hold_delay = 3000
+  .config = &button_cnf
 };
 
 typedef struct {

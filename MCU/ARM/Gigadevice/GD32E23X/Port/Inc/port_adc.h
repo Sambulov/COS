@@ -1,8 +1,7 @@
 #ifndef PORT_ADC_H_
 #define PORT_ADC_H_
 
-#define EVENT_ADC_PRIVATE_SIZE  (4)
-#define HDL_ADC_PRIVATE_FIELD_SIZE  (8)
+#define HDL_ADC_PRV_SIZE  (32)
 
 // typedef enum {
 //     ADC_OPERATION_MODE_SINGLE_SCAN,    /* Single SCAN, user must launched every conversion with some triger */
@@ -74,14 +73,13 @@ typedef enum {
 } hdl_adc_data_alignment_t;
 
 typedef struct{
-    hdl_module_t module;
+    hdl_interrupt_t *adc_interrupt;
     hdl_adc_resolution_e resolution;
     hdl_adc_data_alignment_t data_alignment;
     uint32_t init_timeout;
     hdl_adc_source_t **sources;               /* max amount 15 */
     uint32_t *values;
-    PRIVATE(hw, HDL_ADC_PRIVATE_FIELD_SIZE);
-} hdl_adc_t;
+} hdl_adc_config_t;
 
 #define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
 

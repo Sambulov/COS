@@ -1,5 +1,4 @@
 #include "hdl_portable.h"
-
 #include "Macros.h"
 
 typedef enum {
@@ -11,10 +10,8 @@ typedef enum {
 
 typedef struct{
     hdl_module_t module;
-    hdl_adc_data_alignment_t data_alignment;
-    uint32_t init_timeout;
-    hdl_adc_source_t **sources;               /* max amount 15 */
-    uint32_t *values;
+    const hdl_adc_config_t *config;
+    hdl_delegate_t adc_end_of_conversion;
     uint32_t time_stamp;
     gd_adc_state_machine_e state_machine;      /* gd_adc_state_machine_e */
     uint8_t channels_count;
@@ -22,11 +19,16 @@ typedef struct{
 
 _Static_assert(sizeof(hdl_adc_private_t) == sizeof(hdl_adc_t), "In hdl_adc.h data structure size of hdl_adc_t doesn't match, check HDL_ADC_PRIVATE_FIELD_SIZE");
 
+static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
+    hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
+    hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
+    hdl_adc->time_stamp = hdl_time_counter_get(timer);
+}
+
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)desc;
   if(hdl_adc->module.reg == NULL || hdl_adc->module.dependencies == NULL || hdl_adc->module.dependencies[0] == NULL ||
-    hdl_adc->module.dependencies[1] == NULL || hdl_adc->module.dependencies[2] == NULL || hdl_adc->sources == NULL || 
-    hdl_adc->sources[0] == NULL)
+    hdl_adc->module.dependencies[1] == NULL || hdl_adc->module.dependencies[2] == NULL)
       return HDL_MODULE_FAULT;
   //hdl_clock_t *clock = (hdl_clock_t *)hdl_adc->module.dependencies[0];
   hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
@@ -54,19 +56,25 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_SCAN_MODE, ENABLE);
         adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_CONTINUOUS_MODE, ENABLE);
         adc_dma_mode_enable((uint32_t)hdl_adc->module.reg);
-        hdl_adc_source_t **adc_source = hdl_adc->sources;
+        hdl_adc_source_t **adc_source = hdl_adc->config->sources;
         hdl_adc->channels_count = 0;
-        while (*adc_source != NULL) {
-          adc_regular_channel_config((uint32_t)hdl_adc->module.reg, hdl_adc->channels_count, (uint8_t)(*adc_source)->channel, (uint32_t)(*adc_source)->sample_time);
-          adc_source++;
-          hdl_adc->values[hdl_adc->channels_count++] = HDL_ADC_INVALID_VALUE;
+        if(adc_source != NULL) {
+          while (*adc_source != NULL) {
+            adc_regular_channel_config((uint32_t)hdl_adc->module.reg, hdl_adc->channels_count, (uint8_t)(*adc_source)->channel, (uint32_t)(*adc_source)->sample_time);
+            adc_source++;
+            hdl_adc->config->values[hdl_adc->channels_count++] = HDL_ADC_INVALID_VALUE;
+          }
         }
         adc_channel_length_config((uint32_t)hdl_adc->module.reg, ADC_REGULAR_CHANNEL, hdl_adc->channels_count);
-        adc_data_alignment_config((uint32_t)hdl_adc->module.reg, hdl_adc->data_alignment);
+        adc_data_alignment_config((uint32_t)hdl_adc->module.reg, hdl_adc->config->data_alignment);
         //adc_resolution_config((uint32_t)hdl_adc->module.reg, (uint32_t)hdl_adc->resolution);
         adc_external_trigger_config((uint32_t)hdl_adc->module.reg, ADC_REGULAR_CHANNEL, ENABLE);
         adc_external_trigger_source_config((uint32_t)hdl_adc->module.reg, ADC_REGULAR_CHANNEL, ADC0_1_2_EXTTRIG_REGULAR_NONE);
         adc_enable((uint32_t)hdl_adc->module.reg);
+        hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)hdl_adc->module.dependencies[3];
+        hdl_adc->adc_end_of_conversion.context = desc;
+        hdl_adc->adc_end_of_conversion.handler = &event_adc_end_of_conversion;
+        hdl_interrupt_request(ic, hdl_adc->config->adc_interrupt, &hdl_adc->adc_end_of_conversion);
         //         for(uint16_t i = 0; i < adc_short_delay_after_start; i++)
         //     __NOP();
         /* There must be 14 CK_ADC tact */
@@ -78,12 +86,12 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
       }
       case GD_ADC_STATE_MACHINE_CALIBRATION:
         if (ADC_CTL1((uint32_t)hdl_adc->module.reg) & ADC_CTL1_CLB) {
-          if (TIME_ELAPSED(hdl_adc->time_stamp, hdl_adc->init_timeout, hdl_time_counter_get(timer)))
+          if (TIME_ELAPSED(hdl_adc->time_stamp, hdl_adc->config->init_timeout, hdl_time_counter_get(timer)))
             return HDL_MODULE_FAULT;
           return HDL_MODULE_LOADING;
         }
       case GD_ADC_STATE_MACHINE_RUN:
-        hdl_dma_run(dma, (uint32_t)&ADC_RDATA((uint32_t)hdl_adc->module.reg), (uint32_t)hdl_adc->values, (uint32_t)hdl_adc->channels_count);
+        hdl_dma_run(dma, (uint32_t)&ADC_RDATA((uint32_t)hdl_adc->module.reg), (uint32_t)hdl_adc->config->values, (uint32_t)hdl_adc->channels_count);
         adc_software_trigger_enable((uint32_t)hdl_adc->module.reg, ADC_REGULAR_CHANNEL);
         hdl_adc->state_machine = GD_ADC_STATE_MACHINE_WORKING;        
       case GD_ADC_STATE_MACHINE_WORKING:
@@ -101,16 +109,17 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
   }
 }
 
-uint32_t hdl_adc_get_data(hdl_adc_t *hdl_adc, hdl_adc_source_t *src) {
-  if(hdl_adc != NULL) {
-    hdl_adc_source_t **adc_channel_source = hdl_adc->sources;
-    int16_t channel_element_number = 0;
-    while (*adc_channel_source != NULL) {
-      if(*adc_channel_source == src)
-        return hdl_adc->values[channel_element_number];
-      adc_channel_source++;
-      channel_element_number++;
-    }
+uint32_t hdl_adc_get(hdl_adc_t *hdl_adc, uint32_t src) {
+  if((hdl_adc != NULL) && (hdl_state(&hdl_adc->module) == HDL_MODULE_ACTIVE) && 
+     (((hdl_adc_private_t *)hdl_adc)->channels_count > src)) {
+    return hdl_adc->config->values[src];
   }
   return HDL_ADC_INVALID_VALUE;
+}
+
+uint32_t hdl_adc_age(hdl_adc_t *hdl_adc) {
+  if((hdl_adc != NULL) && (hdl_state(&hdl_adc->module) == HDL_MODULE_ACTIVE)) {
+    return ((hdl_adc_private_t *)hdl_adc)->time_stamp;
+  }
+  return 0;
 }

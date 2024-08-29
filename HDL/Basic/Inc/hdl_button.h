@@ -19,14 +19,18 @@ typedef enum {
   HDL_BTN_EVENT_CLICK   = 0x08,
 } hdl_btn_event_t;
 
+typedef struct {
+  uint32_t debounce_delay;
+  uint32_t hold_delay;
+} hdl_button_config_t;
+
 /* depends on:
   gpio
   time_counter
  */
 typedef struct {
   hdl_module_t module;
-  uint32_t debounce_delay;
-  uint32_t hold_delay;
+  const hdl_button_config_t *config;
   hdl_event_t event;
   PRIVATE(hdl, HDL_BUTTON_PRV_SIZE);
 } hdl_button_t;

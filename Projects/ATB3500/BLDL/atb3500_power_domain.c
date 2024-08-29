@@ -4,7 +4,7 @@
 typedef struct {
     hdl_module_t module;
     uint32_t adc_scale;
-    hdl_adc_source_t *adc_src;
+    uint32_t adc_ch;
     uint32_t ov_threshold;
     uint32_t uv_threshold;
     uint32_t raise_delay;
@@ -99,7 +99,7 @@ static void _feed_rail_filter(atb3500_power_rail_private_t *rail, uint32_t value
 static uint8_t _power_rail_work(coroutine_t *this, uint8_t cancel, void *arg) {
     atb3500_power_rail_private_t *rail = (atb3500_power_rail_private_t *) arg;
     hdl_adc_t *rail_adc = (hdl_adc_t *)rail->module.dependencies[ATB3500_POWER_RAIL_ADC];
-    uint32_t adc_current_age = hdl_adc_get_age(rail_adc);
+    uint32_t adc_current_age = hdl_adc_age(rail_adc);
     atb3500_power_rail_private_t *src_rail = (atb3500_power_rail_private_t *)rail->module.dependencies[ATB3500_POWER_RAIL_SOURSE_RAIL];
     hdl_time_counter_t *timer = (hdl_time_counter_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER];
     uint32_t time_now = hdl_time_counter_get(timer);
@@ -107,7 +107,7 @@ static uint8_t _power_rail_work(coroutine_t *this, uint8_t cancel, void *arg) {
         src_rail = NULL;
 
     if(rail->adc_age != adc_current_age) {
-        _feed_rail_filter(rail, hdl_adc_get_data(rail_adc, rail->adc_src));
+        _feed_rail_filter(rail, hdl_adc_get(rail_adc, rail->adc_ch));
     }
     uint8_t state_current = rail->state;
     switch (rail->state) {
@@ -154,7 +154,7 @@ hdl_module_state_t atb3500_power_rail(void *desc, uint8_t enable) {
         rail->state = PD_STATE_OFF;
         rail->filter_value_cursor = 0;
         rail->filter_values_amount = 0;
-        rail->adc_age = hdl_adc_get_age((hdl_adc_t *)rail->module.dependencies[ATB3500_POWER_RAIL_ADC]);
+        rail->adc_age = hdl_adc_age((hdl_adc_t *)rail->module.dependencies[ATB3500_POWER_RAIL_ADC]);
         rail->timestamp = hdl_time_counter_get((hdl_time_counter_t *)rail->module.dependencies[ATB3500_POWER_RAIL_TIMER]);
         coroutine_add(&rail->worker, &_power_rail_work, desc);
         return HDL_MODULE_ACTIVE;

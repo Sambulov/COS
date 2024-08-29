@@ -748,6 +748,12 @@ hdl_interrupt_t mod_irq_svc = {
   .priority_group = 0,
 };
 
+hdl_interrupt_t mod_irq_adc = {
+  .irq_type = HDL_NVIC_IRQ12_ADC_CMP,
+  .priority = 0,
+  .priority_group = 0,
+};
+
 extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
 const void *main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
@@ -815,7 +821,8 @@ const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .irq_latency = 0, /* TODO: define static assert */
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,
                                &mod_irq_timer0, &mod_irq_timer2, &mod_irq_usart_0, &mod_irq_spi_0, 
-                               &mod_irq_i2c0_ev, &mod_irq_i2c0_er, &mod_irq_i2c1_ev, &mod_irq_i2c1_er, &mod_irq_svc),
+                               &mod_irq_i2c0_ev, &mod_irq_i2c0_er, &mod_irq_i2c1_ev, &mod_irq_i2c1_er, &mod_irq_svc,
+                               &mod_irq_adc),
 };
 
 hdl_interrupt_controller_t mod_nvic = {
@@ -1104,14 +1111,19 @@ hdl_adc_source_t mod_adc_source_1 = {
 //   .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
 // };
 
-hdl_adc_t mod_adc = {
-  .module.init = &hdl_adc,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_timer_ms.module, &mod_adc_dma_ch.module),
-  .module.reg = (void*)ADC,
+const hdl_adc_config_t mod_adc_cnf = {
+  .adc_interrupt = &mod_irq_adc,
   .resolution = HDL_ADC_RESOLUTION_12BIT,
   .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
   .init_timeout = 3000,
   .sources = hdl_adc_src(&mod_adc_source_1, &mod_adc_source_0),
+};
+
+hdl_adc_t mod_adc = {
+  .module.init = &hdl_adc,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_timer_ms.module, &mod_adc_dma_ch.module),
+  .module.reg = (void*)ADC,
+  .config = &mod_adc_cnf
 };
 
 /**************************************************************

@@ -1,5 +1,5 @@
-#ifndef HDL_CALLBACK_H_
-#define HDL_CALLBACK_H_
+#ifndef HDL_EVENT_H_
+#define HDL_EVENT_H_
 
 #define HDL_DELEGATE_PRIVATE_SIZE    16
 #define HDL_EVENT_PRIVATE_SIZE        4
@@ -20,4 +20,4 @@ void hdl_event_subscribe(hdl_event_t *event, hdl_delegate_t *delegate);
 void hdl_event_unsubscribe(hdl_delegate_t *delegate);
 uint32_t hdl_event_raise(hdl_event_t *event, void *sender, uint32_t event_trigger);
 
-#endif // HDL_CALLBACK_H_
+#endif // HDL_EVENT_H_

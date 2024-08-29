@@ -1031,14 +1031,18 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
   //   .channel_sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
   // };
 
-  hdl_adc_t mod_adc = {
-    .module.init = &hdl_adc,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_timer_ms.module, &mod_adc_dma_ch.module),
-    .module.reg = (void*)ADC,
+  const hdl_adc_config_t mod_adc_cnf = {
     .resolution = HDL_ADC_RESOLUTION_12BIT,
     .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
     .init_timeout = 3000,
     .sources = hdl_adc_src(&mod_adc_source_1, &mod_adc_source_0),
+  };
+
+  hdl_adc_t mod_adc = {
+    .module.init = &hdl_adc,
+    .module.dependencies = hdl_module_dependencies(&mod_clock_irc28m.module, &mod_timer_ms.module, &mod_adc_dma_ch.module),
+    .module.reg = (void*)ADC,
+    .config = &mod_adc_cnf
   };
 
   const hdl_gpio_port_hw_config_t hdl_gpio_port_config_a = {

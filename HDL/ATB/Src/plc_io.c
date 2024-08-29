@@ -26,7 +26,7 @@ static void _bldl_uspd_analog_update(hdl_plc_port_t *port) {
     hdl_gpio_write(pullup, (port->desc & PLC_IO_PORT_HW_PULL_UP_STRONG)? !pullup->config->inactive_default: pullup->config->inactive_default);
     hdl_gpio_write(pulldown, (port->desc & PLC_IO_PORT_HW_PULL_DOWN_WEAK)? !pulldown->config->inactive_default: pullup->config->inactive_default);
     hdl_gpio_write(shunt, (port->desc & PLC_IO_PORT_HW_CURRENT_SHUNT)? !shunt->config->inactive_default: pullup->config->inactive_default);
-    uint32_t value = hdl_adc_get_data((hdl_adc_t *)port->module.dependencies[0], (hdl_adc_source_t *)port->module.reg);
+    uint32_t value = hdl_adc_get((hdl_adc_t *)port->module.dependencies[0], (uint32_t)port->module.reg);
     /* TODO: apply convertation */
     port->input = value;
   }

@@ -247,12 +247,15 @@ hdl_tick_counter_t mod_systick_counter = {
   .config.systick = &mod_systick_counter_cnf
 };
 
+const hdl_time_counter_config_t mod_timer_ms_cnf = {
+  .reload_interrupt = &mod_irq_systick,
+};
+
 hdl_time_counter_t mod_timer_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_interrupt = &mod_irq_systick,
-  .val = 0
+  .config = &mod_timer_ms_cnf
 };
 
 /**************************************************************

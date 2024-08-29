@@ -1064,28 +1064,37 @@ hdl_tick_counter_t mod_systick_counter = {
   .config.systick = &mod_systick_counter_cnf
 };
 
+const hdl_time_counter_config_t mod_timer_ms_cnf = {
+  .reload_interrupt = &mod_irq_systick,
+};
+
+const hdl_time_counter_config_t mod_timer0_ms_cnf = {
+  .reload_interrupt = &mod_irq_timer0,
+};
+
+const hdl_time_counter_config_t mod_timer2_ms_cnf = {
+  .reload_interrupt = &mod_irq_timer2,
+};
+
 hdl_time_counter_t mod_timer_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_interrupt = &mod_irq_systick,
-  .val = 0
+  .config = &mod_timer_ms_cnf
 };
 
 hdl_time_counter_t mod_timer0_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_tick_counter0.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_interrupt = &mod_irq_timer0,
-  .val = 0
+  .config = &mod_timer0_ms_cnf
 };
 
 hdl_time_counter_t mod_timer2_ms = {
   .module.init = hdl_time_counter,
   .module.dependencies = hdl_module_dependencies(&mod_tick2_counter.module, &mod_nvic.module),
   .module.reg = NULL,
-  .reload_interrupt = &mod_irq_timer2,
-  .val = 0
+  .config = &mod_timer2_ms_cnf
 };
 
 /**************************************************************

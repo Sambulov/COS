@@ -3,6 +3,13 @@
 
 #define HDL_UART_PRV_SIZE           52
 
+/* depends on:
+  gpio rx
+  gpio tx
+  apb2_bus for USART0, apb1_bus for USART1, USART2, USART3, USART4
+  interrupt controller (nvic)
+  hdl_timer_t
+ */
 typedef struct {
   rcu_periph_enum rcu;
   hdl_interrupt_t *interrupt;

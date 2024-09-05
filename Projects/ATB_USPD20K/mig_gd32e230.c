@@ -578,7 +578,7 @@ hdl_gpio_pin_t mod_spi_0_cs = {
     .module.init = &hdl_gpio_pin,
     .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_a.module),
     .module.reg = (void *)GPIO_PIN_4,
-    .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_spi_mode)
+    .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &mod_gpio_output_pp_mode)
 }; //(PA4)
 
 /**************************************************************
@@ -649,9 +649,14 @@ hdl_spi_client_t mod_spi0 = {
   .config = &mod_spi0_cnf
 };
 
+const hdl_spi_client_ch_config_t mod_spi0_ch0_cnf = {
+  .cs_min_delay = 90
+};
+
 hdl_spi_client_ch_t mod_spi0_ch0 = {
   .module.init = &hdl_spi_ch,
-  .module.dependencies = hdl_module_dependencies(&mod_spi0.module, &mod_spi_0_cs.module),
+  .module.dependencies = hdl_module_dependencies(&mod_spi0.module, &mod_spi_0_cs.module, &mod_systick_counter.module),
+  .config = &mod_spi0_ch0_cnf
 };
 
 extern hdl_spi_client_ch_t uspd20k_adc_spi __attribute__ ((alias ("mod_spi0_ch0")));

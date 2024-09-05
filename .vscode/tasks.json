@@ -116,10 +116,10 @@
 			"type": "shell",
 			"label": "J-Link Flash GD32E230C6",
 			"linux": {
-				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash.jlink",
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash_с6.jlink",
 			},
 			"windows": {
-				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash.jlink",
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash_с6.jlink",
 			},
 			"detail": "Flash",
 			"group": "build"

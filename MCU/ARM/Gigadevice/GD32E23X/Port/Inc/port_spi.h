@@ -73,7 +73,7 @@ typedef struct {
 */
 
 /**************** vvv  SPI master vvv  ******************/
-#define HDl_SPI_CLIENT_PRIVATE_SIZE    28
+#define HDl_SPI_CLIENT_PRIVATE_SIZE    32
 #define HDl_SPI_CLIENT_CH_PRIVATE_SIZE  24
 
 typedef struct {

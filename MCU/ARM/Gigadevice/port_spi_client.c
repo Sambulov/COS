@@ -14,6 +14,7 @@ typedef struct {
   /* private */
   hdl_delegate_t spi_isr;
   hdl_spi_client_ch_private_t *curent_spi_ch;
+  uint16_t rx_cursor;
 } hdl_spi_client_private_t;
 
 _Static_assert(sizeof(hdl_spi_client_private_t) == sizeof(hdl_spi_client_t), "In port_spi.h data structure size of hdl_spi_client_t doesn't match, check HDl_SPI_CLIENT_PRIVATE_SIZE");
@@ -28,12 +29,12 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
 
   uint32_t state = SPI_STAT((uint32_t)spi->module.reg);
   if ((state & (SPI_ERROR_MASK)) == 0) {
-    int32_t rx_cursor = (int32_t)msg->transfered - msg->rx_skip;
     /* RX ---------------------------------------------------*/
     if (state & SPI_STAT_RBNE) {
       uint16_t data = SPI_DATA((uint32_t)spi->module.reg);
-      if((msg->rx_buffer != NULL) && (rx_cursor >= 0) && (rx_cursor < msg->rx_take)) {
-        msg->rx_buffer[rx_cursor] = data;
+      if((msg->rx_buffer != NULL) && (spi->rx_cursor < msg->rx_take)) {
+        msg->rx_buffer[spi->rx_cursor] = data;
+        spi->rx_cursor++;
       }
     }
     if(msg->transfered >= msg_len) {
@@ -77,6 +78,7 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         uint32_t msg_len = msg->rx_skip + msg->rx_take;
         msg_len = MAX(msg->tx_len, msg_len);
         if(msg_len > 0) {
+          spi->rx_cursor = 0;
           SPI_CTL1((uint32_t)spi->module.reg) |= (SPI_CTL1_TBEIE | SPI_CTL1_RBNEIE);
         }
         else {

@@ -124,7 +124,7 @@ void main() {
       break;
     case 7:
       if(read_reg_msg.state & HDL_SPI_MESSAGE_STATUS_COMPLETE) 
-        state = 2;
+        state = 4;
       break;
 
 

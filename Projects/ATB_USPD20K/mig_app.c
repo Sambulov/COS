@@ -42,7 +42,7 @@ hdl_module_t mod_app = {
     
     &uspd20k_i2c_som.module, &uspd20k_som_int.module,
 
-    &uspd20k_adc_spi.module,
+    &uspd20k_adc_spi.module, &uspd20k_adc_rdy.module,
 
     &uspd20k_i2c_eeprom.module,
 

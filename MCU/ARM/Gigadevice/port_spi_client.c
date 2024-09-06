@@ -27,8 +27,6 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   msg_len = MAX(msg->tx_len, msg_len);
 
   uint32_t state = SPI_STAT((uint32_t)spi->module.reg);
-  uint32_t cr1 = SPI_CTL1((uint32_t)spi->module.reg);
-
   if ((state & (SPI_ERROR_MASK)) == 0) {
     int32_t rx_cursor = (int32_t)msg->transfered - msg->rx_skip;
     /* RX ---------------------------------------------------*/
@@ -43,7 +41,7 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
       msg->state |= HDL_SPI_MESSAGE_STATUS_DATA;
     }
     ///* TX ------------------------------------------------*/
-    if ((state & SPI_STAT_TBE) && (cr1 & SPI_CTL1_TBEIE)) {
+    if ((state & SPI_STAT_TBE) && (SPI_CTL1((uint32_t)spi->module.reg) & SPI_CTL1_TBEIE)) {
       uint16_t data = 0;
       if ((msg->tx_buffer != NULL) && (msg->tx_len > 0)) {
         if (msg->transfered < msg->tx_len) {

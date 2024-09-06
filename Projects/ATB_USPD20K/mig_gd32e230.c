@@ -17,7 +17,7 @@
 #define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
 #define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
 
-#define HDL_SYSTICK_COUNTER_RELOAD   9000 - 1                  /* Clocked by AHB   */
+#define HDL_SYSTICK_COUNTER_RELOAD   72000 - 1                  /* Clocked by AHB   */
 
 //_Static_assert( (HDL_SYS_CLOCK == mod_clock_pll_mul) && (HDL_HXTAL_CLOCK * HDL_PLLMUL / HDL_HXTAL_2_PLLSEL_PREDIV) <= MAX_SYS_CLOCK, "Sys overclocking!");
 
@@ -75,6 +75,11 @@ hdl_interrupt_t mod_irq_i2c1_er = {
 };
 
 extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
+
+const void *main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
+  &mod_nvic_cnf,
+  &reset_handler,
+};
 
 const void* irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   &mod_nvic_cnf,
@@ -636,8 +641,8 @@ hdl_i2c_t mod_i2c1 = {
 const hdl_spi_client_config_t mod_spi0_cnf = {
   .rcu = RCU_SPI0,
   .endian = HDL_SPI_ENDIAN_MSB,
-  .polarity = SPI_CK_PL_LOW_PH_1EDGE,
-  .prescale = HDL_SPI_PSC_32,
+  .polarity = SPI_CK_PL_HIGH_PH_1EDGE,
+  .prescale = HDL_SPI_PSC_256,
   .spi_interrupt = &mod_irq_spi_0
 };
 
@@ -659,6 +664,8 @@ hdl_spi_client_ch_t mod_spi0_ch0 = {
   .config = &mod_spi0_ch0_cnf
 };
 
+
+extern hdl_gpio_pin_t uspd20k_adc_rdy      __attribute__ ((alias ("mod_spi_0_miso")));
 extern hdl_spi_client_ch_t uspd20k_adc_spi __attribute__ ((alias ("mod_spi0_ch0")));
 extern hdl_i2c_t uspd20k_i2c_som           __attribute__ ((alias ("mod_i2c0")));
 extern hdl_i2c_t uspd20k_i2c_eeprom        __attribute__ ((alias ("mod_i2c1")));

@@ -31,7 +31,8 @@ extern hdl_gpio_pin_t uspd20k_ai4_cur_scr_high; // (PB0)
 extern hdl_gpio_pin_t uspd20k_ai4_150r_pd;      // (PA2)
 extern hdl_gpio_pin_t uspd20k_ai4_4K3_pd;       // (PA3)
 
-extern hdl_spi_client_ch_t uspd20k_adc_spi;    // (PA4->CS),(PA5->SCK),(PA6->MISO),(PA7->MOSI)
+extern hdl_gpio_pin_t uspd20k_adc_rdy;          // (PA6)
+extern hdl_spi_client_ch_t uspd20k_adc_spi;     // (PA4->CS),(PA5->SCK),(PA6->MISO),(PA7->MOSI)
 
 extern hdl_i2c_t uspd20k_i2c_som;               // (PF6->SCL),(PF7->SDA)
 extern hdl_gpio_pin_t uspd20k_som_int;          // (PA12)

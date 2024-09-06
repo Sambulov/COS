@@ -15,6 +15,7 @@ typedef struct {
   hdl_delegate_t spi_isr;
   hdl_spi_client_ch_private_t *curent_spi_ch;
   uint16_t rx_cursor;
+  uint16_t tx_cursor;
 } hdl_spi_client_private_t;
 
 _Static_assert(sizeof(hdl_spi_client_private_t) == sizeof(hdl_spi_client_t), "In port_spi.h data structure size of hdl_spi_client_t doesn't match, check HDl_SPI_CLIENT_PRIVATE_SIZE");
@@ -32,29 +33,35 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
     /* RX ---------------------------------------------------*/
     if (state & SPI_STAT_RBNE) {
       uint16_t data = SPI_DATA((uint32_t)spi->module.reg);
-      if((msg->rx_buffer != NULL) && (spi->rx_cursor < msg->rx_take)) {
-        msg->rx_buffer[spi->rx_cursor] = data;
-        spi->rx_cursor++;
+      if(msg->rx_buffer != NULL) {
+        int32_t data_offset = ((int32_t)spi->rx_cursor) - msg->rx_skip;
+        if((data_offset >= 0) && (data_offset < msg->rx_take)) msg->rx_buffer[data_offset] = data;
+      }
+      spi->rx_cursor++;
+      if(spi->rx_cursor >= msg_len) {
+        SPI_CTL1((uint32_t)spi->module.reg) &= ~SPI_CTL1_RBNEIE;
+        msg->state |= HDL_SPI_MESSAGE_STATUS_DATA;
       }
     }
-    if(msg->transfered >= msg_len) {
-      SPI_CTL1((uint32_t)spi->module.reg) &= ~(SPI_CTL1_RBNEIE | SPI_CTL1_TBEIE);
-      msg->state |= HDL_SPI_MESSAGE_STATUS_DATA;
-    }
+
     ///* TX ------------------------------------------------*/
-    if ((state & SPI_STAT_TBE) && (SPI_CTL1((uint32_t)spi->module.reg) & SPI_CTL1_TBEIE)) {
+    if((state & SPI_STAT_TBE) && (spi->tx_cursor < msg_len)) {
       uint16_t data = 0;
       if ((msg->tx_buffer != NULL) && (msg->tx_len > 0)) {
-        if (msg->transfered < msg->tx_len) {
-          data = msg->tx_buffer[msg->transfered];
+        if (spi->tx_cursor < msg->tx_len) {
+          data = msg->tx_buffer[spi->tx_cursor];
         }
         else {
           data = msg->tx_buffer[msg->tx_len - 1];
         }
       }
       SPI_DATA((uint32_t)spi->module.reg) = data;
-      msg->transfered++;
+      spi->tx_cursor++;
+      if(spi->tx_cursor >= msg_len) {
+        SPI_CTL1((uint32_t)spi->module.reg) &= ~SPI_CTL1_TBEIE;
+      }
     }
+    msg->transfered = MIN(spi->rx_cursor, spi->tx_cursor);
   }
   else {
     hdl_spi_reset_status((uint32_t)spi->module.reg);
@@ -79,6 +86,8 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         msg_len = MAX(msg->tx_len, msg_len);
         if(msg_len > 0) {
           spi->rx_cursor = 0;
+          spi->tx_cursor = 0;
+          hdl_spi_reset_status((uint32_t)spi->module.reg);
           SPI_CTL1((uint32_t)spi->module.reg) |= (SPI_CTL1_TBEIE | SPI_CTL1_RBNEIE);
         }
         else {

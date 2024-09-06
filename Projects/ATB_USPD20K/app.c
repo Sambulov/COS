@@ -16,6 +16,15 @@ void main() {
 
   uint8_t data[4]={1,2,3,4};
 
+  hdl_spi_message_t reset_spi_adc_msg = {
+    .options = 0,
+    .tx_buffer = (uint8_t []){0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+    .tx_len = 5,
+    .rx_skip = 0,
+    .rx_take = 0,
+    .rx_buffer = NULL
+  };
+
   hdl_spi_message_t cnf_w_adc_msg = {
     .options = 0,
     .tx_buffer = (uint8_t []){0x10, 0x00, 0x10},
@@ -89,24 +98,31 @@ void main() {
   while (1) {
     switch (state) {
     case 0:
-      hdl_spi_transfer_message(&uspd20k_adc_spi, &cnf_w_adc_msg);
+      hdl_spi_transfer_message(&uspd20k_adc_spi, &reset_spi_adc_msg);
       state++;
       break;
     case 1:
-      if(cnf_w_adc_msg.state & HDL_SPI_MESSAGE_STATUS_COMPLETE) state++;
+      if(reset_spi_adc_msg.state & HDL_SPI_MESSAGE_STATUS_COMPLETE) state++;
       break;
     case 2:
-      hdl_spi_transfer_message(&uspd20k_adc_spi, &select_read_cnf_msg);
+      hdl_spi_transfer_message(&uspd20k_adc_spi, &cnf_w_adc_msg);
       state++;
       break;
     case 3:
-      if(hdl_gpio_read(&uspd20k_adc_rdy) == HDL_GPIO_LOW) state++;
+      if(cnf_w_adc_msg.state & HDL_SPI_MESSAGE_STATUS_COMPLETE) state++;
       break;
     case 4:
-      hdl_spi_transfer_message(&uspd20k_adc_spi, &read_reg_msg);
+      hdl_spi_transfer_message(&uspd20k_adc_spi, &select_read_cnf_msg);
       state++;
       break;
     case 5:
+      if(hdl_gpio_read(&uspd20k_adc_rdy) == HDL_GPIO_LOW) state++;
+      break;
+    case 6:
+      hdl_spi_transfer_message(&uspd20k_adc_spi, &read_reg_msg);
+      state++;
+      break;
+    case 7:
       if(read_reg_msg.state & HDL_SPI_MESSAGE_STATUS_COMPLETE) 
         state = 2;
       break;
@@ -114,32 +130,32 @@ void main() {
 
 
 
-    case 6:
+    case 8:
       hdl_spi_transfer_message(&uspd20k_adc_spi, &singl_conv_msg);
       state++;
       break;
-    case 7:
+    case 9:
       if((singl_conv_msg.state & HDL_SPI_MESSAGE_STATUS_COMPLETE) 
          //&& (hdl_gpio_read(&uspd20k_adc_rdy) == HDL_GPIO_HIGH)
          ) state++;
       break;
-    case 8:
+    case 10:
       if (hdl_gpio_read(&uspd20k_adc_rdy) == HDL_GPIO_LOW) state++;
       break;
-    case 9:
+    case 11:
       hdl_spi_transfer_message(&uspd20k_adc_spi, &get_data_msg);
       state++;
       break;
-    case 10:
+    case 12:
       if(get_data_msg.state & HDL_SPI_MESSAGE_STATUS_COMPLETE) state++;
       timer = hdl_time_counter_get(&mod_timer_ms);
       break;
-    case 11: {
+    case 13: {
       uint32_t now = hdl_time_counter_get(&mod_timer_ms);
       if(TIME_ELAPSED(timer, 1000, now)) state++;
       break;
     }
-    case 12:
+    case 14:
     default:
       state = 4;
       break;

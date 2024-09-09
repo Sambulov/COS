@@ -79,9 +79,11 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     hdl_spi_message_t *msg = ch->curent_msg;
     if(msg != NULL) {
       if (msg->state == HDL_SPI_MESSAGE_STATUS_INITIAL) {
-        hdl_gpio_set_active(pin_cs);
         //TODO: cs delay
-        msg->state |= HDL_SPI_MESSAGE_STATUS_BUS_HOLD;
+        if(msg->options & HDL_SPI_MESSAGE_CH_SELECT) {
+          hdl_gpio_set_active(pin_cs);
+          msg->state |= HDL_SPI_MESSAGE_STATUS_BUS_HOLD;
+        }
         uint32_t msg_len = msg->rx_skip + msg->rx_take;
         msg_len = MAX(msg->tx_len, msg_len);
         if(msg_len > 0) {
@@ -95,13 +97,13 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         }
       }
       else if(msg->state & HDL_SPI_MESSAGE_STATUS_DATA) {
-        msg->state |= HDL_SPI_MESSAGE_STATUS_COMPLETE;
         ch->curent_msg = NULL;
-        if(!(msg->options & HDL_SPI_MESSAGE_BUS_KEEP_HOLD)) {
+        if(!(msg->options & HDL_SPI_MESSAGE_CH_RELEASE)) {
           hdl_gpio_set_inactive(pin_cs);
           msg->state |= HDL_SPI_MESSAGE_STATUS_BUS_RELEASE;
           spi->curent_spi_ch = NULL;
         }
+        msg->state |= HDL_SPI_MESSAGE_STATUS_COMPLETE;
       }
     }
   }

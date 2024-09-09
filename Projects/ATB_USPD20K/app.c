@@ -3,7 +3,34 @@
 
 //extern hdl_core_t mod_sys_core;
 
+typedef struct {
 
+} hdl_ad7794_adc_source_t;
+
+/* depends on 
+  spi
+
+ */
+typedef struct {
+  hdl_module_t module;
+
+} hdl_ad7794_adc_t;
+
+hdl_ad7794_adc_source_t mod_adc_source_0 = {
+
+};
+
+hdl_ad7794_adc_source_t mod_adc_source_1 = {
+
+};
+
+hdl_ad7794_adc_source_t mod_adc_source_2 = {
+
+};
+
+hdl_ad7794_adc_source_t mod_adc_source_3 = {
+
+};
 
 void main() {
   hdl_enable(&mod_app);
@@ -14,19 +41,19 @@ void main() {
 
   uint32_t timer;
 
-  uint8_t data[4]={1,2,3,4};
+  uint8_t data[4] = {1, 2, 3, 4};
 
   hdl_spi_message_t reset_spi_adc_msg = {
-    .options = 0,
-    .tx_buffer = (uint8_t []){0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-    .tx_len = 5,
+    .options = HDL_SPI_MESSAGE_CH_SELECT | HDL_SPI_MESSAGE_CH_RELEASE,
+    .tx_buffer = (uint8_t []){0xFF, 0xFF, 0xFF, 0xFF},
+    .tx_len = 4,
     .rx_skip = 0,
     .rx_take = 0,
     .rx_buffer = NULL
   };
 
   hdl_spi_message_t cnf_w_adc_msg = {
-    .options = 0,
+    .options = HDL_SPI_MESSAGE_CH_SELECT | HDL_SPI_MESSAGE_CH_RELEASE,
     .tx_buffer = (uint8_t []){0x10, 0x00, 0x10},
     .tx_len = 3,
     .rx_skip = 0,
@@ -35,7 +62,7 @@ void main() {
   };
 
   hdl_spi_message_t select_read_cnf_msg = {
-    .options = HDL_SPI_MESSAGE_BUS_KEEP_HOLD,
+    .options = HDL_SPI_MESSAGE_CH_SELECT,
     .tx_buffer = (uint8_t []){0x50},
     .tx_len = 1,
     .rx_skip = 0,
@@ -44,7 +71,7 @@ void main() {
   };
 
   hdl_spi_message_t read_reg_msg = {
-    .options = 0,
+    .options = HDL_SPI_MESSAGE_CH_RELEASE,
     .tx_buffer = NULL,
     .tx_len = 0,
     .rx_skip = 0,
@@ -53,7 +80,7 @@ void main() {
   };
 
   hdl_spi_message_t singl_conv_msg = {
-    .options = HDL_SPI_MESSAGE_BUS_KEEP_HOLD,
+    .options = HDL_SPI_MESSAGE_CH_SELECT,
     .tx_buffer = (uint8_t []){0x08, 0x20, 0x0A},
     .tx_len = 3,
     .rx_take = 0,
@@ -61,7 +88,7 @@ void main() {
   };
 
   hdl_spi_message_t chip_select_msg = {
-    .options = HDL_SPI_MESSAGE_BUS_KEEP_HOLD,
+    .options = HDL_SPI_MESSAGE_CH_SELECT,
     .tx_buffer = NULL,
     .tx_len = 0,
     .rx_take = 0,
@@ -69,7 +96,7 @@ void main() {
   };
   
   hdl_spi_message_t get_data_msg = {
-    .options = 0,
+    .options = HDL_SPI_MESSAGE_CH_RELEASE,
     .tx_buffer = (uint8_t []){0x58, 0x00},
     .tx_len = 2,
     .rx_skip = 1,

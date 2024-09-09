@@ -1,7 +1,9 @@
 #ifndef MS5194T_H_
 #define MS5194T_H_
 
-#define HDL_MS5194T_PRV_SIZE 0
+#define HDL_ADC_MS5194T_PRV_SIZE        64
+
+#define HDL_ADC_MS5194T_INVALID_VALUE   0xFFFFFFFF
 
 /* Write Enable Bit. A 0 must be written to this bit so that the write to the communications register actually occurs. If
    a 1 is the first bit written, the part does not clock on to subsequent bits in the register. It stays at this bit location
@@ -10,7 +12,7 @@
 #define MS5194T_COMM_REG_WEN                 ((uint8_t)(1 << 7))
 /* A 0 in this bit location indicates that the next operation is a write to a specified register. A 1 in this position
   indicates that the next operation is a read from the designated register. */
-#define MS5194T_COMM_REG_RW                  ((uint8_t)(1 << 6))
+#define MS5194T_COMM_REG_READ                ((uint8_t)(1 << 6))
 
 /* Register Address Bits. These address bits are used to select which registers of the ADC are being selected during
    this serial interface communication*/
@@ -332,22 +334,47 @@
 
 #define MS5194T_IO_REG_DEFAULT               !MS5194T_IO_REG_IOEN
 
+// typedef enum {
+//   HDL_ADC_MS5194T_CHANNEL_0 = 0,
+//   HDL_ADC_MS5194T_CHANNEL_1 = 1,
+//   HDL_ADC_MS5194T_CHANNEL_2 = 2,
+//   HDL_ADC_MS5194T_CHANNEL_3 = 3,
+//   HDL_ADC_MS5194T_CHANNEL_4 = 4,
+//   HDL_ADC_MS5194T_CHANNEL_5 = 5,
+//   HDL_ADC_MS5194T_TEMP      = 6,
+//   HDL_ADC_MS5194T_AVDD      = 7,
+// } hdl_adc_ms5194t_channel_t;
+
 typedef struct {
-  uint16_t mode_reg;
+  //hdl_adc_ms5194t_channel_t channel;
   uint16_t config_reg;
+} hdl_adc_ms5194t_source_t;
+
+#define _hdl_adc_ms5194t_src(...)        ((hdl_adc_ms5194t_source_t *[]){__VA_ARGS__, NULL})
+#define hdl_adc_ms5194t_sources(...)     _hdl_adc_ms5194t_sources(__VA_ARGS__),\
+                                         .values = (uint32_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
+
+typedef struct {
   uint8_t io_reg;
-} hdl_ms5194t_config_t;
+  uint16_t mode_reg;
+  hdl_adc_ms5194t_source_t **sources;
+  uint32_t *values;
+} hdl_adc_ms5194t_config_t;
 
 /*
     depends on 
     spi_client
+    time_counter
  */
 typedef struct {
   hdl_module_t module;
-  const hdl_ms5194t_config_t *config;
-  PRIVATE(hw, HDL_MS5194T_PRV_SIZE);
-} hdl_ms5194t_t;
+  const hdl_adc_ms5194t_config_t *config;
+  PRIVATE(hdl, HDL_ADC_MS5194T_PRV_SIZE);
+} hdl_adc_ms5194t_t;
 
-hdl_module_state_t hdl_ms5194t(void *desc, uint8_t enable);
+hdl_module_state_t hdl_adc_ms5194t(void *desc, uint8_t enable);
+
+uint32_t hdl_adc_ms5194t_get(hdl_adc_ms5194t_t *hdl_adc, uint32_t src);
+uint32_t hdl_adc_ms5194t_age(hdl_adc_ms5194t_t *hdl_adc);
 
 #endif /* MS5194T_H_ */

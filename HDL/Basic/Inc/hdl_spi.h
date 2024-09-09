@@ -15,7 +15,8 @@ typedef enum {
 } hdl_spi_message_status_t;
 
 typedef enum {
-  HDL_SPI_MESSAGE_BUS_KEEP_HOLD            = 0x01,
+  HDL_SPI_MESSAGE_CH_SELECT                = 0x01,
+  HDL_SPI_MESSAGE_CH_RELEASE               = 0x02,
 } hdl_spi_message_options_t;
 
 typedef struct {

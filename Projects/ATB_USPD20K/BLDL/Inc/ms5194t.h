@@ -351,8 +351,8 @@ typedef struct {
 } hdl_adc_ms5194t_source_t;
 
 #define _hdl_adc_ms5194t_src(...)        ((hdl_adc_ms5194t_source_t *[]){__VA_ARGS__, NULL})
-#define hdl_adc_ms5194t_sources(...)     _hdl_adc_ms5194t_sources(__VA_ARGS__),\
-                                         .values = (uint32_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
+#define hdl_adc_ms5194t_sources(...)     _hdl_adc_ms5194t_src(__VA_ARGS__),\
+                                         .values = (uint32_t [sizeof(_hdl_adc_ms5194t_src(__VA_ARGS__))/sizeof(hdl_adc_ms5194t_source_t *)]){}
 
 typedef struct {
   uint8_t io_reg;

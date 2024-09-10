@@ -2,12 +2,15 @@
 #include "CodeLib.h"
 
 hdl_adc_ms5194t_source_t mod_adc_src_0 = {
-  .config_reg = 0
+  .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | !MS5194T_CONFIG_REG_UB | 
+                !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+                !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(1)
 };
 
 const hdl_adc_ms5194t_config_t mod_adc_cnf = {
-  .io_reg = 0,
-  .mode_reg = 0,
+  .io_reg = MS5194T_IO_REG_DEFAULT,
+  .mode_reg = MS5194T_MODE_REG_MS_PWR_DWN | !MS5194T_MODE_REG_PSW | !MS5194T_MODE_REG_AMP_CM | MS5194T_MODE_REG_CLK_INT64K |
+              !MS5194T_MODE_REG_CHOP_DIS | MS5194T_MODE_REG_FILTER_RATE(10),
   .sources = hdl_adc_ms5194t_sources(&mod_adc_src_0)
 };
 
@@ -16,6 +19,8 @@ hdl_adc_ms5194t_t mod_adc = {
   .module.dependencies = hdl_module_dependencies(&uspd20k_adc_spi.module, &mod_timer_ms.module),
   .config = &mod_adc_cnf
 };
+
+
 
 void main() {
   hdl_enable(&mod_app);

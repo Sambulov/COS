@@ -40,7 +40,7 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
       spi->rx_cursor++;
       if(spi->rx_cursor >= msg_len) {
         SPI_CTL1((uint32_t)spi->module.reg) &= ~SPI_CTL1_RBNEIE;
-        msg->state |= HDL_SPI_MESSAGE_STATUS_DATA;
+        msg->state |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
       }
     }
 
@@ -90,13 +90,14 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           spi->rx_cursor = 0;
           spi->tx_cursor = 0;
           hdl_spi_reset_status((uint32_t)spi->module.reg);
+          msg->state |= HDL_SPI_MESSAGE_STATUS_XFER;
           SPI_CTL1((uint32_t)spi->module.reg) |= (SPI_CTL1_TBEIE | SPI_CTL1_RBNEIE);
         }
         else {
-          msg->state |= HDL_SPI_MESSAGE_STATUS_DATA;
+          msg->state |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
         }
       }
-      else if(msg->state & HDL_SPI_MESSAGE_STATUS_DATA) {
+      else if(msg->state & HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE) {
         ch->curent_msg = NULL;
         if(!(msg->options & HDL_SPI_MESSAGE_CH_RELEASE)) {
           hdl_gpio_set_inactive(pin_cs);

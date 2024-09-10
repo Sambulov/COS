@@ -57,7 +57,7 @@
    result to indicate to the user not to read the conversion data. It is also set when the part is placed in power-down
    mode. The end of a conversion is also indicated by the DOUT/RDY pin. This pin can be used as an alternative to the
    status register for monitoring the ADC for conversion data */
-#define MS5194T_STATUS_REG_RDY               ((uint8_t)(1 << 7))
+#define MS5194T_STATUS_REG_NOT_RDY           ((uint8_t)(1 << 7))
 /* ADC Error Bit. This bit is written to at the same time as the RDY bit. Set to indicate that the result written to the
    ADC data register has been clamped to all 0s or all 1s. Error sources include overrange, underrange, or the absence
    of a reference voltage. Cleared by a write operation to start a conversion. */
@@ -220,18 +220,18 @@
 /* Burnout Current Enable Bit. This bit must be programmed with a Logic 0 for correct operation. When this
    bit is set to 1 by the user, the 100 nA current sources in the signal path are enabled. When BO = 0, the
    burnout currents are disabled. The burnout currents can be enabled only when the buffer or in-amp is active */
-#define MS5194T_CONFIG_REG_BO                ((uint16_t)(3 << 13))
+#define MS5194T_CONFIG_REG_BO                ((uint16_t)(1 << 13))
 
 /* Unipolar/Bipolar Bit. Set by user to enable unipolar coding, that is, zero differential input results in
    0x000000 output and a full-scale differential input results in 0xFFFFFF output. Cleared by the user to
    enable bipolar coding. Negative full-scale differential input results in an output code of 0x000000, zero
    differential input results in an output code of 0x800000, and positive full-scale differential input results in
    an output code of 0xFFFFFF. */
-#define MS5194T_CONFIG_REG_UB                ((uint16_t)(3 << 12))
+#define MS5194T_CONFIG_REG_UB                ((uint16_t)(1 << 12))
 
 /* This bit is used in conjunction with the VBIAS1 and VBIAS0 bits. When set, the current consumed by the
    bias voltage generator is increased, which reduces its power-up time. */
-#define MS5194T_CONFIG_REG_BOOST             ((uint16_t)(3 << 11))
+#define MS5194T_CONFIG_REG_BOOST             ((uint16_t)(1 << 11))
 
 /* Gain Select Bits.
    Written by the user to select the ADC input range as follows:
@@ -270,26 +270,17 @@
 #define MS5194T_CONFIG_REG_BUF               ((uint16_t)(1 << 4))
 
 /* Channel Select Bits.
-   Written by the user to select the active analog input channel to the ADC. */ 
-#define MS5194T_CONFIG_REG_CH_SEL            ((uint16_t)(15 << 0))
-/* Active channel AIN1(+)/AIN1(−) Calibration Pair 0 */
-#define MS5194T_CONFIG_REG_CH_SEL_AIN1       ((uint16_t)(0 << 0))
-/* Active channel AIN2(+)/AIN2(−) Calibration Pair 1 */
-#define MS5194T_CONFIG_REG_CH_SEL_AIN2       ((uint16_t)(1 << 0))
-/* Active channel AIN3(+)/AIN3(−) Calibration Pair 2 */
-#define MS5194T_CONFIG_REG_CH_SEL_AIN3       ((uint16_t)(2 << 0))
-/* Active channel AIN4(+)/AIN4(−) Calibration Pair 3 */
-#define MS5194T_CONFIG_REG_CH_SEL_AIN4       ((uint16_t)(3 << 0))
-/* Active channel AIN5(+)/AIN5(−) Calibration Pair 3 */
-#define MS5194T_CONFIG_REG_CH_SEL_AIN5       ((uint16_t)(4 << 0))
-/* Active channel AIN6(+)/AIN6(−) Calibration Pair 3 */
-#define MS5194T_CONFIG_REG_CH_SEL_AIN6       ((uint16_t)(5 << 0))
-/* Active channel Temp Sensor Calibration Pair Automatically selects the internal 1.17 V reference and sets the gain to 1 */
-#define MS5194T_CONFIG_REG_CH_SEL_TEMP       ((uint16_t)(6 << 0))
-/* Active channel AVDD Monitor Calibration Pair Automatically selects the internal 1.17 V reference and sets the gain to 1/6 */
-#define MS5194T_CONFIG_REG_CH_SEL_AVDD       ((uint16_t)(7 << 0))
-/* Active channel AIN1(−)/AIN1(−) Calibration Pair 0 */
-#define MS5194T_CONFIG_REG_CH_SEL_AIN1NN     ((uint16_t)(8 << 0))
+   Written by the user to select the active analog input channel to the ADC.
+   0: Active channel AIN1(+)/AIN1(−) Calibration Pair 0
+   1: Active channel AIN2(+)/AIN2(−) Calibration Pair 1
+   2: Active channel AIN3(+)/AIN3(−) Calibration Pair 2
+   3: Active channel AIN4(+)/AIN4(−) Calibration Pair 3
+   4: Active channel AIN5(+)/AIN5(−) Calibration Pair 3
+   5: Active channel AIN6(+)/AIN6(−) Calibration Pair 3
+   6: Active channel Temp Sensor Calibration Pair Automatically selects the internal 1.17 V reference and sets the gain to 1
+   7: Active channel AVDD Monitor Calibration Pair Automatically selects the internal 1.17 V reference and sets the gain to 1/6
+   8: Active channel AIN1(−)/AIN1(−) Calibration Pair 0 */
+#define MS5194T_CONFIG_REG_CH_SEL(x)         ((uint16_t)((x & 15) << 0))
 
 
 

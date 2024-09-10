@@ -20,7 +20,7 @@ typedef struct {
   coroutine_t button_worker;
 } hdl_button_private_t;
 
-_Static_assert(sizeof(hdl_button_private_t) == sizeof(hdl_button_t), "In hdl_button.h data structure size of hdl_button_t doesn't match, check HDL_BUTTON_DESC_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_button_private_t, hdl_button_t, HDL_BUTTON_DESC_SIZE, hdl_button.h);
 _Static_assert(offsetof(hdl_button_private_t, event) == offsetof(hdl_button_t, event), "In hdl_button.h hdl_button_t properties order doesn't match");
 
 static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {

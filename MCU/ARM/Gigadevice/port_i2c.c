@@ -1,12 +1,3 @@
-
-
-// // _Static_assert(sizeof(hdl_i2c_message_private_t) == sizeof(hdl_i2c_message_t), "In hdl_i2c.h data structure size of hdl_i2c_message_t doesn't match, check HDL_I2C_MESSAGE_PRV_SIZE");
-
-// // _Static_assert(sizeof(hdl_i2c_transaction_private_t) == sizeof(hdl_i2c_transaction_t), "In hdl_i2c.h data structure size of hdl_i2c_transaction_t doesn't match, check HDL_I2C_TRANSACTION_PRV_SIZE");
-
-// // _Static_assert(sizeof(hdl_i2c_private_t) == sizeof(hdl_i2c_t), "In hdl_i2c.h data structure size of hdl_i2c_t doesn't match, check HDL_I2C_PRV_SIZE");
-// // _Static_assert((offsetof(hdl_i2c_private_t, hw_conf) == offsetof(hdl_i2c_t, hw_conf)) , "In hdl_i2c.h hdl_i2c_t properties order doesn't match");
-
 #include "hdl_portable.h"
 #include "CodeLib.h"
 
@@ -57,7 +48,8 @@ typedef struct {
   uint8_t is_master;
 } hdl_i2c_private_t;
 
-_Static_assert(sizeof(hdl_i2c_private_t) == sizeof(hdl_i2c_t), "In hdl_i2c.h data structure size of hdl_i2c_t doesn't match, check HDL_I2C_CLIENT_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_private_t, hdl_i2c_t, HDL_I2C_PRV_SIZE, hdl_i2c.h);
+
 _Static_assert((offsetof(hdl_i2c_private_t, module) == offsetof(hdl_i2c_t, module)) ||
                (offsetof(hdl_i2c_private_t, config) == offsetof(hdl_i2c_t, config)), "In hdl_i2c.h hdl_i2c_t properties order doesn't match");
 

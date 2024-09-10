@@ -19,7 +19,7 @@ typedef struct {
   coroutine_t timer_events_worker;
 } hdl_timer_private_t;
 
-_Static_assert(sizeof(hdl_timer_private_t) == sizeof(hdl_timer_t), "In hdl_timer.h data structure size of hdl_button_t doesn't match, check HDL_TIMER_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_timer_private_t, hdl_timer_t, HDL_TIMER_EVENT_PRV_SIZE, hdl_timer_event.h);
 
 static uint8_t _timer_events_handler(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_timer_private_t *timer_event = (hdl_timer_private_t *)arg;

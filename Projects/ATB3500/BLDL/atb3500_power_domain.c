@@ -22,7 +22,7 @@ typedef struct {
     coroutine_t worker;
 } atb3500_power_rail_private_t;
 
-_Static_assert(sizeof(atb3500_power_rail_private_t) == sizeof(atb3500_power_rail_t), "In atb3500_power_domain.h data structure size of atb3500_power_rail_t doesn't match, check ATB3500_POWER_RAIL_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(atb3500_power_rail_private_t, atb3500_power_rail_t, ATB3500_POWER_RAIL_PRV_SIZE, atb3500_power_domain.h);
 
 void atb3500_power_rail_set(atb3500_power_rail_t *desc, uint8_t enable) {
     atb3500_power_rail_private_t *rail = (atb3500_power_rail_private_t *)desc;

@@ -7,7 +7,7 @@ typedef struct {
     atb3500_io_proto_tx_t tx_data;
 } atb3500_io_private_t;
 
-_Static_assert(sizeof(atb3500_io_private_t) == sizeof(atb3500_io_t), "In atb3500_io.h data structure size of atb3500_io_t doesn't match, check ATB3500_IO_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(atb3500_io_private_t, atb3500_io_t, ATB3500_IO_PRV_SIZE, atb3500_io.h);
 
 static hdl_gpio_pin_t *_atb3500_get_gpio_pin(atb3500_io_private_t *io, atb3500_io_port_t port) {
     uint32_t ind = 31 - __CLZ(port);

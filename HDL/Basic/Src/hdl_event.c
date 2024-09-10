@@ -11,8 +11,8 @@ typedef struct {
   linked_list_t delegates;
 } hdl_event_private_t;
 
-_Static_assert(sizeof(hdl_delegate_private_t) == sizeof(hdl_delegate_t), "In hdl_event.h data structure size of hdl_delegate_t doesn't match, check HDL_DELEGATE_PRIVATE_SIZE");
-_Static_assert(sizeof(hdl_event_private_t) == sizeof(hdl_event_t), "In hdl_event.h data structure size of hdl_event_t doesn't match, check HDL_EVENT_PRIVATE_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_delegate_private_t, hdl_delegate_t, HDL_DELEGATE_PRIVATE_SIZE, hdl_event.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_event_private_t, hdl_event_t, HDL_EVENT_PRIVATE_SIZE, hdl_event.h);
 
 void hdl_event_subscribe(hdl_event_t *event, hdl_delegate_t *delegate) {
   hdl_event_private_t *evt = (hdl_event_private_t *)event;

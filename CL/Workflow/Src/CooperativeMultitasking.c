@@ -7,7 +7,7 @@ typedef struct {
   void *pxArg;
 } CoroutinePrivate_t;
 
-_Static_assert(sizeof(CoroutinePrivate_t) == sizeof(Coroutine_t), "In CooperativeMultitasking.h data structure size of Coroutine_t doesn't match, check CO_ROUTINE_DESC_SIZE");
+LIB_ASSERRT_STRUCTURE_CAST(CoroutinePrivate_t, Coroutine_t, CO_ROUTINE_DESC_SIZE, CooperativeMultitasking.h);
 
 typedef struct {
   uint8_t bCancel;

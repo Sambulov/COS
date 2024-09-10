@@ -13,7 +13,7 @@ typedef struct {
   hdl_transceiver_t *transceiver;
 } hdl_spi_server_private_t;
 
-_Static_assert(sizeof(hdl_spi_server_private_t) == sizeof(hdl_spi_server_t), "In port_spi.h data structure size of hdl_spi_server_t doesn't match, check SPI_SERVER_PRIVATE_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_server_private_t, hdl_spi_server_t, SPI_SERVER_PRIVATE_SIZE, port_spi.h);
 
 static void event_spi_nss(uint32_t event, void *sender, void *context) {
   hdl_spi_server_private_t *spi = (hdl_spi_server_private_t*)context;

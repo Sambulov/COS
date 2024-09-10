@@ -10,7 +10,7 @@ typedef struct {
   coroutine_t worker;
 } hdl_uart_private_t;
 
-_Static_assert(sizeof(hdl_uart_private_t) == sizeof(hdl_uart_t), "In port_uart.h data structure size of hdl_uart_t doesn't match, check HDL_UART_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_uart_private_t, hdl_uart_t, HDL_UART_PRV_SIZE, port_uart.h);
 
 __STATIC_INLINE uint8_t _hdl_uart_word_len(hdl_uart_private_t *uart) {
   return ((uart->config->word_len == USART_WL_9BIT) && (uart->config->parity==USART_PM_NONE))? 2: 1;

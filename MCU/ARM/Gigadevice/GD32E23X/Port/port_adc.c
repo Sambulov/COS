@@ -17,7 +17,7 @@ typedef struct{
     uint8_t channels_count;
 } hdl_adc_private_t;
 
-_Static_assert(sizeof(hdl_adc_private_t) == sizeof(hdl_adc_t), "In hdl_adc.h data structure size of hdl_adc_t doesn't match, check HDL_ADC_PRIVATE_FIELD_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_private_t, hdl_adc_t, HDL_ADC_PRV_SIZE, hdl_adc.h);
 
 static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
     hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;

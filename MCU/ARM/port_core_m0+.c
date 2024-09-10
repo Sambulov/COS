@@ -9,7 +9,7 @@ typedef struct {
   hdl_event_t event;
 } hdl_nvic_interrupt_private_t;
 
-_Static_assert(sizeof(hdl_nvic_interrupt_private_t) == sizeof(hdl_interrupt_t), "In hdl_core.h data structure size of hdl_nvic_interrupt_t doesn't match, check HDL_INTERRUPT_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_nvic_interrupt_private_t, hdl_interrupt_t, HDL_INTERRUPT_PRV_SIZE, hdl_core.h);
 
 void __libc_init_array();
 void main();

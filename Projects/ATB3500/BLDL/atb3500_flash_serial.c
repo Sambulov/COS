@@ -8,7 +8,7 @@ typedef struct {
   atb3500_flash_serial_proto_tx_t tx_buf;
 } atb3500_flash_serial_private_t;
 
-_Static_assert(sizeof(atb3500_flash_serial_private_t) == sizeof(atb3500_flash_serial_t), "In atb3500_flash_serial.h data structure size of atb3500_flash_serial_t doesn't match, check ATB3500_FLASH_SERIAL_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(atb3500_flash_serial_private_t, atb3500_flash_serial_t, ATB3500_FLASH_SERIAL_PRV_SIZE, atb3500_flash_serial.h);
 
 hdl_module_state_t atb3500_flash_serial(void *desc, uint8_t enable) {
   if(enable) {

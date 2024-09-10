@@ -9,7 +9,7 @@ typedef struct {
     atb3500_watchdog_proto_tx_t tx_data;
 } atb3500_watchdog_private_t;
 
-_Static_assert(sizeof(atb3500_watchdog_private_t) == sizeof(atb3500_watchdog_t), "In atb3500_watchdog.h data structure size of atb3500_watchdog_t doesn't match, check ATB3500_WATCHDOG_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(atb3500_watchdog_private_t, atb3500_watchdog_t, ATB3500_WATCHDOG_PRV_SIZE, atb3500_watchdog.h);
 
 atb3500_watchdog_proto_tx_t *atb3500_watchdog_update(atb3500_watchdog_t *desc, atb3500_watchdog_proto_rx_t *rx_data) {
     atb3500_watchdog_private_t *wdt = (atb3500_watchdog_private_t*)desc;

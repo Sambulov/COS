@@ -7,7 +7,7 @@ typedef struct {
   uint32_t count;
 } hdl_time_counter_private_t;
 
-_Static_assert(sizeof(hdl_time_counter_private_t) == sizeof(hdl_time_counter_t), "In hdl_time_counter.h data structure size of hdl_time_counter_t doesn't match, check HDL_TIME_COUNTER_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_time_counter_private_t, hdl_time_counter_t, HDL_TIME_COUNTER_PRV_SIZE, hdl_time_counter.h);
 
 static void event_timer_isr(uint32_t event, void *sender, void *context) {
   ((hdl_time_counter_private_t *)context)->count++;

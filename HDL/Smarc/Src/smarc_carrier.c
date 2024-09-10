@@ -12,7 +12,7 @@ typedef struct {
     coroutine_t worker;
 } hdl_smarc_carrier_private_t;
 
-_Static_assert(sizeof(hdl_smarc_carrier_private_t) == sizeof(hdl_smarc_carrier_t), "In bldl_smarc_carrier.h data structure size of hdl_smarc_carrier_t doesn't match, check BLDL_SMARC_CARRIER_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_smarc_carrier_private_t, hdl_smarc_carrier_t, HDL_SMARC_CARRIER_PRV_SIZE, hdl_smarc_carrier.h);
 
 #define _call_event_hundler(c, e) { if(c->event != NULL) c->event(e, (void*)carrier, c->event_context); }
 

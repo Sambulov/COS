@@ -18,7 +18,7 @@ typedef struct {
   void *context;
 } hdl_spi_server_dma_private_t;
 
-_Static_assert(sizeof(hdl_spi_server_dma_private_t) == sizeof(hdl_spi_server_dma_t), "In port_spi.h data structure size of hdl_spi_mem_server_t doesn't match, check SPI_SERVER_DMA_PRIVATE_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_server_dma_private_t, hdl_spi_server_dma_t, SPI_SERVER_DMA_PRIVATE_SIZE, port_spi.h);
 
 static void _hdl_spi_mem_full_reset(hdl_spi_server_dma_private_t *spi) {
   hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->module.dependencies[6];

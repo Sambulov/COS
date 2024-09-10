@@ -19,7 +19,7 @@ typedef struct {
   hdl_spi_message_t message;
 } hdl_adc_ms5194t_private_t;
 
-ASSERRT_STRUCTURE_CAST(hdl_adc_ms5194t_private_t, hdl_adc_ms5194t_t, HDL_ADC_MS5194T_PRV_SIZE, ms5194t.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_ms5194t_private_t, hdl_adc_ms5194t_t, HDL_ADC_MS5194T_PRV_SIZE, ms5194t.h);
 
 #define MS5194T_ADC_COMMAND_STATE_IDLE                  0
 #define MS5194T_ADC_COMMAND_STATE_CS                    1

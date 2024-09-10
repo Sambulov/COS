@@ -7,7 +7,7 @@ typedef struct {
   hdl_transceiver_t transceiver;
 } hdl_isr_buffer_private_t;
 
-_Static_assert(sizeof(hdl_isr_buffer_private_t) == sizeof(hdl_isr_buffer_t), "In hdl_isr_buffer.h data structure size of hdl_isr_buffer_private_t doesn't match, check HDL_ISR_BUFFER_PRIVATE_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_isr_buffer_private_t, hdl_isr_buffer_t, HDL_ISR_BUFFER_PRIVATE_SIZE, hdl_isr_buffer.h);
 
 uint32_t hdl_isr_buffer_rx_cb_t (void *proto, uint8_t *data, uint32_t count) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)proto;

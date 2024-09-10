@@ -6,7 +6,7 @@ typedef struct {
   hdl_uspd20k_circuit_cofig_t current_config;
 } hdl_uspd_ain_port_private_t;
 
-_Static_assert(sizeof(hdl_uspd_ain_port_private_t) == sizeof(hdl_uspd_ain_port_t), "In uspd_ain_port.h data structure size of hdl_uspd_ain_port_t doesn't match, check HDL_USPD_AIN_PORT_PRV_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_uspd_ain_port_private_t, hdl_uspd_ain_port_t, HDL_USPD_AIN_PORT_PRV_SIZE, uspd_ain_port.h);
 
 static void _uspd_ain_port_set_circuit_pin(hdl_gpio_pin_t *pin, uint8_t en) {
   if((pin != NULL) && !HDL_IS_NULL_MODULE(pin)) {

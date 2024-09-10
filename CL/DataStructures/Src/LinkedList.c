@@ -9,7 +9,7 @@ typedef struct __LL_ITEM_T {
 	LinkedList_t *list;
 } __LinkedListItem_t;
 
-_Static_assert(sizeof(__LinkedListItem_t) == sizeof(LinkedListItem_t), "In LinkedList.h data structure size of LinkedListItem_t doesn't match, check LL_ITEM_SIZE");
+LIB_ASSERRT_STRUCTURE_CAST(__LinkedListItem_t, LinkedListItem_t, LL_ITEM_SIZE, LinkedList.h);
 
 #define _bIsValidItem(it)         ((it != libNULL) && ((it)->ovn == LINKED_LIST_VALIDATION))
 

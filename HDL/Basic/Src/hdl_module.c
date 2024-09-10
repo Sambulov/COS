@@ -21,7 +21,7 @@ hdl_module_t hdl_null_module = {
   .init = &hdl_null_module_init,
 };
 
-_Static_assert(sizeof(hdl_module_private_t) == sizeof(hdl_module_t), "In hdl_hw.h data structure size of hdl_module_t doesn't match, check HDL_MODULE_DESC_PRIVATE_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_module_private_t, hdl_module_t, HDL_MODULE_DESC_PRIVATE_SIZE, hdl_module.h);
 
 static linked_list_t _mod_load = NULL;
 static linked_list_t _mod_active = NULL;

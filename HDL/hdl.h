@@ -21,8 +21,6 @@ extern "C" {
                                         ((x >> 8 ) & 1) + ((x >> 9 ) & 1) + ((x >> 10) & 1) + ((x >> 11) & 1) + \
                                         ((x >> 12) & 1) + ((x >> 13) & 1) + ((x >> 14) & 1) + ((x >> 15) & 1)
 
-#define ASSERRT_STRUCTURE_CAST(private_type, public_type, prv_size_def, def_file)   _Static_assert(sizeof(private_type) == sizeof(public_type), "In "#def_file" data structure size of "#public_type" doesn't match, check "#prv_size_def)
-
 #include "hdl_portable.h"
 #include "hdl_button.h"
 #include "hdl_shift_reg.h"

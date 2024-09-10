@@ -18,8 +18,8 @@ typedef struct {
   uint16_t tx_cursor;
 } hdl_spi_client_private_t;
 
-_Static_assert(sizeof(hdl_spi_client_private_t) == sizeof(hdl_spi_client_t), "In port_spi.h data structure size of hdl_spi_client_t doesn't match, check HDl_SPI_CLIENT_PRIVATE_SIZE");
-_Static_assert(sizeof(hdl_spi_client_ch_private_t) == sizeof(hdl_spi_client_ch_t), "In port_spi.h data structure size of hdl_spi_client_ch_t doesn't match, check HDl_SPI_CLIENT_CH_PRIVATE_SIZE");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_private_t, hdl_spi_client_t, HDl_SPI_CLIENT_PRIVATE_SIZE, port_spi.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_private_t, hdl_spi_client_ch_t, HDl_SPI_CLIENT_CH_PRIVATE_SIZE, port_spi.h);
 
 static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   hdl_spi_client_private_t *spi = (hdl_spi_client_private_t *)context;

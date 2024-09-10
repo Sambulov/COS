@@ -43,6 +43,8 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #define va_end(v)              __builtin_va_end(v)
 #define va_arg(v,l)            __builtin_va_arg(v,l)
 
+#define LIB_ASSERRT_STRUCTURE_CAST(private_type, public_type, prv_size_def, def_file)   _Static_assert(sizeof(private_type) == sizeof(public_type), "In "#def_file" data structure size of "#public_type" doesn't match, check "#prv_size_def)
+
 #include "Macros.h"
 #include "ClMath.h"
 #include "LinkedList.h"

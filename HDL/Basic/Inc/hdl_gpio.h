@@ -33,9 +33,9 @@ typedef struct {
   const hdl_gpio_pin_config_t *config;
 } hdl_gpio_pin_t;
 
-#define hdl_gpio_set_inactive(gpio)            (hdl_gpio_write(gpio, gpio->config->inactive_default))
-#define hdl_gpio_set_active(gpio)              (hdl_gpio_write(gpio, !gpio->config->inactive_default))
-#define hdl_gpio_is_inactive(gpio)             (hdl_gpio_read(gpio) == gpio->config->inactive_default)
+#define hdl_gpio_set_inactive(gpio)            (hdl_gpio_write((gpio), (gpio)->config->inactive_default))
+#define hdl_gpio_set_active(gpio)              (hdl_gpio_write((gpio), !((gpio)->config->inactive_default)))
+#define hdl_gpio_is_inactive(gpio)             (hdl_gpio_read((gpio)) == (gpio)->config->inactive_default)
 #define hdl_gpio_is_active(gpio)               (!hdl_gpio_is_inactive(gpio))
 #define hdl_gpio_is_set_as_inactive(gpio)      (hdl_gpio_read_output(gpio) == gpio->config->inactive_default)
 #define hdl_gpio_is_set_as_active(gpio)        (!hdl_gpio_is_set_as_inactive(gpio))

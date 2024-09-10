@@ -97,9 +97,9 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           msg->state |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
         }
       }
-      else if(msg->state & HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE) {
+      if(msg->state & HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE) {
         ch->curent_msg = NULL;
-        if(!(msg->options & HDL_SPI_MESSAGE_CH_RELEASE)) {
+        if(msg->options & HDL_SPI_MESSAGE_CH_RELEASE) {
           hdl_gpio_set_inactive(pin_cs);
           msg->state |= HDL_SPI_MESSAGE_STATUS_BUS_RELEASE;
           spi->curent_spi_ch = NULL;

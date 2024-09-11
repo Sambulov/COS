@@ -206,7 +206,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
         adc->src_current++;
         if(adc->src_current >= adc->src_count) {
           adc->src_current = 0;
-          hdl_time_counter_t *time = (hdl_time_counter_t *)adc->module.dependencies[1];
+          hdl_time_counter_t *time = (hdl_time_counter_t *)adc->module.dependencies[2];
           adc->timestamp = hdl_time_counter_get(time);
         }
         adc->state = MS5194T_ADC_STATE_SET_CONFIG;

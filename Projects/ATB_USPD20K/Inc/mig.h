@@ -39,4 +39,6 @@ extern hdl_gpio_pin_t uspd20k_som_int;          // (PA12)
 
 extern hdl_i2c_t uspd20k_i2c_eeprom;            // (PB10->SCL), (PB11->SDA)
 
+extern hdl_adc_ms5194t_t mod_adc;
+
 #endif // ATB_USPD20K_H_

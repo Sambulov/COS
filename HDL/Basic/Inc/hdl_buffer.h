@@ -11,7 +11,7 @@ typedef struct {
 typedef struct {
   uint8_t *data[2];
   uint16_t size;
-  uint8_t active_buffer_number;
+  uint8_t active_buffer : 1;
 } hdl_double_buffer_t;
 
 typedef struct {
@@ -27,7 +27,7 @@ typedef struct {
 
 static inline void hdl_double_buffer_switch(hdl_double_buffer_t *buffer) {
   if(buffer != NULL) {
-    buffer->active_buffer_number ^= 1;
+    buffer->active_buffer = !buffer->active_buffer;
   }
 }
 

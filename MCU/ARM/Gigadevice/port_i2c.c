@@ -406,17 +406,6 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-// uint8_t hdl_i2c_can_transfer(hdl_i2c_t *i2c) {
-//   hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
-//   i2c_periph_t *i2c_periph = (i2c_periph_t *)_i2c->module.reg;
-//   if((hdl_state(&i2c->module) == HDL_MODULE_ACTIVE)) {
-//     if(_i2c->is_master || !(i2c_periph->STAT1 & I2C_STAT1_I2CBSY)) {
-//       return HDL_TRUE;
-//     }
-//   }
-//   return HDL_FALSE;
-// }
-
 void hdl_i2c_set_transceiver(hdl_i2c_t *i2c, hdl_transceiver_t *transceiver) {
   if(i2c != NULL) {
     ((hdl_i2c_private_t*)i2c)->transceiver = transceiver;

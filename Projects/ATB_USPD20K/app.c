@@ -78,11 +78,11 @@ uint32_t som_receiver(void *context, uint8_t *data, uint32_t length) {
   som_proto_context_t *proto = (som_proto_context_t *)context;
   switch (proto->state) {
     case SOM_COMM_STATE_IDLE:
-      proto->current_address = ((uint16_t)*data) << 8;
+      proto->current_address = ((uint16_t)*data) << 0;
       proto->state = SOM_COMM_STATE_RX_ADDR_LOW;
       break;
     case SOM_COMM_STATE_RX_ADDR_LOW:
-      proto->current_address |= *data;
+      proto->current_address |= ((uint16_t)*data) << 8;
       proto->state = SOM_COMM_STATE_XFER;
       //mem_map_set_addr(proto->mem_map, proto->current_address);
       break;

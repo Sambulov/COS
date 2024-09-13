@@ -104,6 +104,11 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
 static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)context;
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
+  if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
+    if((i2c->transceiver != NULL) && (i2c->transceiver->end_of_transmission != NULL))
+      i2c->transceiver->end_of_transmission(i2c->transceiver->proto_context);
+    i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
+  }
   _i2c_clear_error(i2c_periph);
 }
 

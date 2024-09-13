@@ -198,11 +198,11 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
       case MS5194T_ADC_STATE_UPDATE_VALUE: {
         uint32_t data = adc->rx_data;
         data = _adc_ms5194t_msb_u24_data(data);
-        volatile uint32_t volt = (250 * data) / 256; // 2.5V  scale 100
-        volt = volt * 250 / 256; // scale 25000
-        volt = volt * 4 / 256; // scale 100000
-        volt /= 100;
-        adc->config->values[adc->src_current] = data;
+        // volatile uint32_t volt = (250 * data) / 256; // 2.5V  scale 100
+        // volt = volt * 250 / 256; // scale 25000
+        // volt = volt * 4 / 256; // scale 100000
+        // volt /= 100;
+        adc->config->values[adc->src_current] = data; 
         adc->src_current++;
         if(adc->src_current >= adc->src_count) {
           adc->src_current = 0;

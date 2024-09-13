@@ -3,7 +3,6 @@
 
 
 #define SOM_COMM_STATE_IDLE            0
-#define SOM_COMM_STATE_RX_ADDR2_HIGH   SOM_COMM_STATE_IDLE
 #define SOM_COMM_STATE_RX_ADDR_LOW     1
 #define SOM_COMM_STATE_XFER            2
 
@@ -36,9 +35,9 @@ typedef struct {
 #define MAP_ADDR_MEASURES         0x0000
 #define MAP_ADDR_CIRCUIT_CONFIG   0x1000
 
-#define MEM_MAP_ARRAY(arr_ptr, type, addr)    {.mem_ptr = (arr_ptr), .athomary_block_size = sizeof(type), .blocks_amount = sizeof(arr_ptr)/sizeof(type),.map_addr = addr}
+#define MEM_MAP_ARRAY(arr_ptr, type, addr)    (&(mem_map_block){.mem_ptr = (arr_ptr), .athomary_block_size = sizeof(type), .blocks_amount = sizeof(arr_ptr)/sizeof(void *),.map_addr = addr})
 
-mem_map_block read_mem_map[] = {
+mem_map_block *read_mem_map[] = {
   MEM_MAP_ARRAY(&measures, measure_t, MAP_ADDR_MEASURES),
   NULL
 };
@@ -47,31 +46,35 @@ mem_map_block write_mem_map[] = {
   NULL
 };
 
-typedef struct {
-  mem_map_block *read_mem_map;
-  mem_map_block *write_mem_map;
-  uint8_t *fetch_buffer;
-} mem_map_context_t;
+// typedef struct {
+//   mem_map_block *read_mem_map;
+//   mem_map_block *write_mem_map;
+//   mem_map_block *current_block;
+//   uint16_t offset;
+//   uint8_t *fetch_buffer;
+// } mem_map_context_t;
 
-void mem_map_set_addr(mem_map_context_t *mem_map, uint32_t addr) {
+// void mem_map_set_addr(mem_map_context_t *mem_map, uint32_t addr) {
+//   //mem_map->addr = addr;
+// }
 
-}
-
-void mem_map_write(mem_map_context_t *mem_map, uint8_t data) {
+// void mem_map_write(mem_map_context_t *mem_map, uint8_t data) {
   
-}
+// }
 
-uint8_t mem_map_read(mem_map_context_t *mem_map) {
-  return 0;
-}
+// uint8_t mem_map_read(mem_map_context_t *mem_map) {
+//   return 0;
+// }
 
 typedef struct {
   uint16_t current_address;
   uint8_t state;
-  mem_map_context_t *mem_map;
+//  mem_map_context_t *mem_map;
 } som_proto_context_t;
 
 uint32_t som_receiver(void *context, uint8_t *data, uint32_t length) {
+  static volatile uint32_t bytes = 0;
+  bytes++;
   som_proto_context_t *proto = (som_proto_context_t *)context;
   switch (proto->state) {
     case SOM_COMM_STATE_IDLE:
@@ -81,10 +84,10 @@ uint32_t som_receiver(void *context, uint8_t *data, uint32_t length) {
     case SOM_COMM_STATE_RX_ADDR_LOW:
       proto->current_address |= *data;
       proto->state = SOM_COMM_STATE_XFER;
-      mem_map_set_addr(proto->mem_map, proto->current_address);
+      //mem_map_set_addr(proto->mem_map, proto->current_address);
       break;
     case SOM_COMM_STATE_XFER:
-      mem_map_write(proto->mem_map, *data);
+      //mem_map_write(proto->mem_map, *data);
       break;
     default:
       break;
@@ -94,7 +97,15 @@ uint32_t som_receiver(void *context, uint8_t *data, uint32_t length) {
 
 uint32_t som_trunsmitter(void *context, uint8_t *data, uint32_t length) {
   som_proto_context_t *proto = (som_proto_context_t *)context;
-  return mem_map_read(proto->mem_map);
+  uint16_t mem_end = 2048;
+  if(mem_end > proto->current_address) {
+    *data = ((uint8_t *)&measures)[proto->current_address++];
+  }
+  else {
+    *data = 0;
+  }
+  proto->current_address++;
+  return 1;
 }
 
 uint32_t som_tx_rx_available(void *context) {
@@ -104,7 +115,7 @@ uint32_t som_tx_rx_available(void *context) {
 void som_xfer_complete(void *context) {
   som_proto_context_t *proto = (som_proto_context_t *)context;
   proto->state = SOM_COMM_STATE_IDLE;
-  mem_map_set_addr(proto->mem_map, 0);
+  //mem_map_set_addr(proto->mem_map, 0);
 }
 
 void main() {
@@ -114,12 +125,18 @@ void main() {
     cooperative_scheduler(false);
   }
 
+  som_proto_context_t som_proto = {
+    .current_address = 0,
+    .state = SOM_COMM_STATE_IDLE
+  };
+
   hdl_transceiver_t som_comm = {
     .rx_available = &som_tx_rx_available,
     .rx_data = &som_receiver,
     .tx_available = &som_tx_rx_available,
     .tx_empty = &som_trunsmitter,
-    .end_of_transmission = &som_xfer_complete
+    .end_of_transmission = &som_xfer_complete,
+    .proto_context = &som_proto
   };
 
   hdl_i2c_set_transceiver(&uspd20k_i2c_som, &som_comm);

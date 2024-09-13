@@ -4,7 +4,7 @@
 
 #include "hdl.h"
 
-#define HDL_I2C_SLAVE_ADDR           0x23
+#define HDL_I2C_SLAVE_ADDR           0x50
 
 #define HDL_HXTAL_CLOCK              8000000
 #define HDL_LXTAL_CLOCK              32768
@@ -341,7 +341,7 @@ const hdl_gpio_pin_hw_config_t mod_gpio_i2c_0_mode = {
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_i2c_1_mode = {
-  .af = GPIO_AF_5,
+  .af = GPIO_AF_0,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_OD,
   .ospeed = GPIO_OSPEED_2MHZ
@@ -530,32 +530,32 @@ hdl_gpio_pin_t uspd20k_som_int = {
   .config = hdl_gpio_pin_config(.hwc = &mod_gpio_output_pp_mode, .inactive_default = HDL_GPIO_LOW)
 }; //(PA12)
 
-hdl_gpio_pin_t mod_pin_12c1_scl = {
-  .module.init = &hdl_gpio_pin,
-  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b.module),
-  .module.reg = (void *)GPIO_PIN_10,
-  .config = hdl_gpio_pin_config(.hwc = &mod_gpio_i2c_1_mode, .inactive_default = HDL_GPIO_HIGH)
-}; //(PB10)
-
-hdl_gpio_pin_t mod_pin_12c1_sda = {
-  .module.init = &hdl_gpio_pin,
-  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b.module),
-  .module.reg = (void *)GPIO_PIN_11,
-  .config = hdl_gpio_pin_config(.hwc = &mod_gpio_i2c_1_mode, .inactive_default = HDL_GPIO_HIGH)
-}; //(PB11)
-
 hdl_gpio_pin_t mod_pin_12c0_scl = {
   .module.init = &hdl_gpio_pin,
-  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
-  .module.reg = (void *)GPIO_PIN_6,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b.module),
+  .module.reg = (void *)GPIO_PIN_8,
   .config = hdl_gpio_pin_config(.hwc = &mod_gpio_i2c_0_mode, .inactive_default = HDL_GPIO_HIGH)
-}; //(PF6)
+}; //(PB8)
 
 hdl_gpio_pin_t mod_pin_12c0_sda = {
   .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b.module),
+  .module.reg = (void *)GPIO_PIN_9,
+  .config = hdl_gpio_pin_config(.hwc = &mod_gpio_i2c_0_mode, .inactive_default = HDL_GPIO_HIGH)
+}; //(PB9)
+
+hdl_gpio_pin_t mod_pin_12c1_scl = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
+  .module.reg = (void *)GPIO_PIN_6,
+  .config = hdl_gpio_pin_config(.hwc = &mod_gpio_i2c_1_mode, .inactive_default = HDL_GPIO_HIGH)
+}; //(PF6)
+
+hdl_gpio_pin_t mod_pin_12c1_sda = {
+  .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
   .module.reg = (void *)GPIO_PIN_7,
-  .config = hdl_gpio_pin_config(.hwc = &mod_gpio_i2c_0_mode, .inactive_default = HDL_GPIO_HIGH)
+  .config = hdl_gpio_pin_config(.hwc = &mod_gpio_i2c_1_mode, .inactive_default = HDL_GPIO_HIGH)
 }; //(PF7)
 
 hdl_gpio_pin_t mod_spi_0_mosi = {
@@ -591,7 +591,7 @@ hdl_gpio_pin_t mod_spi_0_cs = {
  *************************************************************/
 
 const hdl_i2c_config_t mod_i2c0_cnf = {
-  .addr0 = HDL_I2C_SLAVE_ADDR,
+  .addr0 = 0,
   .addr1 = 0,
   .addr_10_bits = 0,
   .dtcy = I2C_DTCY_2,
@@ -613,7 +613,7 @@ hdl_i2c_t mod_i2c0 = {
 };
 
 const hdl_i2c_config_t mod_i2c1_cnf = {
-  .addr0 = 0,
+  .addr0 = HDL_I2C_SLAVE_ADDR,
   .addr1 = 0,
   .addr_10_bits = 0,
   .dtcy = I2C_DTCY_2,
@@ -667,5 +667,5 @@ hdl_spi_client_ch_t mod_spi0_ch0 = {
 
 extern hdl_gpio_pin_t uspd20k_adc_rdy      __attribute__ ((alias ("mod_spi_0_miso")));
 extern hdl_spi_client_ch_t uspd20k_adc_spi __attribute__ ((alias ("mod_spi0_ch0")));
-extern hdl_i2c_t uspd20k_i2c_som           __attribute__ ((alias ("mod_i2c0")));
-extern hdl_i2c_t uspd20k_i2c_eeprom        __attribute__ ((alias ("mod_i2c1")));
+extern hdl_i2c_t uspd20k_i2c_som           __attribute__ ((alias ("mod_i2c1")));
+extern hdl_i2c_t uspd20k_i2c_eeprom        __attribute__ ((alias ("mod_i2c0")));

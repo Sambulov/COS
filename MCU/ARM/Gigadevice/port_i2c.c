@@ -70,6 +70,10 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   if(tmp & I2C_STAT0_ADDSEND) {
     /* Clear bit ADDSEND*/
     tmp1 = i2c_periph->STAT1;
+    if((i2c->transceiver == NULL) || (i2c->transceiver->rx_data == NULL) || 
+      ((i2c->transceiver->rx_available != NULL) && (i2c->transceiver->rx_available(i2c->transceiver->proto_context) == 0))) {
+      i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
+    }
   }
   /* Read from slave */
   if(tmp & I2C_STAT0_TBE) {
@@ -81,11 +85,12 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   /* Write to slave */
   if(tmp & I2C_STAT0_RBNE) {
     data = i2c_periph->DATA;
-    if((i2c->transceiver != NULL) && (i2c->transceiver->rx_data != NULL) && (i2c->transceiver->rx_available != NULL)) {
-        i2c->transceiver->rx_data(i2c->transceiver->proto_context, &data, 1);
-        uint16_t bytes_available = i2c->transceiver->rx_available(i2c->transceiver->proto_context);
-        if(bytes_available <= 1)
-          i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
+    if((i2c->transceiver == NULL) || (i2c->transceiver->rx_data == NULL) || 
+      ((i2c->transceiver->rx_available != NULL) && (i2c->transceiver->rx_available(i2c->transceiver->proto_context) == 0))) {
+      i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
+    }
+    else {
+      i2c->transceiver->rx_data(i2c->transceiver->proto_context, &data, 1);
     }
   }
   /* STOP condition */

@@ -122,38 +122,20 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
+        },
+        {
+            "name": "Custom configure preset",
+            "displayName": "Custom configure preset",
+            "description": "Sets Ninja generator, build and install directory",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
         }
     ],
     "buildPresets": [
-        {
-            "name": "DebugGD32E230",
-            "description": "",
-            "displayName": "J-Link Debug GD32E230",
-            "configurePreset": "DebugGD32E230"
-        },
-        {
-            "name": "DebugNUM463KG",
-            "description": "",
-            "displayName": "J-Link Debug NUM463KG",
-            "configurePreset": "DebugNUM463KG"
-        },
-        {
-            "name": "DebugSTM32L071",
-            "description": "",
-            "displayName": "J-Link Debug STM32L071",
-            "configurePreset": "DebugSTM32L071"
-        },
-        {
-            "name": "DebugGD32F103",
-            "description": "",
-            "displayName": "J-Link Debug GD32F103",
-            "configurePreset": "DebugGD32F103"
-        },
-        {
-            "name": "DebugGD32F450ZI",
-            "description": "",
-            "displayName": "J-Link Debug GD32F450ZI",
-            "configurePreset": "DebugGD32F450ZI"      
-        }
+
     ]
 }

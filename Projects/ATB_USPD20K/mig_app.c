@@ -1,7 +1,7 @@
 #include "app.h"
 
 const hdl_uspd_ain_port_config_t hdl_uspd_ain_port_cnf_default = {
-  .circuit_config = USPD20K_CIRCUIT_CONFIG_FLOATING
+  .circuit_config = USPD20K_CIRCUIT_CONFIG_4K3_PD
 };
 
 hdl_uspd_ain_port_t hdl_uspd_ain_port1 = {
@@ -36,47 +36,47 @@ hdl_uspd_ain_port_t hdl_uspd_ain_port4 = {
   .config = &hdl_uspd_ain_port_cnf_default
 };
 
-hdl_adc_ms5194t_source_t mod_adc_src_1 = {
-  .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
-                !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
-                !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(0)
+adc_src_config_t adc_config = {
+  .src_user = {{
+    .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
+                  !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+                  !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(0)    
+  },
+  {
+    .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
+                  !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+                  !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(1)
+  },
+  {
+    .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
+                  !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+                  !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(2)    
+  },
+  {
+    .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
+                  !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+                  !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(3)    
+  },
+  {
+    .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
+              !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+              !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(4)},
+  {
+    .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
+                  !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+                  !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(5)
+  }},
+  .adc_io_user = MS5194T_IO_REG_DEFAULT,
+  .adc_mode_user = MS5194T_MODE_REG_MS_PWR_DWN | !MS5194T_MODE_REG_PSW | !MS5194T_MODE_REG_AMP_CM | 
+                       MS5194T_MODE_REG_CLK_INT64K | !MS5194T_MODE_REG_CHOP_DIS | MS5194T_MODE_REG_FILTER_RATE(5)
 };
 
-hdl_adc_ms5194t_source_t mod_adc_src_2 = {
-  .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
-                !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
-                !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(1)
-};
-
-hdl_adc_ms5194t_source_t mod_adc_src_3 = {
-  .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
-                !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
-                !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(2)
-};
-
-hdl_adc_ms5194t_source_t mod_adc_src_4 = {
-  .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
-                !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
-                !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(3)
-};
-
-hdl_adc_ms5194t_source_t mod_adc_src_5 = {
-  .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
-                !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
-                !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(4)
-};
-
-hdl_adc_ms5194t_source_t mod_adc_src_6 = {
-  .config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
-                !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
-                !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF | MS5194T_CONFIG_REG_CH_SEL(5)
-};
-
-const hdl_adc_ms5194t_config_t mod_adc_cnf = {
+hdl_adc_ms5194t_config_t mod_adc_cnf = {
   .io_reg = MS5194T_IO_REG_DEFAULT,
-  .mode_reg = MS5194T_MODE_REG_MS_PWR_DWN | !MS5194T_MODE_REG_PSW | !MS5194T_MODE_REG_AMP_CM | MS5194T_MODE_REG_CLK_INT64K |
-              !MS5194T_MODE_REG_CHOP_DIS | MS5194T_MODE_REG_FILTER_RATE(5),
-  .sources = hdl_adc_ms5194t_sources(&mod_adc_src_1, &mod_adc_src_2, &mod_adc_src_3, &mod_adc_src_4, &mod_adc_src_5, &mod_adc_src_6)
+  .mode_reg = MS5194T_MODE_REG_MS_PWR_DWN | !MS5194T_MODE_REG_PSW | !MS5194T_MODE_REG_AMP_CM | 
+              MS5194T_MODE_REG_CLK_INT64K | !MS5194T_MODE_REG_CHOP_DIS | MS5194T_MODE_REG_FILTER_RATE(5),
+  .sources = hdl_adc_ms5194t_sources(&adc_config.src_active[0], &adc_config.src_active[1], &adc_config.src_active[2],
+                                     &adc_config.src_active[3], &adc_config.src_active[4], &adc_config.src_active[5])
 };
 
 hdl_adc_ms5194t_t mod_adc = {
@@ -92,7 +92,7 @@ hdl_module_t mod_app = {
     &uspd20k_i2c_som.module, &uspd20k_som_int.module,
 
     &uspd20k_i2c_eeprom.module,
-
-    &mod_adc.module,
+    
+    
     &hdl_uspd_ain_port1.module, &hdl_uspd_ain_port2.module, &hdl_uspd_ain_port3.module, &hdl_uspd_ain_port4.module)
 };

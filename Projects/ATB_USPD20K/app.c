@@ -1,195 +1,153 @@
 #include "app.h"
 #include "CodeLib.h"
 
+measure_t measures[MEASURES_LOG_SIZE] = { 0 };
 
-#define SOM_COMM_STATE_IDLE            0
-#define SOM_COMM_STATE_RX_ADDR_LOW     1
-#define SOM_COMM_STATE_XFER            2
-
-#define MEASURE_VALID   0xCAFEFEED
-
-typedef struct {
-  uint32_t ain1;
-  uint32_t ain2;
-  uint32_t ain3;
-  uint32_t ain4;
-  uint32_t ain5;
-  uint32_t ain6;
-  uint32_t timestamp;
-  uint32_t valid;
-} measure_t;
-
-#define MEASURES_AMOUNT    64
-
-measure_t measures[MEASURES_AMOUNT] = {0};
-
-
-typedef struct {
-  void *mem_ptr;
-  uint16_t map_addr;
-  uint16_t athomary_block_size;
-  uint16_t blocks_amount;
-} mem_map_block;
-
-
-#define MAP_ADDR_MEASURES         0x0000
-#define MAP_ADDR_CIRCUIT_CONFIG   0x1000
-
-#define MEM_MAP_ARRAY(arr_ptr, type, addr)    (&(mem_map_block){.mem_ptr = (arr_ptr), .athomary_block_size = sizeof(type), .blocks_amount = sizeof(arr_ptr)/sizeof(void *),.map_addr = addr})
-
-mem_map_block *read_mem_map[] = {
-  MEM_MAP_ARRAY(&measures, measure_t, MAP_ADDR_MEASURES),
-  NULL
+circuit_config_t ai_circuit_config = {
+  .active.ai1 = USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD,
+  .active.ai2 = USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_1K_PD,
+  .active.ai3 = USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD,
+  .active.ai4 = USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD,
+  .user.ai1 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
+  .user.ai2 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
+  .user.ai3 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
+  .user.ai4 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
+  .sync_key = 0//CIRCUIT_CONFIG_SYNC_KEY,
 };
 
-mem_map_block write_mem_map[] = {
-  NULL
-};
+void reset_measures() {
+  for(uint8_t i = 0; i < MEASURES_LOG_SIZE; i++) {
+    measures[i].valid = 0;
+  }
+}
 
-// typedef struct {
-//   mem_map_block *read_mem_map;
-//   mem_map_block *write_mem_map;
-//   mem_map_block *current_block;
-//   uint16_t offset;
-//   uint8_t *fetch_buffer;
-// } mem_map_context_t;
+void set_circuit_config() {
+  hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, ai_circuit_config.user.ai1);
+  ai_circuit_config.active.ai1 = ai_circuit_config.user.ai1;
+  hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, ai_circuit_config.user.ai2);
+  ai_circuit_config.active.ai2 = ai_circuit_config.user.ai2;
+  hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, ai_circuit_config.user.ai3);
+  ai_circuit_config.active.ai3 = ai_circuit_config.user.ai3;
+  hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, ai_circuit_config.user.ai4);
+  ai_circuit_config.active.ai4 = ai_circuit_config.user.ai4;
+  ai_circuit_config.sync_key = 0;
+  reset_measures();
+}
 
-// void mem_map_set_addr(mem_map_context_t *mem_map, uint32_t addr) {
-//   //mem_map->addr = addr;
-// }
 
-// void mem_map_write(mem_map_context_t *mem_map, uint8_t data) {
-  
-// }
+void log_measures() {
+  static uint32_t adc_age = 0;
+  static uint32_t ind = 0;
+  uint32_t age = hdl_adc_ms5194t_age(&mod_adc);
+  if(adc_age != age) {
+    measures[ind].valid = 0;
+    measures[ind].ain1 = hdl_adc_ms5194t_get(&mod_adc, 0);
+    measures[ind].ain2 = hdl_adc_ms5194t_get(&mod_adc, 1);
+    measures[ind].ain3 = hdl_adc_ms5194t_get(&mod_adc, 2);
+    measures[ind].ain4 = hdl_adc_ms5194t_get(&mod_adc, 3);
+    measures[ind].ain5 = hdl_adc_ms5194t_get(&mod_adc, 4);
+    measures[ind].ain6 = hdl_adc_ms5194t_get(&mod_adc, 5);
+    measures[ind].timestamp = age;
+    measures[ind].valid = MEASURE_VALID;
+    ind++;
+    if(ind >= MEASURES_LOG_SIZE) {
+      ind = 0;
+    }
 
-// uint8_t mem_map_read(mem_map_context_t *mem_map) {
-//   return 0;
-// }
+    adc_age = age;      
+  }
+}
 
-typedef struct {
-  uint16_t current_address;
-  uint8_t state;
-//  mem_map_context_t *mem_map;
-} som_proto_context_t;
-
-uint32_t som_receiver(void *context, uint8_t *data, uint32_t length) {
-  static volatile uint32_t bytes = 0;
-  bytes++;
-  som_proto_context_t *proto = (som_proto_context_t *)context;
-  switch (proto->state) {
-    case SOM_COMM_STATE_IDLE:
-      proto->current_address = ((uint16_t)*data) << 8;
-      proto->state = SOM_COMM_STATE_RX_ADDR_LOW;
-      break;
-    case SOM_COMM_STATE_RX_ADDR_LOW:
-      proto->current_address |= ((uint16_t)*data) << 0;
-      proto->state = SOM_COMM_STATE_XFER;
-      //mem_map_set_addr(proto->mem_map, proto->current_address);
-      break;
-    case SOM_COMM_STATE_XFER:
-      //mem_map_write(proto->mem_map, *data);
-      break;
-    default:
-      break;
+uint8_t bldl_som_link_read_byte_cb(uint16_t addr) {
+  uint16_t mem_end = MAP_ADDR_MEASURES + sizeof(measures);
+  if((addr >= MAP_ADDR_MEASURES) && (addr < mem_end)) {
+    return ((uint8_t*)&measures)[addr - MAP_ADDR_MEASURES];
+  }
+  else {
+    mem_end = MAP_ADDR_CIRCUIT_CONFIG + sizeof(ai_circuit_config);
+    if((addr >= MAP_ADDR_CIRCUIT_CONFIG) && (addr < mem_end)) {
+      return ((uint8_t*)&ai_circuit_config)[addr - MAP_ADDR_CIRCUIT_CONFIG];
+    }
+    else {
+      mem_end = MAP_ADDR_ADC_CONFIG + sizeof(adc_config);
+      if((addr >= MAP_ADDR_ADC_CONFIG) && (addr < mem_end)) {
+        return ((uint8_t*)&adc_config)[addr - MAP_ADDR_ADC_CONFIG];
+      }
+    }
   }
   return 0;
 }
 
-uint32_t som_trunsmitter(void *context, uint8_t *data, uint32_t length) {
-  som_proto_context_t *proto = (som_proto_context_t *)context;
-  uint16_t mem_end = 2048;
-  if(mem_end > proto->current_address) {
-    *data = ((uint8_t *)&measures)[proto->current_address++];
+void bldl_som_link_write_byte_cb(uint16_t addr, uint8_t data) {
+  uint16_t mem_end = MAP_ADDR_CIRCUIT_CONFIG + sizeof(ai_circuit_config);
+  if((addr >= (MAP_ADDR_CIRCUIT_CONFIG + offsetof(circuit_config_t, user))) && (addr < mem_end)) {
+    ((uint8_t*)&ai_circuit_config)[addr - MAP_ADDR_CIRCUIT_CONFIG] = data;
   }
   else {
-    *data = 0;
+  uint16_t mem_end = MAP_ADDR_CIRCUIT_CONFIG + sizeof(ai_circuit_config);
+    if((addr >= (MAP_ADDR_CIRCUIT_CONFIG + offsetof(circuit_config_t, user))) && (addr < mem_end)) {
+      ((uint8_t*)&ai_circuit_config)[addr - MAP_ADDR_CIRCUIT_CONFIG] = data;
+    }
   }
-  proto->current_address++;
-  return 1;
 }
 
-uint32_t som_tx_rx_available(void *context) {
-  return 65536;
+void set_adc_config() { 
+  adc_config.src_active[0] = adc_config.src_user[0];
+  adc_config.src_active[1] = adc_config.src_user[1];
+  adc_config.src_active[2] = adc_config.src_user[2];
+  adc_config.src_active[3] = adc_config.src_user[3];
+  adc_config.src_active[4] = adc_config.src_user[4];
+  adc_config.src_active[5] = adc_config.src_user[5];
+
+  adc_config.adc_io_active = adc_config.adc_io_user;
+  adc_config.adc_mode_active = adc_config.adc_mode_active;
+  adc_config.sync_key = 0;
 }
 
-void som_xfer_complete(void *context) {
-  som_proto_context_t *proto = (som_proto_context_t *)context;
-  proto->state = SOM_COMM_STATE_IDLE;
-  //mem_map_set_addr(proto->mem_map, 0);
-}
+#define APP_STATE_ENABLE_ADC  0
+#define APP_STATE_AWAIT_ADC   1
+#define APP_STATE_WORK_ADC    2
+#define APP_STATE_RESET       3
 
 void main() {
-  hdl_enable(&mod_app);
 
+  uint8_t state = APP_STATE_ENABLE_ADC;
+
+  hdl_enable(&mod_app);
+  //hdl_enable(&mod_adc.module);
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
-
-  som_proto_context_t som_proto = {
-    .current_address = 0,
-    .state = SOM_COMM_STATE_IDLE
-  };
-
-  hdl_transceiver_t som_comm = {
-    .rx_available = &som_tx_rx_available,
-    .rx_data = &som_receiver,
-    .tx_available = &som_tx_rx_available,
-    .tx_empty = &som_trunsmitter,
-    .end_of_transmission = &som_xfer_complete,
-    .proto_context = &som_proto
-  };
-
-  hdl_i2c_set_transceiver(&uspd20k_i2c_som, &som_comm);
-
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_NTC_PU);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_4K3_PD);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_150R_PD);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_1K_PD);
-
-  hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD);
-  hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_1K_PD);
-  hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD);
-  hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD);
-  // hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_FLOATING);
-  // hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD);
-  // hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, USPD20K_CIRCUIT_CONFIG_FLOATING);
-  // hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD);
-  // hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, USPD20K_CIRCUIT_CONFIG_FLOATING);
-  // hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD);
-  // hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, USPD20K_CIRCUIT_CONFIG_FLOATING);
-
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, USPD20K_CIRCUIT_CONFIG_FLOATING);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, USPD20K_CIRCUIT_CONFIG_FLOATING);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, USPD20K_CIRCUIT_CONFIG_FLOATING);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW);
-  //hdl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, USPD20K_CIRCUIT_CONFIG_FLOATING);
-
-  uint32_t adc_age = 0, ind = 0;
-  
+  bldl_som_link_init();
   while (1) {
     cooperative_scheduler(false);
-    uint32_t age = hdl_adc_ms5194t_age(&mod_adc);
-    if(adc_age != age) {
-      measures[ind].valid = 0;
-      measures[ind].ain1 = hdl_adc_ms5194t_get(&mod_adc, 0);
-      measures[ind].ain2 = hdl_adc_ms5194t_get(&mod_adc, 1);
-      measures[ind].ain3 = hdl_adc_ms5194t_get(&mod_adc, 2);
-      measures[ind].ain4 = hdl_adc_ms5194t_get(&mod_adc, 3);
-      measures[ind].ain5 = hdl_adc_ms5194t_get(&mod_adc, 4);
-      measures[ind].ain6 = hdl_adc_ms5194t_get(&mod_adc, 5);
-      measures[ind].timestamp = age;
-      measures[ind].valid = MEASURE_VALID;
-      ind++;
-      if(ind >= MEASURES_AMOUNT) {
-        ind = 0;
-      }
-      adc_age = age;      
+    switch (state) {
+      case APP_STATE_ENABLE_ADC:
+        set_adc_config();
+        hdl_enable(&mod_adc.module);
+        state = APP_STATE_AWAIT_ADC;
+        break;
+      case APP_STATE_AWAIT_ADC:
+        if(hdl_state(&mod_adc.module) == HDL_MODULE_ACTIVE)
+          state = APP_STATE_WORK_ADC;
+        break;
+      case APP_STATE_WORK_ADC:
+        log_measures();
+        if(adc_config.sync_key == ADC_CONFIG_SYNC_KEY) {
+          hdl_kill(&mod_adc.module);
+          state = APP_STATE_RESET;
+        }
+        break;
+      case APP_STATE_RESET:
+        if(hdl_state(&mod_adc.module) == HDL_MODULE_UNLOADED) {
+          state = APP_STATE_ENABLE_ADC;
+        }
+      default:
+        break;
     }
 
+    if(ai_circuit_config.sync_key == CIRCUIT_CONFIG_SYNC_KEY) {
+      set_circuit_config();
+    }
   }
 }

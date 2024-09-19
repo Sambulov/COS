@@ -1,6 +1,6 @@
 # USPD20K
 
-## Protochol
+## Protocol
 MCU emulates I2C EEPROM memory with address 0x50 (see AT24C512C)
 
 ## Memory mapping

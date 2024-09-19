@@ -85,6 +85,17 @@ From address 0x1000 till 0x100B holds analog ports input circuit configuration.
 #### ACTIVE_ADC_CNF_CH/USER_ADC_CNF_CH bit map
 (see AD7794/AD7795 CONFIGURATION REGISTER)
 
+#### ACTIVE_ADC_OPT_CH/USER_ADC_OPT_CH bit map
+| 7  | 6  | 5  | 4  | 3  |   2    |   1    |   0    | 
+| -- | -- | -- | -- | -- | ------ | ------ | ------ |
+| NA | NA | NA | NA | NA | CAL_FS | CAL_ZS | ENABLE |
+
+ENABLE - enable channel
+
+CAL_ZS - enable zero scale calibration
+
+CAL_FS - enable full scale calibration
+
 #### ACTIVE_ADC_IO/USER_ADC_IO bit map
 (see AD7794/AD7795 IO REGISTER)
 

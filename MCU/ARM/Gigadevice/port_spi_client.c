@@ -151,7 +151,7 @@ hdl_module_state_t hdl_spi_ch(void *desc, uint8_t enable) {
 }
 
 uint8_t hdl_spi_transfer_message(hdl_spi_client_ch_t *spi_ch, hdl_spi_message_t *message) {
-  if((spi_ch != NULL) && (hdl_state(&spi_ch->module) == HDL_MODULE_ACTIVE) && (message != NULL)) {
+  if((spi_ch != NULL) && (hdl_state(&spi_ch->module) != HDL_MODULE_FAULT) && (message != NULL)) {
     hdl_spi_client_ch_private_t *spi = (hdl_spi_client_ch_private_t *)spi_ch;
     if(spi->curent_msg == NULL) {
       spi->curent_msg = message;

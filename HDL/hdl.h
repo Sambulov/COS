@@ -26,7 +26,6 @@ extern "C" {
 #include "hdl_shift_reg.h"
 #include "hdl_timer.h"
 #include "RK809.h"
-#include "plc_io.h"
 #include "smarc_carrier.h"
 
 #ifdef __cplusplus

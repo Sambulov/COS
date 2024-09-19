@@ -336,9 +336,15 @@
 //   HDL_ADC_MS5194T_AVDD      = 7,
 // } hdl_adc_ms5194t_channel_t;
 
+typedef enum {
+  HDL_ADC_MS5194T_CHANNEL_ENABLE               = 0x01,
+  HDL_ADC_MS5194T_CHANNEL_ZERO_SCALE_CALIBRATE = 0x02,
+  HDL_ADC_MS5194T_CHANNEL_FULL_SCALE_CALIBRATE = 0x04,
+} hdl_adc_ms5194t_channel_option_t;
+
 typedef struct {
-  //hdl_adc_ms5194t_channel_t channel;
   uint16_t config_reg;
+  hdl_adc_ms5194t_channel_option_t options;
 } hdl_adc_ms5194t_source_t;
 
 #define _hdl_adc_ms5194t_src(...)        ((hdl_adc_ms5194t_source_t *[]){__VA_ARGS__, NULL})

@@ -36,7 +36,7 @@ void vCoroutineSetContext(Coroutine_t *pxCoR, void* pxArg) {
 
 void vCoroutineCancel(Coroutine_t *pxCoR) {
   CoroutinePrivate_t *worker = (CoroutinePrivate_t *)pxCoR;
-  if(worker != libNULL) {
+  if((worker != libNULL) && (bLinkedListContains(xTasksRun, LinkedListItem(worker)))) {
     vLinkedListInsert(&xTasksCancel, LinkedListItem(worker), libNULL);
   }
 }
@@ -69,9 +69,24 @@ uint32_t ulCooperativeScheduler(uint8_t bCancelAll) {
   return arg.bLeft;
 }
 
+CoroutineState_t eCoroutineState(Coroutine_t *pxCoR) {
+  CoroutinePrivate_t *worker = (CoroutinePrivate_t *)pxCoR;
+  if(worker != libNULL) {
+    if(bLinkedListContains(xTasksRun, LinkedListItem(worker))) {
+      return CO_ROUTINE_RUN;
+    } 
+    else if(bLinkedListContains(xTasksCancel, LinkedListItem(worker))) {
+      return CO_ROUTINE_CANCELATION;
+    }
+  }
+  return CO_ROUTINE_UNKNOWN;
+}
+
+
 void coroutine_add(coroutine_t *cor_buf, coroutine_handler_t handler, void *arg)
                                                             __attribute__ ((alias ("vCoroutineAdd")));
 void coroutine_set_context(coroutine_t *cor, void* arg)     __attribute__ ((alias ("vCoroutineSetContext")));
 void coroutine_cancel(coroutine_t *cor)                     __attribute__ ((alias ("vCoroutineCancel")));
 void coroutine_terminate(coroutine_t *cor)                  __attribute__ ((alias ("vCoroutineTerminate")));
+coroutine_state_t coroutine_state(coroutine_t *cor)         __attribute__ ((alias ("eCoroutineState")));
 uint32_t cooperative_scheduler(uint8_t cancel_all)          __attribute__ ((alias ("ulCooperativeScheduler")));

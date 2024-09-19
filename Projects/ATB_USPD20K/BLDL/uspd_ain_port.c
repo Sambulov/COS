@@ -6,7 +6,7 @@ typedef struct {
   hdl_uspd20k_circuit_cofig_t current_config;
 } hdl_uspd_ain_port_private_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_uspd_ain_port_private_t, hdl_uspd_ain_port_t, HDL_USPD_AIN_PORT_PRV_SIZE, uspd_ain_port.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_uspd_ain_port_private_t, bldl_uspd_ain_port_t, HDL_USPD_AIN_PORT_PRV_SIZE, uspd_ain_port.h);
 
 static void _uspd_ain_port_set_circuit_pin(hdl_gpio_pin_t *pin, uint8_t en) {
   if((pin != NULL) && !HDL_IS_NULL_MODULE(pin)) {
@@ -15,7 +15,7 @@ static void _uspd_ain_port_set_circuit_pin(hdl_gpio_pin_t *pin, uint8_t en) {
   }
 }
 
-static void _hdl_uspd_ain_port_set_circuit(hdl_uspd_ain_port_private_t *port, hdl_uspd20k_circuit_cofig_t cnf) {
+static void _bldl_uspd_ain_port_set_circuit(hdl_uspd_ain_port_private_t *port, hdl_uspd20k_circuit_cofig_t cnf) {
   //TODO: check if config valid
   _uspd_ain_port_set_circuit_pin((hdl_gpio_pin_t *)port->module.dependencies[0], (cnf & USPD20K_CIRCUIT_CONFIG_NTC_PU) != 0);
   _uspd_ain_port_set_circuit_pin((hdl_gpio_pin_t *)port->module.dependencies[1], (cnf & USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH) != 0);
@@ -25,19 +25,19 @@ static void _hdl_uspd_ain_port_set_circuit(hdl_uspd_ain_port_private_t *port, hd
   _uspd_ain_port_set_circuit_pin((hdl_gpio_pin_t *)port->module.dependencies[5], (cnf & USPD20K_CIRCUIT_CONFIG_1K_PD) != 0);
 }
 
-void hdl_uspd_ain_port_set_circuit(hdl_uspd_ain_port_t *desc, hdl_uspd20k_circuit_cofig_t cnf) {
+void bldl_uspd_ain_port_set_circuit(bldl_uspd_ain_port_t *desc, hdl_uspd20k_circuit_cofig_t cnf) {
   if((desc != NULL) && (hdl_state(&desc->module) == HDL_MODULE_ACTIVE)) {
-    _hdl_uspd_ain_port_set_circuit((hdl_uspd_ain_port_private_t *)desc, cnf);
+    _bldl_uspd_ain_port_set_circuit((hdl_uspd_ain_port_private_t *)desc, cnf);
   }
 }
 
-hdl_module_state_t hdl_uspd_ain_port(void *desc, uint8_t enable) {
+hdl_module_state_t bldl_uspd_ain_port(void *desc, uint8_t enable) {
   hdl_uspd_ain_port_private_t *port = (hdl_uspd_ain_port_private_t *)desc;
   if(enable) {
     port->current_config = port->config->circuit_config;
-    _hdl_uspd_ain_port_set_circuit(port, port->current_config);
+    _bldl_uspd_ain_port_set_circuit(port, port->current_config);
     return HDL_MODULE_ACTIVE;
   }
-  _hdl_uspd_ain_port_set_circuit(port, port->config->circuit_config);
+  _bldl_uspd_ain_port_set_circuit(port, port->config->circuit_config);
   return HDL_MODULE_ACTIVE;
 }

@@ -30,9 +30,9 @@ typedef struct {
   hdl_module_t module;
   const hdl_uspd_ain_port_config_t *config;
   PRIVATE(hw, HDL_USPD_AIN_PORT_PRV_SIZE);
-} hdl_uspd_ain_port_t;
+} bldl_uspd_ain_port_t;
 
-hdl_module_state_t hdl_uspd_ain_port(void *desc, uint8_t enable);
-void hdl_uspd_ain_port_set_circuit(hdl_uspd_ain_port_t *desc, hdl_uspd20k_circuit_cofig_t cnf);
+hdl_module_state_t bldl_uspd_ain_port(void *desc, uint8_t enable);
+void bldl_uspd_ain_port_set_circuit(bldl_uspd_ain_port_t *desc, hdl_uspd20k_circuit_cofig_t cnf);
 
 #endif /* USPD_AIN_PORT_H_ */

@@ -16,6 +16,7 @@ typedef struct {
   uint32_t rx_data;
   uint32_t tx_data;
   uint8_t comm_reg;
+  uint8_t src_calibrated;
   hdl_spi_message_t message;
 } hdl_adc_ms5194t_private_t;
 
@@ -80,12 +81,32 @@ static void _adc_xfer(hdl_adc_ms5194t_private_t *adc) {
 #define MS5194T_ADC_STATE_RESET                    0
 #define MS5194T_ADC_STATE_SET_MODE                 1
 #define MS5194T_ADC_STATE_SET_IO                   2
-#define MS5194T_ADC_STATE_SET_CONFIG               3
-#define MS5194T_ADC_STATE_VALIDATE_CONFIG          4
-#define MS5194T_ADC_STATE_SET_SINGLE_CONV          5
-#define MS5194T_ADC_STATE_GET_STATUS               6
-#define MS5194T_ADC_STATE_CHECK_READY              7
-#define MS5194T_ADC_STATE_UPDATE_VALUE             8
+#define MS5194T_ADC_STATE_SET_CH_CONFIG            3
+#define MS5194T_ADC_STATE_GET_CH_CONFIG            4
+#define MS5194T_ADC_STATE_VALIDATE_CONFIG          5
+
+#define MS5194T_ADC_STATE_ZS_CALIBRATION           6
+#define MS5194T_ADC_STATE_FS_CALIBRATION           7
+#define MS5194T_ADC_STATE_CALIBRATION_COMPLETE     8
+
+#define MS5194T_ADC_STATE_SET_SINGLE_CONV          9
+
+#define MS5194T_ADC_STATE_GET_STATUS_CONV         10
+#define MS5194T_ADC_STATE_GET_STATUS_ZSC          11
+#define MS5194T_ADC_STATE_GET_STATUS_FSC          12
+
+#define MS5194T_ADC_STATE_CHECK_STATUS_CONV       13
+#define MS5194T_ADC_STATE_CHECK_STATUS_ZSC        14
+#define MS5194T_ADC_STATE_CHECK_STATUS_FSC        15
+
+
+#define MS5194T_ADC_STATE_UPDATE_VALUE            16
+#define MS5194T_ADC_STATE_DEINIT                  17
+#define MS5194T_ADC_STATE_UNLOAD                  18
+
+
+
+#define MS5194T_ADC_STATE_GET_VALUE               19
 
 #define MS5194T_ADC_STATE_INIT                     MS5194T_ADC_STATE_RESET
 
@@ -106,11 +127,13 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
   else {
     switch (adc->state) {
       case MS5194T_ADC_STATE_RESET: {
+        adc->src_current = adc->src_count;
         adc->tx_data = 0xffffffff;
         adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_XFER_DATA_32 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
         adc->state = MS5194T_ADC_STATE_SET_MODE;
+        break;
       }
-      break;
+
       case MS5194T_ADC_STATE_SET_MODE: {
         adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
         uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_PWR_DWN;
@@ -121,103 +144,174 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
         break;
       }
 
-      case MS5194T_ADC_STATE_SET_IO:
+      case MS5194T_ADC_STATE_SET_IO: {
         adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_IO_REG | !MS5194T_COMM_REG_CREAD;
         adc->tx_data = _adc_ms5194t_msb_u8_data(adc->config->io_reg);
         adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
           MS5194T_ADC_COMMAND_STATE_XFER_DATA_8 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
-        adc->state = MS5194T_ADC_STATE_SET_CONFIG;
+        adc->state = MS5194T_ADC_STATE_SET_CH_CONFIG;
         break;
-      
-      case MS5194T_ADC_STATE_SET_CONFIG:
+      }
+
+      case MS5194T_ADC_STATE_SET_CH_CONFIG: {
+        if(cancel) {
+          adc->state = MS5194T_ADC_STATE_DEINIT;
+          break;
+        }
         if(adc->src_count > 0) {
-          adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_CONFIG_REG | !MS5194T_COMM_REG_CREAD;
-          uint16_t cnf = adc->config->sources[adc->src_current]->config_reg;
-          adc->tx_data = _adc_ms5194t_msb_u16_data(cnf);
-          adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
-            MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
-          adc->state = MS5194T_ADC_STATE_VALIDATE_CONFIG;
+          adc->src_current++;
+          if(adc->src_current >= adc->src_count) {
+            adc->src_current = 0;
+            hdl_time_counter_t *time = (hdl_time_counter_t *)adc->module.dependencies[2];
+            adc->timestamp = hdl_time_counter_get(time);
+          }
+          if(adc->config->sources[adc->src_current]->options & HDL_ADC_MS5194T_CHANNEL_ENABLE) {
+            adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_CONFIG_REG | !MS5194T_COMM_REG_CREAD;
+            uint16_t cnf = adc->config->sources[adc->src_current]->config_reg;
+            adc->tx_data = _adc_ms5194t_msb_u16_data(cnf);
+            adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
+              MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
+            adc->state = MS5194T_ADC_STATE_GET_CH_CONFIG;
+          }
         }
         break;
+      }
 
-      case MS5194T_ADC_STATE_VALIDATE_CONFIG:
+      case MS5194T_ADC_STATE_GET_CH_CONFIG: {
         adc->comm_reg = !MS5194T_COMM_REG_WEN | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_CONFIG_REG | !MS5194T_COMM_REG_CREAD;
         uint16_t cnf = adc->config->sources[adc->src_current]->config_reg;
         adc->tx_data = 0;
         adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
           MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
-        adc->state = MS5194T_ADC_STATE_SET_SINGLE_CONV;
+        adc->state = MS5194T_ADC_STATE_VALIDATE_CONFIG;
         break;
+      }
 
-      case MS5194T_ADC_STATE_SET_SINGLE_CONV: {
+      case MS5194T_ADC_STATE_VALIDATE_CONFIG: {
         uint16_t cnf = adc->rx_data;
         cnf = _adc_ms5194t_msb_u16_data(cnf);
         if(cnf == adc->config->sources[adc->src_current]->config_reg) {
-          adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
-          uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_SINGLE;
-          adc->tx_data = _adc_ms5194t_msb_u16_data(mode);
-          adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
-            MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
-          adc->state = MS5194T_ADC_STATE_GET_STATUS;
+          adc->state = (adc->src_calibrated < adc->src_count)? MS5194T_ADC_STATE_ZS_CALIBRATION: MS5194T_ADC_STATE_SET_SINGLE_CONV;
         }
         else {
-          adc->state = MS5194T_ADC_STATE_SET_CONFIG;
+          adc->state = MS5194T_ADC_STATE_RESET;
         }
         break;
       }
 
+      case MS5194T_ADC_STATE_ZS_CALIBRATION: {
+        if(adc->config->sources[adc->src_current]->options & HDL_ADC_MS5194T_CHANNEL_ZERO_SCALE_CALIBRATE) {
+          adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
+          uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_CAL_I_ZERO_SCALE;
+          adc->tx_data = _adc_ms5194t_msb_u16_data(mode);
+          adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
+            MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
+          adc->state = MS5194T_ADC_STATE_GET_STATUS_ZSC;
+        }
+        else {
+          adc->state = MS5194T_ADC_STATE_FS_CALIBRATION;
+        }
+        break;
+      }
+      
+      case MS5194T_ADC_STATE_FS_CALIBRATION: {
+        if(adc->config->sources[adc->src_current]->options & HDL_ADC_MS5194T_CHANNEL_FULL_SCALE_CALIBRATE) {
+          adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
+          uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_CAL_I_FULL_SCALE;
+          adc->tx_data = _adc_ms5194t_msb_u16_data(mode);
+          adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
+            MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
+          adc->state = MS5194T_ADC_STATE_CHECK_STATUS_FSC;
+        }
+        else {
+          adc->state = MS5194T_ADC_STATE_CALIBRATION_COMPLETE;
+        }
+        break;
+      }
 
-      case MS5194T_ADC_STATE_GET_STATUS:
+      case MS5194T_ADC_STATE_CALIBRATION_COMPLETE: {
+        adc->src_calibrated = (adc->src_current + 1);
+        adc->state = MS5194T_ADC_STATE_SET_CH_CONFIG;
+        break;
+      }
+
+      case MS5194T_ADC_STATE_SET_SINGLE_CONV: {
+        adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
+        uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_SINGLE;
+        adc->tx_data = _adc_ms5194t_msb_u16_data(mode);
+        adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
+          MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
+        adc->state = MS5194T_ADC_STATE_GET_STATUS_CONV;
+        break;
+      }
+
+      case MS5194T_ADC_STATE_GET_STATUS_CONV:
+        adc->state = MS5194T_ADC_STATE_CHECK_STATUS_CONV;
+      case MS5194T_ADC_STATE_GET_STATUS_ZSC:
+        if(adc->state == MS5194T_ADC_STATE_GET_STATUS_ZSC) adc->state = MS5194T_ADC_STATE_CHECK_STATUS_ZSC;
+      case MS5194T_ADC_STATE_GET_STATUS_FSC:
+        if(adc->state == MS5194T_ADC_STATE_GET_STATUS_FSC) adc->state = MS5194T_ADC_STATE_CHECK_STATUS_FSC;
         adc->comm_reg = !MS5194T_COMM_REG_WEN | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_STATUS_REG | !MS5194T_COMM_REG_CREAD;
         adc->tx_data = 0;
         adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
           MS5194T_ADC_COMMAND_STATE_XFER_DATA_8 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
-        adc->state = MS5194T_ADC_STATE_CHECK_READY;
         break;
 
-      case MS5194T_ADC_STATE_CHECK_READY: {
-        adc->state = MS5194T_ADC_STATE_GET_STATUS;
+
+      case MS5194T_ADC_STATE_CHECK_STATUS_CONV:
+        adc->state = MS5194T_ADC_STATE_GET_STATUS_CONV;
+      case MS5194T_ADC_STATE_CHECK_STATUS_ZSC:
+        if(adc->state == MS5194T_ADC_STATE_CHECK_STATUS_ZSC) adc->state = MS5194T_ADC_STATE_GET_STATUS_ZSC;
+      case MS5194T_ADC_STATE_CHECK_STATUS_FSC: {
+        if(adc->state == MS5194T_ADC_STATE_CHECK_STATUS_FSC) adc->state = MS5194T_ADC_STATE_GET_STATUS_FSC;
         uint8_t status = adc->rx_data;
         if(!(status & MS5194T_STATUS_REG_NOT_RDY)) {
-          if(status & MS5194T_STATUS_REG_ERR) {
-            adc->rx_data = HDL_ADC_MS5194T_INVALID_VALUE;
-          }
-          else {
-            adc->comm_reg = !MS5194T_COMM_REG_WEN | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_DATA_REG | !MS5194T_COMM_REG_CREAD;
-            adc->tx_data = 0;
-            adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
-              MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
-            if(status & MS5194T_STATUS_REG_SR3) 
-              adc->command_state |= MS5194T_ADC_COMMAND_STATE_XFER_DATA_8; //if AD7794: read 24bit reg
-          }
-          adc->state = MS5194T_ADC_STATE_UPDATE_VALUE;
+          if(adc->state == MS5194T_ADC_STATE_GET_STATUS_CONV) adc->state = MS5194T_ADC_STATE_GET_VALUE;
+          if(adc->state == MS5194T_ADC_STATE_GET_STATUS_ZSC) adc->state = MS5194T_ADC_STATE_FS_CALIBRATION;
+          if(adc->state == MS5194T_ADC_STATE_GET_STATUS_FSC) adc->state = MS5194T_ADC_STATE_CALIBRATION_COMPLETE;
         }
+        break;
+      }
+
+      case MS5194T_ADC_STATE_GET_VALUE: {
+        uint8_t status = adc->rx_data;
+        if(status & MS5194T_STATUS_REG_ERR) {
+          adc->rx_data = HDL_ADC_MS5194T_INVALID_VALUE;
+        }
+        else {
+          adc->comm_reg = !MS5194T_COMM_REG_WEN | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_DATA_REG | !MS5194T_COMM_REG_CREAD;
+          adc->tx_data = 0;
+          adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
+            MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
+          if(status & MS5194T_STATUS_REG_SR3) 
+            adc->command_state |= MS5194T_ADC_COMMAND_STATE_XFER_DATA_8; //if AD7794: read 24bit reg
+        }
+        adc->state = MS5194T_ADC_STATE_UPDATE_VALUE;
         break;
       }
 
       case MS5194T_ADC_STATE_UPDATE_VALUE: {
         uint32_t data = adc->rx_data;
-        data = _adc_ms5194t_msb_u24_data(data);
-        // volatile uint32_t volt = (250 * data) / 256; // 2.5V  scale 100
-        // volt = volt * 250 / 256; // scale 25000
-        // volt = volt * 4 / 256; // scale 100000
-        // volt /= 100;
-        adc->config->values[adc->src_current] = data; 
-        adc->src_current++;
-        if(adc->src_current >= adc->src_count) {
-          adc->src_current = 0;
-          hdl_time_counter_t *time = (hdl_time_counter_t *)adc->module.dependencies[2];
-          adc->timestamp = hdl_time_counter_get(time);
-        }
-        adc->state = MS5194T_ADC_STATE_SET_CONFIG;
+        adc->config->values[adc->src_current] = _adc_ms5194t_msb_u24_data(data);         
+        adc->state = MS5194T_ADC_STATE_SET_CH_CONFIG;
         break;
       }
 
-      default:
+      case MS5194T_ADC_STATE_DEINIT: {
+        adc->comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
+        uint16_t mode =  MS5194T_MODE_REG_MS_PWR_DWN | MS5194T_MODE_REG_FILTER_RATE(10);
+        adc->tx_data = _adc_ms5194t_msb_u16_data(mode);
+        adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
+          MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
+        adc->state = MS5194T_ADC_STATE_UNLOAD;
         break;
+      }
+      case MS5194T_ADC_STATE_UNLOAD:
+      default:
+        return HDL_TRUE;
     }
   }
-  return cancel;
+  return HDL_FALSE;
 }
 
 hdl_module_state_t hdl_adc_ms5194t(void *desc, uint8_t enable) {
@@ -226,7 +320,7 @@ hdl_module_state_t hdl_adc_ms5194t(void *desc, uint8_t enable) {
     adc->state = MS5194T_ADC_STATE_INIT;
     adc->timestamp = 0;
     adc->src_count = 0;
-    adc->src_current = 0;
+    adc->src_calibrated = 0;
     adc->command_state = MS5194T_ADC_COMMAND_STATE_IDLE;
     if(adc->config->sources != NULL) {
       hdl_adc_ms5194t_source_t **src = adc->config->sources;
@@ -236,10 +330,13 @@ hdl_module_state_t hdl_adc_ms5194t(void *desc, uint8_t enable) {
         src++;
       }
     }
+    adc->src_current = adc->src_count;
     coroutine_add(&adc->worker, &_adc_ms5194t_worker, desc);
     return HDL_MODULE_ACTIVE;
   }
-  return HDL_MODULE_ACTIVE;
+  coroutine_state_t cor_state = coroutine_state(&adc->worker);
+  if(cor_state == CO_ROUTINE_RUN) coroutine_cancel(&adc->worker);
+  return (cor_state == CO_ROUTINE_CANCELED)? HDL_MODULE_UNLOADED: HDL_MODULE_UNLOADING;
 }
 
 uint32_t hdl_adc_ms5194t_get(hdl_adc_ms5194t_t *desc, uint32_t src) {

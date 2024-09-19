@@ -76,6 +76,8 @@ void set_adc_config() {
   adc_config.src_active[5] = adc_config.src_user[5];
   adc_config.adc_io_active = adc_config.adc_io_user;
   adc_config.adc_mode_active = adc_config.adc_mode_user;
+  mod_adc_cnf.io_reg = adc_config.adc_io_active;
+  mod_adc_cnf.mode_reg = adc_config.adc_mode_active;  
   reset_measures();
   adc_config.sync_key = 0;
 }
@@ -90,7 +92,7 @@ void main() {
   uint8_t state = APP_STATE_ENABLE_ADC;
 
   hdl_enable(&mod_app);
-  //hdl_enable(&mod_adc.module);
+
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }

@@ -70,6 +70,8 @@ extern bldl_uspd_ain_port_t hdl_uspd_ain_port4;
 extern hdl_module_t mod_app;
 
 extern app_adc_config_t adc_config;
+extern hdl_adc_ms5194t_config_t mod_adc_cnf;
+
 extern app_circuit_config_t ai_circuit_config;
 extern app_measure_log_t adc_log[APP_ADC_LOG_SIZE];
 

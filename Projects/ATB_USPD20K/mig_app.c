@@ -37,10 +37,6 @@ bldl_uspd_ain_port_t hdl_uspd_ain_port4 = {
 };
 
 app_circuit_config_t ai_circuit_config = {
-  .active.ai1 = USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD,
-  .active.ai2 = USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_1K_PD,
-  .active.ai3 = USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW | USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD,
-  .active.ai4 = USPD20K_CIRCUIT_CONFIG_150R_PD | USPD20K_CIRCUIT_CONFIG_1K_PD,
   .user.ai1 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
   .user.ai2 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
   .user.ai3 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
@@ -91,9 +87,7 @@ app_adc_config_t adc_config = {
 };
 
 hdl_adc_ms5194t_config_t mod_adc_cnf = {
-  .io_reg = MS5194T_IO_REG_DEFAULT,
-  .mode_reg = MS5194T_MODE_REG_MS_PWR_DWN | !MS5194T_MODE_REG_PSW | !MS5194T_MODE_REG_AMP_CM | 
-              MS5194T_MODE_REG_CLK_INT64K | !MS5194T_MODE_REG_CHOP_DIS | MS5194T_MODE_REG_FILTER_RATE(5),
+  // NOTE: dynamic config takes from adc_config
   .sources = hdl_adc_ms5194t_sources(&adc_config.src_active[0], &adc_config.src_active[1], &adc_config.src_active[2],
                                      &adc_config.src_active[3], &adc_config.src_active[4], &adc_config.src_active[5])
 };

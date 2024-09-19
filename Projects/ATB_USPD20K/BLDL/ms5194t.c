@@ -84,29 +84,21 @@ static void _adc_xfer(hdl_adc_ms5194t_private_t *adc) {
 #define MS5194T_ADC_STATE_SET_CH_CONFIG            3
 #define MS5194T_ADC_STATE_GET_CH_CONFIG            4
 #define MS5194T_ADC_STATE_VALIDATE_CONFIG          5
-
 #define MS5194T_ADC_STATE_ZS_CALIBRATION           6
 #define MS5194T_ADC_STATE_FS_CALIBRATION           7
 #define MS5194T_ADC_STATE_CALIBRATION_COMPLETE     8
-
 #define MS5194T_ADC_STATE_SET_SINGLE_CONV          9
-
 #define MS5194T_ADC_STATE_GET_STATUS_CONV         10
 #define MS5194T_ADC_STATE_GET_STATUS_ZSC          11
 #define MS5194T_ADC_STATE_GET_STATUS_FSC          12
-
 #define MS5194T_ADC_STATE_CHECK_STATUS_CONV       13
 #define MS5194T_ADC_STATE_CHECK_STATUS_ZSC        14
 #define MS5194T_ADC_STATE_CHECK_STATUS_FSC        15
-
-
-#define MS5194T_ADC_STATE_UPDATE_VALUE            16
-#define MS5194T_ADC_STATE_DEINIT                  17
-#define MS5194T_ADC_STATE_UNLOAD                  18
-
-
-
-#define MS5194T_ADC_STATE_GET_VALUE               19
+#define MS5194T_ADC_STATE_GET_VALUE               16
+#define MS5194T_ADC_STATE_UPDATE_VALUE_16         17
+#define MS5194T_ADC_STATE_UPDATE_VALUE_24         18
+#define MS5194T_ADC_STATE_DEINIT                  19
+#define MS5194T_ADC_STATE_UNLOAD                  20
 
 #define MS5194T_ADC_STATE_INIT                     MS5194T_ADC_STATE_RESET
 
@@ -114,10 +106,6 @@ static void _adc_xfer(hdl_adc_ms5194t_private_t *adc) {
 #define _adc_ms5194t_msb_u8_data(x)              (x & 0xff)
 #define _adc_ms5194t_msb_u16_data(x)             (((x << 8) & 0xff00) | ((x >> 8) & 0x00ff))
 #define _adc_ms5194t_msb_u24_data(x)             (((x >> 16) & 0x0000ff) | (x & 0x00ff00) | ((x << 16) & (0xff0000)))
-
-//#define _adc_ms5194t_u8_data(data)                 (((uint32_t)data) >> 24)
-//#define _adc_ms5194t_u16_data(data)                (((uint32_t)data) >> 16)
-//#define _adc_ms5194t_u24_data(data)                (((uint32_t)data) >> 8)
 
 static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_adc_ms5194t_private_t *adc = (hdl_adc_ms5194t_private_t *)arg;
@@ -172,6 +160,9 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
             adc->command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
               MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
             adc->state = MS5194T_ADC_STATE_GET_CH_CONFIG;
+          }
+          else if(adc->src_calibrated < adc->src_count) {
+            adc->state = MS5194T_ADC_STATE_CALIBRATION_COMPLETE;
           }
         }
         break;
@@ -286,13 +277,15 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
           if(status & MS5194T_STATUS_REG_SR3) 
             adc->command_state |= MS5194T_ADC_COMMAND_STATE_XFER_DATA_8; //if AD7794: read 24bit reg
         }
-        adc->state = MS5194T_ADC_STATE_UPDATE_VALUE;
+        adc->state = (status & MS5194T_STATUS_REG_SR3)? MS5194T_ADC_STATE_UPDATE_VALUE_24: MS5194T_ADC_STATE_UPDATE_VALUE_16;
         break;
       }
 
-      case MS5194T_ADC_STATE_UPDATE_VALUE: {
+      case MS5194T_ADC_STATE_UPDATE_VALUE_16:
+      case MS5194T_ADC_STATE_UPDATE_VALUE_24: {
         uint32_t data = adc->rx_data;
-        adc->config->values[adc->src_current] = _adc_ms5194t_msb_u24_data(data);         
+        adc->config->values[adc->src_current] = (adc->state == MS5194T_ADC_STATE_UPDATE_VALUE_24)? _adc_ms5194t_msb_u24_data(data):
+                                                                                                   _adc_ms5194t_msb_u16_data(data);
         adc->state = MS5194T_ADC_STATE_SET_CH_CONFIG;
         break;
       }

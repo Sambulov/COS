@@ -61,7 +61,7 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
         SPI_CTL1((uint32_t)spi->module.reg) &= ~SPI_CTL1_TBEIE;
       }
     }
-    msg->transfered = MIN(spi->rx_cursor, spi->tx_cursor);
+    msg->transferred = MIN(spi->rx_cursor, spi->tx_cursor);
   }
   else {
     hdl_spi_reset_status((uint32_t)spi->module.reg);
@@ -155,7 +155,7 @@ uint8_t hdl_spi_transfer_message(hdl_spi_client_ch_t *spi_ch, hdl_spi_message_t 
     hdl_spi_client_ch_private_t *spi = (hdl_spi_client_ch_private_t *)spi_ch;
     if(spi->curent_msg == NULL) {
       spi->curent_msg = message;
-      message->transfered = 0;
+      message->transferred = 0;
       message->state = HDL_SPI_MESSAGE_STATUS_INITIAL;
       return HDL_TRUE;
     }

@@ -3,6 +3,7 @@
 
 #include "hdl.h"
 
+#include "hdl_eeprom_i2c.h"
 #include "ms5194t.h"
 #include "uspd_ain_port.h"
 #include "som_link.h"
@@ -68,6 +69,8 @@ extern bldl_uspd_ain_port_t hdl_uspd_ain_port3;
 extern bldl_uspd_ain_port_t hdl_uspd_ain_port4;
 
 extern hdl_module_t mod_app;
+
+extern hdl_eeprom_i2c_t mod_eeprom;
 
 extern app_adc_config_t adc_config;
 extern hdl_adc_ms5194t_config_t mod_adc_cnf;

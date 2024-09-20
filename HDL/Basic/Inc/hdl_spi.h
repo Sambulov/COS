@@ -26,7 +26,7 @@ typedef struct {
   uint16_t tx_len;
   uint16_t rx_skip;
   uint16_t rx_take;
-  uint16_t transfered;
+  uint16_t transferred;
   hdl_spi_message_status_t state;
   hdl_spi_message_options_t options;
 } hdl_spi_message_t;

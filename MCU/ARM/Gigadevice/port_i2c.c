@@ -213,17 +213,17 @@ static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_private_t *i2c) {
 
   if(i2c->wrk_state_substate == 2) {
     if(i2c_periph->STAT0 & I2C_STAT0_RBNE) {
-      if((i2c->message->transfered == (i2c->message->length - 3)) && !(i2c->message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
+      if((i2c->message->transferred == (i2c->message->length - 3)) && !(i2c->message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
         return HDL_TRUE;
       }
-      i2c->message->buffer[i2c->message->transfered] = i2c_periph->DATA;
-      i2c->message->transfered++;
-      if((i2c->message->transfered == (i2c->message->length - 2)) && (i2c->message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
+      i2c->message->buffer[i2c->message->transferred] = i2c_periph->DATA;
+      i2c->message->transferred++;
+      if((i2c->message->transferred == (i2c->message->length - 2)) && (i2c->message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
         i2c->message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
         i2c_periph->CTL0 &= ~I2C_CTL0_ACKEN;
       }
       i2c->message->status |= HDL_I2C_MESSAGE_STATUS_DATA;
-      if(i2c->message->transfered == i2c->message->length) {
+      if(i2c->message->transferred == i2c->message->length) {
         return HDL_TRUE;
       }
     }
@@ -231,7 +231,7 @@ static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_private_t *i2c) {
     i2c->wrk_state_substate = 1;
   }
   if(i2c->wrk_state_substate == 0) {
-    i2c->message->transfered = 0;
+    i2c->message->transferred = 0;
     if(i2c_periph->STAT0 & I2C_STAT0_ADDSEND) {
       i2c_periph->CTL0 |= I2C_CTL0_ACKEN; 
       if((i2c->message->options & HDL_I2C_MESSAGE_NACK_LAST) || (i2c->message->length > 3)) { 
@@ -254,7 +254,7 @@ static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_private_t *i2c) {
 static uint8_t _i2c_msg_data_transmitter_handler(hdl_i2c_private_t *i2c) {
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   if(i2c->wrk_state_substate == 0) {
-    i2c->message->transfered = 0;
+    i2c->message->transferred = 0;
     if(!(i2c_periph->STAT1 & I2C_STAT1_TR)) {
       i2c->message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
       return HDL_TRUE;
@@ -275,11 +275,11 @@ static uint8_t _i2c_msg_data_transmitter_handler(hdl_i2c_private_t *i2c) {
   }
 
   if(i2c->wrk_state_substate == 2) {
-    while((i2c_periph->STAT0 & I2C_STAT0_TBE) && (i2c->message->transfered < i2c->message->length)) {
-      i2c_periph->DATA = i2c->message->buffer[i2c->message->transfered];
-      i2c->message->transfered++;
+    while((i2c_periph->STAT0 & I2C_STAT0_TBE) && (i2c->message->transferred < i2c->message->length)) {
+      i2c_periph->DATA = i2c->message->buffer[i2c->message->transferred];
+      i2c->message->transferred++;
     }
-    if(i2c->message->transfered == i2c->message->length) {
+    if(i2c->message->transferred == i2c->message->length) {
       i2c->message->status |= HDL_I2C_MESSAGE_STATUS_DATA;
       return HDL_TRUE;
     }
@@ -372,7 +372,7 @@ uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message) {
   hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
   if((message != NULL) && (i2c != NULL) && (hdl_state(&i2c->module) == HDL_MODULE_ACTIVE) && (_i2c->message == NULL)) {
     message->status = 0;
-    message->transfered = 0;
+    message->transferred = 0;
     _i2c->message = message;
     _i2c->wrk_state = WRK_STATE_START;
     return HDL_TRUE;

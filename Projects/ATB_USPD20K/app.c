@@ -87,6 +87,15 @@ void set_adc_config() {
 #define APP_STATE_WORK_ADC    2
 #define APP_STATE_RESET       3
 
+uint8_t data[512] = {};
+hdl_eeprom_i2c_message_t ee_msg = {
+  .buffer = data,
+  .count = 512,
+  .offset = 0,
+  .state = HDL_EEPROM_MSG_OPTION_READ,
+};
+
+
 void main() {
 
   uint8_t state = APP_STATE_ENABLE_ADC;
@@ -96,6 +105,19 @@ void main() {
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
+
+  for(int i = 0; i < 128; i++) {
+    data[i] = 0xff;
+  }
+
+  uint32_t time = 0;
+  uint32_t now = hdl_time_counter_get(&mod_timer_ms);
+  while(!TIME_ELAPSED(0, 5000, now)) {
+    now = hdl_time_counter_get(&mod_timer_ms);
+  }
+
+  hdl_eeprom_i2c_transfer(&mod_eeprom, &ee_msg);
+
   bldl_som_link_init();
   while (1) {
     cooperative_scheduler(false);

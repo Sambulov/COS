@@ -15,7 +15,7 @@ static uint8_t _i2c_gateway_worker(coroutine_t *this, uint8_t cancel, void *arg)
     i2c_gateway->tx_data.length = i2c_gateway->msg.length;
     i2c_gateway->tx_data.options = i2c_gateway->msg.options;
     i2c_gateway->tx_data.status = i2c_gateway->msg.status;
-    i2c_gateway->tx_data.transfered = i2c_gateway->msg.transfered;
+    i2c_gateway->tx_data.transferred = i2c_gateway->msg.transferred;
     return cancel;
 }
 

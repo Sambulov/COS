@@ -19,7 +19,7 @@ typedef struct {
   uint16_t address;
   hdl_i2c_message_options_t options;
   hdl_i2c_message_status_t status;
-  uint16_t transfered;
+  uint16_t transferred;
   uint16_t length;
   uint8_t buff[ATB3500_MAX_BUFFER_SIZE];
 } atb3500_i2c_gateway_proto_tx_t;

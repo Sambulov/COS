@@ -98,13 +98,26 @@ hdl_adc_ms5194t_t mod_adc = {
   .config = &mod_adc_cnf
 };
 
+const hdl_eeprom_i2c_config_t mod_eeprom_cnf = {
+  .block_size = 128,
+  .chip_address = 0x50,
+  .size = 65536,
+  .write_time = 5
+};
+
+hdl_eeprom_i2c_t mod_eeprom = {
+  .module.init = hdl_eeprom_i2c,
+  .module.dependencies = hdl_module_dependencies(&uspd20k_i2c_eeprom.module, &mod_timer_ms.module),
+  .config = &mod_eeprom_cnf
+};
+
 hdl_module_t mod_app = {
   .dependencies = hdl_module_dependencies(
     &mod_timer_ms.module, 
     
     &uspd20k_i2c_som.module, &uspd20k_som_int.module,
 
-    &uspd20k_i2c_eeprom.module,
+    &mod_eeprom.module,
     
     &uspd20k_adc_spi.module,
     

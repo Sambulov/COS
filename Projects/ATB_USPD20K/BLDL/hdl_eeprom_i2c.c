@@ -61,10 +61,10 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         }
         else {
           eeprom->i2c_msg.address = eeprom->config->chip_address;
-          eeprom->i2c_msg.buffer = eeprom->eeprom_msg->buffer;
+          eeprom->i2c_msg.buffer = (eeprom->eeprom_msg->buffer + eeprom->eeprom_msg->transferred);
           eeprom->i2c_msg.length = eeprom->eeprom_msg->count - eeprom->eeprom_msg->transferred;
           eeprom->i2c_msg.options = HDL_I2C_MESSAGE_STOP;
-          if(eeprom->eeprom_msg->state & HDL_EEPROM_MSG_OPTION_READ) {
+          if(!(eeprom->eeprom_msg->state & HDL_EEPROM_MSG_OPTION_WRITE)) {
             eeprom->i2c_msg.options |= HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST;
           }
           else {
@@ -90,20 +90,20 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         msg->transferred += eeprom->i2c_msg.transferred;
         eeprom->state = EE_STATE_IDLE;
         eeprom->eeprom_msg = NULL;
-        eeprom->eeprom_msg->state |= HDL_EEPROM_MSG_STATUS_COMPLETE;
+        msg->state |= HDL_EEPROM_MSG_STATUS_COMPLETE;
         if(eeprom->i2c_msg.status & (HDL_I2C_MESSAGE_FAULT_ARBITRATION_LOST | HDL_I2C_MESSAGE_FAULT_BUS_ERROR | HDL_I2C_MESSAGE_FAULT_BAD_STATE)) {
-          eeprom->eeprom_msg->state |= HDL_EEPROM_MSG_ERROR_BUS;
+          msg->state |= HDL_EEPROM_MSG_ERROR_BUS;
           break;
         }
         if(eeprom->i2c_msg.status & HDL_I2C_MESSAGE_STATUS_NACK) {
-          eeprom->eeprom_msg->state |= HDL_EEPROM_MSG_ERROR_NACK;
+          msg->state |= HDL_EEPROM_MSG_ERROR_NACK;
           break;
         }
-        if(eeprom->eeprom_msg->state & HDL_EEPROM_MSG_OPTION_WRITE) {
+        if(msg->state & HDL_EEPROM_MSG_OPTION_WRITE) {
           eeprom->state = EE_STATE_AWAIT_BURNING;
           eeprom->eeprom_msg = msg;
-          eeprom->eeprom_msg->state &= ~HDL_EEPROM_MSG_STATUS_COMPLETE;
-          hdl_time_counter_t *time_cnt = eeprom->module.dependencies[1];
+          msg->state &= ~HDL_EEPROM_MSG_STATUS_COMPLETE;
+          hdl_time_counter_t *time_cnt = (hdl_time_counter_t *)eeprom->module.dependencies[1];
           eeprom->burn_time = hdl_time_counter_get(time_cnt);
         }
       }
@@ -111,7 +111,7 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     }
 
     case EE_STATE_AWAIT_BURNING: {
-      hdl_time_counter_t *time_cnt = eeprom->module.dependencies[1];
+      hdl_time_counter_t *time_cnt = (hdl_time_counter_t *)eeprom->module.dependencies[1];
       uint32_t now = hdl_time_counter_get(time_cnt);
       if(TIME_ELAPSED(eeprom->burn_time, eeprom->config->write_time, now)) {
         if(eeprom->eeprom_msg->transferred < eeprom->eeprom_msg->count) {

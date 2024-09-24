@@ -36,10 +36,10 @@ typedef struct {
 #define MEASURE_VALID   0xCAFEFEED
 
 typedef struct {
-  uint8_t ai1;
-  uint8_t ai2;
-  uint8_t ai3;
-  uint8_t ai4;
+  hdl_uspd20k_circuit_cofig_t ai1;
+  hdl_uspd20k_circuit_cofig_t ai2;
+  hdl_uspd20k_circuit_cofig_t ai3;
+  hdl_uspd20k_circuit_cofig_t ai4;
 } circuit_config_ports_t;
 
 typedef struct {
@@ -55,10 +55,22 @@ typedef struct {
   uint8_t state;
 } som_proto_context_t;
 
+typedef struct {
+  hdl_uspd20k_circuit_cofig_t circuit_config;
+  hdl_adc_ms5194t_source_t ch_config;
+} app_adc_config_preset_t;
 
-#define MAP_ADDR_ADC_LOG          0x0000
-#define MAP_ADDR_CIRCUIT_CONFIG   0x1000
-#define MAP_ADDR_ADC_CONFIG       0x2000
+typedef struct {
+  uint8_t port_preset_selection[4];
+  uint32_t sync_key;
+} app_adc_preset_config_t;
+
+#define PRESET_CONFIG_SYNC_KEY       0x87654321
+
+#define MAP_ADDR_ADC_LOG             0x0000
+#define MAP_ADDR_CIRCUIT_CONFIG      0x1000
+#define MAP_ADDR_ADC_CONFIG          0x1100
+#define MAP_ADDR_ADC_PRESET_CONFIG   0x1200
 
 
 #define APP_ADC_LOG_SIZE    64
@@ -77,6 +89,11 @@ extern hdl_adc_ms5194t_config_t mod_adc_cnf;
 
 extern app_circuit_config_t ai_circuit_config;
 extern app_measure_log_t adc_log[APP_ADC_LOG_SIZE];
+
+#define ADC_PRESETS_AMOUNT   5
+
+extern const app_adc_config_preset_t *app_adc_presets[ADC_PRESETS_AMOUNT];
+extern app_adc_preset_config_t app_adc_preset_config;
 
 void main();
 

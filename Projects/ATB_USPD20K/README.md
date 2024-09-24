@@ -35,7 +35,7 @@ From address 0x1000 till 0x100B holds analog ports input circuit configuration.
 | NA | NA | 1K_PD | 150R_PD | 4K3_PD | CUR_SRC_LOW | CUR_SRC_HIGH | NTC_PU |
 (see schematic)
 
-### 0x2000 - 0x203B (read), 0x201C - 0x203B (read/write)
+### 0x1100 - 0x113B (read), 0x111C - 0x113B (read/write)
 |    Mnemonic        | Offset | Width | Access |          Description            |
 | ------------------ | ------ | ----- | ------ | ------------------------------- |
 | ACTIVE_ADC_CNF_CH1 |      0 |   16b | R  | Current ADC config register value for CH1 |
@@ -145,7 +145,7 @@ CAL_FS - enable full scale calibration
 ```
 #### Dump ADC configuration:
 ```
-# dd if=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=60 skip=8192 | hexdump -C -v
+# dd if=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=60 skip=4352 | hexdump -C -v
 00000000  10 10 07 00 11 10 07 00  12 10 07 00 13 10 07 00  |................|
 00000010  14 10 07 00 15 10 07 00  00 00 05 60 10 10 07 00  |...........`....|
 00000020  11 10 07 00 12 10 07 00  13 10 07 00 14 10 07 00  |................|
@@ -163,5 +163,12 @@ CAL_FS - enable full scale calibration
 
 #### Set new ADC configuration:
 ```
-# echo -en \\x10\\x10\\x07\\x00\\x11\\x10\\x07\\x00\\x12\\x10\\x00\\x00\\x13\\x10\\x00\\x00\\x14\\x10\\x00\\x00\\x15\\x10\\x00\\x00\\x00\\x00\\x05\\x60\\xAB\\xEF\\xCD\\xAB | dd of=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=32 seek=8220
+# echo -en \\x10\\x10\\x07\\x00\\x11\\x10\\x07\\x00\\x12\\x10\\x00\\x00\\x13\\x10\\x00\\x00\\x14\\x10\\x00\\x00\\x15\\x10\\x00\\x00\\x00\\x00\\x05\\x60\\xAB\\xEF\\xCD\\xAB | dd of=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=32 seek=4380
 ```
+
+#### Set new ADC preset configuration:
+```
+# echo -en \\x04\\x04\\x00\\x00\\x21\\x43\\x65\\x87 | dd of=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=8 seek=4608
+```
+
+dd if=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=8 skip=4608 | hexdump -C -v

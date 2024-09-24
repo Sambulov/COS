@@ -1,7 +1,7 @@
 #ifndef HDL_EEPROM_I2C_H_
 #define HDL_EEPROM_I2C_H_
 
-#define HDL_EEPROM_I2C_PRV_SIZE  48
+#define HDL_EEPROM_I2C_PRV_SIZE  52
 
 typedef struct {
   uint16_t chip_address;
@@ -21,8 +21,8 @@ typedef struct {
 } hdl_eeprom_i2c_t;
 
 typedef enum {
-  HDL_EEPROM_MSG_OPTION_WRITE      = 0x00,
-  HDL_EEPROM_MSG_OPTION_READ       = 0x01,
+  HDL_EEPROM_MSG_OPTION_READ       = 0x00,
+  HDL_EEPROM_MSG_OPTION_WRITE      = 0x01,
   HDL_EEPROM_MSG_STATUS_PROCESSING = 0x02,
   HDL_EEPROM_MSG_STATUS_COMPLETE   = 0x08,
   HDL_EEPROM_MSG_ERROR_NO_RESPONSE = 0x10,

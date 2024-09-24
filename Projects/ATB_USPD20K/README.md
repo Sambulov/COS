@@ -102,6 +102,25 @@ CAL_FS - enable full scale calibration
 #### ACTIVE_ADC_MODE/USER_ADC_MODE bit map
 (see AD7794/AD7795 MODE REGISTER)
 
+### 0x1200 - 0x1208 (read/write)
+This region useful to fast set predefined configuration as ADC and input analog circuit.
+
+|  Mnemonic  | Offset | Width | Access |          Description           |
+| ---------  | ------ | ----- | ------ | ------------------------------ |
+| PORT1_MODE |      0 |    8b | RW     | Predefined config id for ain 1 |
+| PORT2_MODE |      1 |    8b | RW     | Predefined config id for ain 2 |
+| PORT3_MODE |      2 |    8b | RW     | Predefined config id for ain 3 |
+| PORT4_MODE |      3 |    8b | RW     | Predefined config id for ain 4 |
+| SYNC_KEY   |      8 |   32b | RW     | Write 0x87654321 to apply config, resets to 0 when finish (see also SYNC_KEY's for ADC config and circuit config) |
+
+#### PORT_MODE description
+0: Disable channel
+1: RTD
+2: 0-20mA
+3: 0-10V
+4: NTC
+5-255: leave untoched
+
 ## Interaction example
 #### Check if driver up:
 ```
@@ -170,5 +189,3 @@ CAL_FS - enable full scale calibration
 ```
 # echo -en \\x04\\x04\\x00\\x00\\x21\\x43\\x65\\x87 | dd of=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=8 seek=4608
 ```
-
-dd if=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=8 skip=4608 | hexdump -C -v

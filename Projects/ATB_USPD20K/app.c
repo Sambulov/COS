@@ -1,31 +1,17 @@
 #include "app.h"
 #include "CodeLib.h"
 
-void reset_measures() {
-  for(uint8_t i = 0; i < APP_ADC_LOG_SIZE; i++) {
-    adc_log[i].valid = 0;
-  }
-}
-
-void update_circuit_config() {
-  if(ai_circuit_config.sync_key == CIRCUIT_CONFIG_SYNC_KEY) {
-    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, ai_circuit_config.user.ai1);
-    ai_circuit_config.active.ai1 = ai_circuit_config.user.ai1;
-    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, ai_circuit_config.user.ai2);
-    ai_circuit_config.active.ai2 = ai_circuit_config.user.ai2;
-    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, ai_circuit_config.user.ai3);
-    ai_circuit_config.active.ai3 = ai_circuit_config.user.ai3;
-    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, ai_circuit_config.user.ai4);
-    ai_circuit_config.active.ai4 = ai_circuit_config.user.ai4;
-    reset_measures();
-    ai_circuit_config.sync_key = 0;
-  }
-}
-
-
-void log_measures() {
+void log_measures(uint8_t reset) {
   static uint32_t adc_age = 0;
   static uint32_t ind = 0;
+  if(reset) {
+    adc_age = 0;
+    ind = 0;
+    for(uint8_t i = 0; i < APP_ADC_LOG_SIZE; i++) {
+      adc_log[i].valid = 0;
+    }
+    return;
+  }
   uint32_t age = hdl_adc_ms5194t_age(&mod_adc);
   if(adc_age != age) {
     adc_log[ind].valid = 0;
@@ -42,6 +28,21 @@ void log_measures() {
       ind = 0;
     }
     adc_age = age;      
+  }
+}
+
+void update_circuit_config() {
+  if(ai_circuit_config.sync_key == CIRCUIT_CONFIG_SYNC_KEY) {
+    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, ai_circuit_config.user.ai1);
+    ai_circuit_config.active.ai1 = ai_circuit_config.user.ai1;
+    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, ai_circuit_config.user.ai2);
+    ai_circuit_config.active.ai2 = ai_circuit_config.user.ai2;
+    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, ai_circuit_config.user.ai3);
+    ai_circuit_config.active.ai3 = ai_circuit_config.user.ai3;
+    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, ai_circuit_config.user.ai4);
+    ai_circuit_config.active.ai4 = ai_circuit_config.user.ai4;
+    log_measures(1);
+    ai_circuit_config.sync_key = 0;
   }
 }
 
@@ -84,7 +85,6 @@ void set_adc_config() {
   adc_config.adc_mode_active = adc_config.adc_mode_user;
   mod_adc_cnf.io_reg = adc_config.adc_io_active;
   mod_adc_cnf.mode_reg = adc_config.adc_mode_active;  
-  reset_measures();
   adc_config.sync_key = 0;
 }
 
@@ -95,22 +95,22 @@ void update_adc_preset_config() {
     //                   MS5194T_MODE_REG_CLK_INT64K | !MS5194T_MODE_REG_CHOP_DIS | MS5194T_MODE_REG_FILTER_RATE(5);
 
     if(app_adc_preset_config.port_preset_selection[0] < ADC_PRESETS_AMOUNT) {
-      adc_config.src_user[6].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[0]]->ch_config.config_reg;
-      adc_config.src_user[6].options = app_adc_presets[app_adc_preset_config.port_preset_selection[0]]->ch_config.options;
+      adc_config.src_user[5].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[0]]->ch_config.config_reg | MS5194T_CONFIG_REG_CH_SEL(5);
+      adc_config.src_user[5].options = app_adc_presets[app_adc_preset_config.port_preset_selection[0]]->ch_config.options;
       ai_circuit_config.user.ai1 = app_adc_presets[app_adc_preset_config.port_preset_selection[0]]->circuit_config;
     }
     if(app_adc_preset_config.port_preset_selection[0] < ADC_PRESETS_AMOUNT) {
-      adc_config.src_user[0].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[1]]->ch_config.config_reg;
+      adc_config.src_user[0].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[1]]->ch_config.config_reg | MS5194T_CONFIG_REG_CH_SEL(0);
       adc_config.src_user[0].options = app_adc_presets[app_adc_preset_config.port_preset_selection[1]]->ch_config.options;
       ai_circuit_config.user.ai2 = app_adc_presets[app_adc_preset_config.port_preset_selection[1]]->circuit_config;
     }
     if(app_adc_preset_config.port_preset_selection[0] < ADC_PRESETS_AMOUNT) {
-      adc_config.src_user[1].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[2]]->ch_config.config_reg;
+      adc_config.src_user[1].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[2]]->ch_config.config_reg | MS5194T_CONFIG_REG_CH_SEL(1);
       adc_config.src_user[1].options = app_adc_presets[app_adc_preset_config.port_preset_selection[2]]->ch_config.options;
       ai_circuit_config.user.ai3 = app_adc_presets[app_adc_preset_config.port_preset_selection[2]]->circuit_config;
     }
     if(app_adc_preset_config.port_preset_selection[0] < ADC_PRESETS_AMOUNT) {
-      adc_config.src_user[2].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[3]]->ch_config.config_reg;
+      adc_config.src_user[2].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[3]]->ch_config.config_reg | MS5194T_CONFIG_REG_CH_SEL(2);
       adc_config.src_user[2].options = app_adc_presets[app_adc_preset_config.port_preset_selection[3]]->ch_config.options;
       ai_circuit_config.user.ai4 = app_adc_presets[app_adc_preset_config.port_preset_selection[3]]->circuit_config;
     }
@@ -150,7 +150,7 @@ void main() {
 
   uint32_t time = 0;
   uint32_t now = hdl_time_counter_get(&mod_timer_ms);
-  while(!TIME_ELAPSED(0, 0000, now)) {
+  while(!TIME_ELAPSED(0, 2000, now)) {
     now = hdl_time_counter_get(&mod_timer_ms);
   }
 
@@ -164,6 +164,7 @@ void main() {
 
     switch (state) {
       case APP_STATE_ENABLE_ADC:
+        log_measures(1);
         set_adc_config();
         hdl_enable(&mod_adc.module);
         state = APP_STATE_AWAIT_ADC;
@@ -173,7 +174,7 @@ void main() {
           state = APP_STATE_WORK_ADC;
         break;
       case APP_STATE_WORK_ADC:
-        log_measures();
+        log_measures(0);
         if(adc_config.sync_key == ADC_CONFIG_SYNC_KEY) {
           hdl_kill(&mod_adc.module);
           state = APP_STATE_RESET;

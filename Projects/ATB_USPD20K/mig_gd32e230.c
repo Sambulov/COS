@@ -642,7 +642,7 @@ const hdl_spi_client_config_t mod_spi0_cnf = {
   .rcu = RCU_SPI0,
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = SPI_CK_PL_HIGH_PH_2EDGE,
-  .prescale = HDL_SPI_PSC_256,
+  .prescale = HDL_SPI_PSC_2,
   .spi_interrupt = &mod_irq_spi_0
 };
 

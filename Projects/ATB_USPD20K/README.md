@@ -187,5 +187,5 @@ This region useful to fast set predefined configuration as ADC and input analog 
 
 #### Set new ADC preset configuration:
 ```
-# echo -en \\x04\\x04\\x00\\x00\\x21\\x43\\x65\\x87 | dd of=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=8 seek=4608
+# echo -en \\x02\\x00\\x00\\x00\\x21\\x43\\x65\\x87 | dd of=/sys/bus/i2c/devices/4-0050/eeprom bs=1 count=8 seek=4608
 ```

@@ -350,6 +350,7 @@ typedef struct {
 /*
     depends on 
     spi_client
+    rdy_pin
     time_counter
  */
 typedef struct {

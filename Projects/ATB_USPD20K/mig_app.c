@@ -124,7 +124,7 @@ hdl_module_t mod_app = {
     &hdl_uspd_ain_port1.module, &hdl_uspd_ain_port2.module, &hdl_uspd_ain_port3.module, &hdl_uspd_ain_port4.module)
 };
 
-app_measure_log_t adc_log[APP_ADC_LOG_SIZE] = { 0 };
+app_adc_measure_t adc_log[APP_ADC_LOG_SIZE] = { 0 };
 
 const app_adc_config_preset_t app_adc_off_preset = {
   .ch_config.config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
@@ -166,6 +166,41 @@ const app_adc_config_preset_t app_adc_ntc_preset = {
   .circuit_config = USPD20K_CIRCUIT_CONFIG_NTC_PU
 };
 
-const app_adc_config_preset_t *app_adc_presets[] = {&app_adc_off_preset, &app_adc_rtd_preset, &app_adc_cur_preset, &app_adc_vlt_preset, &app_adc_ntc_preset};
+const app_adc_config_preset_t app_adc_floating_preset = {
+  .ch_config.config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
+                          !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+                          !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF, // | MS5194T_CONFIG_REG_CH_SEL(),
+  .ch_config.options = HDL_ADC_MS5194T_CHANNEL_ENABLE | HDL_ADC_MS5194T_CHANNEL_ZERO_SCALE_CALIBRATE | HDL_ADC_MS5194T_CHANNEL_FULL_SCALE_CALIBRATE,
+  .circuit_config = USPD20K_CIRCUIT_CONFIG_FLOATING
+};
+
+const app_adc_config_preset_t app_adc_ain_calib_preset = {
+  .ch_config.config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
+                          !MS5194T_CONFIG_REG_BOOST | MS5194T_CONFIG_REG_IN_AMP(0) | MS5194T_CONFIG_REG_REFSEL_EXTIN1 |
+                          !MS5194T_CONFIG_REG_REF_DET | MS5194T_CONFIG_REG_BUF, // | MS5194T_CONFIG_REG_CH_SEL(),
+  .ch_config.options = HDL_ADC_MS5194T_CHANNEL_ENABLE | HDL_ADC_MS5194T_CHANNEL_ZERO_SCALE_CALIBRATE | HDL_ADC_MS5194T_CHANNEL_FULL_SCALE_CALIBRATE,
+  .circuit_config = USPD20K_CIRCUIT_CONFIG_1K_PD | USPD20K_CIRCUIT_CONFIG_CUR_SRC_HIGH | USPD20K_CIRCUIT_CONFIG_CUR_SRC_LOW
+};
+
+const app_adc_config_preset_t *app_adc_presets[] = {&app_adc_off_preset, &app_adc_rtd_preset, &app_adc_cur_preset, &app_adc_vlt_preset, &app_adc_ntc_preset, &app_adc_floating_preset, &app_adc_ain_calib_preset};
 
 app_adc_preset_config_t app_adc_preset_config = {0};
+
+// -50 ~ 50 C
+const uint32_t pt1000_arr[] = {
+/* -50 */
+   8030628,  8070334,  8110026,  8149704,  8189368,  8229018,  8268654,  8308277,  8347887,  8387483, 
+   8427065,  8466634,  8506190,  8545733,  8585262,  8624779,  8664282,  8703772,  8743249,  8743249,
+   8822166,  8861605,  8901031,  8940444,  8979845,  9019234,  9058610,  9097973,  9137325,  9176663,
+   9215990,  9255304,  9294606,  9333896,  9373174,  9412439,  9451693,  9490935,  9530164,  9569382,
+   9608588,  9647782,  9686964,  9726134,  9765293,  9804440,  9843575,  9882699,  9921811,  9960911,
+/* 0 */
+  10000000, 10039077, 10078143, 10117197, 10156240, 10195271, 10234290, 10273298, 10312294, 10351279,
+  10390252, 10429214, 10468164, 10507103, 10546030, 10584946, 10623850, 10662742, 10701623, 10740492,
+  10779350, 10818196, 10857031, 10895854, 10934666, 10973466, 11012254, 11012254, 11089796, 11089796, 
+  11167292, 11206023, 11244742, 11283450, 11322146, 11360831, 11399504, 11438165, 11476815, 11515453,
+  11554080, 11592695, 11631299, 11669891, 11708472, 11747041, 11785598, 11824144, 11862678, 11901201,
+/* 50 */
+  11939713, 11978212, 12016700, 12055177, 12093642, 12132096, 12170538, 12208968, 12247387, 12285794
+
+};

@@ -7,6 +7,7 @@
 #include "ms5194t.h"
 #include "uspd_ain_port.h"
 #include "som_link.h"
+#include "median_filter.h"
 
 #include "mig.h"
 
@@ -23,15 +24,10 @@ typedef struct {
 #define ADC_CONFIG_SYNC_KEY       0xABCDEFAB
 
 typedef struct {
-  uint32_t ain1;
-  uint32_t ain2;
-  uint32_t ain3;
-  uint32_t ain4;
-  uint32_t ain5;
-  uint32_t ain6;
+  uint32_t ain[6];
   uint32_t timestamp;
   uint32_t valid;
-} app_measure_log_t;
+} app_adc_measure_t;
 
 #define MEASURE_VALID   0xCAFEFEED
 
@@ -88,9 +84,9 @@ extern app_adc_config_t adc_config;
 extern hdl_adc_ms5194t_config_t mod_adc_cnf;
 
 extern app_circuit_config_t ai_circuit_config;
-extern app_measure_log_t adc_log[APP_ADC_LOG_SIZE];
+extern app_adc_measure_t adc_log[APP_ADC_LOG_SIZE];
 
-#define ADC_PRESETS_AMOUNT   5
+#define ADC_PRESETS_AMOUNT   7
 
 extern const app_adc_config_preset_t *app_adc_presets[ADC_PRESETS_AMOUNT];
 extern app_adc_preset_config_t app_adc_preset_config;

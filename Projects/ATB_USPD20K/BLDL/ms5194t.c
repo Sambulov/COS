@@ -169,6 +169,11 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
               MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
             adc->state = MS5194T_ADC_STATE_GET_CH_CONFIG;
           }
+          else {
+            if(adc->src_calibrated < (adc->src_current + 1)) {
+              adc->src_calibrated = adc->src_current + 1;
+            }
+          }
         }
         break;
       }

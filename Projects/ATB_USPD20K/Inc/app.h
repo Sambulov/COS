@@ -12,10 +12,24 @@
 #include "mig.h"
 
 typedef struct {
-  hdl_adc_ms5194t_source_t src_active[6];
+  uint8_t *data_ptr;
+  uint16_t map_addr_start;
+  uint16_t map_addr_end;
+} app_mem_map_item_t;
+
+#define mem_map_item(data, addr, offset)     {.data_ptr = (uint8_t*)&data, .map_addr_start = addr + offset, .map_addr_end = addr + sizeof(data) - 1}
+
+
+#define APP_AIN_PORTS_AMOUNT          4
+#define APP_ADC_CHANNELS_AMOUNT       6
+
+extern const uint8_t app_uspd_ain_port_to_adc_ch_map[APP_AIN_PORTS_AMOUNT];
+
+typedef struct {
+  hdl_adc_ms5194t_source_t src_active[APP_ADC_CHANNELS_AMOUNT];
   uint8_t adc_io_active;
   uint16_t adc_mode_active;
-  hdl_adc_ms5194t_source_t src_user[6];
+  hdl_adc_ms5194t_source_t src_user[APP_ADC_CHANNELS_AMOUNT];
   uint8_t adc_io_user;
   uint16_t adc_mode_user;
   uint32_t sync_key;
@@ -32,10 +46,7 @@ typedef struct {
 #define MEASURE_VALID   0xCAFEFEED
 
 typedef struct {
-  hdl_uspd20k_circuit_cofig_t ai1;
-  hdl_uspd20k_circuit_cofig_t ai2;
-  hdl_uspd20k_circuit_cofig_t ai3;
-  hdl_uspd20k_circuit_cofig_t ai4;
+  hdl_uspd20k_circuit_cofig_t ai[APP_AIN_PORTS_AMOUNT];
 } circuit_config_ports_t;
 
 typedef struct {
@@ -57,7 +68,7 @@ typedef struct {
 } app_adc_config_preset_t;
 
 typedef struct {
-  uint8_t port_preset_selection[4];
+  uint8_t port_preset_selection[APP_AIN_PORTS_AMOUNT];
   uint32_t sync_key;
 } app_adc_preset_config_t;
 
@@ -71,10 +82,7 @@ typedef struct {
 
 #define APP_ADC_LOG_SIZE    64
 
-extern bldl_uspd_ain_port_t hdl_uspd_ain_port1;
-extern bldl_uspd_ain_port_t hdl_uspd_ain_port2;
-extern bldl_uspd_ain_port_t hdl_uspd_ain_port3;
-extern bldl_uspd_ain_port_t hdl_uspd_ain_port4;
+extern bldl_uspd_ain_port_t app_uspd_ain_port[APP_AIN_PORTS_AMOUNT];
 
 extern hdl_module_t mod_app;
 
@@ -85,11 +93,26 @@ extern hdl_adc_ms5194t_config_t mod_adc_cnf;
 
 extern app_circuit_config_t ai_circuit_config;
 extern app_adc_measure_t adc_log[APP_ADC_LOG_SIZE];
+extern app_adc_measure_t primary_filter_val;
+extern app_adc_measure_t secondary_filter_val;
 
-#define ADC_PRESETS_AMOUNT   7
+#define APP_ADC_PRESETS_AMOUNT   7
 
-extern const app_adc_config_preset_t *app_adc_presets[ADC_PRESETS_AMOUNT];
+extern const app_adc_config_preset_t *app_adc_presets[APP_ADC_PRESETS_AMOUNT];
 extern app_adc_preset_config_t app_adc_preset_config;
+
+#define PRIMARY_FILTER_SIZE  16
+#define SECONDARY_FILTER_SIZE  8
+#define MAP_ADDR_SECONDARY_FILTER_ADC_VAL      0x950
+#define MAP_ADDR_PRIMARY_FILTER_ADC_VAL      0x900
+
+
+#define APP_R_MEM_MAP_SIZE       6
+#define APP_W_MEM_MAP_SIZE       3
+
+extern const app_mem_map_item_t app_r_mem_map[APP_R_MEM_MAP_SIZE];
+extern const app_mem_map_item_t app_w_mem_map[APP_W_MEM_MAP_SIZE];
+
 
 void main();
 

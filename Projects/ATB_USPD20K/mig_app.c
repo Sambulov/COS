@@ -4,43 +4,44 @@ const hdl_uspd_ain_port_config_t hdl_uspd_ain_port_cnf_default = {
   .circuit_config = USPD20K_CIRCUIT_CONFIG_4K3_PD
 };
 
-bldl_uspd_ain_port_t hdl_uspd_ain_port1 = {
-  .module.init = &bldl_uspd_ain_port,
-  .module.dependencies = hdl_module_dependencies(
-    &uspd20k_ai1_ntc_pu.module, &uspd20k_ai1_cur_scr_high.module, &uspd20k_ai1_cur_scr_low.module, 
-    &uspd20k_ai1_4K3_pd.module, &uspd20k_ai1_150r_pd.module, &uspd20k_ai1_1k_pd.module),
-  .config = &hdl_uspd_ain_port_cnf_default
-};
+const uint8_t app_uspd_ain_port_to_adc_ch_map[APP_AIN_PORTS_AMOUNT] = {5, 0, 1, 2};
 
-bldl_uspd_ain_port_t hdl_uspd_ain_port2 = {
-  .module.init = &bldl_uspd_ain_port,
-  .module.dependencies = hdl_module_dependencies(
-    &uspd20k_ai2_ntc_pu.module, &uspd20k_ai2_cur_scr_high.module, &uspd20k_ai2_cur_scr_low.module, 
-    &uspd20k_ai2_4K3_pd.module, &uspd20k_ai2_150r_pd.module, &uspd20k_ai2_1k_pd.module),
-  .config = &hdl_uspd_ain_port_cnf_default
-};
-
-bldl_uspd_ain_port_t hdl_uspd_ain_port3 = {
-  .module.init = &bldl_uspd_ain_port,
-  .module.dependencies = hdl_module_dependencies(
-    &uspd20k_ai3_ntc_pu.module, &uspd20k_ai3_cur_scr_high.module, &uspd20k_ai3_cur_scr_low.module, 
-    &uspd20k_ai3_4K3_pd.module, &uspd20k_ai3_150r_pd.module, &uspd20k_ai3_1k_pd.module),
-  .config = &hdl_uspd_ain_port_cnf_default
-};
-
-bldl_uspd_ain_port_t hdl_uspd_ain_port4 = {
-  .module.init = &bldl_uspd_ain_port,
-  .module.dependencies = hdl_module_dependencies(    
-    &uspd20k_ai4_ntc_pu.module, &uspd20k_ai4_cur_scr_high.module, &uspd20k_ai4_cur_scr_low.module, 
-    &uspd20k_ai4_4K3_pd.module, &uspd20k_ai4_150r_pd.module, &uspd20k_ai4_1k_pd.module),
-  .config = &hdl_uspd_ain_port_cnf_default
+bldl_uspd_ain_port_t app_uspd_ain_port[APP_AIN_PORTS_AMOUNT] = {
+  {
+    .module.init = &bldl_uspd_ain_port,
+    .module.dependencies = hdl_module_dependencies(
+      &uspd20k_ai1_ntc_pu.module, &uspd20k_ai1_cur_scr_high.module, &uspd20k_ai1_cur_scr_low.module, 
+      &uspd20k_ai1_4K3_pd.module, &uspd20k_ai1_150r_pd.module, &uspd20k_ai1_1k_pd.module),
+    .config = &hdl_uspd_ain_port_cnf_default
+  },
+  {
+    .module.init = &bldl_uspd_ain_port,
+    .module.dependencies = hdl_module_dependencies(
+      &uspd20k_ai2_ntc_pu.module, &uspd20k_ai2_cur_scr_high.module, &uspd20k_ai2_cur_scr_low.module, 
+      &uspd20k_ai2_4K3_pd.module, &uspd20k_ai2_150r_pd.module, &uspd20k_ai2_1k_pd.module),
+    .config = &hdl_uspd_ain_port_cnf_default
+  },
+  {
+    .module.init = &bldl_uspd_ain_port,
+    .module.dependencies = hdl_module_dependencies(
+      &uspd20k_ai3_ntc_pu.module, &uspd20k_ai3_cur_scr_high.module, &uspd20k_ai3_cur_scr_low.module, 
+      &uspd20k_ai3_4K3_pd.module, &uspd20k_ai3_150r_pd.module, &uspd20k_ai3_1k_pd.module),
+    .config = &hdl_uspd_ain_port_cnf_default
+  },
+  {
+    .module.init = &bldl_uspd_ain_port,
+    .module.dependencies = hdl_module_dependencies(    
+      &uspd20k_ai4_ntc_pu.module, &uspd20k_ai4_cur_scr_high.module, &uspd20k_ai4_cur_scr_low.module, 
+      &uspd20k_ai4_4K3_pd.module, &uspd20k_ai4_150r_pd.module, &uspd20k_ai4_1k_pd.module),
+    .config = &hdl_uspd_ain_port_cnf_default
+  }
 };
 
 app_circuit_config_t ai_circuit_config = {
-  .user.ai1 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
-  .user.ai2 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
-  .user.ai3 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
-  .user.ai4 = USPD20K_CIRCUIT_CONFIG_4K3_PD,
+  .user.ai[0] = USPD20K_CIRCUIT_CONFIG_4K3_PD,
+  .user.ai[1] = USPD20K_CIRCUIT_CONFIG_4K3_PD,
+  .user.ai[2] = USPD20K_CIRCUIT_CONFIG_4K3_PD,
+  .user.ai[3] = USPD20K_CIRCUIT_CONFIG_4K3_PD,
   .sync_key = CIRCUIT_CONFIG_SYNC_KEY,
 };
 
@@ -121,10 +122,18 @@ hdl_module_t mod_app = {
     
     &uspd20k_adc_spi.module,
     
-    &hdl_uspd_ain_port1.module, &hdl_uspd_ain_port2.module, &hdl_uspd_ain_port3.module, &hdl_uspd_ain_port4.module)
+    &app_uspd_ain_port[0].module,
+    &app_uspd_ain_port[1].module,
+    &app_uspd_ain_port[2].module,
+    &app_uspd_ain_port[3].module)
 };
 
 app_adc_measure_t adc_log[APP_ADC_LOG_SIZE] = { 0 };
+
+app_adc_measure_t primary_filter_val;
+
+app_adc_measure_t secondary_filter_val;
+
 
 const app_adc_config_preset_t app_adc_off_preset = {
   .ch_config.config_reg = MS5194T_CONFIG_REG_VBIAS_DISBL | !MS5194T_CONFIG_REG_BO | MS5194T_CONFIG_REG_UB | 
@@ -203,4 +212,19 @@ const uint32_t pt1000_arr[] = {
 /* 50 */
   11939713, 11978212, 12016700, 12055177, 12093642, 12132096, 12170538, 12208968, 12247387, 12285794
 
+};
+
+const app_mem_map_item_t app_r_mem_map[] = {
+  mem_map_item(adc_log, MAP_ADDR_ADC_LOG, 0),
+  mem_map_item(primary_filter_val, MAP_ADDR_PRIMARY_FILTER_ADC_VAL, 0),
+  mem_map_item(secondary_filter_val, MAP_ADDR_SECONDARY_FILTER_ADC_VAL, 0),
+  mem_map_item(ai_circuit_config, MAP_ADDR_CIRCUIT_CONFIG, 0),
+  mem_map_item(adc_config, MAP_ADDR_ADC_CONFIG, 0),
+  mem_map_item(app_adc_preset_config, MAP_ADDR_ADC_PRESET_CONFIG, 0)
+};
+
+const app_mem_map_item_t app_w_mem_map[] = {
+  mem_map_item(ai_circuit_config, MAP_ADDR_CIRCUIT_CONFIG, offsetof(app_circuit_config_t, user)),
+  mem_map_item(adc_config, MAP_ADDR_ADC_CONFIG, offsetof(app_adc_config_t, src_user)),
+  mem_map_item(app_adc_preset_config, MAP_ADDR_ADC_PRESET_CONFIG, 0),
 };

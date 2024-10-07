@@ -1,21 +1,11 @@
 #include "app.h"
 #include "CodeLib.h"
 
-#define PRIMARY_FILTER_SIZE  16
-#define SECONDARY_FILTER_SIZE  8
-#define ADC_CHANNELS_AMOUNT   6
-#define MAP_ADDR_SECONDARY_FILTER_ADC_VAL      0x950
-#define MAP_ADDR_PRIMARY_FILTER_ADC_VAL      0x900
-
-app_adc_measure_t primary_filter_val;
-app_adc_measure_t secondary_filter_val;
-
-
 void log_measures(uint8_t reset) {
-  static uint32_t primary_filter_ain[ADC_CHANNELS_AMOUNT][PRIMARY_FILTER_SIZE];
-  static uint32_t secondary_filter_ain[ADC_CHANNELS_AMOUNT][SECONDARY_FILTER_SIZE];
+  static uint32_t primary_filter_ain[APP_ADC_CHANNELS_AMOUNT][PRIMARY_FILTER_SIZE];
+  static uint32_t secondary_filter_ain[APP_ADC_CHANNELS_AMOUNT][SECONDARY_FILTER_SIZE];
 
-  static median_filter_t primary_filter[ADC_CHANNELS_AMOUNT] = { 
+  static median_filter_t primary_filter[APP_ADC_CHANNELS_AMOUNT] = { 
     {.data = primary_filter_ain[0], .size = PRIMARY_FILTER_SIZE},
     {.data = primary_filter_ain[1], .size = PRIMARY_FILTER_SIZE},
     {.data = primary_filter_ain[2], .size = PRIMARY_FILTER_SIZE},
@@ -24,7 +14,7 @@ void log_measures(uint8_t reset) {
     {.data = primary_filter_ain[5], .size = PRIMARY_FILTER_SIZE},
   };
 
-  static median_filter_t secondary_filter[ADC_CHANNELS_AMOUNT] = { 
+  static median_filter_t secondary_filter[APP_ADC_CHANNELS_AMOUNT] = { 
     {.data = secondary_filter_ain[0], .size = SECONDARY_FILTER_SIZE},
     {.data = secondary_filter_ain[1], .size = SECONDARY_FILTER_SIZE},
     {.data = secondary_filter_ain[2], .size = SECONDARY_FILTER_SIZE},
@@ -40,93 +30,100 @@ void log_measures(uint8_t reset) {
     for(uint8_t i = 0; i < APP_ADC_LOG_SIZE; i++) {
       adc_log[i].valid = 0;
     }
-    for(uint8_t i = 0; i < ADC_CHANNELS_AMOUNT; i++) {
+    for(uint8_t i = 0; i < APP_ADC_CHANNELS_AMOUNT; i++) {
       median_filter_init(&primary_filter[i], HDL_ADC_MS5194T_INVALID_VALUE, &primary_filter_val.ain[i]);
       median_filter_init(&secondary_filter[i], HDL_ADC_MS5194T_INVALID_VALUE, &secondary_filter_val.ain[i]);
     }
     adc_age = hdl_adc_ms5194t_age(&mod_adc);
     return;
   }
-  uint32_t age = hdl_adc_ms5194t_age(&mod_adc);
-  if(adc_age != age) {
-    adc_log[ind].valid = 0;
-    for(uint8_t i = 0; i < ADC_CHANNELS_AMOUNT; i++) {
-      adc_log[ind].ain[i] = hdl_adc_ms5194t_get(&mod_adc, i);
-      if(median_filter_feed(&primary_filter[i], adc_log[ind].ain[i])) {
-        median_filter_feed(&secondary_filter[i], primary_filter_val.ain[i]);
-      }
+
+  static uint8_t log_state = APP_ADC_CHANNELS_AMOUNT + 1;
+  static uint32_t curr_age;
+  switch (log_state)
+  {
+  case 0:
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+    if(median_filter_feed(&primary_filter[log_state], adc_log[ind].ain[log_state])) {
+      median_filter_feed(&secondary_filter[log_state], primary_filter_val.ain[log_state]);
     }
-    adc_log[ind].timestamp = age;
-    primary_filter_val.timestamp = age;
-    secondary_filter_val.timestamp = age;
-    adc_log[ind].valid = MEASURE_VALID;
+    log_state++;
+    break;
+
+  case APP_ADC_CHANNELS_AMOUNT:
+    primary_filter_val.timestamp = curr_age;
+    secondary_filter_val.timestamp = curr_age;    
     secondary_filter_val.valid = MEASURE_VALID;
     primary_filter_val.valid = MEASURE_VALID;
-
     ind++;
     if(ind >= APP_ADC_LOG_SIZE) {
       ind = 0;
     }
-    adc_age = age;
+    log_state++;
+  break;
+
+  case APP_ADC_CHANNELS_AMOUNT + 1:
+    curr_age = hdl_adc_ms5194t_age(&mod_adc);
+    if(adc_age != curr_age) {
+      adc_log[ind].valid = 0;
+      for(uint8_t i = 0; i < APP_ADC_CHANNELS_AMOUNT; i++) {
+        adc_log[ind].ain[i] =  hdl_adc_ms5194t_get(&mod_adc, i);
+      }
+      adc_log[ind].timestamp = curr_age;
+      adc_log[ind].valid = MEASURE_VALID;
+      adc_age = curr_age;
+      primary_filter_val.valid = 0;
+      secondary_filter_val.valid = 0;
+      log_state = 0;
+    }
+    break;
+  default:
+    break;
   }
 }
 
 void update_circuit_config() {
   if(ai_circuit_config.sync_key == CIRCUIT_CONFIG_SYNC_KEY) {
-    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port1, ai_circuit_config.user.ai1);
-    ai_circuit_config.active.ai1 = ai_circuit_config.user.ai1;
-    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port2, ai_circuit_config.user.ai2);
-    ai_circuit_config.active.ai2 = ai_circuit_config.user.ai2;
-    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port3, ai_circuit_config.user.ai3);
-    ai_circuit_config.active.ai3 = ai_circuit_config.user.ai3;
-    bldl_uspd_ain_port_set_circuit(&hdl_uspd_ain_port4, ai_circuit_config.user.ai4);
-    ai_circuit_config.active.ai4 = ai_circuit_config.user.ai4;
+    for(uint8_t i = 0; i < APP_AIN_PORTS_AMOUNT; i++) {
+      bldl_uspd_ain_port_set_circuit(&app_uspd_ain_port[i], ai_circuit_config.user.ai[i]);
+      ai_circuit_config.active.ai[i] = ai_circuit_config.user.ai[i];
+    }
     log_measures(1);
     ai_circuit_config.sync_key = 0;
   }
 }
 
-uint8_t bldl_som_link_read_byte_cb(uint16_t addr) {
-  if((addr >= MAP_ADDR_ADC_LOG) && (addr < (MAP_ADDR_ADC_LOG + sizeof(adc_log)))) {
-    return ((uint8_t*)&adc_log)[addr - MAP_ADDR_ADC_LOG];
-  }
-  if((addr >= MAP_ADDR_PRIMARY_FILTER_ADC_VAL) && (addr < (MAP_ADDR_PRIMARY_FILTER_ADC_VAL + sizeof(primary_filter_val)))) {
-    return ((uint8_t*)&primary_filter_val)[addr - MAP_ADDR_PRIMARY_FILTER_ADC_VAL];
-  }
-  if((addr >= MAP_ADDR_SECONDARY_FILTER_ADC_VAL) && (addr < (MAP_ADDR_SECONDARY_FILTER_ADC_VAL + sizeof(secondary_filter_val)))) {
-    return ((uint8_t*)&secondary_filter_val)[addr - MAP_ADDR_SECONDARY_FILTER_ADC_VAL];
-  }
-  else if((addr >= MAP_ADDR_CIRCUIT_CONFIG) && (addr < (MAP_ADDR_CIRCUIT_CONFIG + sizeof(ai_circuit_config)))) {
-    return ((uint8_t*)&ai_circuit_config)[addr - MAP_ADDR_CIRCUIT_CONFIG];
-  }
-  else if((addr >= MAP_ADDR_ADC_CONFIG) && (addr < (MAP_ADDR_ADC_CONFIG + sizeof(adc_config)))) {
-    return ((uint8_t*)&adc_config)[addr - MAP_ADDR_ADC_CONFIG];
-  }
-  else if((addr >= MAP_ADDR_ADC_PRESET_CONFIG) && (addr < (MAP_ADDR_ADC_PRESET_CONFIG + sizeof(app_adc_preset_config)))) {
-    return ((uint8_t*)&app_adc_preset_config)[addr - MAP_ADDR_ADC_PRESET_CONFIG];
+uint8_t bldl_mem_map_rw(const app_mem_map_item_t map[], uint8_t map_size, uint16_t map_addr, uint8_t *w_data) {
+  static uint8_t current = 0;
+  for(uint8_t i = 0; i < map_size; i++) {
+    if(current >= map_size)
+      current = 0;
+    if((map_addr >= map[current].map_addr_start) && (map_addr <= map[current].map_addr_end)) {
+      uint8_t *data = &(map[current].data_ptr[map_addr - map[current].map_addr_start]);
+      if(w_data != NULL) *data = *w_data;
+      return *data;
+    }
+    current++;
   }
   return 0;
 }
 
+uint8_t bldl_som_link_read_byte_cb(uint16_t addr) {
+  return bldl_mem_map_rw(app_r_mem_map, APP_R_MEM_MAP_SIZE, addr, NULL);
+}
+
 void bldl_som_link_write_byte_cb(uint16_t addr, uint8_t data) {
-  if((addr >= (MAP_ADDR_CIRCUIT_CONFIG + offsetof(app_circuit_config_t, user))) && (addr < (MAP_ADDR_CIRCUIT_CONFIG + sizeof(ai_circuit_config)))) {
-    ((uint8_t*)&ai_circuit_config)[addr - MAP_ADDR_CIRCUIT_CONFIG] = data;
-  }
-  else if((addr >= (MAP_ADDR_ADC_CONFIG + offsetof(app_adc_config_t, src_user))) && (addr < (MAP_ADDR_ADC_CONFIG + sizeof(adc_config)))) {
-    ((uint8_t*)&adc_config)[addr - MAP_ADDR_ADC_CONFIG] = data;
-  }
-  else if((addr >= MAP_ADDR_ADC_PRESET_CONFIG) && (addr < (MAP_ADDR_ADC_PRESET_CONFIG + sizeof(app_adc_preset_config)))) {
-    ((uint8_t*)&app_adc_preset_config)[addr - MAP_ADDR_ADC_PRESET_CONFIG] = data;
-  }
+  bldl_mem_map_rw(app_w_mem_map, APP_W_MEM_MAP_SIZE, addr, &data);
 }
 
 void set_adc_config() {
-  adc_config.src_active[0] = adc_config.src_user[0];
-  adc_config.src_active[1] = adc_config.src_user[1];
-  adc_config.src_active[2] = adc_config.src_user[2];
-  adc_config.src_active[3] = adc_config.src_user[3];
-  adc_config.src_active[4] = adc_config.src_user[4];
-  adc_config.src_active[5] = adc_config.src_user[5];
+  for(uint8_t i = 0; i < APP_ADC_CHANNELS_AMOUNT; i++) {
+    adc_config.src_active[i] = adc_config.src_user[i];
+  }
   adc_config.adc_io_active = adc_config.adc_io_user;
   adc_config.adc_mode_active = adc_config.adc_mode_user;
   mod_adc_cnf.io_reg = adc_config.adc_io_active;
@@ -136,29 +133,15 @@ void set_adc_config() {
 
 void update_adc_preset_config() {
   if(app_adc_preset_config.sync_key == PRESET_CONFIG_SYNC_KEY) {
-    //adc_config.adc_io_user = MS5194T_IO_REG_DEFAULT;
-    //adc_config.adc_mode_user = MS5194T_MODE_REG_MS_PWR_DWN | !MS5194T_MODE_REG_PSW | !MS5194T_MODE_REG_AMP_CM | 
-    //                   MS5194T_MODE_REG_CLK_INT64K | !MS5194T_MODE_REG_CHOP_DIS | MS5194T_MODE_REG_FILTER_RATE(5);
-
-    if(app_adc_preset_config.port_preset_selection[0] < ADC_PRESETS_AMOUNT) {
-      adc_config.src_user[5].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[0]]->ch_config.config_reg | MS5194T_CONFIG_REG_CH_SEL(5);
-      adc_config.src_user[5].options = app_adc_presets[app_adc_preset_config.port_preset_selection[0]]->ch_config.options;
-      ai_circuit_config.user.ai1 = app_adc_presets[app_adc_preset_config.port_preset_selection[0]]->circuit_config;
-    }
-    if(app_adc_preset_config.port_preset_selection[0] < ADC_PRESETS_AMOUNT) {
-      adc_config.src_user[0].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[1]]->ch_config.config_reg | MS5194T_CONFIG_REG_CH_SEL(0);
-      adc_config.src_user[0].options = app_adc_presets[app_adc_preset_config.port_preset_selection[1]]->ch_config.options;
-      ai_circuit_config.user.ai2 = app_adc_presets[app_adc_preset_config.port_preset_selection[1]]->circuit_config;
-    }
-    if(app_adc_preset_config.port_preset_selection[0] < ADC_PRESETS_AMOUNT) {
-      adc_config.src_user[1].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[2]]->ch_config.config_reg | MS5194T_CONFIG_REG_CH_SEL(1);
-      adc_config.src_user[1].options = app_adc_presets[app_adc_preset_config.port_preset_selection[2]]->ch_config.options;
-      ai_circuit_config.user.ai3 = app_adc_presets[app_adc_preset_config.port_preset_selection[2]]->circuit_config;
-    }
-    if(app_adc_preset_config.port_preset_selection[0] < ADC_PRESETS_AMOUNT) {
-      adc_config.src_user[2].config_reg = app_adc_presets[app_adc_preset_config.port_preset_selection[3]]->ch_config.config_reg | MS5194T_CONFIG_REG_CH_SEL(2);
-      adc_config.src_user[2].options = app_adc_presets[app_adc_preset_config.port_preset_selection[3]]->ch_config.options;
-      ai_circuit_config.user.ai4 = app_adc_presets[app_adc_preset_config.port_preset_selection[3]]->circuit_config;
+    for(uint8_t i = 0; i < APP_AIN_PORTS_AMOUNT; i++) {
+      if(app_adc_preset_config.port_preset_selection[i] < APP_ADC_PRESETS_AMOUNT) {
+        adc_config.src_user[app_uspd_ain_port_to_adc_ch_map[i]].config_reg = 
+          app_adc_presets[app_adc_preset_config.port_preset_selection[i]]->ch_config.config_reg | 
+          MS5194T_CONFIG_REG_CH_SEL(app_uspd_ain_port_to_adc_ch_map[i]);
+        adc_config.src_user[app_uspd_ain_port_to_adc_ch_map[i]].options = 
+          app_adc_presets[app_adc_preset_config.port_preset_selection[i]]->ch_config.options;
+        ai_circuit_config.user.ai[i] = app_adc_presets[app_adc_preset_config.port_preset_selection[i]]->circuit_config;
+      }
     }
     ai_circuit_config.sync_key = CIRCUIT_CONFIG_SYNC_KEY;
     adc_config.sync_key = ADC_CONFIG_SYNC_KEY;
@@ -171,14 +154,6 @@ void update_adc_preset_config() {
 #define APP_STATE_WORK_ADC    2
 #define APP_STATE_RESET       3
 
-uint8_t test_data[512] = {};
-hdl_eeprom_i2c_message_t ee_msg_test = {
-  .buffer = test_data,
-  .count = 512,
-  .offset = 0,
-  .state = HDL_EEPROM_MSG_OPTION_READ,
-};
-
 void main() {
   uint8_t state = APP_STATE_ENABLE_ADC;
 
@@ -188,17 +163,12 @@ void main() {
     cooperative_scheduler(false);
   }
 
-  for(int i = 0; i < 512; i++) {
-    test_data[i] = 0;
-  }
+  // uint32_t time = 0;
+  // uint32_t now = hdl_time_counter_get(&mod_timer_ms);
+  // while(!TIME_ELAPSED(0, 2000, now)) {
+  //   now = hdl_time_counter_get(&mod_timer_ms);
+  // }
 
-  uint32_t time = 0;
-  uint32_t now = hdl_time_counter_get(&mod_timer_ms);
-  while(!TIME_ELAPSED(0, 2000, now)) {
-    now = hdl_time_counter_get(&mod_timer_ms);
-  }
-
-  hdl_eeprom_i2c_transfer(&mod_eeprom, &ee_msg_test);
 
   bldl_som_link_init();
   while (1) {

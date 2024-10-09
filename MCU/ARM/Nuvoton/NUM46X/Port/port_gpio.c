@@ -1,0 +1,77 @@
+#include "hdl_portable.h"
+
+hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
+  /* Casting desc to hdl_gpio_port_t* type */
+  hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;
+  if(port->module.reg == NULL)
+    return HDL_MODULE_FAULT;
+  if(enable)
+    CLK->AHBCLK0 |= port->config->hwc->rcu;
+  else{
+    CLK->AHBCLK0 &= ~(port->config->hwc->rcu);
+    return HDL_MODULE_UNLOADED;
+  }
+  return HDL_MODULE_ACTIVE;
+}
+
+hdl_gpio_state hdl_gpio_read(const hdl_gpio_pin_t *gpio){
+  if (hdl_state(&gpio->module) != HDL_MODULE_ACTIVE)
+    return HDL_GPIO_LOW;
+  GPIO_T *gpio_port = (GPIO_T *)gpio->module.dependencies[0]->reg;
+  return (gpio_port->PIN & (uint32_t)gpio->module.reg)? HDL_GPIO_HIGH: HDL_GPIO_LOW;
+}
+
+void hdl_gpio_write(const hdl_gpio_pin_t *gpio, const hdl_gpio_state state){
+  if (hdl_state(&gpio->module) != HDL_MODULE_ACTIVE)
+    return;
+  GPIO_T *gpio_port = (GPIO_T *)gpio->module.dependencies[0]->reg;
+  if(state == HDL_GPIO_LOW) {
+    gpio_port->DOUT &= ~((uint32_t)gpio->module.reg);
+  }
+  else {
+    gpio_port->DOUT |= (uint32_t)gpio->module.reg;
+  }
+}
+
+hdl_gpio_state hdl_gpio_read_output(const hdl_gpio_pin_t *gpio) {
+  if (hdl_state(&gpio->module) != HDL_MODULE_ACTIVE)
+    return HDL_GPIO_LOW;
+  GPIO_T *gpio_port = (GPIO_T *)gpio->module.dependencies[0]->reg;
+  return (gpio_port->DOUT & (uint32_t)gpio->module.reg)? HDL_GPIO_LOW : HDL_GPIO_HIGH;
+}
+
+void hdl_gpio_toggle(const hdl_gpio_pin_t *gpio){
+  if (hdl_state(&gpio->module) != HDL_MODULE_ACTIVE)
+    return;
+  GPIO_T *gpio_port = (GPIO_T *)gpio->module.dependencies[0]->reg;
+  gpio_port->DOUT ^= (uint32_t)gpio->module.reg;
+}
+
+
+hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
+  hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
+  if (gpio->config->hwc == NULL || gpio->module.dependencies[0] == NULL || gpio->module.dependencies[0]->reg == NULL)
+    return HDL_MODULE_FAULT;
+  GPIO_T *gpio_port = (GPIO_T *)gpio->module.dependencies[0]->reg;
+
+  if(gpio->config->inactive_default == HDL_GPIO_LOW) {
+    gpio_port->DOUT &= ~((uint32_t)gpio->module.reg);
+  }
+  else {
+    gpio_port->DOUT |= (uint32_t)gpio->module.reg;
+  }
+
+  if(enable) {
+    GPIO_SetMode(gpio_port, (uint32_t)gpio->module.reg, gpio->config->hwc->func);
+    GPIO_SetPullCtl(gpio_port, (uint32_t)gpio->module.reg, gpio->config->hwc->pull_mode);
+    GPIO_SetSlewCtl(gpio_port, (uint32_t)gpio->module.reg, gpio->config->hwc->slew_mode);
+  }
+  else{
+    GPIO_SetMode(gpio_port, (uint32_t)gpio->module.reg, GPIO_MODE_QUASI);
+    GPIO_SetPullCtl(gpio_port, (uint32_t)gpio->module.reg, GPIO_PUSEL_DISABLE);
+    GPIO_SetSlewCtl(gpio_port, (uint32_t)gpio->module.reg, GPIO_SLEWCTL_NORMAL);
+    return HDL_MODULE_UNLOADED;
+  }
+
+  return HDL_MODULE_ACTIVE;
+}

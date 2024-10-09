@@ -1,0 +1,5 @@
+si 1
+speed 1000
+device STM32L071KB
+erase
+exit

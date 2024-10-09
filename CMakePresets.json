@@ -7,43 +7,102 @@
     },
     "configurePresets": [
         {
-            "name": "DebugNUM463KG",
-            "displayName": "Debug NUM463KG",
+            "name": "ATB_RK3568J_SMC_R3_D",
+            "displayName": "ATB_RK3568J_SMC_R3 Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "MCU": "NUM463KG"
+                "BOARD": "ATB_RK3568J_SMC_R3"
             }
         },
         {
-            "name": "DebugGD32E230",
-            "displayName": "Debug GD32E230",
+            "name": "ATB_RK3568J_SMC_R1_D",
+            "displayName": "ATB_RK3568J_SMC_R1 Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "MCU": "GD32E230"
+                "BOARD": "ATB_RK3568J_SMC_R1"
             }
         },
         {
-            "name": "ReleaseNUM463KG",
-            "displayName": "Release NUM463KG",
+            "name": "ATB_RK3568J_SMC_R0_D",
+            "displayName": "ATB_RK3568J_SMC_R0 Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "MCU": "NUM463KG"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_RK3568J_SMC_R0"
             }
         },
         {
-            "name": "ReleaseGD32E230",
-            "displayName": "Release GD32E230",
+            "name": "ATB_USPD_MPC_D",
+            "displayName": "ATB_USPD_MPC Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "MCU": "GD32E230"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_USPD_MPC"
+            }
+        },
+        {
+            "name": "ATB_USPD_MPC2_D",
+            "displayName": "ATB_USPD_MPC2 Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_USPD_MPC2"
+            }
+        },
+        {
+            "name": "ATB_USPD20K_D",
+            "displayName": "ATB_USPD20K Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_USPD20K"
+            }
+        },
+        {
+            "name": "ATB3500_D",
+            "displayName": "ATB3500 Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_3500"
+            }
+        },
+        {
+            "name": "ATB_MUVV_D",
+            "displayName": "ATB_MUVV Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_MUVV"
+            }
+        },
+        {
+            "name": "GD32E23X_DEMO_D",
+            "displayName": "GD32E23X_DEMO Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "GD32E23X_DEMO"
+            }
+        },
+        {
+            "name": "Release",
+            "displayName": "Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
@@ -63,20 +122,20 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
+        },
+        {
+            "name": "Custom configure preset",
+            "displayName": "Custom configure preset",
+            "description": "Sets Ninja generator, build and install directory",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
         }
     ],
     "buildPresets": [
-        {
-            "name": "DebugGD32E230",
-            "description": "",
-            "displayName": "J-Link Debug GD32E230",
-            "configurePreset": "DebugGD32E230"
-        },
-        {
-            "name": "DebugNUM463KG",
-            "description": "",
-            "displayName": "J-Link Debug NUM463KG",
-            "configurePreset": "DebugNUM463KG"
-        }
+
     ]
 }

@@ -1,0 +1,7 @@
+si 1
+speed 1000
+device GD32F103VG
+erase
+loadfile build/bmc.hex 0
+R
+exit

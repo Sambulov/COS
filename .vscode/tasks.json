@@ -3,6 +3,18 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
+		{
+			"label": "FlashMCU",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -commanderscript ./project/drivers/gd_drivers/system/FlashMCU.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -commanderscript ${workspaceFolder}\\MCU\\ARM\\Gigadevice\\GD32E23X\\Res\\flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
         {
             "type": "shell",
             "label": "Clean Rebuild",
@@ -29,8 +41,8 @@
                 "command": "C:/NuOpenOCD/bin/openocd.exe",
 			},
             "args": [
-                "-f", "${workspaceFolder}/NUM463KG/Res/tool.cfg",
-                "-f", "${workspaceFolder}/NUM463KG/Res/mcu.cfg",
+                "-f", "${workspaceFolder}/MCU/ARM/Nuvoton/NUM46X/Res/tool.cfg",
+                "-f", "${workspaceFolder}/MCU/ARM/Nuvoton/NUM46X/Res/MCU/ARM.cfg",
                 "-c", "init",
                 "-c", "halt",
                 "-c", "flash write_image erase ./build/bmc.hex",
@@ -52,8 +64,8 @@
                 "command": "C:/NuOpenOCD/bin/openocd.exe",
 			},
             "args": [
-                "-f", "${workspaceFolder}/NUM463KG/Res/tool.cfg",
-                "-f", "${workspaceFolder}/NUM463KG/Res/mcu.cfg",
+                "-f", "${workspaceFolder}/MCU/ARM/Nuvoton/NUM46X/Res/tool.cfg",
+                "-f", "${workspaceFolder}/MCU/ARM/Nuvoton/NUM46X/Res/MCU/ARM.cfg",
                 "-c", "init",
                 "-c", "halt",
                 "-c", "flash erase_address 0x00000000 0x00040000",
@@ -68,10 +80,10 @@
 			"type": "shell",
 			"label": "J-Link Flash NUM463KG",
             "linux": {
-				"command": "JLinkExe -CommandFile ./NUM463KG/Res/flash.jlink",
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Nuvoton/NUM46X/Res/flash.jlink",
 			},
 			"windows": {
-				"command": "JLink.exe -CommandFile ./NUM463KG/Res/flash.jlink",
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Nuvoton/NUM46X/Res/flash.jlink",
 			},
 			"detail": "Flash",
 			"group": "build"
@@ -80,38 +92,121 @@
 			"label": "J-Link Erase NUM463KG",
 			"type": "shell",
 			"linux": {
-				"command": "JLinkExe -CommandFile ./NUM463KG/Res/erase.jlink",
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Nuvoton/NUM46X/Res/erase.jlink",
 			},
 			"windows": {
-				"command": "JLink.exe -CommandFile ./NUM463KG/Res/erase.jlink",
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Nuvoton/NUM46X/Res/erase.jlink",
 			},
 			"detail": "Erase",
 			"group": "build"
 		},
 		{
 			"type": "shell",
-			"label": "J-Link Flash GD32E230",
+			"label": "J-Link Flash GD32E230K6",
 			"linux": {
-				"command": "JLinkExe -CommandFile ./GD32E230/Res/flash.jlink",
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash_k6.jlink",
 			},
 			"windows": {
-				"command": "JLink.exe -CommandFile ./GD32E230/Res/flash.jlink",
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash_k6.jlink",
 			},
 			"detail": "Flash",
 			"group": "build"
 		},
 		{
-			"label": "J-Link Erase GD32E230",
 			"type": "shell",
+			"label": "J-Link Flash GD32E230C6",
 			"linux": {
-				"command": "JLinkExe -CommandFile ./GD32E230/Res/erase.jlink",
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash_c6.jlink",
 			},
 			"windows": {
-				"command": "JLink.exe -CommandFile ./GD32E230/Res/erase.jlink",
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/flash_c6.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase GD32E230K6",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/erase_k6.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32E23X/Res/erase_k6.jlink",
 			},
 			"detail": "Erase",
 			"group": "build"
 		},
-
+		{
+			"type": "shell",
+			"label": "J-Link Flash GD32F103VG",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32F103VG/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32F103VG/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase GD32F103VG",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32F103VG/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32F103VG/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
+		{
+			"type": "shell",
+			"label": "J-Link Flash STM32L071KB",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/ST/STM32L0XX/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/ST/STM32L0XX/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase STM32L071KB",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/ST/STM32L0XX/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/ST/STM32L0XX/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Flash GD32F450ZI",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32F450ZI/Res/flash.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32F450ZI/Res/flash.jlink",
+			},
+			"detail": "Flash",
+			"group": "build"
+		},
+		{
+			"label": "J-Link Erase GD32F450ZI",
+			"type": "shell",
+			"linux": {
+				"command": "JLinkExe -CommandFile ./MCU/ARM/Gigadevice/GD32F450ZI/Res/erase.jlink",
+			},
+			"windows": {
+				"command": "JLink.exe -CommandFile ./MCU/ARM/Gigadevice/GD32F450ZI/Res/erase.jlink",
+			},
+			"detail": "Erase",
+			"group": "build"
+		},
     ]
 }

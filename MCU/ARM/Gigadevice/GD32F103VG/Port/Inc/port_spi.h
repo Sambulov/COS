@@ -2,13 +2,13 @@
 #define PORT_SPI_H_
 
 /* Comability */
-#define SPI_STAT_FERR                      0
+#define SPI_STAT_FERR                          0
 
-#define HDL_SPI_MESSAGE_PRV_SIZE           28
-#define SPI_SERVER_PRIVATE_SIZE            52
-#define SPI_MEM_SERVER_PRIVATE_SIZE        56
-#define SPI_SERVER_DMA_PRIVATE_SIZE        88
-#define SPI_CH_PRIVATE_SIZE                20
+#define HDL_SPI_SERVER_PRIVATE_SIZE            52
+#define HDL_SPI_SERVER_DMA_PRIVATE_SIZE        88
+#define HDL_SPI_CLIENT_PRIVATE_SIZE            32
+#define HDL_SPI_CLIENT_CH_PRIVATE_SIZE         24
+
 
 #define SPI_ERROR_MASK      (uint32_t)(SPI_STAT_RXORERR | SPI_STAT_CONFERR | SPI_STAT_CRCERR | SPI_STAT_TXURERR)
 
@@ -60,11 +60,8 @@ typedef struct {
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
   interrupt controller (nvic)
  */
-typedef struct {
-  hdl_module_t module;
-  hdl_spi_server_config_t *config;
-  PRIVATE(hw, SPI_SERVER_PRIVATE_SIZE);
-} hdl_spi_server_t;
+// typedef struct {
+// } hdl_spi_server_t;
 
 /**************** vvv  SPI slave DMA vvv  ******************/
 
@@ -79,15 +76,10 @@ typedef struct {
   hdl_dma_channel tx
   timer
 */
-typedef struct {
-  hdl_module_t module;
-  hdl_spi_server_config_t *config;
-  PRIVATE(hw, SPI_SERVER_DMA_PRIVATE_SIZE);
-} hdl_spi_server_dma_t;
+// typedef struct {
+// } hdl_spi_server_dma_t;
 
 /**************** vvv  SPI master vvv  ******************/
-#define HDL_SPI_CLIENT_PRIVATE_SIZE    60
-#define HDL_SPI_CLIENT_CH_PRIVATE_SIZE 24
 
 typedef struct {
   rcu_periph_enum rcu;
@@ -104,19 +96,20 @@ typedef struct {
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
   interrupt controller (nvic)
  */
-typedef struct {
-  hdl_module_t module;
-  hdl_spi_client_config_t *config;
-  PRIVATE(hw, HDL_SPI_CLIENT_PRIVATE_SIZE);
-} hdl_spi_client_t;
+// typedef struct {
+// } hdl_spi_client_t;
 
 /* depends on:
   hdl_spi_t
   gpio cs
  */
+// typedef struct {
+//   hdl_module_t module;
+//   PRIVATE(hw, HDL_SPI_CLIENT_CH_PRIVATE_SIZE);
+// } hdl_spi_client_ch_t;
+
 typedef struct {
-  hdl_module_t module;
-  PRIVATE(hw, HDL_SPI_CLIENT_CH_PRIVATE_SIZE);
-} hdl_spi_client_ch_t;
+    uint32_t cs_min_delay;  // ticks
+} hdl_spi_client_ch_config_t;
 
 #endif // PORT_SPI_H_

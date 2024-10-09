@@ -13,6 +13,14 @@ From address 0x0000 till 0x07FF holds ADC conversions table
 
 First 6 32-bits double words holds raw ADC values converted for each corresponding channels. Next is timestamp when conversion was completed for the last channel. And validation number shuld have 0xCAFEFEED value, in other case row is invalid. Raw ADC value equals to 0xFFFFFFFF also invalid. Table consists of 64 rows.
 
+### 0x0900 - 0x091F (read only)
+From address 0x0900 till 0x091F holds ADC conversions filtered with primary filter. 
+(see ADC conversions table format)
+
+### 0x0950 - 0x096F (read only)
+From address 0x0950 till 0x096F holds ADC conversions filtered with secondary filter. 
+(see ADC conversions table format)
+
 ### 0x1000 - 0x100B (read), 0x1004 - 0x100B (read/write)
 From address 0x1000 till 0x100B holds analog ports input circuit configuration.
 
@@ -114,12 +122,16 @@ This region useful to fast set predefined configuration as ADC and input analog 
 | SYNC_KEY   |      8 |   32b | RW     | Write 0x87654321 to apply config, resets to 0 when finish (see also SYNC_KEY's for ADC config and circuit config) |
 
 #### PORT_MODE description
-0: Disable channel
-1: RTD
-2: 0-20mA
-3: 0-10V
-4: NTC
-5-255: leave untoched
+| Value  | Description  |
+| ------ | ------------ |
+| 0      | Disable channel |
+| 1      | RTD |
+| 2      | 0-20mA |
+| 3      | 0-10V |
+| 4      | NTC |
+| 5      | Floating input |
+| 6      | Internal 1K calibration |
+| 7-255  | Leave untoched |
 
 ## Interaction example
 #### Check if driver up:

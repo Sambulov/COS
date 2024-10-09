@@ -1,12 +1,6 @@
 #ifndef PORT_SPI_H_
 #define PORT_SPI_H_
 
-#define HDL_SPI_MESSAGE_PRV_SIZE           28
-#define SPI_SERVER_PRIVATE_SIZE            52
-#define SPI_MEM_SERVER_PRIVATE_SIZE        56
-#define SPI_SERVER_DMA_PRIVATE_SIZE        88
-#define SPI_CH_PRIVATE_SIZE                20
-
 #define SPI_ERROR_MASK      (uint32_t)(SPI_STAT_FERR | SPI_STAT_RXORERR | SPI_STAT_CONFERR | SPI_STAT_CRCERR | SPI_STAT_TXURERR)
 
 typedef enum {
@@ -40,6 +34,7 @@ typedef enum {
 void hdl_spi_reset_status(uint32_t spi_module_reg);
 
 /**************** vvv  SPI slave vvv  ******************/
+#define HDL_SPI_SERVER_PRIVATE_SIZE            52
 
 typedef struct {
   rcu_periph_enum rcu;
@@ -59,6 +54,7 @@ typedef struct {
  */
 
 /**************** vvv  SPI slave DMA vvv  ******************/
+#define HDL_SPI_SERVER_DMA_PRIVATE_SIZE        88
 
 /* hdl_spi_server_dma_t depends on:
   gpio mosi
@@ -73,8 +69,8 @@ typedef struct {
 */
 
 /**************** vvv  SPI master vvv  ******************/
-#define HDl_SPI_CLIENT_PRIVATE_SIZE    32
-#define HDl_SPI_CLIENT_CH_PRIVATE_SIZE  24
+#define HDL_SPI_CLIENT_PRIVATE_SIZE           32
+#define HDL_SPI_CLIENT_CH_PRIVATE_SIZE        24
 
 typedef struct {
   rcu_periph_enum rcu;

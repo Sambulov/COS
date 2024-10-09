@@ -18,8 +18,8 @@ typedef struct {
   uint16_t tx_cursor;
 } hdl_spi_client_private_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_private_t, hdl_spi_client_t, HDl_SPI_CLIENT_PRIVATE_SIZE, port_spi.h);
-HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_private_t, hdl_spi_client_ch_t, HDl_SPI_CLIENT_CH_PRIVATE_SIZE, port_spi.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_private_t, hdl_spi_client_t, HDL_SPI_CLIENT_PRIVATE_SIZE, port_spi.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_private_t, hdl_spi_client_ch_t, HDL_SPI_CLIENT_CH_PRIVATE_SIZE, port_spi.h);
 
 static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   hdl_spi_client_private_t *spi = (hdl_spi_client_private_t *)context;

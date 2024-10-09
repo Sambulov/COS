@@ -34,8 +34,8 @@ typedef struct {
 /**************** vvv  SPI slave vvv  ******************/
 typedef struct {
   hdl_module_t module;
-  hdl_spi_server_config_t *config;
-  PRIVATE(hw, SPI_SERVER_PRIVATE_SIZE);
+  const hdl_spi_server_config_t *config;
+  PRIVATE(hw, HDL_SPI_SERVER_PRIVATE_SIZE);
 } hdl_spi_server_t;
 
 hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable);
@@ -45,13 +45,13 @@ void hdl_spi_server_set_transceiver(hdl_spi_server_t *spi, hdl_transceiver_t *tr
 typedef struct {
   hdl_module_t module;
   const hdl_spi_client_ch_config_t *config;
-  PRIVATE(hw, HDl_SPI_CLIENT_CH_PRIVATE_SIZE);
+  PRIVATE(hw, HDL_SPI_CLIENT_CH_PRIVATE_SIZE);
 } hdl_spi_client_ch_t;
 
 typedef struct {
   hdl_module_t module;
   const hdl_spi_client_config_t *config;
-  PRIVATE(hw, HDl_SPI_CLIENT_PRIVATE_SIZE);
+  PRIVATE(hw, HDL_SPI_CLIENT_PRIVATE_SIZE);
 } hdl_spi_client_t;
 
 hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable);
@@ -61,8 +61,8 @@ uint8_t hdl_spi_transfer_message(hdl_spi_client_ch_t *spi_ch, hdl_spi_message_t 
 /**************** vvv  SPI slave DMA vvv  ******************/
 typedef struct {
   hdl_module_t module;
-  hdl_spi_server_config_t *config;
-  PRIVATE(hw, SPI_SERVER_DMA_PRIVATE_SIZE);
+  const hdl_spi_server_config_t *config;
+  PRIVATE(hw, HDL_SPI_SERVER_DMA_PRIVATE_SIZE);
 } hdl_spi_server_dma_t;
 
 hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable);

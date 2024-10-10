@@ -31,7 +31,6 @@ static uint32_t _filter_find_median(median_filter_private_t *flt) {
     uint32_t lower = 0;
     uint32_t next_bigger = median;
     uint32_t next_lower = median;
-
     for(int i = 0; i < flt->private.amount; i++) {
       if(flt->data[i] > median) {
         if((next_bigger == median) || (next_bigger > flt->data[i])) {
@@ -45,15 +44,15 @@ static uint32_t _filter_find_median(median_filter_private_t *flt) {
         lower++;
       }
     }
-    bigger <<= 1;
-    lower <<= 1;
-    if((flt->private.amount >= bigger) && (flt->private.amount >= lower)) {
-      if(flt->private.amount & 1)
-        return median;
+    if((flt->private.amount >= (bigger << 1)) && (flt->private.amount >= (lower << 1))) {
+      if(flt->private.amount & 1) return median;
+      uint32_t add = next_lower;
+      if(lower < (flt->private.amount >> 1)) add = median;
       if (bigger > lower) {
-        return (median >> 1) + (next_bigger >> 1) + ((next_bigger & 1) & (median & 1));
+        add = next_bigger;
+        if(bigger < (flt->private.amount >> 1)) add = median;
       }
-      return (median >> 1) + (next_lower >> 1) + ((next_lower & 1) & (median & 1));
+      return ((add & median) & 1) + (median >> 1) + (add >> 1);
     }
     median = (bigger > lower)? next_bigger: next_lower;
   }

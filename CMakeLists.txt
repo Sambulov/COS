@@ -208,11 +208,6 @@ if (CORE STREQUAL "ARM")
 
   # Add Include directories
   include_directories(
-    "${CMAKE_SOURCE_DIR}/CL"
-    "${CMAKE_SOURCE_DIR}/CL/Inc"
-    "${CMAKE_SOURCE_DIR}/CL/DataStructures/Inc"
-    "${CMAKE_SOURCE_DIR}/CL/Workflow/Inc"
-    "${CMAKE_SOURCE_DIR}/CL/Math/Inc"
     "${CMAKE_SOURCE_DIR}/HDL"
     "${CMAKE_SOURCE_DIR}/HDL/Basic/Inc"
     "${CMAKE_SOURCE_DIR}/HDL/ATB/Inc"
@@ -233,10 +228,6 @@ if (CORE STREQUAL "ARM")
 
   # Add you source file
   file(GLOB SOURCES
-  "${CMAKE_SOURCE_DIR}/CL/Src/*.c"
-  "${CMAKE_SOURCE_DIR}/CL/DataStructures/Src/*.c"
-  "${CMAKE_SOURCE_DIR}/CL/Workflow/Src/*.c"
-  "${CMAKE_SOURCE_DIR}/CL/Math/Src/*.c"
   "${CMAKE_SOURCE_DIR}/HDL/Basic/Src/*.c"
   "${CMAKE_SOURCE_DIR}/HDL/ATB/Src/*.c"
   "${CMAKE_SOURCE_DIR}/HDL/PMIC/Src/*.c"
@@ -257,7 +248,7 @@ if (CORE STREQUAL "ARM")
   add_link_options(-mcpu=${MCPU} -T ${LINKER_SCRIPT})
   add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
-  
+  add_subdirectory("${CMAKE_SOURCE_DIR}/CL")
 
   #set(STARTUP_FILE "${CMAKE_SOURCE_DIR}/MCU/ARM/${MCU}/Sys/startup.c")
 
@@ -272,6 +263,8 @@ if (CORE STREQUAL "ARM")
 
   #add_executable(${EXECUTABLE} ${SOURCES} ${STARTUP_FILE} ${LINKER_SCRIPT})
   add_executable(${EXECUTABLE} ${SOURCES} ${LINKER_SCRIPT})
+
+  target_link_libraries(${EXECUTABLE} PUBLIC CodeLib)
 
   set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
   set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)

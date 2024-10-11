@@ -45,15 +45,23 @@
 #define POWER_RAIL_OV_TRHESHOLD_1V8             ((uint16_t)2500)   /* +10% from 1v8 */
 
 typedef enum {
-    PD_STATE_OFF,
-    PD_STATE_ENABLED,
-    PD_STATE_STABLE_DELAY,
-    PD_STATE_STABLE,
-    PD_STATE_FAULT
+  PD_STATE_OFF,
+  PD_STATE_ENABLED,
+  PD_STATE_STABLE_DELAY,
+  PD_STATE_STABLE,
+  PD_STATE_FAULT
 } power_domain_state_e;
 
 #define ATB3500_POWER_RAIL_PRV_SIZE      ((6 + POWER_DOMAIN_ADC_FILTER_LENGH) * 4) + 24
 
+typedef struct {
+  uint32_t adc_scale;
+  uint32_t adc_ch;
+  uint32_t ov_threshold;
+  uint32_t uv_threshold;
+  uint32_t raise_delay;
+  uint32_t stabilization_delay;
+} atb3500_power_rail_config_t;
 
 #define ATB3500_POWER_RAIL_TIMER            0
 #define ATB3500_POWER_RAIL_ADC              1
@@ -63,22 +71,17 @@ typedef enum {
 #define ATB3500_POWER_RAIL_FEEDBACK_FAULT   5
 #define ATB3500_POWER_RAIL_FEEDBACK_GOOD    6
 /*
-    depends on:
-    - timer
-    - adc
-    - adc_pin
-    - source power_rail
-    - enable_pin
+  depends on:
+  - timer
+  - adc
+  - adc_pin
+  - source power_rail
+  - enable_pin
 */
 typedef struct {
-    hdl_module_t module;
-    uint32_t adc_scale;
-    uint32_t adc_ch;
-    uint32_t ov_threshold;
-    uint32_t uv_threshold;
-    uint32_t raise_delay;
-    uint32_t stabilization_delay;
-    PRIVATE(bldl, ATB3500_POWER_RAIL_PRV_SIZE);
+  hdl_module_t module;
+  const atb3500_power_rail_config_t *config;
+  PRIVATE(bldl, ATB3500_POWER_RAIL_PRV_SIZE);
 } atb3500_power_rail_t;
 
 hdl_module_state_t atb3500_power_rail(void *desc, uint8_t enable);

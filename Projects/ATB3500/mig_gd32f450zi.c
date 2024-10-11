@@ -1085,22 +1085,35 @@ hdl_i2c_t mod_i2c0 = {
  *                        BLDL
  *************************************************************/
 
+const atb3500_power_rail_config_t rail_24v_cnf = {
+  .adc_scale = POWER_RAIL_ADC_SCALE_24V,
+  .adc_ch = 0,
+  .uv_threshold = POWER_RAIL_UV_TRHESHOLD_24V,
+  .ov_threshold = POWER_RAIL_OV_TRHESHOLD_24V,
+  .raise_delay = POWER_RAIL_RAISE_DELAY_24V,
+  .stabilization_delay = POWER_RAIL_STAB_DELAY_24V,
+};
+
 atb3500_power_rail_t rail_24v = {
-    .module.init = &atb3500_power_rail,
-    .module.dependencies = hdl_module_dependencies(
-        &mod_systick_timer_ms.module,
-        &mod_adc.module,
-        &mod_adc_pin_24v.module,
-        &hdl_null_module,
-        &hdl_null_module,
-        &hdl_null_module,
-        &hdl_null_module),
-    .adc_scale = POWER_RAIL_ADC_SCALE_24V,
-    .adc_ch = 0,
-    .uv_threshold = POWER_RAIL_UV_TRHESHOLD_24V,
-    .ov_threshold = POWER_RAIL_OV_TRHESHOLD_24V,
-    .raise_delay = POWER_RAIL_RAISE_DELAY_24V,
-    .stabilization_delay = POWER_RAIL_STAB_DELAY_24V,
+  .module.init = &atb3500_power_rail,
+  .module.dependencies = hdl_module_dependencies(
+    &mod_systick_timer_ms.module,
+    &mod_adc.module,
+    &mod_adc_pin_24v.module,
+    &hdl_null_module,
+    &hdl_null_module,
+    &hdl_null_module,
+    &hdl_null_module),
+  .config = &rail_24v_cnf
+};
+
+const atb3500_power_rail_config_t rail_24vpoe_cnf = {
+  .adc_scale = POWER_RAIL_ADC_SCALE_24V,
+  .adc_ch = 1,
+  .uv_threshold = POWER_RAIL_UV_TRHESHOLD_24V,
+  .ov_threshold = POWER_RAIL_OV_TRHESHOLD_24V,
+  .raise_delay = POWER_RAIL_RAISE_DELAY_24V,
+  .stabilization_delay = POWER_RAIL_STAB_DELAY_24V,
 };
 
 atb3500_power_rail_t rail_24vpoe = {
@@ -1113,84 +1126,95 @@ atb3500_power_rail_t rail_24vpoe = {
         &mod_do_24v_poe_power_on.module, 
         &mod_di_24v_poe_power_fault.module, 
         &mod_di_24v_poe_power_good.module),
-    .adc_scale = POWER_RAIL_ADC_SCALE_24V,
-    .adc_ch = 1,
-    .uv_threshold = POWER_RAIL_UV_TRHESHOLD_24V,
-    .ov_threshold = POWER_RAIL_OV_TRHESHOLD_24V,
-    .raise_delay = POWER_RAIL_RAISE_DELAY_24V,
-    .stabilization_delay = POWER_RAIL_STAB_DELAY_24V,
+    .config = &rail_24vpoe_cnf
+};
+
+const atb3500_power_rail_config_t rail_5v_cnf = {
+  .adc_scale = POWER_RAIL_ADC_SCALE_5V,
+  .adc_ch = 2,
+  .uv_threshold = POWER_RAIL_UV_TRHESHOLD_5V,
+  .ov_threshold = POWER_RAIL_OV_TRHESHOLD_5V,
+  .raise_delay = POWER_RAIL_RAISE_DELAY_5V,
+  .stabilization_delay = POWER_RAIL_STAB_DELAY_5V,
 };
 
 atb3500_power_rail_t rail_5v = {
-    .module.init = &atb3500_power_rail,
-    .module.dependencies = hdl_module_dependencies(
-        &mod_systick_timer_ms.module,
-        &mod_adc.module,
-        &mod_adc_pin_5v.module,
-        &rail_24v.module,
-        &mod_do_5v_power_on.module,
-        &hdl_null_module,
-        &hdl_null_module),
-    .adc_scale = POWER_RAIL_ADC_SCALE_5V,
-    .adc_ch = 2,
-    .uv_threshold = POWER_RAIL_UV_TRHESHOLD_5V,
-    .ov_threshold = POWER_RAIL_OV_TRHESHOLD_5V,
-    .raise_delay = POWER_RAIL_RAISE_DELAY_5V,
-    .stabilization_delay = POWER_RAIL_STAB_DELAY_5V,
+  .module.init = &atb3500_power_rail,
+  .module.dependencies = hdl_module_dependencies(
+    &mod_systick_timer_ms.module,
+    &mod_adc.module,
+    &mod_adc_pin_5v.module,
+    &rail_24v.module,
+    &mod_do_5v_power_on.module,
+    &hdl_null_module,
+    &hdl_null_module),
+  .config = &rail_5v_cnf
+};
+
+const atb3500_power_rail_config_t rail_3v3_cnf = {
+  .adc_scale = POWER_RAIL_ADC_SCALE_3V3,
+  .adc_ch = 3,
+  .uv_threshold = POWER_RAIL_UV_TRHESHOLD_3V3,
+  .ov_threshold = POWER_RAIL_OV_TRHESHOLD_3V3,
+  .raise_delay = POWER_RAIL_RAISE_DELAY_3V3,
+  .stabilization_delay = POWER_RAIL_STAB_DELAY_3V3,
 };
 
 atb3500_power_rail_t rail_3v3 = {
-    .module.init = &atb3500_power_rail,
-    .module.dependencies = hdl_module_dependencies(
-        &mod_systick_timer_ms.module,
-        &mod_adc.module,
-        &mod_adc_pin_3v3.module,
-        &rail_5v.module,
-        &hdl_null_module,
-        &hdl_null_module,
-        &hdl_null_module),
-    .adc_scale = POWER_RAIL_ADC_SCALE_3V3,
-    .adc_ch = 3,
-    .uv_threshold = POWER_RAIL_UV_TRHESHOLD_3V3,
-    .ov_threshold = POWER_RAIL_OV_TRHESHOLD_3V3,
-    .raise_delay = POWER_RAIL_RAISE_DELAY_3V3,
-    .stabilization_delay = POWER_RAIL_STAB_DELAY_3V3,
+  .module.init = &atb3500_power_rail,
+  .module.dependencies = hdl_module_dependencies(
+    &mod_systick_timer_ms.module,
+    &mod_adc.module,
+    &mod_adc_pin_3v3.module,
+    &rail_5v.module,
+    &hdl_null_module,
+    &hdl_null_module,
+    &hdl_null_module),
+  .config = &rail_3v3_cnf
+};
+
+const atb3500_power_rail_config_t rail_2v5_cnf = {
+  .adc_scale = POWER_RAIL_ADC_SCALE_2V5,
+  .adc_ch = 4,
+  .uv_threshold = POWER_RAIL_UV_TRHESHOLD_2V5,
+  .ov_threshold = POWER_RAIL_OV_TRHESHOLD_2V5,
+  .raise_delay = POWER_RAIL_RAISE_DELAY_2V5,
+  .stabilization_delay = POWER_RAIL_STAB_DELAY_2V5,
 };
 
 atb3500_power_rail_t rail_2v5 = {
-    .module.init = &atb3500_power_rail,
-    .module.dependencies = hdl_module_dependencies(
-        &mod_systick_timer_ms.module,
-        &mod_adc.module,
-        &mod_adc_pin_2v5.module,
-        &rail_5v.module,
-        &hdl_null_module,
-        &hdl_null_module,
-        &hdl_null_module),
-    .adc_scale = POWER_RAIL_ADC_SCALE_2V5,
-    .adc_ch = 4,
-    .uv_threshold = POWER_RAIL_UV_TRHESHOLD_2V5,
-    .ov_threshold = POWER_RAIL_OV_TRHESHOLD_2V5,
-    .raise_delay = POWER_RAIL_RAISE_DELAY_2V5,
-    .stabilization_delay = POWER_RAIL_STAB_DELAY_2V5,
+  .module.init = &atb3500_power_rail,
+  .module.dependencies = hdl_module_dependencies(
+    &mod_systick_timer_ms.module,
+    &mod_adc.module,
+    &mod_adc_pin_2v5.module,
+    &rail_5v.module,
+    &hdl_null_module,
+    &hdl_null_module,
+    &hdl_null_module),
+  .config = &rail_2v5_cnf
+};
+
+const atb3500_power_rail_config_t rail_1v8_cnf = {
+  .adc_scale = POWER_RAIL_ADC_SCALE_1V8,
+  .adc_ch = 5,
+  .uv_threshold = POWER_RAIL_UV_TRHESHOLD_1V8,
+  .ov_threshold = POWER_RAIL_OV_TRHESHOLD_1V8,
+  .raise_delay = POWER_RAIL_RAISE_DELAY_1V8,
+  .stabilization_delay = POWER_RAIL_STAB_DELAY_1V8,
 };
 
 atb3500_power_rail_t rail_1v8 = {
-    .module.init = &atb3500_power_rail,
-    .module.dependencies = hdl_module_dependencies(
-        &mod_systick_timer_ms.module,
-        &mod_adc.module,
-        &mod_adc_pin_1v8.module,
-        &rail_5v.module,
-        &hdl_null_module,
-        &hdl_null_module,
-        &hdl_null_module),
-    .adc_scale = POWER_RAIL_ADC_SCALE_1V8,
-    .adc_ch = 5,
-    .uv_threshold = POWER_RAIL_UV_TRHESHOLD_1V8,
-    .ov_threshold = POWER_RAIL_OV_TRHESHOLD_1V8,
-    .raise_delay = POWER_RAIL_RAISE_DELAY_1V8,
-    .stabilization_delay = POWER_RAIL_STAB_DELAY_1V8,
+  .module.init = &atb3500_power_rail,
+  .module.dependencies = hdl_module_dependencies(
+    &mod_systick_timer_ms.module,
+    &mod_adc.module,
+    &mod_adc_pin_1v8.module,
+    &rail_5v.module,
+    &hdl_null_module,
+    &hdl_null_module,
+    &hdl_null_module),
+  .config = &rail_1v8_cnf
 };
 
 hdl_smarc_carrier_t mod_smarc = {

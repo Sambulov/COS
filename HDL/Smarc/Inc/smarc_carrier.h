@@ -75,6 +75,10 @@ typedef enum {
 #define HDL_SMARC_CARRIER_DEPENDENCY_BOOT1_PIN                   6
 #define HDL_SMARC_CARRIER_DEPENDENCY_BOOT2_PIN                   7
 
+typedef struct {
+  //uint32_t sw_power_btn_trig_delay;
+} hdl_smarc_carrier_config_t;
+
 /* depends on:
   gpio power bad (O)
   gpio carrier_power_on (I)
@@ -88,7 +92,7 @@ typedef enum {
 */
 typedef struct {
     hdl_module_t module;
-    uint32_t sw_power_btn_trig_delay;
+    const hdl_smarc_carrier_config_t *config;
     PRIVATE(hdl, HDL_SMARC_CARRIER_PRV_SIZE);
 } hdl_smarc_carrier_t;
 

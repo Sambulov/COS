@@ -22,9 +22,14 @@ extern "C" {
                                         ((x >> 12) & 1) + ((x >> 13) & 1) + ((x >> 14) & 1) + ((x >> 15) & 1)
 
 #include "hdl_portable.h"
+
 #include "hdl_button.h"
 #include "hdl_shift_reg.h"
 #include "hdl_timer.h"
+
+#include "hdl_eeprom_i2c.h"
+#include "ms5194t.h"
+
 #include "RK809.h"
 #include "smarc_carrier.h"
 

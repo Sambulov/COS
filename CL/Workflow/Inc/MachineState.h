@@ -31,9 +31,10 @@ typedef struct {
 } MachineStateTransition_t;
 
 typedef struct {
-  /* private */
-  MachineStateTransition_t pxTransitionsList;
-  MachineState_t *pxCurrentState; /* Initially mast be set */
+  struct {
+    MachineStateTransition_t pxTransitionsList;
+    MachineState_t *pxCurrentState; /* Initially mast be set */
+  } private;
   /* public */
   StateMachineHandler_t pfTransitionError;
 } StateMachine_t;

@@ -14,7 +14,7 @@
             //"showDevDebugOutput": "parsed",
             "windows": {
                 "searchDir": [ 
-                    "./MCU/ARM/Nuvoton/NUM46X/Res"
+                    "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res"
                 ],
                 "serverpath": "C:/NuOpenOCD/bin/openocd.exe",
                 "serverArgs": [],
@@ -33,10 +33,10 @@
             "rtos": "auto",
             "runToEntryPoint": "main",
             "device": "M463KGCAE",
-            "svdFile": "${workspaceFolder}/MCU/ARM/Nuvoton/NUM46X/Res/mcu.svd",
+            "svdFile": "${workspaceFolder}/HDL/McuPort/ARM/Nuvoton/NUM46X/Res/mcu.svd",
             "configFiles": [
-                "./MCU/ARM/Nuvoton/NUM46X/Res/tool.cfg",
-                "./MCU/ARM/Nuvoton/NUM46X/Res/mcu.cfg"
+                "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res/tool.cfg",
+                "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res/mcu.cfg"
             ],
             "preRestartCommands": [
                 "set remotetimeout 200",
@@ -67,7 +67,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "M463KGCAE",
-			"svdFile": "${workspaceFolder}/MCU/ARM/Nuvoton/NUM46X/Res/mcu.svd",
+			"svdFile": "${workspaceFolder}/HDL/McuPort/ARM/Nuvoton/NUM46X/Res/mcu.svd",
 			//"preLaunchTask": "J-Link Flash NUM463KG",
 			//"liveWatch": {
 			//	"enabled": true,
@@ -92,7 +92,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "GD32E230K6",
-			"svdFile": "${workspaceFolder}/MCU/ARM/Gigadevice/GD32E23X/Res/mcu.svd",
+			"svdFile": "${workspaceFolder}/HDL/McuPort/ARM/Gigadevice/GD32E23X/Res/mcu.svd",
 			"preLaunchTask": "J-Link Flash GD32E230K6",
 			//"liveWatch": {
 			//	"enabled": true,
@@ -117,7 +117,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "GD32E230C6",
-			"svdFile": "${workspaceFolder}/MCU/ARM/Gigadevice/GD32E23X/Res/mcu.svd",
+			"svdFile": "${workspaceFolder}/HDL/McuPort/ARM/Gigadevice/GD32E23X/Res/mcu.svd",
 			"preLaunchTask": "J-Link Flash GD32E230C6",
 			//"liveWatch": {
 			//	"enabled": true,
@@ -142,7 +142,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "STM32L071KB",
-			"svdFile": "${workspaceFolder}/MCU/ARM/ST/STM32L0XX/Res/mcu.svd",
+			"svdFile": "${workspaceFolder}/HDL/McuPort/ARM/ST/STM32L0XX/Res/mcu.svd",
 			"preLaunchTask": "J-Link Flash STM32L071KB",
 			//"liveWatch": {
 			//	"enabled": true,
@@ -167,7 +167,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "GD32F103VG",
-			"svdFile": "./MCU/ARM/Gigadevice/GD32F103VG/Res/mcu.svd",
+			"svdFile": "./HDL/McuPort/ARM/Gigadevice/GD32F103VG/Res/mcu.svd",
 			"preLaunchTask": "J-Link Flash GD32F103VG",
 			//"liveWatch": {
 			//	"enabled": true,
@@ -192,7 +192,7 @@
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "GD32F450ZI",
-			"svdFile": "${workspaceFolder}/MCU/ARM/Gigadevice/GD32F450ZI/Res/mcu.svd",
+			"svdFile": "${workspaceFolder}/HDL/McuPort/ARM/Gigadevice/GD32F450ZI/Res/mcu.svd",
 			"preLaunchTask": "J-Link Flash GD32F450ZI",
 			//"liveWatch": {
 			//	"enabled": true,

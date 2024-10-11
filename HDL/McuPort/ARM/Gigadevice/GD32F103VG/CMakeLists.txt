@@ -2,14 +2,16 @@
 
 file(GLOB MCU_PORT
   "./Port/*.c"
-  "./Port/Inc/*.h"
   "./Sys/*.c"
-  "./Sys/Inc/*.h"
-  "./Drivers/Src/*.c"
-  "./Drivers/Inc/*.h"
+  "./Sys/Drivers/Src/*.c"
 )
 
-target_sources(McuHalPort PUBLIC ${MCU_PORT})
+target_sources(HDL PUBLIC ${MCU_PORT})
+target_include_directories(HDL PUBLIC
+  "./Port/Inc"
+  "./Sys/Inc"
+  "./Sys/Drivers/Inc"
+)
 
 add_compile_definitions("__MCU_HAL_HDR__=<gd32f10x.h>") 
 

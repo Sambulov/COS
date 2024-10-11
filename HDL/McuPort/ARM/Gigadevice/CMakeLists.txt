@@ -2,10 +2,12 @@
 
 file(GLOB GD_COMMON
   "./*.c"
-  "./Inc/*.h"
 )
 
-target_sources(McuHalPort PUBLIC ${GD_COMMON})
+target_sources(HDL PUBLIC ${GD_COMMON})
+target_include_directories(HDL PUBLIC
+  "./Inc"
+)
 
 if (MCU STREQUAL "GD32E23X")
   add_subdirectory("./GD32E23X")

@@ -1,5 +1,4 @@
 
-
 file(GLOB HDL_SOURCES
   "./Basic/Src/*.c"
   "./ADC/Src/*.c"
@@ -18,5 +17,7 @@ target_include_directories(HDL PUBLIC
   "./PMIC/Inc"
   "./Smarc/Inc"
 )
+
+add_subdirectory("./McuPort")
 
 target_link_libraries(HDL PUBLIC CodeLib)

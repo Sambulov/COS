@@ -3,10 +3,12 @@
 file(GLOB ARM_MCU_SOURCES
   "./*.c"
   "./CMSIS/*.c"
-  "./CMSIS/*.h"
 )
 
-add_library(McuHalPort STATIC ${ARM_MCU_SOURCES})
+target_sources(HDL PUBLIC ${ARM_MCU_SOURCES})
+target_include_directories(HDL PUBLIC
+  "./CMSIS"
+)
 
 if (MANUFACTURER STREQUAL "Gigadevice")
   add_subdirectory("./Gigadevice")

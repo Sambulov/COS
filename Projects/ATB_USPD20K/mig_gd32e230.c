@@ -76,11 +76,6 @@ hdl_interrupt_t mod_irq_i2c1_er = {
 
 extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
-const void *main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
-  &mod_nvic_cnf,
-  &reset_handler,
-};
-
 const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   &mod_nvic_cnf,
   &reset_handler,

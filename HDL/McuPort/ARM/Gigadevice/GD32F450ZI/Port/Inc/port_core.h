@@ -6,6 +6,8 @@
 
 #define HDL_INTERRUPT_PRV_SIZE       4
 
+#define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
+
 typedef enum
 {
   /* Cortex-M4 processor exceptions numbers */
@@ -223,7 +225,7 @@ typedef struct {
   uint32_t prio_group;
   hdl_interrupt_t **interrupts;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
-  void *vector;
+  const void * const vector;
 } hdl_interrupt_controller_config_t;
 
 #define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
@@ -232,10 +234,10 @@ typedef struct{
   uint32_t flash_latency;
 } hdl_core_config_t;
 
-extern void *_estack;
-extern void *_sidata, *_sdata, *_edata;
-extern void *_sbss, *_ebss;
-extern void *_eflash; 
+extern const void *_estack;
+extern const void *_sidata, *_sdata, *_edata;
+extern const void *_sbss, *_ebss;
+extern const void *_eflash; 
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
 

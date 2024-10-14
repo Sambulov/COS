@@ -78,20 +78,9 @@ hdl_interrupt_t mod_irq_adc = {
 /***********************************************************
  *                          NVIC
 ***********************************************************/
-const hdl_interrupt_controller_config_t mod_nvic_cnf = {
-  .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc,
-                              &mod_irq_i2c_0_ev, &mod_irq_i2c_0_err),
-};
+extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
-hdl_interrupt_controller_t mod_nvic = {
-  .module.init = &hdl_interrupt_controller,
-  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
-  .module.reg = NVIC,
-  .config = &mod_nvic_cnf
-};
-
-const void * vector[] __attribute__ ((section (".isr_vector"), used)) = {
+const void * const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   &mod_nvic_cnf,
   &reset_handler,                           /* Vector 1 */
   &nmi_handler,                             /* Vector 2 IRQ -14 */
@@ -297,6 +286,20 @@ const void * vector[] __attribute__ ((section (".isr_vector"), used)) = {
   &irq_n_handler,                           /* Vector 109 IRQ 93 */
   &irq_n_handler,                           /* Vector 110 IRQ 94 */
   &irq_n_handler,                           /* Vector 111 IRQ 95 */
+};
+
+const hdl_interrupt_controller_config_t mod_nvic_cnf = {
+  .vector = &irq_vector,
+  .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc,
+                              &mod_irq_i2c_0_ev, &mod_irq_i2c_0_err),
+};
+
+hdl_interrupt_controller_t mod_nvic = {
+  .module.init = &hdl_interrupt_controller,
+  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module),
+  .module.reg = NVIC,
+  .config = &mod_nvic_cnf
 };
 
 /***********************************************************

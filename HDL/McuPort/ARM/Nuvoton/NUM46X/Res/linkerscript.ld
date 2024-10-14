@@ -46,7 +46,7 @@ SECTIONS
 {
 	.text :
 	{
-		KEEP(*(.vectors))
+		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		__end__ = .;

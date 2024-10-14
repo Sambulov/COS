@@ -143,9 +143,10 @@ typedef struct{
   uint32_t flash_latency;
 } hdl_core_config_t;
 
-extern void *_estack;
-extern void *_sidata, *_sdata, *_edata;
-extern void *_sbss, *_ebss;
+extern const void *_estack;
+extern const void *_sidata, *_sdata, *_edata;
+extern const void *_sbss, *_ebss;
+extern const void *_eflash;
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
 

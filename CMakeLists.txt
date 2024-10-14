@@ -129,6 +129,8 @@ if (CORE STREQUAL "ARM")
 
   add_subdirectory("${CMAKE_SOURCE_DIR}/HDL")
 
+  get_property(DEFINES GLOBAL PROPERTY HDL_DEFINES)
+
   # Set compiler options
   get_target_property(MAIN_CFLAGS HDL COMPILE_OPTIONS)
   # Set linker options

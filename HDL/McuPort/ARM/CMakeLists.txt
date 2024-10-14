@@ -20,9 +20,6 @@ else()
   message(SEND_ERROR "Manufacturer ${MANUFACTURER} unsupported!")
 endif()
 
-add_compile_options(-mfloat-abi=soft -mthumb -mlittle-endian -mthumb-interwork -ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
-add_compile_options(-mcpu=${MCPU} )
-add_link_options(-mcpu=${MCPU} -T ${LINKER_SCRIPT})
-add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+target_compile_options(HDL PUBLIC -mthumb -mlittle-endian -mthumb-interwork -ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
 
 set(DEFINES "ARM_MATH_CM3;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING;")

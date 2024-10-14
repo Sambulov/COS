@@ -1,5 +1,5 @@
 
-#include "app.h"
+#include "hdl.h"
 #include "CodeLib.h"
 
 typedef struct {
@@ -12,7 +12,7 @@ typedef struct {
     uint16_t mem_addr;
     uint8_t state;
     uint32_t burn_time;
-  } private;  
+  } private;
 } hdl_eeprom_i2c_private_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_eeprom_i2c_private_t, hdl_eeprom_i2c_t, HDL_EEPROM_I2C_PRV_SIZE, hdl_eeprom_i2c.h);

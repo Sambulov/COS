@@ -11,7 +11,6 @@ target_include_directories(HDL PUBLIC
 
 if (MCU STREQUAL "STM32L0XX")
   add_subdirectory("./STM32L0XX")
-  set(MCPU cortex-m0)
 else()
   message(SEND_ERROR "MCU ${MCU} unsupported!")
 endif()

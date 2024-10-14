@@ -13,10 +13,18 @@ target_include_directories(HDL PUBLIC
   "./Sys/Drivers/Inc"
 )
 
-add_compile_definitions("__MCU_HAL_HDR__=<m460.h>")
+set(MCPU cortex-m4)
+target_compile_options(HDL PUBLIC -mcpu=${MCPU})
+target_compile_definitions(HDL PUBLIC "__MCU_HAL_HDR__=<m460.h>")
 
-set(LINKER_SCRIPT "./Res/linkerscript.ld")
+target_link_options(HDL PUBLIC -specs=nano.specs -lstdc++ -mthumb -mlittle-endian -mthumb-interwork)
+target_link_options(HDL PUBLIC -mcpu=${MCPU} -T "${CMAKE_CURRENT_SOURCE_DIR}/Res/linkerscript.ld")
+target_link_options(HDL PUBLIC -Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
-# Uncomment for hardware floating point
-# add_compile_options(-mfloat-abi=hard -mfpu=fpv4-sp-d16)
-# add_link_options(-mfloat-abi=hard -mfpu=fpv4-sp-d16)
+if(DEFINED HARD_FLOAT)
+  target_compile_options(HDL PUBLIC -mfloat-abi=hard -mfpu=fpv4-sp-d16)
+  target_link_options(HDL PUBLIC -mfloat-abi=hard -mfpu=fpv4-sp-d16)
+else ()
+  target_compile_options(HDL PUBLIC -mfloat-abi=soft)
+  target_link_options(HDL PUBLIC -mfloat-abi=soft)
+endif()

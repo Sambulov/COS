@@ -81,7 +81,7 @@ const void *main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = 
   &reset_handler,
 };
 
-const void* irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
+const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   &mod_nvic_cnf,
   &reset_handler,
   &nmi_handler,

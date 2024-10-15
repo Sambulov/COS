@@ -1,4 +1,10 @@
+if (MCU STREQUAL "NUM463")
+  set(JS_FILE "flash_463.jlink")
+else()
+  return()
+endif()
 
+set(SWD_FILE "mcu.svd")
 
 file(GLOB MCU_PORT
   "${CMAKE_CURRENT_SOURCE_DIR}/Port/*.c"
@@ -28,3 +34,8 @@ else ()
   target_compile_options(HDL PUBLIC -mfloat-abi=soft)
   target_link_options(HDL PUBLIC -mfloat-abi=soft)
 endif()
+
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
+
+set_target_properties(HDL PROPERTIES MCU_SUPPORTED "OK")

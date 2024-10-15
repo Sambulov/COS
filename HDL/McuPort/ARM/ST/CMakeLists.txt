@@ -1,4 +1,8 @@
+if(NOT MANUFACTURER STREQUAL "ST")
+  return()
+endif()
 
+set_target_properties(HDL PROPERTIES MANUFACTURER_SUPPORTED "OK")
 
 file(GLOB ST_COMMON
   "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
@@ -9,10 +13,4 @@ target_include_directories(HDL PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/Inc"
 )
 
-get_property(MCU GLOBAL PROPERTY MCU)
-
-if (MCU STREQUAL "STM32L0XX")
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/STM32L0XX")
-else()
-  message(SEND_ERROR "MCU ${MCU} unsupported!")
-endif()
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/STM32L0XX")

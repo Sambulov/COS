@@ -1,4 +1,13 @@
 
+if (MCU STREQUAL "GD32E230K6")
+  set(JS_FILE "flash_k6.jlink")
+elseif (MCU STREQUAL "GD32E230C6")
+  set(JS_FILE "flash_c6.jlink")
+else()
+  return()
+endif()
+
+set(SWD_FILE "mcu.svd")
 
 file(GLOB MCU_PORT
   "${CMAKE_CURRENT_SOURCE_DIR}/Port/*.c"
@@ -20,3 +29,8 @@ target_compile_definitions(HDL PUBLIC "__MCU_HAL_HDR__=<gd32e23x.h>")
 target_link_options(HDL PUBLIC -specs=nano.specs -lstdc++ -mthumb -mlittle-endian -mthumb-interwork)
 target_link_options(HDL PUBLIC -mcpu=${MCPU} -T "${CMAKE_CURRENT_SOURCE_DIR}/Res/linkerscript.ld")
 target_link_options(HDL PUBLIC -Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+
+file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" "${CMAKE_BINARY_DIR}/flash.jlink")
+file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
+
+set_target_properties(HDL PROPERTIES MCU_SUPPORTED "OK")

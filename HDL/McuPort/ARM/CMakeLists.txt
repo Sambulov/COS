@@ -10,17 +10,9 @@ target_include_directories(HDL PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/CMSIS"
 )
 
-get_property(MANUFACTURER GLOBAL PROPERTY MCU_MANUFACTURER)
-
-if (MANUFACTURER STREQUAL "Gigadevice")
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Gigadevice")
-elseif(MANUFACTURER STREQUAL "Nuvoton")
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Nuvoton")
-elseif(MANUFACTURER STREQUAL "ST")
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ST")
-else()
-  message(SEND_ERROR "MCU manufacturer ${MANUFACTURER} unsupported!")
-endif()
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Gigadevice")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Nuvoton")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ST")
 
 target_compile_options(HDL PUBLIC -mthumb -mlittle-endian -mthumb-interwork -ffunction-sections -fdata-sections -fno-common -fmessage-length=0)
 

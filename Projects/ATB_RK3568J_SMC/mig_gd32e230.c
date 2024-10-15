@@ -674,6 +674,11 @@ hdl_core_t mod_sys_core = {
   /**************************************************************
    *  NVIC, IRQ, EXTI
    *************************************************************/
+
+
+
+
+
 hdl_interrupt_t mod_irq_systick = {
   .irq_type = HDL_NVIC_EXCEPTION_SysTick,
   .priority = 0,
@@ -755,7 +760,64 @@ hdl_exti_t mod_nvic_exti_line_15 = {
   .trigger = HDL_EXTI_TRIGGER_RISING
 };
 
+extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
+
+const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
+  &mod_nvic_cnf,
+  &reset_handler,
+  &nmi_handler,
+  &hard_fault_handler,
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  ((void *)0),
+  &svc_handler,
+  ((void *)0),
+  ((void *)0),
+  &pend_sv_handler,
+  &systick_handler,
+  &wwdgt_handler,                    /* IRQ0 */ 
+  &lvd_handler,                      /* IRQ1 */
+  &rtc_handler,                      /* IRQ2 */
+  &fmc_handler,                      /* IRQ3 */
+  &rcu_handler,                      /* IRQ4 */
+  &exti0_1_handler,                  /* IRQ5 */
+  &exti2_3_IRQHandler,               /* IRQ6 */
+  &exti4_15_handler,                 /* IRQ7 */
+  &irq_n_handler,                    /* IRQ8 */
+  &dma_channel0_handler,             /* IRQ9 */
+  &dma_channel1_2_handler,           /* IRQ10 */
+  &dma_channel3_4_handler,           /* IRQ11 */
+  &adc_cmp_handler,                  /* IRQ12 */
+  &timer0_brk_up_trg_com_handler,    /* IRQ13 */
+  &timer0_channel_handler,           /* IRQ14 */
+  &irq_n_handler,                    /* IRQ15 */
+  &timer2_handler,                   /* IRQ16 */
+  &timer5_handler,                   /* IRQ17 */
+  &irq_n_handler,                    /* IRQ18 */
+  &timer13_handler,                  /* IRQ19 */
+  &timer14_handler,                  /* IRQ21 */
+  &timer15_handler,                  /* IRQ22 */
+  &timer16_handler,                  /* IRQ23 */
+  &i2c0_ev_handler,                  /* IRQ24 */
+  &i2c1_ev_handler,                  /* IRQ25 */
+  &spi0_handler,                     /* IRQ26 */
+  &spi1_handler,                     /* IRQ27 */
+  &usart0_handler,                   /* IRQ28 */
+  &usart1_handler,                   /* IRQ29 */
+  &irq_n_handler,                    /* IRQ30 */
+  &irq_n_handler,                    /* IRQ31 */
+  &irq_n_handler,                    /* IRQ32 */
+  &i2c0_er_handler,                  /* IRQ33 */
+  &irq_n_handler,                    /* IRQ34 */
+  &i2c1_er_handler,                  /* IRQ35 */
+};
+
 const hdl_interrupt_controller_config_t mod_nvic_cnf = {
+  .vector = &irq_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .irq_latency = 0, /* TODO: define static assert */
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,

@@ -34,9 +34,14 @@ void svc_handler() {
 void __libc_init_array();
 void main();
 
+const void * const main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
+  &_estack,
+  &reset_handler,
+};
+
 __attribute__((naked, noreturn)) void reset_handler() {
 	asm("ldr sp, =_estack");
-	void **pSource, **pDest;
+	const void **pSource, **pDest;
 	for (pSource = &_sidata, pDest = &_sdata; pDest != &_edata; pSource++, pDest++)
 	  *pDest = *pSource;
   for (pDest = &_sbss; pDest != &_ebss; pDest++)

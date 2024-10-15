@@ -68,10 +68,15 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
 //   asm("BX LR");
 // }
 
+const void * const main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
+  &_estack,
+  &reset_handler,
+};
+
 __attribute__((naked, noreturn)) void reset_handler() {
 	asm ("ldr r0, =_estack");
 	asm ("mov r13, r0");
-	void **pSource, **pDest;
+	const void **pSource, **pDest;
 	for (pSource = &_sidata, pDest = &_sdata; pDest != &_edata; pSource++, pDest++)
 	  *pDest = *pSource;
   for (pDest = &_sbss; pDest != &_ebss; pDest++)

@@ -22,7 +22,7 @@ typedef struct {
   } private;  
 } hdl_button_private_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_button_private_t, hdl_button_t, HDL_BUTTON_DESC_SIZE, hdl_button.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_button_private_t, hdl_button_t, HDL_BUTTON_PRV_SIZE, hdl_button.h);
 _Static_assert(offsetof(hdl_button_private_t, event) == offsetof(hdl_button_t, event), "In hdl_button.h hdl_button_t properties order doesn't match");
 
 static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {

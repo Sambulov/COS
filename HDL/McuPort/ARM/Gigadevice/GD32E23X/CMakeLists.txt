@@ -1,16 +1,16 @@
 
 
 file(GLOB MCU_PORT
-  "./Port/*.c"
-  "./Sys/*.c"
-  "./Sys/Drivers/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Port/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Sys/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Sys/Drivers/Src/*.c"
 )
 
 target_sources(HDL PUBLIC ${MCU_PORT})
 target_include_directories(HDL PUBLIC
-  "./Port/Inc"
-  "./Sys/Inc"
-  "./Sys/Drivers/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Port/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Sys/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Sys/Drivers/Inc"
 )
 
 set(MCPU cortex-m23)

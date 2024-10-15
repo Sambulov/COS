@@ -1,23 +1,25 @@
 
 
 file(GLOB ARM_MCU_SOURCES
-  "./*.c"
-  "./CMSIS/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/CMSIS/*.c"
 )
 
 target_sources(HDL PUBLIC ${ARM_MCU_SOURCES})
 target_include_directories(HDL PUBLIC
-  "./CMSIS"
+  "${CMAKE_CURRENT_SOURCE_DIR}/CMSIS"
 )
 
+get_property(MANUFACTURER GLOBAL PROPERTY MCU_MANUFACTURER)
+
 if (MANUFACTURER STREQUAL "Gigadevice")
-  add_subdirectory("./Gigadevice")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Gigadevice")
 elseif(MANUFACTURER STREQUAL "Nuvoton")
-  add_subdirectory("./Nuvoton")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Nuvoton")
 elseif(MANUFACTURER STREQUAL "ST")
-  add_subdirectory("./ST")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ST")
 else()
-  message(SEND_ERROR "Manufacturer ${MANUFACTURER} unsupported!")
+  message(SEND_ERROR "MCU manufacturer ${MANUFACTURER} unsupported!")
 endif()
 
 target_compile_options(HDL PUBLIC -mthumb -mlittle-endian -mthumb-interwork -ffunction-sections -fdata-sections -fno-common -fmessage-length=0)

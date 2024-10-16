@@ -32,7 +32,7 @@
             "debuggerArgs": [],
             "rtos": "auto",
             "runToEntryPoint": "main",
-            "device": "M463KGCAE",
+			"device": "M463KGCAE",
             "svdFile": "./build/mcu.svd",
             "configFiles": [
                 "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res/tool.cfg",
@@ -50,7 +50,7 @@
             ]
         },
 		{
-			"name": "Debug JLink M463KGCAE",
+			"name": "Debug JLink",
 			"type": "cortex-debug",
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
@@ -66,134 +66,17 @@
 			//"showDevDebugOutput": "raw",
 			"servertype": "jlink",
 			"interface": "swd",
-			"device": "M463KGCAE",
+			"device": "${config:MCU}",
 			"svdFile": "./build/mcu.svd",
-			"preLaunchTask": "J-Link Flash",
-			//"liveWatch": {
-			//	"enabled": true,
-			//	"samplesPerSecond": 4
-			//},
-		},
-        {
-			"name": "Debug JLink GD32E230K6",
-			"type": "cortex-debug",
-			"request": "launch",
-			"cwd": "${workspaceFolder}",
-			"executable": "./build/firmware.elf",
-			"windows": {
-				"serverpath": "JLinkGDBServerCL.exe",
-			},
-			"linux": {
-				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
-				"gdbPath": "/usr/bin/gdb-multiarch"
-			},
-			"runToEntryPoint": "main",
-			//"showDevDebugOutput": "raw",
-			"servertype": "jlink",
-			"interface": "swd",
-			"device": "GD32E230K6",
-			"svdFile": "./build/mcu.svd",
-			"preLaunchTask": "J-Link Flash",
-			//"liveWatch": {
-			//	"enabled": true,
-			//	"samplesPerSecond": 4
-			//},
-		},
-        {
-			"name": "Debug JLink GD32E230C6",
-			"type": "cortex-debug",
-			"request": "launch",
-			"cwd": "${workspaceFolder}",
-			"executable": "./build/firmware.elf",
-			"windows": {
-				"serverpath": "JLinkGDBServerCL.exe",
-			},
-			"linux": {
-				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
-				"gdbPath": "/usr/bin/gdb-multiarch"
-			},
-			"runToEntryPoint": "main",
-			//"showDevDebugOutput": "raw",
-			"servertype": "jlink",
-			"interface": "swd",
-			"device": "GD32E230C6",
-			"svdFile": "./build/mcu.svd",
-			"preLaunchTask": "J-Link Flash",
-			//"liveWatch": {
-			//	"enabled": true,
-			//	"samplesPerSecond": 4
-			//},
-		},
-        {
-			"name": "Debug JLink STM32L071KB",
-			"type": "cortex-debug",
-			"request": "launch",
-			"cwd": "${workspaceFolder}",
-			"executable": "./build/firmware.elf",
-			"windows": {
-				"serverpath": "JLinkGDBServerCL.exe",
-			},
-			"linux": {
-				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
-				"gdbPath": "/usr/bin/gdb-multiarch"
-			},
-			"runToEntryPoint": "main",
-			//"showDevDebugOutput": "raw",
-			"servertype": "jlink",
-			"interface": "swd",
-			"device": "STM32L071KB",
-			"svdFile": "./build/mcu.svd",
-			"preLaunchTask": "J-Link Flash",
-			//"liveWatch": {
-			//	"enabled": true,
-			//	"samplesPerSecond": 4
-			//},
-		},
-		{
-			"name": "Debug JLink GD32F103VG",
-			"type": "cortex-debug",
-			"request": "launch",
-			"cwd": "${workspaceFolder}",
-			"executable": "./build/firmware.elf",
-			"windows": {
-				"serverpath": "JLinkGDBServerCL.exe",
-			},
-			"linux": {
-				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
-				"gdbPath": "/usr/bin/gdb-multiarch"
-			},
-			"runToEntryPoint": "main",
-			//"showDevDebugOutput": "raw",
-			"servertype": "jlink",
-			"interface": "swd",
-			"device": "GD32F103VG",
-			"svdFile": "./build/mcu.svd",
-			"preLaunchTask": "J-Link Flash",
-			//"liveWatch": {
-			//	"enabled": true,
-			//	"samplesPerSecond": 4
-			//},
-		},
-		{
-			"name": "Debug JLink GD32F450ZI",
-			"type": "cortex-debug",
-			"request": "launch",
-			"cwd": "${workspaceFolder}",
-			"executable": "./build/firmware.elf",
-			"windows": {
-				"serverpath": "JLinkGDBServerCL.exe",
-			},
-			"linux": {
-				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
-				"gdbPath": "/usr/bin/gdb-multiarch"
-			},
-			"runToEntryPoint": "main",
-			//"showDevDebugOutput": "raw",
-			"servertype": "jlink",
-			"interface": "swd",
-			"device": "GD32F450ZI",
-			"svdFile": "./build/mcu.svd",
-			"preLaunchTask": "J-Link Flash",
+			//"preLaunchTask": "J-Link Flash",
+			"overrideLaunchCommands": [
+			 	"monitor reset halt",
+			 	"cd ./build",
+			 	"file firmware.elf",
+			 	"target extended-remote localhost:50000",
+			 	"load",
+			 	"set output-radix 16"
+			],
 			//"liveWatch": {
 			//	"enabled": true,
 			//	"samplesPerSecond": 4

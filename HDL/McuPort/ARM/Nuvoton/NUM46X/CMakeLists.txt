@@ -1,4 +1,4 @@
-if (MCU STREQUAL "NUM463")
+if (MCU STREQUAL "M463KGCAE")
   set(JS_FILE "flash_463.jlink")
 else()
   return()

@@ -77,6 +77,13 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
   COMMAND ${CMAKE_SIZE} ${EXECUTABLE})
 
+get_property(PROJECT_MCU GLOBAL PROPERTY MCU)
+file(WRITE "${CMAKE_SOURCE_DIR}/.vscode/settings.json" 
+{\n
+\t\"MCU\":"${PROJECT_MCU}"\n
+}
+)
+
 #message(SEND_ERROR "${HEADERS}")
 
 # Write to flash

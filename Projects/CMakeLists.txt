@@ -19,4 +19,6 @@ else()
   message( SEND_ERROR "Board not supported!" )
 endif()
 
-add_compile_definitions("${BOARD}")
+set_property(GLOBAL APPEND PROPERTY PROJECT_DEFINITIONS 
+  ${BOARD}
+)

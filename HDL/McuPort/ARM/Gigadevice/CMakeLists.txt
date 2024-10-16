@@ -13,6 +13,9 @@ target_include_directories(HDL PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/Inc"
 )
 
+#Add all mcu dirs
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/GD32E23X")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/GD32F103")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/GD32F450")
+
+#=================

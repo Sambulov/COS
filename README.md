@@ -1,5 +1,5 @@
 # Кроссмикроконтроллерная кооперативная ОС
-
+Основная суть проекта - абстрагировать бизнес логику от микроконтроллерной платформы. А так же создать систему разработки легковесных приложений на базе микроконтроллеров, с небольшими ресурсами, с переиспользуемыми исходными кодами.
 ## Подготовка к работе
 1) Скачать и установить [тулчейн](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain)
 2) Скачать и установить систему сборки [Ninja](https://github.com/ninja-build/ninja/releases)
@@ -16,12 +16,12 @@ cmake.exe -D CMAKE_BUILD_TYPE=Debug -D BOARD=<name> -S '.' -B './build' -G Ninja
 cd .\build\
 cmake --build . --clean-first
 ```
-В параметре `-D BOARD=` указывается имя проекта.
+В параметре `-D BOARD=` указывается имя платформы. Один проект может быть нацелен на множество платформ.
 
 ## Пример. Прошивка микроконтроллера Nuvoton M463KG
 ### Локально через OpenOCD:
 ```powershell
-$ nuopenocd.exe -s "./MCU/ARM/Nuvoton/NUM463KG/Res" -f "./MCU/ARM/Nuvoton/NUM463KG/Res/tool.cfg" -f "./MCU/ARM/Nuvoton/NUM463KG/Res/mcu.cfg" -c "init" -c "halt" -c "flash write_image erase ./build/bmc.hex" -c "reset run"
+$ nuopenocd.exe -s "./HDL/McuPort/ARM/Nuvoton/NUM463KG/Res" -f "./HDL/McuPort/ARM/Nuvoton/NUM463KG/Res/tool.cfg" -f "./HDL/McuPort/ARM/Nuvoton/NUM463KG/Res/mcu.cfg" -c "init" -c "halt" -c "flash write_image erase ./build/bmc.hex" -c "reset run"
 ```
 Где tool.cfg - конфиг NuLink, 
 mcu.cfg - конфиг контроллера
@@ -45,21 +45,21 @@ $ arm-none-eabi-gdb.exe
 
 ## Установка и настройка среды VS Code
 1) Скачать и установить [VS Code](https://code.visualstudio.com/download)
-2) Установить расширения C/C++, Cortex-Debug (у меня заработало с Venus's Cortex-Debug)
+2) Установить расширения C/C++, CMake, Cortex-Debug
 
 Готово. 
 
 ### Сборка
-Для каждого проекта предоставляется один или несколько пресетов:
+Для каждого проекта предоставляется CMake пресет:
 
 ### Прошивка
-В меню `Terminal->Run Task` доступны задания по прошивке различными инструментами по проектам.
+В меню `Terminal->Run Task` доступны задания по прошивке различными инструментами. (TODO: протестировать)
 
 ### Отладка
-В меню `Run and Debug` доступны варианты отладки различными инструментами:
+В меню `Run and Debug` доступны варианты отладки различными инструментами.
 
-### Порядок действий 
-Собираем, шьем, запускаем отладку F5. Не все варианты отладки настроены на автоматическую перепрошивку.
+#### Порядок действий:
+Собираем проект, выбираем вариант отладки, запускаем F5.
 
 ### ***
 Чтобы запитать Target через J-Link, выполнить команду в J-Link Commander
@@ -70,128 +70,32 @@ $ arm-none-eabi-gdb.exe
 (TODO: проверить все на Linux)
 
 ### Портирование библиотеки на новый контроллер:
-1) Скачать драйверы от производителя 
-   - CMSIS(для контроллера не ядра ARM) положить в исходники в директорию `/Sys`, заголовки в `Sys/Inc`
-   - SPL/HAL положить в директорию `/Sys/Drivers` исходники и заголовки в `Src`, `Inc` соответственно
-2) Найти linker script, переименовать `linkerscript.ld`, положить в директорию `Res`
-3) Найти Svd файл, переименовать `mcu.svd`, положить в директорию `Res`
-4) Поправить j-link скрипты (`erase.jlink` и `flash.jlink`), в файле поменять имя устройства. 
-```
-...
-device GD32F103VG
-...
-```
-*можно скопировать у портов других контроллеров
 
-5) Скопировать содержимое `/MCU/ARM/PortTemplate` в `/MCU/ARM/<manufacturer>/<mcu>/Port`
-6) Добавить в .vscode/launch.json конфигурацию для нового контроллера
-```
-   "configurations": [
-	    {
-			"name": "Debug JLink GD32F103VG",
-			"type": "cortex-debug",
-			"request": "launch",
-			"cwd": "${workspaceFolder}",
-			"executable": "./build/bmc.elf",
-			"windows": {
-				"serverpath": "JLinkGDBServerCL.exe",
-			},
-			"linux": {
-				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
-				"gdbPath": "/usr/bin/gdb-multiarch"
-			},
-			"runToEntryPoint": "main",
-			//"showDevDebugOutput": "raw",
-			"servertype": "jlink",
-			"interface": "swd",
-			"device": "GD32F103VG",
-			"svdFile": "./MCU/ARM/GD32F103VG/Res/mcu.svd",
-			"preLaunchTask": "J-Link Flash GD32F103VG",
-			//"liveWatch": {
-			//	"enabled": true,
-			//	"samplesPerSecond": 4
-			//},
-		},
-		...
-	]
-```
-7) Добавить в `/.vcode/tasks.json` 2 задания для прошивки и очистки контроллера
-```
-    "tasks": [
-		{
-			"type": "shell",
-			"label": "J-Link Flash GD32F103VG",
-			"linux": {
-				"command": "JLinkExe -CommandFile ./MCU/ARM/GD32F10x/Res/flash.jlink",
-			},
-			"windows": {
-				"command": "JLink.exe -CommandFile ./MCU/ARM/GD32F10x/Res/flash.jlink",
-			},
-			"detail": "Flash",
-			"group": "build"
-		},
-		{
-			"label": "J-Link Erase GD32F103VG",
-			"type": "shell",
-			"linux": {
-				"command": "JLinkExe -CommandFile ./MCU/ARM/GD32F10x/Res/erase.jlink",
-			},
-			"windows": {
-				"command": "JLink.exe -CommandFile ./MCU/ARM/GD32F10x/Res/erase.jlink",
-			},
-			"detail": "Erase",
-			"group": "build"
-		},
-        ...
-    ]
-```
-8)  Описать все необходимые портируемые интерфейсы. Точка входа для ARM располагается в файле `port_core_x.c` согласно выбранному ядру микроконтроллера в проекте. Портирование следует начинать с файла `port_core.c` в котором описываются обработчики для прерываний и специфическая для данного микроконтроллера часть инициализации ядра.
-9)  Создать тестовый проект для данного микроконтроллера.
+1) Скачать драйверы от производителя 
+   - Интерфейсы периферии положить в исходники в директорию `/Sys`, заголовки в `Sys/Inc`
+   - SPL/HAL положить в директорию `/Sys/Drivers` исходники и заголовки в `Src`, `Inc` соответственно
+2) Найти или описать linker script, переименовать `linkerscript.ld`, положить в директорию `Res`
+3) Найти Svd файл, переименовать `mcu.svd`, положить в директорию `Res`
+4) Для инструментов OpenOCD, также понадобятся фалы конфигурации `mcu.cfg` и `tool.cfg`, положить в `Res`. (см. примеры проектов)
+5) Скопировать содержимое `/McuPort/PortTemplate` в `/McuPort/<core>/<manufacturer>/<mcu>/Port`, 
+где `<core>` - архитектура микроконтроллера, `<manufacturer>` - производитель, `<mcu>` - модель
+6) Во всех папках добавить в `CMakeLists.txt` новые директории или создать `CMakeLists.txt` по аналогии.
+7) Описать все необходимые портируемые интерфейсы. 
+8) Для ARM унифицированны порты для ядра. Точка входа для располагается в файле `port_core_x.c` в зависимости от выбранного микроконтроллера в проекте. Портирование следует начинать с файла `port_core.c` в котором описываются обработчики для прерываний и специфическая для данного микроконтроллера часть инициализации ядра.
+9) Создать тестовый проект для данного микроконтроллера.
 
 
 ### Новый проект:
-1) Создать задание на сборку и прошивку контроллера в `CMakePresets.json`
+1) Создать дирекиторию нового проекта в `/Projects`
+2) Добавить `CMakeLists.txt` по аналогии с другими проектами. Определить глобальные свойства:
 ```
-   "configurePresets": [
-	    ...
-        {
-            "name": "DebugGD32F103",
-            "displayName": "Debug GD32F103",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "USPD"  <---- имя платформы/ревизии проекта
-            }
-        },
-        {
-            "name": "ReleaseGD32F103",
-            "displayName": "Release GD32F103",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "USPD"
-            }
-        },
-		...
-	]
-```
-
-2) Добавить в `CMakeLists.txt` определение для платформы
-```
-  ...
-  elseif(BOARD STREQUAL "ATB_RK3568J_SMC_R1") <---- имя платформы/ревизии проекта
-    set(VENDOR "Gigadevice")
-    set(MCU "GD32E23X") <---- контроллер платформы проекта
-    set(CORE "ARM")
-    set(MCPU cortex-m23) <---- ядро контроллера проекта
-    set(PROJECT "ATB_RK3568J_SMC") <---- имя проекта
-    # set(SPECIFIC_BUSINESS_LOGIC_INC_PATH ...)
-    # set(SPECIFIC_BUSINESS_LOGIC_SRC_PATH ...)
-    add_compile_definitions("__MCU_HAL_HDR__=<gd32e23x.h>") <---- импортируемая библиотека контроллера
-	add_compile_definitions(...) <---- дополнительные глобальные определения необходимые для сборки, не обязательно
-  ...
+MCU - модель микроконтроллера 
+MCU_MANUFACTURER - производитель
+CORE - архитектура
+PROJECT - имя проекта
+При необходимости:
+TOOLCHAIN_DIR
+TOOLCHAIN_PREFIX
 ```
 3) Создать файл графа инициализации в директории `mig_<mcu>.c`. MIG файлы должны быть уникальны для платформы-проекта. Данный файл описывает модули используемые в проекте, их зависимости и конфигурации. Это полное описание системы от ядра контроллера и вектора его прерываний до высокоуровневых драйверов внешних связных устройств.
 *можно адаптировать существующий из другого проекта.
@@ -219,7 +123,7 @@ void main();
 
 #endif /* APP_H_ */
 ```
-5) Создать файл точки входа проекта `./app.c`
+6) Создать файл точки входа проекта `./app.c`
 ```
 #include "app.h"
 
@@ -235,4 +139,31 @@ void main() {
 	// логика приложения
   }
 }
+```
+7) Добавить пресет на сборку `CMakePresets.json`
+```
+   "configurePresets": [
+	    ...
+        {
+            "name": "Debug USPD",
+            "displayName": "Debug USPD",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "USPD"  <---- имя платформы/ревизии проекта
+            }
+        },
+        {
+            "name": "Release USPD",
+            "displayName": "Release USPD",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BOARD": "USPD"
+            }
+        },
+		...
+	]
 ```

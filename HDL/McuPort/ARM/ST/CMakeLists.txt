@@ -13,4 +13,7 @@ target_include_directories(HDL PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/Inc"
 )
 
+#Add all mcu dirs
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/STM32L0XX")
+
+#=================

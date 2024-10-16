@@ -6,9 +6,10 @@ typedef struct {
   hdl_module_initializer_t init;
   hdl_module_t **dependencies;
   void *reg;
-  /* private */
+  struct {
+    uint32_t dependents;
+  } private;
   __linked_list_object__
-  uint32_t dependents;
 } hdl_module_private_t;
 
 hdl_module_state_t hdl_null_module_init(void *desc, const uint8_t enable) {
@@ -83,12 +84,12 @@ void hdl_enable(hdl_module_t *desc) {
   hdl_module_state_t res = hdl_state(desc);
   if(res < HDL_MODULE_ACTIVE) {
     _hdl_hw_enable_parents(desc);
-    module->dependents = 1;
+    module->private.dependents = 1;
     linked_list_insert_last(&_mod_load, linked_list_item(module));
     coroutine_add(&hdl_module_worker, &_hdl_module_work, NULL);
   }
   else
-    module->dependents++; /* check overlap */
+    module->private.dependents++; /* check overlap */
 }
 
 static uint8_t _dev_parent_match(LinkedListItem_t *item, void *arg) {
@@ -124,8 +125,8 @@ static void _hdl_hw_free(hdl_module_private_t *desc) {
   hdl_module_private_t **parent = (hdl_module_private_t **)desc->dependencies;
   if(parent != NULL) {
     while(*parent != NULL) {
-      (*parent)->dependents--;
-      if((*parent)->dependents == 0)
+      (*parent)->private.dependents--;
+      if((*parent)->private.dependents == 0)
         _hdl_hw_free(*parent);
       parent++;
     }

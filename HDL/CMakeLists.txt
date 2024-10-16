@@ -1,0 +1,23 @@
+
+file(GLOB HDL_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/Basic/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ADC/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/EEPROM/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/PMIC/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Smarc/Src/*.c"
+)
+
+add_library(HDL STATIC ${HDL_SOURCES})
+
+target_include_directories(HDL PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Basic/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ADC/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/EEPROM/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/PMIC/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Smarc/Inc"
+)
+
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/McuPort")
+
+target_link_libraries(HDL PUBLIC CodeLib)

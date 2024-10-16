@@ -134,8 +134,5 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
             }
         }
-    ],
-    "buildPresets": [
-
     ]
 }

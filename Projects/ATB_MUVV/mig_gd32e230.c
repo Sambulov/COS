@@ -756,12 +756,7 @@ hdl_interrupt_t mod_irq_adc = {
 
 extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
-const void *main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
-  &mod_nvic_cnf,
-  &reset_handler,
-};
-
-const void* other_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
+const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   &mod_nvic_cnf,
   &reset_handler,
   &nmi_handler,
@@ -816,7 +811,7 @@ const void* other_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
 };
 
 const hdl_interrupt_controller_config_t mod_nvic_cnf = {
-  .vector = &other_vector,
+  .vector = &irq_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .irq_latency = 0, /* TODO: define static assert */
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_exti_0_1, &mod_irq_exti_2_3, &mod_irq_exti_4_15,

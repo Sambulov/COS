@@ -1,8 +1,9 @@
 #include "hdl.h"
 
 #if defined ( ATB_RK3568J_SMC_R3 )
+extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
-void * __Vectors[0x90] __attribute__ ((section (".vectors"), used)) = {
+const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
 	&_estack,            /* Top of Stack */
 	&reset_handler,         /* Reset Handler */
 	&nmi_handler,           /* NMI Handler */
@@ -148,6 +149,13 @@ void * __Vectors[0x90] __attribute__ ((section (".vectors"), used)) = {
 	&EADC21_IRQHandler,     /* 125: EADC21                    */
 	&EADC22_IRQHandler,     /* 126: EADC22                    */
 	&EADC23_IRQHandler,     /* 127: EADC23                    */
+};
+
+const hdl_interrupt_controller_config_t mod_nvic_cnf = {
+  .vector = &irq_vector,
+  //.prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
+  //.interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_spi_0,
+  //                             &mod_irq_i2c0_ev, &mod_irq_i2c0_er, &mod_irq_i2c1_ev, &mod_irq_i2c1_er),
 };
 
 #endif

@@ -228,11 +228,9 @@
     .priority_group = 0,
   };
 
+extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
-
-  extern hdl_interrupt_controller_config_t mod_nvic_cnf;
-
-void * g_pfnVectors[] __attribute__ ((section (".isr_vector"), used)) = {
+const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
 	&mod_nvic_cnf,
 	&reset_handler,         /* Reset Handler */
 	&nmi_handler,           /* NMI Handler */
@@ -487,7 +485,8 @@ void * g_pfnVectors[] __attribute__ ((section (".isr_vector"), used)) = {
   &irq_n_handler,                       /* IRQ79 */
 };
 
-  hdl_interrupt_controller_config_t mod_nvic_cnf = {
+  const hdl_interrupt_controller_config_t mod_nvic_cnf = {
+    .vector = &irq_vector,
     .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
     .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0_update, &mod_irq_timer1, &mod_irq_adc0_1),
   };

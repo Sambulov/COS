@@ -132,27 +132,27 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   if(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     // /*  Unlock Register */
-    //   UnlockRegister();
+    //UnlockRegister();
+    
+    #ifdef ENABLE_SPIM_CACHE
+      SystemEnableSpimCache();
+    #endif
 
-    // #ifndef ENABLE_SPIM_CACHE
-    //   SystemEnableSpimCache();
-    // #endif
+    #ifdef SYSTEM_INIT
+    	SystemInit();
+    #endif
 
-    // #ifndef __NO_SYSTEM_INIT
-    // 	SystemInit();
-    // #endif
+    //TODO: turn off JTAG if needed;
 
-    // //TODO: turn off JTAG if needed;
+    /* Init POR */
+    #if POR_INIT
+    	ldr	r0, =0x40000024
+    	ldr	r1, =0x00005AA5
+    	str	r1, [r0]
+    #endif
 
-    // /* Init POR */
-    // #if 0
-    // 	ldr	r0, =0x40000024
-    // 	ldr	r1, =0x00005AA5
-    // 	str	r1, [r0]
-    // #endif
-
-    // /* Lock register */
-    //   LockRegister();
+    /* Lock register */
+    //LockRegister();
     return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_UNLOADED;

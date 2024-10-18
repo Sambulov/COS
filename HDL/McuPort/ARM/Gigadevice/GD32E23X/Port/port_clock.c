@@ -34,7 +34,7 @@ static hdl_module_state_t _hdl_clock_selector_pll(hdl_clock_private_t *clk, uint
     hdl_clock_private_t *clock_src = (hdl_clock_private_t *)clk->module.dependencies[0];
     if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) {
       if (clk->config->property.div == 0 || clk->config->property.div > 16) return HDL_MODULE_FAULT;
-      HDL_REG_MODIFY(RCU_CFG1, RCU_CFG1_PREDV, clk->config->property.div - 1);
+      HDL_REG_MODIFY(RCU_CFG1, RCU_CFG1_PREDV, (clk->config->property.div - 1) << 0);
       HDL_REG_SET(RCU_CFG0, RCU_PLLSRC_HXTAL);
       hdl_clock_calc_div(&clock_src->freq, clk->config->property.div, &clk->freq);
     }

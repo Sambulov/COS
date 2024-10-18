@@ -27,15 +27,17 @@
   //#define HDL_APB1_PREDIV              2
   //#define HDL_APB2_PREDIV              1
   #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
-  //#define HDL_PLL_MUL_CLOCK            mod_clock_hxtal_prescaler /* Can be clocked by: mod_clock_hxtal_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+  //#define HDL_PLL_MUL_CLOCK          mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
   #define HDL_SYS_CLOCK                mod_clock_pll             /* Can be clocked by: mod_clock_pll, mod_clock_irc8m, mod_clock_hxtal */
   //#define MS_TIMER_RELOAD_VAL          108000-1
 
 #if TEST_NO == 1
   #define HDL_HXTAL_2_PLLSEL_PREDIV    2
   #define HDL_PLLMUL                   27
-  #define HDL_PLL_MUL_CLOCK            mod_clock_hxtal_prescaler
-  #define MS_TIMER_RELOAD_VAL          108000-1
+  #define HDL_PLL_MUL_CLOCK            mod_clock_hxtal
+  #define SYSTICK_RELOAD_VAL           108000-1
+  #define TIMER0_RELOAD_VAL            16000-1
+  #define TIMER1_RELOAD_VAL            16000-1
   #define HDL_APB1_PREDIV              2
   #define HDL_APB2_PREDIV              1
   #define HDL_ADC_PREDIV               8
@@ -44,7 +46,7 @@
 #if TEST_NO == 2
   #define HDL_HXTAL_2_PLLSEL_PREDIV    2
   #define HDL_PLLMUL                   18
-  #define HDL_PLL_MUL_CLOCK            mod_clock_hxtal_prescaler
+  #define HDL_PLL_MUL_CLOCK            mod_clock_hxtal
   #define MS_TIMER_RELOAD_VAL          72000-1
   #define HDL_APB1_PREDIV              2
   #define HDL_APB2_PREDIV              1
@@ -53,7 +55,7 @@
 #if TEST_NO == 3
   #define HDL_HXTAL_2_PLLSEL_PREDIV    1
   #define HDL_PLLMUL                   9
-  #define HDL_PLL_MUL_CLOCK            mod_clock_hxtal_prescaler
+  #define HDL_PLL_MUL_CLOCK            mod_clock_hxtal
   #define MS_TIMER_RELOAD_VAL          72000-1
   #define HDL_APB1_PREDIV              2
   #define HDL_APB2_PREDIV              1
@@ -134,58 +136,6 @@
 
   #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
-  hdl_clock_t mod_clock_irc8m = {
-    .module.init = &hdl_clock_irc8m,
-    .module.dependencies = NULL,
-    .module.reg = (void *)RCU,
-    .freq = 8000000,
-    .div = 1
-  };
-
-  hdl_clock_t mod_clock_hxtal = {
-    .module.init = &hdl_clock_hxtal,
-    .module.dependencies = NULL,
-    .module.reg = (void *)RCU,
-    .freq = HDL_HXTAL_CLOCK,
-    .div = 1
-  };
-
-  hdl_clock_t mod_clock_lxtal = {
-    .module.init = &hdl_clock_lxtal,
-    .module.dependencies = NULL,
-    .module.reg = (void *)RCU,
-    .freq = HDL_LXTAL_CLOCK,
-    .div = 1
-  };
-
-  hdl_clock_t mod_clock_irc40k = {
-    .module.init = &hdl_clock_irc40k,
-    .module.dependencies = NULL,
-    .freq = 40000,
-    .div = 1
-  };
-
-  hdl_clock_prescaler_t mod_clock_hxtal_prescaler = {
-    .module.init = &hdl_clock_hxtal_prescaler,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_hxtal.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = HDL_HXTAL_2_PLLSEL_PREDIV,
-  };
-
-  hdl_clock_t mod_clock_selector_pll = {
-    .module.init = &hdl_clock_selector_pll,
-    /* If source IRC8M before oscillator there is prescaler 2, this logic realized inside driver */
-    .module.dependencies = hdl_module_dependencies(&HDL_PLL_MUL_CLOCK.module),
-    .module.reg = (void *)RCU,
-  };
-
-  hdl_clock_prescaler_t mod_clock_pll = {
-    .module.init = &hdl_clock_pll,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_selector_pll.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = HDL_PLLMUL
-  };
-
   hdl_core_config_t mod_core_cnf = {
     .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
   };
@@ -195,13 +145,6 @@
     .module.dependencies = NULL,
     .module.reg = (void *)SCB_BASE,
     .config = &mod_core_cnf
-  };
-
-  hdl_clock_prescaler_t mod_clock_system_clock_source = {
-    .module.init = &hdl_clock_system,
-    .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &HDL_SYS_CLOCK.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = 1,
   };
 
   hdl_interrupt_t mod_irq_systick = {
@@ -498,39 +441,137 @@ const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
     .config = &mod_nvic_cnf
   };
 
-  hdl_clock_prescaler_t mod_clock_ahb = {
-    .module.init = &hdl_clock_ahb,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_system_clock_source.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = HDL_AHB_PREDIV,
-  };
+/**************************************************************
+ *  Clock
+ *************************************************************/
 
-  hdl_clock_prescaler_t mod_clock_apb1 = {
-    .module.init = &hdl_clock_apb1,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = HDL_APB1_PREDIV,
-  };
+hdl_clock_t mod_clock_irc8m = {
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC8M, 
+    .property.freq = 8000000
+  }})
+};
 
-  hdl_clock_prescaler_t mod_clock_apb2 = {
-    .module.init = &hdl_clock_apb2,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = HDL_APB2_PREDIV,
-  };
+hdl_clock_t mod_clock_hxtal = {
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_HXTAL, 
+    .property.freq = HDL_HXTAL_CLOCK
+  }})
+};
 
-  hdl_clock_prescaler_t mod_clock_adc = {
-    .module.init = &hdl_clock_adc,
-    .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module),
-    .module.reg = (void *)RCU,
-    .muldiv_factor = HDL_ADC_PREDIV,
-  };
+hdl_clock_t mod_clock_lxtal = {
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_LXTAL, 
+    .property.freq = HDL_LXTAL_CLOCK
+  }})
+};
+
+hdl_clock_t mod_clock_irc40k = {
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC40K, 
+    .property.freq = 40000
+  }})
+};
+
+hdl_clock_t mod_clock_pll_sel = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&HDL_PLL_MUL_CLOCK.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL_SEL, 
+    /* If source IRC8M prescaler fixed on 2 */
+    .property.div = HDL_HXTAL_2_PLLSEL_PREDIV
+  }})
+};
+
+
+hdl_clock_t mod_clock_pll = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_sel.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL, 
+    /* If source IRC8M prescaler fixed on 2 */
+    .property.mul = HDL_PLLMUL
+  }})
+};
+
+hdl_clock_t mod_clock_system = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &mod_clock_irc8m.module, &HDL_SYS_CLOCK.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_SYS_SEL
+  }})
+};
+
+hdl_clock_t mod_clock_rtc = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&HDL_RTC_CLOCK.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_RTC_SEL
+  }})
+};
+
+hdl_clock_t mod_clock_ahb = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_system.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_AHB,
+    .property.div = HDL_AHB_PREDIV
+  }})
+};
+
+hdl_clock_t mod_clock_apb1 = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB1,
+    .property.div = HDL_APB1_PREDIV
+  }})
+};
+
+hdl_clock_t mod_clock_apb2 = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB2,
+    .property.div = HDL_APB2_PREDIV
+  }})
+};
+
+hdl_clock_t mod_clock_adc = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_ADC,
+    .property.div = HDL_ADC_PREDIV
+  }})
+};
+
+
 
   const hdl_tick_counter_timer_config_t mod_tick_counter0_cnf = {
     .alignedmode = TIMER_COUNTER_EDGE,
     .clockdivision = TIMER_CKDIV_DIV1,
     .counterdirection = TIMER_COUNTER_UP,
-    .period = 16000 - 1,
+    .period = TIMER0_RELOAD_VAL,
     .prescaler = 0,
     .repetitioncounter = 0,
     .rcu = RCU_TIMER0
@@ -540,14 +581,14 @@ const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
     .alignedmode = TIMER_COUNTER_EDGE,
     .clockdivision = TIMER_CKDIV_DIV1,
     .counterdirection = TIMER_COUNTER_UP,
-    .period = 16000 - 1,
+    .period = TIMER1_RELOAD_VAL,
     .prescaler = 0,
     .repetitioncounter = 0,
     .rcu = RCU_TIMER1
   };
 
   const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
-    .period = 240000 - 1
+    .period = SYSTICK_RELOAD_VAL
   };
 
   hdl_tick_counter_t mod_systick_counter = {
@@ -572,22 +613,17 @@ const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   };
 
 #if TEST_NO >= 9
+  const hdl_time_counter_config_t mod_timer_ms_cnf = {
+    .reload_interrupt = &mod_irq_timer1,
+  };
+
   hdl_time_counter_t mod_timer_ms = {
     .module.init = hdl_time_counter,
     .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
     .module.reg = NULL,
-    .reload_interrupt = &mod_irq_timer1,
-    .val = 0
+    .config = &mod_timer_ms_cnf
   };
 #elif TEST_NO >= 6
-  hdl_time_counter_t mod_timer_ms = {
-    .module.init = hdl_time_counter,
-    .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
-    .module.reg = NULL,
-    .reload_interrupt = &mod_irq_timer0_update,
-    .val = 0
-  };
-#else
   const hdl_time_counter_config_t mod_timer_ms_cnf = {
     .reload_interrupt = &mod_irq_systick,
   };
@@ -595,6 +631,17 @@ const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   hdl_time_counter_t mod_timer_ms = {
     .module.init = hdl_time_counter,
     .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
+    .module.reg = NULL,
+    .config = &mod_timer_ms_cnf
+  };
+#else
+  const hdl_time_counter_config_t mod_timer_ms_cnf = {
+    .reload_interrupt = &mod_irq_timer0_update,
+  };
+
+  hdl_time_counter_t mod_timer_ms = {
+    .module.init = hdl_time_counter,
+    .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
     .module.reg = NULL,
     .config = &mod_timer_ms_cnf
   };

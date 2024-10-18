@@ -14,8 +14,8 @@
 #define HDL_APB1_PREDIV              1                         /* Can be 1, 2, 4, 8, 16 */
 #define HDL_APB2_PREDIV              1                         /* Can be 1, 2, 4, 8, 16 */                    
 #define HDL_RTC_CLOCK                mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc40k. For mod_clock_hxtal applied prediv 2 */
-#define HDL_PLL_MUL_CLOCK            mod_clock_pll_prescaler   /* Can be clocked by: mod_clock_pll_prescaler, mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
-#define HDL_SYS_CLOCK                mod_clock_pll_mul         /* Can be clocked by: mod_clock_pll_mul, mod_clock_irc8m, mod_clock_hxtal */
+#define HDL_PLL_SEL_CLOCK            mod_clock_hxtal           /* Can be clocked by: mod_clock_hxtal or mod_clock_irc8m. For mod_clock_irc8m applied prediv 2 */
+#define HDL_SYS_CLOCK                mod_clock_pll             /* Can be clocked by: mod_clock_pll, mod_clock_irc8m, mod_clock_hxtal */
 
 #define HDL_SYSTICK_COUNTER_RELOAD   72000 - 1                  /* Clocked by AHB   */
 
@@ -150,91 +150,124 @@ hdl_interrupt_controller_t mod_nvic = {
  *************************************************************/
 
 hdl_clock_t mod_clock_irc8m = {
-  .module.init = &hdl_clock_irc8m,
+  .module.init = &hdl_clock,
   .module.dependencies = NULL,
   .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC8M, 
+    .property.freq = 8000000
+  }})
 };
 
 hdl_clock_t mod_clock_hxtal = {
-  .module.init = &hdl_clock_hxtal,
+  .module.init = &hdl_clock,
   .module.dependencies = NULL,
   .module.reg = (void *)RCU,
-  .freq = HDL_HXTAL_CLOCK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_HXTAL, 
+    .property.freq = HDL_HXTAL_CLOCK
+  }})
 };
 
 hdl_clock_t mod_clock_lxtal = {
-  .module.init = &hdl_clock_lxtal,
+  .module.init = &hdl_clock,
   .module.dependencies = NULL,
   .module.reg = (void *)RCU,
-  .freq = HDL_LXTAL_CLOCK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_LXTAL, 
+    .property.freq = HDL_LXTAL_CLOCK
+  }})
 };
 
 hdl_clock_t mod_clock_irc28m = {
-  .module.init = &hdl_clock_irc28m,
+  .module.init = &hdl_clock,
   .module.dependencies = NULL,
   .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC28M, 
+    .property.freq = 28000000
+  }})
 };
 
 hdl_clock_t mod_clock_irc40k = {
-  .module.init = &hdl_clock_irc40k,
+  .module.init = &hdl_clock,
   .module.dependencies = NULL,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC40K, 
+    .property.freq = 40000
+  }})
 };
 
-hdl_clock_prescaler_t mod_clock_pll_prescaler = {
-  .module.init = &hdl_clock_hxtal_prescaler,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_hxtal.module),
+hdl_clock_t mod_clock_pll_sel = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&HDL_PLL_SEL_CLOCK.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_HXTAL_2_PLLSEL_PREDIV,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL_SEL, 
+    /* If source IRC8M prescaler fixed on 2 */
+    .property.div = HDL_HXTAL_2_PLLSEL_PREDIV
+  }})
 };
 
-hdl_clock_t mod_clock_pll_selector = {
-  .module.init = &hdl_clock_selector_pll,
-  /* If source IRC8M before oscillator there is prescaler 2, this logic realized inside driver */
-  .module.dependencies = hdl_module_dependencies(&HDL_PLL_MUL_CLOCK.module),
-  .module.reg = (void *)RCU
-};
-
-hdl_clock_prescaler_t mod_clock_pll_mul = {
-  .module.init = &hdl_clock_pll,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_selector.module),
+hdl_clock_t mod_clock_pll = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_sel.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_PLLMUL,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL, 
+    /* If source IRC8M prescaler fixed on 2 */
+    .property.mul = HDL_PLLMUL
+  }})
 };
 
-hdl_clock_prescaler_t mod_clock_system = {
-  .module.init = &hdl_clock_system,
-  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &HDL_SYS_CLOCK.module),
+hdl_clock_t mod_clock_system = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &mod_clock_irc8m.module, &HDL_SYS_CLOCK.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = 1,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_SYS_SEL
+  }})
 };
 
-hdl_clock_prescaler_t mod_clock_selector_rtc = {
-  .module.init = &hdl_clock_selector_rtc,
+hdl_clock_t mod_clock_rtc = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&HDL_RTC_CLOCK.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = 1,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_RTC_SEL
+  }})
 };
 
-hdl_clock_prescaler_t mod_clock_ahb = {
-  .module.init = &hdl_clock_ahb,
+hdl_clock_t mod_clock_ahb = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&mod_clock_system.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_AHB_PREDIV,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_AHB,
+    .property.div = HDL_AHB_PREDIV
+  }})
 };
 
-hdl_clock_prescaler_t mod_clock_apb1 = {
-  .module.init = &hdl_clock_apb1,
+hdl_clock_t mod_clock_apb1 = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_APB1_PREDIV,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB1,
+    .property.div = HDL_APB1_PREDIV
+  }})
 };
 
-hdl_clock_prescaler_t mod_clock_apb2 = {
-  .module.init = &hdl_clock_apb2,
+hdl_clock_t mod_clock_apb2 = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_APB2_PREDIV,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB2,
+    .property.div = HDL_APB2_PREDIV
+  }})
 };
+
 
 const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
   .period = HDL_SYSTICK_COUNTER_RELOAD

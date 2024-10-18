@@ -7,6 +7,7 @@ typedef struct {
   hdl_clock_freq_t freq;
 } hdl_clock_private_t;
 
+HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_private_t, hdl_clock_t, HDL_CLOCK_PRV_SIZE, port_clock.h);
 
 #define IRC48M_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
 #define IRC32K_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
@@ -226,16 +227,20 @@ static hdl_module_state_t _hdl_clock_pll_vco(hdl_clock_private_t *clk, uint8_t e
 
 hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
   hdl_clock_private_t *clk = (hdl_clock_private_t *)desc;
+  clk->freq.denom = 1;
   switch (clk->config->type) {
     case HDL_CLOCK_TYPE_HXTAL:
+      clk->freq.num = clk->config->property.freq;
       if (enable) return _hdl_clock_osc_en(RCU_HXTAL, RCU_FLAG_HXTALSTB, HXTAL_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
     
     case HDL_CLOCK_TYPE_LXTAL:
+      clk->freq.num = clk->config->property.freq;
       if (enable) return _hdl_clock_osc_en(RCU_LXTAL, RCU_FLAG_LXTALSTB, LXTAL_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_IRC16M:
+      clk->freq.num = 16000000;
       if (enable) return _hdl_clock_osc_en(RCU_IRC16M, RCU_FLAG_IRC16MSTB, IRC16M_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
     
@@ -276,10 +281,12 @@ hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_IRC48M:
+      clk->freq.num = 48000000;
       if (enable) return _hdl_clock_osc_en(RCU_IRC48M, RCU_FLAG_IRC48MSTB, IRC48M_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_IRC40K:
+      clk->freq.num = 40000;
       if (enable) return _hdl_clock_osc_en(RCU_IRC32K, RCU_FLAG_IRC32KSTB, IRC32K_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
 

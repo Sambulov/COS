@@ -243,3 +243,4 @@ hdl_module_state_t hdl_clock_adc(void *desc, uint8_t enable) {
   HDL_REG_CLEAR(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4));
   return HDL_MODULE_UNLOADED;
 }
+

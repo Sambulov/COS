@@ -9,15 +9,15 @@
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
 #define HDL_HXTAL_CLOCK                   20000000
-#define HDL_PLL_MUL_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc16m, mod_clock_hxtal */
-#define HDL_SYS_CLOCK                     mod_clock_pll_p_prescaler     /* Can be clocked by: mod_clock_pll_p_prescaler, mod_clock_hxtal, mod_clock_irc16m */
-#define HDL_PLL_VCO_PRESCALER             4                            /* Can be 2, 3 .. 63 */
-#define HDL_PLL_N_MULTIPLY                96                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
-#define HDL_PLL_P_PRESCALER               2                             /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
-#define HDL_PLL_Q_PRESCALER               10                             /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
-#define HDL_AHB_PRESCALER                 1                             /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
-#define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
-#define HDL_APB2_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_PLL_MUL_CLOCK                 mod_clock_hxtal  /* Can be clocked by: mod_clock_irc16m, mod_clock_hxtal */
+#define HDL_SYS_CLOCK                     mod_clock_pll_p  /* Can be clocked by: mod_clock_pll_p, mod_clock_hxtal, mod_clock_irc16m */
+#define HDL_PLL_VCO_PRESCALER             4                /* Can be 2, 3 .. 63 */
+#define HDL_PLL_N_MULTIPLY                96               /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
+#define HDL_PLL_P_PRESCALER               2                /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
+#define HDL_PLL_Q_PRESCALER               10               /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
+#define HDL_AHB_PRESCALER                 1                /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
+#define HDL_APB1_PRESCALER                4                /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB2_PRESCALER                4                /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
 const hdl_core_config_t mod_sys_core_cnf = {
   .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
@@ -324,72 +324,102 @@ hdl_exti_controller_t mod_exti = {
  *                          CLOCK
 ***********************************************************/
 hdl_clock_t mod_clock_irc16m = {
-  .module.init = &hdl_clock_irc16m,
+  .module.init = &hdl_clock,
   .module.dependencies = NULL,
   .module.reg = (void *)RCU,
-  .freq = 16000000,
-  .div = 1
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC16M, 
+    .property.freq = 16000000
+  }})
 };
+
 hdl_clock_t mod_clock_hxtal = {
-  .module.init = &hdl_clock_hxtal,
+  .module.init = &hdl_clock,
   .module.dependencies = NULL,
   .module.reg = (void *)RCU,
-  .freq = HDL_HXTAL_CLOCK,
-  .div = 1
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_HXTAL, 
+    .property.freq = HDL_HXTAL_CLOCK
+  }})
 };
-hdl_clock_prescaler_t mod_pll_sel = {
-  .module.init = &hdl_clock_selector_pll,
+
+hdl_clock_t mod_pll_sel = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&HDL_PLL_MUL_CLOCK.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = 1,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL_SEL, 
+    .property.div = HDL_PLL_VCO_PRESCALER
+  }})
 };
-hdl_clock_prescaler_t mod_clock_pll_vco_prescaler = {
-  .module.init = &hdl_clock_selector_pll_vco,
+
+hdl_clock_t mod_clock_pll_vco = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&mod_pll_sel.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_PLL_VCO_PRESCALER,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL_VCO,
+    .property.mul = HDL_PLL_N_MULTIPLY
+  }})
 };
-hdl_clock_prescaler_t mod_clock_pll_n_multiply = {
-  .module.init = &hdl_clock_pll_n,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_vco_prescaler.module),
+
+hdl_clock_t mod_clock_pll_p = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_vco.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_PLL_N_MULTIPLY,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL_P,
+    .property.div = HDL_PLL_P_PRESCALER
+  }})
 };
-hdl_clock_prescaler_t mod_clock_pll_p_prescaler = {
-  .module.init = &hdl_clock_pll_p,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_n_multiply.module),
+
+hdl_clock_t mod_clock_pll_q = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_vco.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_PLL_P_PRESCALER,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL_Q,
+    .property.div = HDL_PLL_Q_PRESCALER
+  }})
 };
-hdl_clock_prescaler_t mod_clock_pll_q_prescaler = {
-  .module.init = &hdl_clock_pll_q,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_n_multiply.module),
+
+hdl_clock_t mod_clock_sys_clock = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &mod_clock_irc16m.module, &HDL_SYS_CLOCK.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_PLL_Q_PRESCALER,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_SYS_SEL,
+  }})
 };
-hdl_clock_prescaler_t mod_clock_sys_clock = {
-  .module.init = &hdl_clock_system,
-  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &HDL_SYS_CLOCK.module),
-  .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_PLL_Q_PRESCALER,
-};
-hdl_clock_prescaler_t mod_clock_ahb = {
-  .module.init = &hdl_clock_ahb,
+
+hdl_clock_t mod_clock_ahb = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&mod_clock_sys_clock.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_AHB_PRESCALER,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_AHB,
+    .property.div = HDL_AHB_PRESCALER
+  }})
 };
-hdl_clock_prescaler_t mod_clock_apb1 = {
-  .module.init = &hdl_clock_apb1,
+
+hdl_clock_t mod_clock_apb1 = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_APB1_PRESCALER,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB1,
+    .property.div = HDL_APB1_PRESCALER
+  }})
 };
-hdl_clock_prescaler_t mod_clock_apb2 = {
-  .module.init = &hdl_clock_apb2,
+
+hdl_clock_t mod_clock_apb2 = {
+  .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)RCU,
-  .muldiv_factor = HDL_APB2_PRESCALER,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB2,
+    .property.div = HDL_APB2_PRESCALER
+  }})
 };
 /***********************************************************
  *                          COUNTER

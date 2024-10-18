@@ -10,35 +10,34 @@
 #define IRC28M_CLOCK                 28000000UL
 #define IRC40K_CLOCK                 40000UL
 
+#define HDL_CLOCK_PRV_SIZE 8
+
+typedef enum {
+  HDL_CLOCK_TYPE_HXTAL,          /* property: freq (can be 4 ~ 32MHz)*/
+  HDL_CLOCK_TYPE_LXTAL,          /* property: freq (32768)*/
+  HDL_CLOCK_TYPE_IRC8M,          /* property: freq = 8000000 const */
+  HDL_CLOCK_TYPE_PLL_SEL,        /* property: div (can be 1, 2 .. 16 for HXTAL, 2 for IRC8M), module depends on HXTAL or IRC8M */
+  HDL_CLOCK_TYPE_PLL,            /* property: mul (can be 2, 3, 4 .. 32), module depends on PLL_SEL */
+  HDL_CLOCK_TYPE_SYS_SEL,        /* property: (NA), module depends on Core, IRC8M and optionnally on HXTAL or PLL */
+  HDL_CLOCK_TYPE_AHB,            /* property: div (can be 1, 2, 4, 8, 16, 64, 128, 256, 512), module depends on SYS_SEL */
+  HDL_CLOCK_TYPE_APB1,           /* property: div (can be 1, 2, 4, 8, 16), module depends on AHB */
+  HDL_CLOCK_TYPE_APB2,           /* property: div (can be 1, 2, 4, 8, 16), module depends on AHB */
+
+  HDL_CLOCK_TYPE_IRC28M,         /* property: freq = 28000000 const */
+  HDL_CLOCK_TYPE_RTC_SEL,        /* property: (NA), module depends on IRC40K or LXTAL or HXTAL */
+  HDL_CLOCK_TYPE_IRC40K,         /* property: freq = 40000 const */
+} hdl_clock_type_t;
+
+typedef union {
+  uint32_t freq;
+  uint32_t mul;
+  uint32_t div;
+} hdl_clock_property_t;
 
 typedef struct {
-hdl_module_t module;
-  uint32_t freq;
-  uint32_t div;
-  uint8_t clock_monitor_enable;  /* 0 - clock monitor disabled, !0 - enabled */
-} hdl_sys_clock_t;
-
-/* oscillator */
-hdl_module_state_t hdl_clock_hxtal(void *desc, uint8_t enable);
-hdl_module_state_t hdl_clock_irc8m(void *desc, uint8_t enable);
-hdl_module_state_t hdl_clock_lxtal(void *desc, uint8_t enable);
-hdl_module_state_t hdl_clock_irc40k(void *desc, uint8_t enable);
-hdl_module_state_t hdl_clock_irc28m(void *desc, uint8_t enable);
-
-hdl_module_state_t hdl_clock_hxtal_prescaler(void *desc, uint8_t enable);
-
-/* pll selector (irc8m/2 | hdl_clock_pll_prescaler) */
-hdl_module_state_t hdl_clock_selector_pll(void *desc, uint8_t enable);
-hdl_module_state_t hdl_clock_pll(void *desc, uint8_t enable);
-
-hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable);
-
-/* RTC selector */  
-hdl_module_state_t hdl_clock_selector_rtc(void *desc, uint8_t enable);
-
-hdl_module_state_t hdl_clock_ahb(void *desc, uint8_t enable);
-hdl_module_state_t hdl_clock_apb1(void *desc, uint8_t enable);
-hdl_module_state_t hdl_clock_apb2(void *desc, uint8_t enable);
+  hdl_clock_type_t type;
+  hdl_clock_property_t property;
+} hdl_clock_config_t;
 
 #endif // PORT_CLOCK_H_
 

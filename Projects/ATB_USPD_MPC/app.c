@@ -33,7 +33,7 @@ void main() {
     cooperative_scheduler(false);
   }
   hdl_event_subscribe(&mod_timer_x.event, &blink_timer);
-  hdl_timer_set(&mod_timer_x, 10, HDL_TIMER_EVENT_LOOP);
+  hdl_timer_set(&mod_timer_x, 1000, HDL_TIMER_EVENT_LOOP);
   while (1) {
     cooperative_scheduler(false);
   }

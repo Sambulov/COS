@@ -165,7 +165,7 @@ typedef struct {
 } hdl_interrupt_controller_config_t;
 
 typedef struct{
-  uint32_t flash_latency;
+
 } hdl_core_config_t;
 
 extern const void * _estack;
@@ -173,7 +173,7 @@ extern const void *_sidata, *_sdata, *_edata;
 extern const void *_sbss, *_ebss;
 extern const void *_eflash;
 
-#define hdl_interrupts(...) ((hdl_nvic_interrupt_t *[]){__VA_ARGS__, NULL})
+#define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
 

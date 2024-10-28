@@ -158,7 +158,7 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_private_t *clk, uint32_t 
 
 static hdl_module_state_t _hdl_clock_osc_en(rcu_osci_type_enum osc, rcu_flag_enum stb_flag, uint32_t timeout) {
   rcu_osci_on(osc); /* Turn on oscillator */
-  uint32_t stb_timer = HXTAL_STARTUP_TIMEOUT;
+  uint32_t stb_timer = timeout;
   FlagStatus osci_statable = RESET;
   while ((RESET == osci_statable) && (stb_timer--)) /* Wait until HXTAL will be stable */
     osci_statable = rcu_flag_get(stb_flag);

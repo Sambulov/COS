@@ -4,7 +4,11 @@
 #define HDL_CLOCK_PRV_SIZE 8
 
 typedef enum {
-  HDL_CLOCK_TYPE_HXTAL,          /* property: freq (can be xx ~ yyMHz)*/
+  HDL_CLOCK_TYPE_HXTAL,          /* property: freq (can be 4 ~ 24MHz)*/
+  HDL_CLOCK_TYPE_LXTAL,          /* property: freq 32768 const */
+  HDL_CLOCK_TYPE_IRC12M,         /* property: freq 12000000 const */
+  HDL_CLOCK_TYPE_IRC48M,         /* property: freq 48000000 const */
+  HDL_CLOCK_TYPE_IRC10K,         /* property: freq 10000 const */
 } hdl_clock_type_t;
 
 typedef union {

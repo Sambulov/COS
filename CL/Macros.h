@@ -7,7 +7,8 @@
 
 #define HDL_REG_MODIFY(reg, mask, bits)         (reg = (((reg) & ~(mask)) | (bits)))
 #define HDL_REG_CLEAR(reg, bits)                (reg = ((reg) & ~(bits)))
-#define HDL_REG_SET(reg, bits)                  (reg = ((reg) |  (bits)))
+#define HDL_REG_SET(reg, bits)                  (reg = ((reg) | (bits)))
+#define HDL_REG_CHECK(reg, bits)                (bits == ((reg) & (bits)))
 
 #define MIN(A, B)                               ((A < B)? (A): (B))
 #define MAX(A, B)                               ((A > B)? (A): (B))

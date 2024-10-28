@@ -2,6 +2,7 @@
 
 #define HDL_INTERRUPT_PRIO_GROUP_BITS     __NVIC_PRIO_BITS
 
+#define HDL_LXTAL_CLOCK                   32768
 #define HDL_HXTAL_CLOCK                   12000000
 #define HDL_PLL_MUL_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc, mod_clock_hxtal */
 #define HDL_SYS_CLOCK                     mod_clock_pll_p_prescaler     /* Can be clocked by: mod_clock_pll_p_prescaler, mod_clock_hxtal, mod_clock_irc */
@@ -203,21 +204,55 @@ hdl_interrupt_controller_t mod_nvic = {
 /***********************************************************
  *                          CLOCK
 ***********************************************************/
-// hdl_clock_t mod_clock_irc = {
-//   .module.init = &hdl_clock_irc,
-//   .module.dependencies = NULL,
-//   .module.reg = (void *)CLK,
-//   .freq = 12000000,
-//   .div = 1
-// };
+hdl_clock_t mod_clock_irc = {
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC12M, 
+    .property.freq = 12000000
+  }})
+};
 
-// hdl_clock_t mod_clock_hxtal = {
-//   .module.init = &hdl_clock_hxtal,
-//   .module.dependencies = NULL,
-//   .module.reg = (void *)CLK,
-//   .freq = HDL_HXTAL_CLOCK,
-//   .div = 1
-// };
+hdl_clock_t mod_clock_irc48m = { //TODO: ???????????????
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC48M, 
+    .property.freq = 48000000
+  }})
+};
+
+hdl_clock_t mod_clock_irc10k = {
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC10K, 
+    .property.freq = 10000
+  }})
+};
+
+hdl_clock_t mod_clock_hxtal = {
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_IRC12M, 
+    .property.freq = HDL_HXTAL_CLOCK
+  }})
+};
+
+hdl_clock_t mod_clock_lxtal = {
+  .module.init = &hdl_clock,
+  .module.dependencies = NULL,
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_LXTAL, 
+    .property.freq = HDL_LXTAL_CLOCK
+  }})
+};
 
 // hdl_clock_prescaler_t mod_pll_sel = {
 //   .module.init = &hdl_clock_selector_pll,

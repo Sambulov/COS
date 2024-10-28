@@ -1,20 +1,19 @@
 #include "hdl_portable.h"
 #include "Macros.h"
 
-// typedef struct {
-//   hdl_module_t module;
-//   const hdl_clock_config_t *config;
-//   hdl_clock_freq_t freq;
-// } hdl_clock_private_t;
+typedef struct {
+  hdl_module_t module;
+  const hdl_clock_config_t *config;
+  hdl_clock_freq_t freq;
+} hdl_clock_private_t;
 
-// HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_private_t, hdl_clock_t, HDL_CLOCK_PRV_SIZE, port_clock.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_private_t, hdl_clock_t, HDL_CLOCK_PRV_SIZE, port_clock.h);
 
-// #define IRC48M_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
-// #define IRC32K_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
-// #define LXTAL_STARTUP_TIMEOUT     ((uint32_t)0xFFFF)
-// #define CK_SYS_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
-// #define PLL_STARTUP_TIMEOUT       ((uint32_t)0xFFFF)
-// #define PMU_STARTUP_TIMEOUT       ((uint32_t)0xFFFF)
+#define IRC48M_STARTUP_TIMEOUT    ((uint32_t)0xFFFFFFFF)
+#define IRC12M_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
+#define IRC10K_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
+#define LXTAL_STARTUP_TIMEOUT     ((uint32_t)0xFFFFFFFF)
+#define HXTAL_STARTUP_TIMEOUT     ((uint32_t)0xFFFF)
 
 // #define MAX_SYS_CLOCK             240000000UL
 // #define PLL_MAX_FREQ              MAX_SYS_CLOCK
@@ -225,85 +224,96 @@
 //   return HDL_MODULE_UNLOADED;
 // }
 
-// hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
-//   hdl_clock_private_t *clk = (hdl_clock_private_t *)desc;
-//   clk->freq.denom = 1;
-//   switch (clk->config->type) {
-//     case HDL_CLOCK_TYPE_HXTAL:
-//       clk->freq.num = clk->config->property.freq;
-//       if (enable) return _hdl_clock_osc_en(RCU_HXTAL, RCU_FLAG_HXTALSTB, HXTAL_STARTUP_TIMEOUT);
-//       return HDL_MODULE_UNLOADED;
+static hdl_module_state_t _hdl_clock_osc_en(uint32_t osc, uint32_t stat, uint32_t timeout) {
+  HDL_REG_SET(CLK->PWRCTL, osc);
+  uint32_t stb_timer = timeout;
+  while ((!HDL_REG_CHECK(CLK->STATUS, stat)) && (stb_timer--)); /* Wait until HXTAL will be stable */
+  if (!HDL_REG_CHECK(CLK->STATUS, stat))
+    return HDL_MODULE_FAULT;
+  return HDL_MODULE_ACTIVE;
+}
+
+hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
+  hdl_clock_private_t *clk = (hdl_clock_private_t *)desc;
+  clk->freq.denom = 1;
+  switch (clk->config->type) {
+    case HDL_CLOCK_TYPE_HXTAL:
+      
+      clk->freq.num = clk->config->property.freq;
+      if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_HXTEN_Msk, CLK_STATUS_HXTSTB_Msk, HXTAL_STARTUP_TIMEOUT);
+      return HDL_MODULE_UNLOADED;
     
-//     case HDL_CLOCK_TYPE_LXTAL:
-//       clk->freq.num = clk->config->property.freq;
-//       if (enable) return _hdl_clock_osc_en(RCU_LXTAL, RCU_FLAG_LXTALSTB, LXTAL_STARTUP_TIMEOUT);
-//       return HDL_MODULE_UNLOADED;
+    case HDL_CLOCK_TYPE_LXTAL:
+      clk->freq.num = clk->config->property.freq;
+      if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_LXTEN_Msk, CLK_STATUS_LXTSTB_Msk, LXTAL_STARTUP_TIMEOUT);
+      return HDL_MODULE_UNLOADED;
 
-//     case HDL_CLOCK_TYPE_IRC16M:
-//       clk->freq.num = 16000000;
-//       if (enable) return _hdl_clock_osc_en(RCU_IRC16M, RCU_FLAG_IRC16MSTB, IRC16M_STARTUP_TIMEOUT);
-//       return HDL_MODULE_UNLOADED;
+    case HDL_CLOCK_TYPE_IRC12M:
+      clk->freq.num = 12000000;
+      if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_HIRCEN_Msk, CLK_STATUS_HIRCSTB_Msk, IRC12M_STARTUP_TIMEOUT);
+      return HDL_MODULE_UNLOADED;
     
-//     case HDL_CLOCK_TYPE_PLL_SEL:
-//       return _hdl_clock_selector_pll(clk, enable);
+    case HDL_CLOCK_TYPE_IRC48M:
+      clk->freq.num = 48000000;
+      if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_HIRC48MEN_Msk, CLK_STATUS_HIRC48MSTB_Msk, IRC48M_STARTUP_TIMEOUT);
+      return HDL_MODULE_UNLOADED;
 
-//     case HDL_CLOCK_TYPE_PLL_VCO:
-//       return _hdl_clock_pll_vco(clk, enable);
+    case HDL_CLOCK_TYPE_IRC10K:
+      clk->freq.num = 10000;
+      if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_LIRCEN_Msk, CLK_STATUS_LIRCSTB_Msk, IRC10K_STARTUP_TIMEOUT);
+      return HDL_MODULE_UNLOADED;
 
-//     case HDL_CLOCK_TYPE_PLL_P:
-//       if(enable && CHECK_PLL_P_VALID(clk->config->property.div))
-//         return _hdl_clock_pll_init(clk, 0, (((clk->config->property.div >> 1) - 1U) << 16), 16, 17, HDL_CLOCK_TYPE_PLL_VCO);
-//       return HDL_MODULE_UNLOADED;
 
-//     case HDL_CLOCK_TYPE_PLL_Q:
-//       if(enable && CHECK_PLL_Q_VALID(clk->config->property.div))
-//         return _hdl_clock_pll_init(clk, 0, (clk->config->property.div << 24), 24, 27, HDL_CLOCK_TYPE_PLL_VCO);
-//       return HDL_MODULE_UNLOADED;
+    // case HDL_CLOCK_TYPE_PLL_SEL:
+    //   return _hdl_clock_selector_pll(clk, enable);
 
-//     case HDL_CLOCK_TYPE_SYS_SEL:
-//       return _hdl_clock_system(clk, enable);
+    // case HDL_CLOCK_TYPE_PLL_VCO:
+    //   return _hdl_clock_pll_vco(clk, enable);
 
-//     case HDL_CLOCK_TYPE_AHB:
-//       if (enable) {
-//         return _hdl_bus_clock_cnf(clk, 4, 7, MAX_SYS_CLOCK, HDL_CLOCK_TYPE_SYS_SEL);
-//       }
-//       rcu_ahb_clock_config(RCU_AHB_CKSYS_DIV512);
-//       return HDL_MODULE_UNLOADED;
+    // case HDL_CLOCK_TYPE_PLL_P:
+    //   if(enable && CHECK_PLL_P_VALID(clk->config->property.div))
+    //     return _hdl_clock_pll_init(clk, 0, (((clk->config->property.div >> 1) - 1U) << 16), 16, 17, HDL_CLOCK_TYPE_PLL_VCO);
+    //   return HDL_MODULE_UNLOADED;
 
-//     case HDL_CLOCK_TYPE_APB1:
-//       if (enable) return _hdl_bus_clock_cnf(clk, 10, 12, APB1_MAX_FREQ, HDL_CLOCK_TYPE_AHB);
-//       rcu_apb1_clock_config(RCU_APB1_CKAHB_DIV16);
-//       return HDL_MODULE_UNLOADED;
+    // case HDL_CLOCK_TYPE_PLL_Q:
+    //   if(enable && CHECK_PLL_Q_VALID(clk->config->property.div))
+    //     return _hdl_clock_pll_init(clk, 0, (clk->config->property.div << 24), 24, 27, HDL_CLOCK_TYPE_PLL_VCO);
+    //   return HDL_MODULE_UNLOADED;
 
-//     case HDL_CLOCK_TYPE_APB2:
-//       if (enable) return _hdl_bus_clock_cnf(clk, 13, 15, APB2_MAX_FREQ, HDL_CLOCK_TYPE_AHB);
-//       rcu_apb2_clock_config(RCU_APB2_CKAHB_DIV16);
-//       return HDL_MODULE_UNLOADED;
+    // case HDL_CLOCK_TYPE_SYS_SEL:
+    //   return _hdl_clock_system(clk, enable);
 
-//     case HDL_CLOCK_TYPE_IRC48M:
-//       clk->freq.num = 48000000;
-//       if (enable) return _hdl_clock_osc_en(RCU_IRC48M, RCU_FLAG_IRC48MSTB, IRC48M_STARTUP_TIMEOUT);
-//       return HDL_MODULE_UNLOADED;
+    // case HDL_CLOCK_TYPE_AHB:
+    //   if (enable) {
+    //     return _hdl_bus_clock_cnf(clk, 4, 7, MAX_SYS_CLOCK, HDL_CLOCK_TYPE_SYS_SEL);
+    //   }
+    //   rcu_ahb_clock_config(RCU_AHB_CKSYS_DIV512);
+    //   return HDL_MODULE_UNLOADED;
 
-//     case HDL_CLOCK_TYPE_IRC40K:
-//       clk->freq.num = 40000;
-//       if (enable) return _hdl_clock_osc_en(RCU_IRC32K, RCU_FLAG_IRC32KSTB, IRC32K_STARTUP_TIMEOUT);
-//       return HDL_MODULE_UNLOADED;
+    // case HDL_CLOCK_TYPE_APB1:
+    //   if (enable) return _hdl_bus_clock_cnf(clk, 10, 12, APB1_MAX_FREQ, HDL_CLOCK_TYPE_AHB);
+    //   rcu_apb1_clock_config(RCU_APB1_CKAHB_DIV16);
+    //   return HDL_MODULE_UNLOADED;
 
-//     default:
-//       break;
-//   }
-//   return HDL_MODULE_FAULT;
-// }
+    // case HDL_CLOCK_TYPE_APB2:
+    //   if (enable) return _hdl_bus_clock_cnf(clk, 13, 15, APB2_MAX_FREQ, HDL_CLOCK_TYPE_AHB);
+    //   rcu_apb2_clock_config(RCU_APB2_CKAHB_DIV16);
+    //   return HDL_MODULE_UNLOADED;
 
-// void hdl_get_clock(hdl_clock_t *clock, hdl_clock_freq_t *freq) {
-//   if(freq != NULL) {
-//     freq->num = 0;
-//     freq->denom = 1;
-//     hdl_clock_private_t *clk = (hdl_clock_private_t *)clock;
-//     if((clk != NULL) && (hdl_state(&clk->module) != HDL_MODULE_FAULT)) {
-//       freq->num = clk->freq.num;
-//       freq->denom = clk->freq.denom;
-//     }
-//   }
-// }
+    default:
+      break;
+  }
+  return HDL_MODULE_FAULT;
+}
+
+void hdl_get_clock(hdl_clock_t *clock, hdl_clock_freq_t *freq) {
+  if(freq != NULL) {
+    freq->num = 0;
+    freq->denom = 1;
+    hdl_clock_private_t *clk = (hdl_clock_private_t *)clock;
+    if((clk != NULL) && (hdl_state(&clk->module) != HDL_MODULE_FAULT)) {
+      freq->num = clk->freq.num;
+      freq->denom = clk->freq.denom;
+    }
+  }
+}

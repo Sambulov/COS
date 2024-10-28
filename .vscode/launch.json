@@ -63,7 +63,7 @@
 				"gdbPath": "/usr/bin/gdb-multiarch"
 			},
 			"runToEntryPoint": "main",
-			//"showDevDebugOutput": "raw",
+			"showDevDebugOutput": "raw",
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "${config:MCU}",
@@ -73,7 +73,7 @@
 			 	"monitor reset halt",
 			 	"cd ./build",
 			 	"file firmware.elf",
-			 	"target extended-remote localhost:50000",
+			 	//"target extended-remote localhost:50000",
 			 	"load",
 			 	"set output-radix 16"
 			],

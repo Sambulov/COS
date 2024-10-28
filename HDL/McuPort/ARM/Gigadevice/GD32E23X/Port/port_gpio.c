@@ -6,9 +6,9 @@ hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
   if(port->module.reg == NULL)
     return HDL_MODULE_FAULT;
   if(enable)
-    rcu_periph_clock_enable(port->config->hwc->rcu);
+    rcu_periph_clock_enable(port->config->rcu);
   else{
-    rcu_periph_clock_disable(port->config->hwc->rcu);
+    rcu_periph_clock_disable(port->config->rcu);
     return HDL_MODULE_UNLOADED;
   }
   return HDL_MODULE_ACTIVE;

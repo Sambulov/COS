@@ -97,6 +97,16 @@
             }
         },
         {
+            "name": "NUM463KG_DEMO_D",
+            "displayName": "NUM463KG_DEMO Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "NUM463KG_DEMO"
+            }
+        },
+        {
             "name": "Release",
             "displayName": "Release",
             "generator": "Ninja",

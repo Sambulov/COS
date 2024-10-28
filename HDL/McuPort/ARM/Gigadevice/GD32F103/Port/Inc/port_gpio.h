@@ -3,7 +3,7 @@
 
 typedef struct {
   const rcu_periph_enum rcu;
-} hdl_gpio_port_hw_config_t;
+} hdl_gpio_port_config_t;
 
 typedef struct {
   const uint32_t type;      // GPIO_MODE_AIN, GPIO_MODE_IN_FLOATING, GPIO_MODE_IPD, GPIO_MODE_IPU, GPIO_MODE_OUT_OD, GPIO_MODE_OUT_PP, GPIO_MODE_AF_OD, GPIO_MODE_AF_PP

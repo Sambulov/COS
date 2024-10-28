@@ -4,9 +4,9 @@ hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
   /* Casting desc to hdl_gpio_port_t* type */
   hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;
   if(enable)
-    SET_BIT(RCC->IOPENR, port->config->hwc->rcu);
+    SET_BIT(RCC->IOPENR, port->config->rcu);
   else{
-    CLEAR_BIT(RCC->IOPENR, port->config->hwc->rcu);
+    CLEAR_BIT(RCC->IOPENR, port->config->rcu);
     return HDL_MODULE_UNLOADED;
   }
   return HDL_MODULE_ACTIVE;

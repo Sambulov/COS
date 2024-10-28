@@ -3,14 +3,14 @@
 
 hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
   hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;
-  if(port->config->hwc == NULL)
+  if(port->config == NULL)
     return HDL_MODULE_FAULT;
   if(enable) {
     rcu_periph_clock_enable(RCU_AF);
-    rcu_periph_clock_enable(port->config->hwc->rcu);
+    rcu_periph_clock_enable(port->config->rcu);
   }
   else {
-    rcu_periph_clock_disable(port->config->hwc->rcu);
+    rcu_periph_clock_disable(port->config->rcu);
     return HDL_MODULE_UNLOADED;
   }
   return HDL_MODULE_ACTIVE;

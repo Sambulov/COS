@@ -1,7 +1,5 @@
 #include "hdl.h"
 
-#if defined ( ATB_RK3568J_SMC_R3 )
-
 #define HDL_INTERRUPT_PRIO_GROUP_BITS     __NVIC_PRIO_BITS
 
 #define HDL_HXTAL_CLOCK                   12000000
@@ -388,4 +386,9 @@ hdl_gpio_pin_t mod_gpio_pin_pe9 = {    //BTN_1
   .config = &gpio_pin_in_high_cnf,
 };
 
-#endif
+extern hdl_gpio_pin_t mod_gpio_pin_btn_0      __attribute__ ((alias ("mod_gpio_pin_pe8")));
+extern hdl_gpio_pin_t mod_gpio_pin_btn_1      __attribute__ ((alias ("mod_gpio_pin_pe9")));
+extern hdl_gpio_pin_t mod_gpio_pin_led_r      __attribute__ ((alias ("mod_gpio_pin_ph4")));
+extern hdl_gpio_pin_t mod_gpio_pin_led_y      __attribute__ ((alias ("mod_gpio_pin_ph5")));
+extern hdl_gpio_pin_t mod_gpio_pin_led_g      __attribute__ ((alias ("mod_gpio_pin_ph6")));
+

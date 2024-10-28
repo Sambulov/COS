@@ -1114,19 +1114,19 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
     .config = &mod_adc_cnf
   };
 
-  const hdl_gpio_port_hw_config_t hdl_gpio_port_config_a = {
+  const hdl_gpio_port_config_t hdl_gpio_port_config_a = {
     .rcu = RCU_GPIOA
   };
 
-  const hdl_gpio_port_hw_config_t hdl_gpio_port_config_b = {
+  const hdl_gpio_port_config_t hdl_gpio_port_config_b = {
     .rcu = RCU_GPIOB
   };
 
-  const hdl_gpio_port_hw_config_t hdl_gpio_port_config_c = {
+  const hdl_gpio_port_config_t hdl_gpio_port_config_c = {
     .rcu = RCU_GPIOC
   };
 
-  const hdl_gpio_port_hw_config_t hdl_gpio_port_config_f = {
+  const hdl_gpio_port_config_t hdl_gpio_port_config_f = {
     .rcu = RCU_GPIOF
   };
 
@@ -1134,28 +1134,28 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
     .module.init = &hdl_gpio_port,
     .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)GPIOA,
-    .config = hdl_gpio_port_config(&hdl_gpio_port_config_a)
+    .config = &hdl_gpio_port_config_a
   };
 
   hdl_gpio_port_t hdl_gpio_port_b = {
     .module.init = &hdl_gpio_port,
     .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)GPIOB,
-    .config = hdl_gpio_port_config(&hdl_gpio_port_config_b)
+    .config = &hdl_gpio_port_config_b
   };
 
   hdl_gpio_port_t hdl_gpio_port_c = {
     .module.init = &hdl_gpio_port,
     .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)GPIOC,
-    .config = hdl_gpio_port_config(&hdl_gpio_port_config_c)
+    .config = &hdl_gpio_port_config_c
   };
 
   hdl_gpio_port_t hdl_gpio_port_f = {
     .module.init = &hdl_gpio_port,
     .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
     .module.reg = (void *)GPIOF,
-    .config = hdl_gpio_port_config(&hdl_gpio_port_config_f)
+    .config = &hdl_gpio_port_config_f
   };
 
   const hdl_gpio_pin_hw_config_t mod_gpio_output_pp_mode = {

@@ -514,39 +514,39 @@ hdl_timer_t mod_watchdog_timer = {
 /***********************************************************
  *                          GPIO PORT
 ***********************************************************/
-hdl_gpio_port_hw_config_t mod_gpio_port_config_a = {
+hdl_gpio_port_config_t mod_gpio_port_config_a = {
   .rcu = RCU_GPIOA
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_b = {
+hdl_gpio_port_config_t mod_gpio_port_config_b = {
   .rcu = RCU_GPIOB
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_c = {
+hdl_gpio_port_config_t mod_gpio_port_config_c = {
   .rcu = RCU_GPIOC
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_d = {
+hdl_gpio_port_config_t mod_gpio_port_config_d = {
   .rcu = RCU_GPIOD
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_e = {
+hdl_gpio_port_config_t mod_gpio_port_config_e = {
   .rcu = RCU_GPIOE
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_f = {
+hdl_gpio_port_config_t mod_gpio_port_config_f = {
   .rcu = RCU_GPIOF
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_g = {
+hdl_gpio_port_config_t mod_gpio_port_config_g = {
   .rcu = RCU_GPIOG
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_h = {
+hdl_gpio_port_config_t mod_gpio_port_config_h = {
   .rcu = RCU_GPIOH
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_i = {
+hdl_gpio_port_config_t mod_gpio_port_config_i = {
   .rcu = RCU_GPIOI
 };
 
@@ -554,43 +554,43 @@ hdl_gpio_port_t hdl_gpio_port_a = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOA,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_a)
+  .config = &mod_gpio_port_config_a
 };
 hdl_gpio_port_t hdl_gpio_port_b = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOB,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_b)
+  .config = &mod_gpio_port_config_b
 };
 hdl_gpio_port_t hdl_gpio_port_c = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOC,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_c)
+  .config = &mod_gpio_port_config_c
 };
 hdl_gpio_port_t hdl_gpio_port_d = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOD,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_d)
+  .config = &mod_gpio_port_config_d
 };
 hdl_gpio_port_t hdl_gpio_port_e = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOE,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_e)
+  .config = &mod_gpio_port_config_e
 };
 hdl_gpio_port_t hdl_gpio_port_f = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOF,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_f)
+  .config = &mod_gpio_port_config_f
 };
 hdl_gpio_port_t hdl_gpio_port_g = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOG,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_g)
+  .config = &mod_gpio_port_config_g
 };
 /***********************************************************
  *                          GPIO

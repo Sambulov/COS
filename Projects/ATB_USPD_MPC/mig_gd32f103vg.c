@@ -693,23 +693,23 @@ hdl_dma_channel_t mod_m2m_dma_ch = {
   .config = &mod_m2m_dma_ch_config
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_a = {
+hdl_gpio_port_config_t mod_gpio_port_config_a = {
   .rcu = RCU_GPIOA
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_b = {
+hdl_gpio_port_config_t mod_gpio_port_config_b = {
   .rcu = RCU_GPIOB
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_c = {
+hdl_gpio_port_config_t mod_gpio_port_config_c = {
   .rcu = RCU_GPIOC
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_d = {
+hdl_gpio_port_config_t mod_gpio_port_config_d = {
   .rcu = RCU_GPIOD
 };
 
-hdl_gpio_port_hw_config_t mod_gpio_port_config_e = {
+hdl_gpio_port_config_t mod_gpio_port_config_e = {
   .rcu = RCU_GPIOE
 };
 
@@ -717,35 +717,35 @@ hdl_gpio_port_t mod_gpio_a = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOA,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_a)
+  .config = &mod_gpio_port_config_a
 };
 
 hdl_gpio_port_t mod_gpio_b = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOB,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_b)
+  .config = &mod_gpio_port_config_b
 };
 
 hdl_gpio_port_t mod_gpio_c = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOC,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_c)
+  .config = &mod_gpio_port_config_c
 };
 
 hdl_gpio_port_t mod_gpio_d = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOD,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_d)
+  .config = &mod_gpio_port_config_d
 };
 
 hdl_gpio_port_t mod_gpio_e = {
   .module.init = &hdl_gpio_port,
   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
   .module.reg = (void *)GPIOE,
-  .config = hdl_gpio_port_config(.hwc = &mod_gpio_port_config_e)
+  .config = &mod_gpio_port_config_e
 };
 
 hdl_gpio_pin_hw_config_t mod_gpio_mode_output_pp = {

@@ -10,15 +10,15 @@ typedef enum {
 
 _Static_assert(HDL_GPIO_LOW == !HDL_GPIO_HIGH, "Expression (HDL_GPIO_LOW == !HDL_GPIO_HIGH) must always be true");
 
-typedef struct {
-  const hdl_gpio_port_hw_config_t *hwc;
-} hdl_gpio_port_config_t;
+// typedef struct {
+//   const hdl_gpio_port_hw_config_t *hwc;
+// } hdl_gpio_port_config_t;
 
-#define hdl_gpio_port_config(...) (hdl_gpio_port_config_t []){{__VA_ARGS__}}
+// #define hdl_gpio_port_config(...) (hdl_gpio_port_config_t []){{__VA_ARGS__}}
 
 typedef struct {
   hdl_module_t module;
-  hdl_gpio_port_config_t *config;
+  const hdl_gpio_port_config_t *config;
 } hdl_gpio_port_t;
 
 typedef struct {

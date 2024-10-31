@@ -4,15 +4,21 @@
 
 #define HDL_LXTAL_CLOCK                   32768
 #define HDL_HXTAL_CLOCK                   12000000
-#define HDL_PLL_MUL_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc, mod_clock_hxtal */
-#define HDL_SYS_CLOCK                     mod_clock_pll_p_prescaler     /* Can be clocked by: mod_clock_pll_p_prescaler, mod_clock_hxtal, mod_clock_irc */
-#define HDL_PLL_VCO_PRESCALER             4                             /* Can be 2, 3 .. 63 */
+#define HDL_PLL_REF_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc, mod_clock_hxtal */
+#define HDL_PLL_REF_PRESCALER             3                             /* Can be 1, 2, 3, ... 32 */
+#define HDL_PLL_VCO_PRESCALER             64                            /* Can be 4, 6, 8 ... 1028 */
+#define HDL_PLL_PRESCALER                 2                             /* Can be 1, 2, 4 */
+#define HDL_SYS_CLOCK                     mod_clock_pll                 /* Can be clocked by: mod_clock_pll, mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc10k, mod_clock_irc */
+#define HDL_SYS_PRESCALER                 2                             /* Can be 1, 2, 4 */
+#define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB2_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
+
+
+
 #define HDL_PLL_N_MULTIPLY                96                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
 #define HDL_PLL_P_PRESCALER               2                             /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
 #define HDL_PLL_Q_PRESCALER               10                            /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
 #define HDL_AHB_PRESCALER                 1                             /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
-#define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
-#define HDL_APB2_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
 
 const hdl_core_config_t mod_sys_core_cnf = {
@@ -41,7 +47,7 @@ hdl_interrupt_t mod_irq_systick = {
 extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
 
 const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
-	&_estack,            /* Top of Stack */
+	&mod_nvic_cnf,
 	&reset_handler,         /* Reset Handler */
 	&nmi_handler,           /* NMI Handler */
 	&hard_fault_handler,     /* Hard Fault Handler */
@@ -239,7 +245,7 @@ hdl_clock_t mod_clock_hxtal = {
   .module.dependencies = NULL,
   .module.reg = (void *)CLK,
   .config = ((const hdl_clock_config_t const []) {{
-    .type = HDL_CLOCK_TYPE_IRC12M, 
+    .type = HDL_CLOCK_TYPE_HXTAL, 
     .property.freq = HDL_HXTAL_CLOCK
   }})
 };
@@ -254,69 +260,87 @@ hdl_clock_t mod_clock_lxtal = {
   }})
 };
 
-// hdl_clock_prescaler_t mod_pll_sel = {
-//   .module.init = &hdl_clock_selector_pll,
-//   .module.dependencies = hdl_module_dependencies(&HDL_PLL_MUL_CLOCK.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = 1,
-// };
+hdl_clock_t mod_clock_pll_ref = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&HDL_PLL_REF_CLOCK.module),
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL_REF, 
+    .property.div = HDL_PLL_REF_PRESCALER
+  }})
+};
 
-// hdl_clock_prescaler_t mod_clock_pll_vco_prescaler = {
-//   .module.init = &hdl_clock_selector_pll_vco,
-//   .module.dependencies = hdl_module_dependencies(&mod_pll_sel.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = HDL_PLL_VCO_PRESCALER,
-// };
+hdl_clock_t mod_clock_pll_vco = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_ref.module),
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL_VCO, 
+    .property.mul = HDL_PLL_VCO_PRESCALER
+  }})
+};
 
-// hdl_clock_prescaler_t mod_clock_pll_n_multiply = {
-//   .module.init = &hdl_clock_pll_n,
-//   .module.dependencies = hdl_module_dependencies(&mod_clock_pll_vco_prescaler.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = HDL_PLL_N_MULTIPLY,
-// };
+hdl_clock_t mod_clock_pll = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_pll_vco.module),
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_PLL, 
+    .property.div = HDL_PLL_PRESCALER
+  }})
+};
 
-// hdl_clock_prescaler_t mod_clock_pll_p_prescaler = {
-//   .module.init = &hdl_clock_pll_p,
-//   .module.dependencies = hdl_module_dependencies(&mod_clock_pll_n_multiply.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = HDL_PLL_P_PRESCALER,
-// };
+hdl_clock_t mod_clock_sys = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &HDL_SYS_CLOCK.module),
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_SYS, 
+    .property.div = HDL_SYS_PRESCALER
+  }})
+};
 
-// hdl_clock_prescaler_t mod_clock_pll_q_prescaler = {
-//   .module.init = &hdl_clock_pll_q,
-//   .module.dependencies = hdl_module_dependencies(&mod_clock_pll_n_multiply.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = HDL_PLL_Q_PRESCALER,
-// };
+hdl_clock_t mod_clock_apb1 = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB1, 
+    .property.div = HDL_APB1_PRESCALER
+  }})
+};
 
-// hdl_clock_prescaler_t mod_clock_sys_clock = {
-//   .module.init = &hdl_clock_system,
-//   .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &HDL_SYS_CLOCK.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = HDL_PLL_Q_PRESCALER,
-// };
+hdl_clock_t mod_clock_apb2 = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB2, 
+    .property.div = HDL_APB2_PRESCALER
+  }})
+};
 
-// hdl_clock_prescaler_t mod_clock_ahb = {
-//   .module.init = &hdl_clock_ahb,
-//   .module.dependencies = hdl_module_dependencies(&mod_clock_sys_clock.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = HDL_AHB_PRESCALER,
-// };
+const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
+  .period = 240000 - 1
+};
 
-// hdl_clock_prescaler_t mod_clock_apb1 = {
-//   .module.init = &hdl_clock_apb1,
-//   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = HDL_APB1_PRESCALER,
-// };
+hdl_tick_counter_t mod_systick_counter = {
+  .module.init = &hdl_tick_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .module.reg = (void *)SysTick,
+  .config.systick = &mod_systick_counter_cnf
+};
 
-// hdl_clock_prescaler_t mod_clock_apb2 = {
-//   .module.init = &hdl_clock_apb2,
-//   .module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
-//   .module.reg = (void *)CLK,
-//   .muldiv_factor = HDL_APB2_PRESCALER,
-// };
+const hdl_time_counter_config_t mod_systick_timer_cnf = {
+  .reload_interrupt = &mod_irq_systick,
+};
 
+hdl_time_counter_t mod_systick_timer_ms = {
+  .module.init = hdl_time_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_systick_counter.module, &mod_nvic.module),
+  .module.reg = NULL,
+  .config = &mod_systick_timer_cnf
+};
 
 const hdl_gpio_port_config_t gpio_port_a_cnf = {
 	.rcu = CLK_AHBCLK0_GPACKEN_Msk
@@ -362,18 +386,60 @@ const hdl_gpio_pin_hw_config_t gpio_pin_output_slow_cnf = {
 	.slew_mode = GPIO_SLEWCTL_NORMAL
 };
 
-hdl_gpio_port_t mod_gpio_port_h = {
+hdl_gpio_port_t mod_gpio_port_a = {
   .module.init = &hdl_gpio_port,
-  .module.reg = (void*)PH,
-  //.module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
-  .config = &gpio_port_h_cnf
+  .module.reg = (void *)PA,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .config = &gpio_port_a_cnf
+};
+
+hdl_gpio_port_t mod_gpio_port_b = {
+  .module.init = &hdl_gpio_port,
+  .module.reg = (void *)PB,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .config = &gpio_port_b_cnf
+};
+
+hdl_gpio_port_t mod_gpio_port_c = {
+  .module.init = &hdl_gpio_port,
+  .module.reg = (void *)PC,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .config = &gpio_port_c_cnf
+};
+
+hdl_gpio_port_t mod_gpio_port_d = {
+  .module.init = &hdl_gpio_port,
+  .module.reg = (void *)PD,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .config = &gpio_port_d_cnf
 };
 
 hdl_gpio_port_t mod_gpio_port_e = {
   .module.init = &hdl_gpio_port,
   .module.reg = (void *)PE,
-  //.module.dependencies = hdl_module_dependencies(&mod_clock_ahb.module),
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
   .config = &gpio_port_e_cnf
+};
+
+hdl_gpio_port_t mod_gpio_port_f = {
+  .module.init = &hdl_gpio_port,
+  .module.reg = (void *)PF,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .config = &gpio_port_f_cnf
+};
+
+hdl_gpio_port_t mod_gpio_port_g = {
+  .module.init = &hdl_gpio_port,
+  .module.reg = (void *)PG,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .config = &gpio_port_g_cnf
+};
+
+hdl_gpio_port_t mod_gpio_port_h = {
+  .module.init = &hdl_gpio_port,
+  .module.reg = (void*)PH,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .config = &gpio_port_h_cnf
 };
 
 const hdl_gpio_pin_config_t gpio_pin_out_low_cnf = {
@@ -381,21 +447,21 @@ const hdl_gpio_pin_config_t gpio_pin_out_low_cnf = {
   .inactive_default = HDL_GPIO_HIGH
 };
 
-hdl_gpio_pin_t mod_gpio_pin_ph4 = {    //LED_R
+hdl_gpio_pin_t mod_gpio_pin_ph4 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_h.module),
   .module.reg = (void *)BIT4,
   .config = &gpio_pin_out_low_cnf,
 };
 
-hdl_gpio_pin_t mod_gpio_pin_ph5 = {    //LED_Y
+hdl_gpio_pin_t mod_gpio_pin_ph5 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_h.module),
   .module.reg = (void *)BIT5,
   .config = &gpio_pin_out_low_cnf,
 };
 
-hdl_gpio_pin_t mod_gpio_pin_ph6 = {    //LED_G
+hdl_gpio_pin_t mod_gpio_pin_ph6 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_h.module),
   .module.reg = (void *)BIT6,
@@ -407,20 +473,26 @@ const hdl_gpio_pin_config_t gpio_pin_in_high_cnf = {
   .inactive_default = HDL_GPIO_HIGH
 };
 
-hdl_gpio_pin_t mod_gpio_pin_pe8 = {    //BTN_0
+hdl_gpio_pin_t mod_gpio_pin_pe8 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_e.module),
   .module.reg = (void *)BIT8,
   .config = &gpio_pin_in_high_cnf,
 };
 
-hdl_gpio_pin_t mod_gpio_pin_pe9 = {    //BTN_1
+hdl_gpio_pin_t mod_gpio_pin_pe9 = {
   .module.init = &hdl_gpio_pin,
-  .module.dependencies = hdl_module_dependencies(&mod_gpio_port_e.module),
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_port_e.module
+     ,&mod_clock_irc.module, &mod_clock_irc48m.module, 
+	 &mod_clock_irc10k.module, 
+	 &mod_clock_hxtal.module, &mod_clock_lxtal.module
+  ),
   .module.reg = (void *)BIT9,
   .config = &gpio_pin_in_high_cnf,
 };
 
+ 
+extern hdl_time_counter_t mod_timer_ms        __attribute__ ((alias ("mod_systick_timer_ms")));
 extern hdl_gpio_pin_t mod_gpio_pin_btn_0      __attribute__ ((alias ("mod_gpio_pin_pe8")));
 extern hdl_gpio_pin_t mod_gpio_pin_btn_1      __attribute__ ((alias ("mod_gpio_pin_pe9")));
 extern hdl_gpio_pin_t mod_gpio_pin_led_r      __attribute__ ((alias ("mod_gpio_pin_ph4")));

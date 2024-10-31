@@ -224,8 +224,20 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_private_t, hdl_clock_t, HDL_CLOCK_PRV_SIZE,
 //   return HDL_MODULE_UNLOADED;
 // }
 
+static void _unlock_reg() {
+    SYS->REGLCTL = 0x59;
+    SYS->REGLCTL = 0x16;
+    SYS->REGLCTL = 0x88;
+}
+
+static void _lock_reg() {
+    SYS->REGLCTL = 0;
+}
+
 static hdl_module_state_t _hdl_clock_osc_en(uint32_t osc, uint32_t stat, uint32_t timeout) {
+  _unlock_reg();
   HDL_REG_SET(CLK->PWRCTL, osc);
+  _lock_reg();
   uint32_t stb_timer = timeout;
   while ((!HDL_REG_CHECK(CLK->STATUS, stat)) && (stb_timer--)); /* Wait until HXTAL will be stable */
   if (!HDL_REG_CHECK(CLK->STATUS, stat))

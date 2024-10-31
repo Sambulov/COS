@@ -1,7 +1,11 @@
 #ifndef HDL_TIME_COUNTER_H_
 #define HDL_TIME_COUNTER_H_
 
-#include "port_time_counter.h"
+#define HDL_TIME_COUNTER_PRV_SIZE         28
+
+typedef struct {
+  hdl_interrupt_t *reload_interrupt;
+} hdl_time_counter_config_t;
 
 typedef struct {
   hdl_module_t module;

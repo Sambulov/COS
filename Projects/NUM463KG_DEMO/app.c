@@ -3,6 +3,7 @@
 
 
 void main() {
+  hdl_enable(&mod_timer_ms.module);
   hdl_enable(&mod_gpio_pin_btn_0.module);
   hdl_enable(&mod_gpio_pin_btn_1.module);
   hdl_enable(&mod_gpio_pin_led_r.module);

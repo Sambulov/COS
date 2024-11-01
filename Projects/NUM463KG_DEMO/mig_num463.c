@@ -6,13 +6,16 @@
 #define HDL_HXTAL_CLOCK                   12000000
 #define HDL_PLL_REF_CLOCK                 mod_clock_hxtal               /* Can be clocked by: mod_clock_irc, mod_clock_hxtal */
 #define HDL_PLL_REF_PRESCALER             3                             /* Can be 1, 2, 3, ... 32 */
-#define HDL_PLL_VCO_PRESCALER             64                            /* Can be 4, 6, 8 ... 1028 */
+#define HDL_PLL_VCO_PRESCALER             100                           /* Can be 4, 6, 8 ... 1028 */
 #define HDL_PLL_PRESCALER                 2                             /* Can be 1, 2, 4 */
 #define HDL_SYS_CLOCK                     mod_clock_pll                 /* Can be clocked by: mod_clock_pll, mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc10k, mod_clock_irc */
-#define HDL_SYS_PRESCALER                 2                             /* Can be 1, 2, 4 */
+#define HDL_SYS_PRESCALER                 1                             /* Can be 1, 2, 3, ... 16 */
+#define HDL_SYSTICK_REF                   mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc */
+#define HDL_SYSTICK_REF_PRESCALER         2                             /* Can be 1 or 2 for mod_clock_hxtal, 1 for mod_clock_lxtal, 2 for mod_clock_sys,  mod_clock_irc */
 #define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_APB2_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
-
+#define HDL_SYSTICK_CLOCK                 mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_systick_ref*/
+#define HDL_SYSTICK_RELOAD                200000 - 1
 
 
 #define HDL_PLL_N_MULTIPLY                96                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
@@ -22,7 +25,8 @@
 
 
 const hdl_core_config_t mod_sys_core_cnf = {
-
+ .power_level = SYS_PLCTL_PLSEL_PL0,
+ .flash_latency = 8
 };
 
 hdl_core_t mod_sys_core = {
@@ -292,11 +296,21 @@ hdl_clock_t mod_clock_pll = {
 
 hdl_clock_t mod_clock_sys = {
   .module.init = &hdl_clock,
-  .module.dependencies = hdl_module_dependencies(&mod_sys_core.module, &HDL_SYS_CLOCK.module),
+  .module.dependencies = hdl_module_dependencies( &mod_sys_core.module, &HDL_SYS_CLOCK.module),
   .module.reg = (void *)CLK,
   .config = ((const hdl_clock_config_t const []) {{
     .type = HDL_CLOCK_TYPE_SYS, 
     .property.div = HDL_SYS_PRESCALER
+  }})
+};
+
+hdl_clock_t mod_clock_systick_ref = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&HDL_SYSTICK_REF.module),
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_SYSTICK_REF, 
+    .property.div = HDL_SYSTICK_REF_PRESCALER
   }})
 };
 
@@ -321,12 +335,12 @@ hdl_clock_t mod_clock_apb2 = {
 };
 
 const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
-  .period = 240000 - 1
+  .period = HDL_SYSTICK_RELOAD
 };
 
 hdl_tick_counter_t mod_systick_counter = {
   .module.init = &hdl_tick_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .module.dependencies = hdl_module_dependencies(&HDL_SYSTICK_CLOCK.module),
   .module.reg = (void *)SysTick,
   .config.systick = &mod_systick_counter_cnf
 };
@@ -483,7 +497,8 @@ hdl_gpio_pin_t mod_gpio_pin_pe8 = {
 hdl_gpio_pin_t mod_gpio_pin_pe9 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_e.module
-     ,&mod_clock_irc.module, &mod_clock_irc48m.module, 
+     ,&mod_clock_irc.module, 
+	 //&mod_clock_irc48m.module, 
 	 &mod_clock_irc10k.module, 
 	 &mod_clock_hxtal.module, &mod_clock_lxtal.module
   ),

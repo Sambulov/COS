@@ -1,4 +1,5 @@
 #include "hdl_portable.h"
+#include "Macros.h"
 
 void BOD_IRQHandler()        { call_isr(HDL_NVIC_IRQ0_BOD_IRQn, 0); }
 void IRC_IRQHandler()        { call_isr(HDL_NVIC_IRQ1_IRC_IRQn, 0); }
@@ -128,12 +129,25 @@ void EADC21_IRQHandler()     { call_isr(HDL_NVIC_IRQ125_EADC21_IRQn, 0); }
 void EADC22_IRQHandler()     { call_isr(HDL_NVIC_IRQ126_EADC22_IRQn, 0); }
 void EADC23_IRQHandler()     { call_isr(HDL_NVIC_IRQ127_EADC23_IRQn, 0); }
 
+#define CPU_POWER_LEVEL_VALID(pl)   ((pl == SYS_PLCTL_PLSEL_PL0) || (pl == SYS_PLCTL_PLSEL_PL1))
+#define CPU_FLASH_LATENCY_VALID(fl)   ((fl > 0) || (fl <= 8))
+
 hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
-  if(enable) {
+  while(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     // /*  Unlock Register */
-    //UnlockRegister();
-    
+    SYS_UnlockReg();
+    if(!CPU_POWER_LEVEL_VALID(core->config->power_level)) break;
+    if(!CPU_FLASH_LATENCY_VALID(core->config->flash_latency)) break;
+    HDL_REG_MODIFY(SYS->PLCTL, SYS_PLCTL_PLSEL_Msk, core->config->power_level);
+    uint32_t u32TimeOutCount = 12000000; /* 1 second time-out */
+    while(SYS->PLSTS & SYS_PLSTS_PLCBUSY_Msk) {
+        if(u32TimeOutCount-- == 0) break;
+    }
+    if(SYS->PLSTS & SYS_PLSTS_PLCBUSY_Msk) break;
+
+    HDL_REG_MODIFY(FMC->CYCCTL, FMC_CYCCTL_CYCLE_Msk, core->config->flash_latency);
+
     #ifdef ENABLE_SPIM_CACHE
       SystemEnableSpimCache();
     #endif
@@ -152,7 +166,7 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
     #endif
 
     /* Lock register */
-    //LockRegister();
+    SYS_LockReg();
     return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_UNLOADED;

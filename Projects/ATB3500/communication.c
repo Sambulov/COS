@@ -1,10 +1,10 @@
 #include "app.h"
 
-#define EMPTY_CMD          0x0000000000
-#define WDT_CMD            0x00000000ED
-#define IO_CMD             0x00000000D0
-#define SERIAL_CMD         0x0000000065
-#define I2C_GW_CMD         0x0000012C6E
+#define EMPTY_CMD          0x00000000
+#define WDT_CMD            0x000000ED
+#define IO_CMD             0x000000D0
+#define SERIAL_CMD         0x00000065
+#define I2C_GW_CMD         0x00012C6E
 
 void spi_event_handler(uint32_t recieved, void *sender, void *context) {
     dev_context_t *cont = (dev_context_t *)context;

@@ -81,7 +81,7 @@ void main() {
   hdl_event_subscribe(&led_y_timer.event, &led_y_timer_delegate);
   hdl_event_subscribe(&led_g_timer.event, &led_g_timer_delegate);
   hdl_timer_set(&led_y_timer, 100, HDL_TIMER_EVENT_LOOP);
-  hdl_timer_set(&led_g_timer, 500, HDL_TIMER_EVENT_LOOP);
+  hdl_timer_set(&led_g_timer, 100, HDL_TIMER_EVENT_LOOP);
 
   hdl_interrupt_request(&mod_interrupt_controller, &mod_irq_gpio_btn_port, &btn0_int_delegate);
 

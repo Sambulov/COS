@@ -12,8 +12,8 @@
 #define HDL_SYS_PRESCALER                 1                             /* Can be 1, 2, 3, ... 16 */
 #define HDL_SYSTICK_REF                   mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc */
 #define HDL_SYSTICK_REF_PRESCALER         2                             /* Can be 1 or 2 for mod_clock_hxtal, 1 for mod_clock_lxtal, 2 for mod_clock_sys,  mod_clock_irc */
-#define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
-#define HDL_APB2_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB0_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_SYSTICK_CLOCK                 mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_systick_ref*/
 #define HDL_SYSTICK_RELOAD                200000 - 1
 
@@ -320,6 +320,16 @@ hdl_clock_t mod_clock_systick_ref = {
   }})
 };
 
+hdl_clock_t mod_clock_apb0 = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
+  .module.reg = (void *)CLK,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB1, 
+    .property.div = HDL_APB0_PRESCALER
+  }})
+};
+
 hdl_clock_t mod_clock_apb1 = {
   .module.init = &hdl_clock,
   .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
@@ -327,16 +337,6 @@ hdl_clock_t mod_clock_apb1 = {
   .config = ((const hdl_clock_config_t const []) {{
     .type = HDL_CLOCK_TYPE_APB1, 
     .property.div = HDL_APB1_PRESCALER
-  }})
-};
-
-hdl_clock_t mod_clock_apb2 = {
-  .module.init = &hdl_clock,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
-  .module.reg = (void *)CLK,
-  .config = ((const hdl_clock_config_t const []) {{
-    .type = HDL_CLOCK_TYPE_APB2, 
-    .property.div = HDL_APB2_PRESCALER
   }})
 };
 

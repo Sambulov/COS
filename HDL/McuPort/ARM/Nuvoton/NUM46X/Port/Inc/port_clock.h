@@ -21,8 +21,8 @@ typedef enum {
 
   HDL_CLOCK_TYPE_SYS,            /* property: div (can be 1, 2, 4), depends on IRC12M or IRC10K or HXTAL or LXTAL or PLL, SYS: 0~200MHz??? */
 
+  HDL_CLOCK_TYPE_APB0,           /* property: div (can be 1, 2, 4, 8, 16), depends on SYS, APB0: 0~200MHz??? */
   HDL_CLOCK_TYPE_APB1,           /* property: div (can be 1, 2, 4, 8, 16), depends on SYS, APB1: 0~200MHz??? */
-  HDL_CLOCK_TYPE_APB2,           /* property: div (can be 1, 2, 4, 8, 16), depends on SYS, APB2: 0~200MHz??? */
   
   HDL_CLOCK_TYPE_SYSTICK_REF,    /* property: div (1 or 2 for HXTAL; 1 for LXTAL; 2 for other), depends on either: HXTAL, LXTAL, IRC12M, SYS */
 

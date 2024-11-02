@@ -646,6 +646,11 @@ void _ttywrch(int ch)
  *
  */
 
+void _close(void) { }
+void _lseek(void) { }
+void _isatty(void) { }
+void _fstat(void) { }
+
 int fputc(int ch, FILE *stream)
 {
     (void)stream;

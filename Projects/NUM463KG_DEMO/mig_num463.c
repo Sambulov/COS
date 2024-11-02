@@ -45,6 +45,12 @@ hdl_interrupt_t mod_irq_systick = {
   .priority_group = 0,
 };
 
+hdl_interrupt_t mod_irq_gpio_e = {
+  .irq_type = HDL_NVIC_IRQ20_GPE_IRQn,
+  .priority = 0,
+  .priority_group = 0,
+};
+
 /***********************************************************
  *                          NVIC
 ***********************************************************/
@@ -201,7 +207,7 @@ const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
 const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .vector = &irq_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick),
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_gpio_e),
 };
 
 hdl_interrupt_controller_t mod_nvic = {
@@ -296,7 +302,7 @@ hdl_clock_t mod_clock_pll = {
 
 hdl_clock_t mod_clock_sys = {
   .module.init = &hdl_clock,
-  .module.dependencies = hdl_module_dependencies( &mod_sys_core.module, &HDL_SYS_CLOCK.module),
+  .module.dependencies = hdl_module_dependencies(&HDL_SYS_CLOCK.module, &mod_sys_core.module),
   .module.reg = (void *)CLK,
   .config = ((const hdl_clock_config_t const []) {{
     .type = HDL_CLOCK_TYPE_SYS, 
@@ -388,18 +394,6 @@ const hdl_gpio_port_config_t gpio_port_h_cnf = {
 	.rcu = CLK_AHBCLK0_GPHCKEN_Msk
 };
 
-const hdl_gpio_pin_hw_config_t gpio_pin_input_pu_slow_cnf = {
-	.func = GPIO_MODE_INPUT,
-	.pull_mode = GPIO_PUSEL_PULL_UP,
-	.slew_mode = GPIO_SLEWCTL_NORMAL
-};
-
-const hdl_gpio_pin_hw_config_t gpio_pin_output_slow_cnf = {
-	.func = GPIO_MODE_OUTPUT,
-	.pull_mode = GPIO_PUSEL_DISABLE,
-	.slew_mode = GPIO_SLEWCTL_NORMAL
-};
-
 hdl_gpio_port_t mod_gpio_port_a = {
   .module.init = &hdl_gpio_port,
   .module.reg = (void *)PA,
@@ -456,6 +450,26 @@ hdl_gpio_port_t mod_gpio_port_h = {
   .config = &gpio_port_h_cnf
 };
 
+const hdl_gpio_pin_hw_config_t gpio_pin_input_pu_slow_int_cnf = {
+	.func = GPIO_MODE_INPUT,
+	.pull_mode = GPIO_PUSEL_PULL_UP,
+	.slew_mode = GPIO_SLEWCTL_NORMAL,
+  .int_mode = GPIO_INT_FALLING
+};
+
+const hdl_gpio_pin_hw_config_t gpio_pin_input_pu_slow_cnf = {
+	.func = GPIO_MODE_INPUT,
+	.pull_mode = GPIO_PUSEL_PULL_UP,
+	.slew_mode = GPIO_SLEWCTL_NORMAL,
+  .int_mode = GPIO_INT_NONE
+};
+
+const hdl_gpio_pin_hw_config_t gpio_pin_output_slow_cnf = {
+	.func = GPIO_MODE_OUTPUT,
+	.pull_mode = GPIO_PUSEL_DISABLE,
+	.slew_mode = GPIO_SLEWCTL_NORMAL
+};
+
 const hdl_gpio_pin_config_t gpio_pin_out_low_cnf = {
   .hwc = &gpio_pin_output_slow_cnf,
   .inactive_default = HDL_GPIO_HIGH
@@ -464,45 +478,45 @@ const hdl_gpio_pin_config_t gpio_pin_out_low_cnf = {
 hdl_gpio_pin_t mod_gpio_pin_ph4 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_h.module),
-  .module.reg = (void *)BIT4,
+  .module.reg = (void *)4,
   .config = &gpio_pin_out_low_cnf,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_ph5 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_h.module),
-  .module.reg = (void *)BIT5,
+  .module.reg = (void *)5,
   .config = &gpio_pin_out_low_cnf,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_ph6 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_h.module),
-  .module.reg = (void *)BIT6,
+  .module.reg = (void *)6,
   .config = &gpio_pin_out_low_cnf,
+};
+
+const hdl_gpio_pin_config_t gpio_pin_in_high_int_cnf = {
+  .hwc = &gpio_pin_input_pu_slow_int_cnf,
+  .inactive_default = HDL_GPIO_HIGH,
 };
 
 const hdl_gpio_pin_config_t gpio_pin_in_high_cnf = {
   .hwc = &gpio_pin_input_pu_slow_cnf,
-  .inactive_default = HDL_GPIO_HIGH
+  .inactive_default = HDL_GPIO_HIGH,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_pe8 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_e.module),
-  .module.reg = (void *)BIT8,
-  .config = &gpio_pin_in_high_cnf,
+  .module.reg = (void *)8,
+  .config = &gpio_pin_in_high_int_cnf,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_pe9 = {
   .module.init = &hdl_gpio_pin,
-  .module.dependencies = hdl_module_dependencies(&mod_gpio_port_e.module
-     ,&mod_clock_irc.module, 
-	 //&mod_clock_irc48m.module, 
-	 &mod_clock_irc10k.module, 
-	 &mod_clock_hxtal.module, &mod_clock_lxtal.module
-  ),
-  .module.reg = (void *)BIT9,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_port_e.module),
+  .module.reg = (void *)9,
   .config = &gpio_pin_in_high_cnf,
 };
 
@@ -514,3 +528,5 @@ extern hdl_gpio_pin_t mod_gpio_pin_led_r      __attribute__ ((alias ("mod_gpio_p
 extern hdl_gpio_pin_t mod_gpio_pin_led_y      __attribute__ ((alias ("mod_gpio_pin_ph5")));
 extern hdl_gpio_pin_t mod_gpio_pin_led_g      __attribute__ ((alias ("mod_gpio_pin_ph6")));
 
+extern hdl_interrupt_controller_t mod_interrupt_controller  __attribute__ ((alias ("mod_nvic")));
+extern hdl_interrupt_t mod_irq_gpio_btn_port  __attribute__ ((alias ("mod_irq_gpio_e")));

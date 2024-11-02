@@ -10,4 +10,7 @@ extern hdl_gpio_pin_t mod_gpio_pin_led_r;
 extern hdl_gpio_pin_t mod_gpio_pin_led_y;
 extern hdl_gpio_pin_t mod_gpio_pin_led_g;
 
+extern hdl_interrupt_controller_t mod_interrupt_controller;
+extern hdl_interrupt_t mod_irq_gpio_btn_port;
+
 #endif // MIG_ATB_RK3568J_SMC_H_

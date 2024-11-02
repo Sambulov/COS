@@ -1,4 +1,4 @@
-#include "hdl_portable.h"
+#include "hdl.h"
 
 typedef struct {
   hdl_module_t module;

@@ -46,6 +46,7 @@ SECTIONS
 {
 	.text :
 	{
+		. = ALIGN(4);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		/* __Vectors_Size = __Vectors_End - irq_vector; */
@@ -125,6 +126,7 @@ SECTIONS
 
 	.data : AT (_sidata)
 	{
+		. = ALIGN(4);
 		_sdata = .;
 		*(vtable)
 		*(.data*)

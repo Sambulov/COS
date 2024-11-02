@@ -165,7 +165,20 @@ typedef struct {
 } hdl_interrupt_controller_config_t;
 
 typedef struct{
-
+  /* SYS_CLK >= 180MHz : SYS_PLCTL_PLSEL_PL0
+              < 180MHz : SYS_PLCTL_PLSEL_PL1
+  */
+  uint32_t power_level;
+  /* SYS_CLK >= 175MHz : 8
+                150MHz : 7
+                125MHz : 6
+                100MHz : 5
+                 75MHz : 4
+                 50MHz : 3
+                 25MHz : 2
+               < 25MHz : 1
+  */
+  uint32_t flash_latency;
 } hdl_core_config_t;
 
 extern const void * _estack;

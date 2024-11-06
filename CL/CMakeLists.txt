@@ -1,16 +1,16 @@
 
 
-file(GLOB LIB_SOURCES
-  "./DataStructures/Src/*.c"
-  "./Workflow/Src/*.c"
-  "./Math/Src/*.c"
+file(GLOB SRC
+  "${CMAKE_CURRENT_SOURCE_DIR}/DataStructures/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Workflow/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Math/Src/*.c"
 )
 
-add_library(CodeLib STATIC ${LIB_SOURCES})
+set_property(GLOBAL APPEND PROPERTY CL_SOURCES ${SRC})
 
-target_include_directories(CodeLib PUBLIC
-  "."
-  "./DataStructures/Inc"
-  "./Workflow/Inc"
-  "./Math/Inc"
+set_property(GLOBAL APPEND PROPERTY CL_HEADERS 
+  "${CMAKE_CURRENT_SOURCE_DIR}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/DataStructures/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Workflow/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Math/Inc"
 )

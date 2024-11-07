@@ -12,30 +12,31 @@ file(GLOB MCU_PORT
   "${CMAKE_CURRENT_SOURCE_DIR}/Sys/Drivers/Src/*.c"
 )
 
-target_sources(HDL PUBLIC ${MCU_PORT})
-target_include_directories(HDL PUBLIC
+set_property(GLOBAL APPEND PROPERTY HDL_SOURCES ${MCU_PORT})
+set_property(GLOBAL APPEND PROPERTY HDL_HEADERS
   "${CMAKE_CURRENT_SOURCE_DIR}/Port/Inc"
   "${CMAKE_CURRENT_SOURCE_DIR}/Sys/Inc"
   "${CMAKE_CURRENT_SOURCE_DIR}/Sys/Drivers/Inc"
 )
 
 set(MCPU cortex-m4)
-target_compile_options(HDL PUBLIC -mcpu=${MCPU})
-target_compile_definitions(HDL PUBLIC "__MCU_HAL_HDR__=<gd32f4xx.h>")
+set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mcpu=${MCPU})
 
-target_link_options(HDL PUBLIC -specs=nano.specs -lstdc++ -mthumb -mlittle-endian -mthumb-interwork)
-target_link_options(HDL PUBLIC -mcpu=${MCPU} -T "${CMAKE_CURRENT_SOURCE_DIR}/Res/linkerscript.ld")
-target_link_options(HDL PUBLIC -Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
+set_property(GLOBAL APPEND PROPERTY HDL_DEFINES "__MCU_HAL_HDR__=<gd32f4xx.h>")
+
+set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -specs=nano.specs -lstdc++ -mthumb -mlittle-endian -mthumb-interwork)
+set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -mcpu=${MCPU} -T "${CMAKE_CURRENT_SOURCE_DIR}/Res/linkerscript.ld")
+set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 
 if(DEFINED HARD_FLOAT)
-  target_compile_options(HDL PUBLIC -mfloat-abi=hard -mfpu=fpv4-sp-d16)
-  target_link_options(HDL PUBLIC -mfloat-abi=hard -mfpu=fpv4-sp-d16)
+  set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mfloat-abi=hard -mfpu=fpv4-sp-d16)
+  set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -mfloat-abi=hard -mfpu=fpv4-sp-d16)
 else ()
-  target_compile_options(HDL PUBLIC -mfloat-abi=soft)
-  target_link_options(HDL PUBLIC -mfloat-abi=soft)
+  set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mfloat-abi=soft)
+  set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -mfloat-abi=soft)
 endif()
 
-file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" "${CMAKE_BINARY_DIR}/flash.jlink")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
 
-set_target_properties(HDL PROPERTIES MCU_SUPPORTED "OK")
+set_property(GLOBAL PROPERTY MCU_SUPPORTED "OK")

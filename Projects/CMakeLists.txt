@@ -1,4 +1,3 @@
-# Set terget core name
 if((BOARD STREQUAL "ATB_RK3568J_SMC_R3") OR 
    (BOARD STREQUAL "ATB_RK3568J_SMC_R1") OR
    (BOARD STREQUAL "ATB_RK3568J_SMC_R0"))
@@ -9,6 +8,8 @@ elseif(BOARD STREQUAL "ATB_USPD_MPC2")
   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ATB_USPD_MPC2")
 elseif(BOARD STREQUAL "ATB_USPD20K")
   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ATB_USPD20K")
+elseif(BOARD STREQUAL "ATB_USPD20K_MB_C0_A")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ATB_USPD20K_MB_C0_A")
 elseif(BOARD STREQUAL "ATB_3500")
   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ATB3500")
 elseif(BOARD STREQUAL "ATB_MUVV")
@@ -18,7 +19,7 @@ elseif(BOARD STREQUAL "GD32E23X_DEMO")
 elseif(BOARD STREQUAL "NUM463KG_DEMO")
   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/NUM463KG_DEMO")
 else()
-  message( SEND_ERROR "Board not supported!" )
+  message( SEND_ERROR "Board (${BOARD}) not supported!" )
 endif()
 
 set_property(GLOBAL APPEND PROPERTY PROJECT_DEFINITIONS 

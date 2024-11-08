@@ -67,6 +67,16 @@
             }
         },
         {
+            "name": "ATB_USPD20K_MB_C0_A_D",
+            "displayName": "ATB_USPD20K_MB_C0_A Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_USPD20K_MB_C0_A"
+            }
+        },
+        {
             "name": "ATB3500_D",
             "displayName": "ATB3500 Debug",
             "generator": "Ninja",

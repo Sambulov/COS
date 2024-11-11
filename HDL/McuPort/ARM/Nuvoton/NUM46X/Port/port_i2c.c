@@ -17,7 +17,6 @@
 //   hdl_i2c_config_t *config;
 //   struct {
 //     hdl_delegate_t ev_isr;
-//     hdl_delegate_t er_isr;
 //     coroutine_t i2c_worker;
 //     hdl_i2c_message_t *message;
 //     uint32_t wc_timeout;
@@ -30,16 +29,14 @@
 //     uint8_t wrk_state_substate;
 //     hdl_transceiver_t *transceiver;
 //     uint8_t is_master;
-//   } private;  
+//   } private;
 // } hdl_i2c_private_t;
 
 // HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_private_t, hdl_i2c_t, HDL_I2C_PRV_SIZE, hdl_i2c.h);
 
-// _Static_assert((offsetof(hdl_i2c_private_t, module) == offsetof(hdl_i2c_t, module)) ||
-//                (offsetof(hdl_i2c_private_t, config) == offsetof(hdl_i2c_t, config)), "In hdl_i2c.h hdl_i2c_t properties order doesn't match");
-
 // static void _i2c_clear_error(I2C_T *i2c_periph) {
-//   i2c_periph->STATUS0
+//   CLK->APBCLK0 |= CLK_APBCLK0_I2C0CKEN_Pos
+//   i2c_periph->
 //   //i2c_periph->STAT0 &= ~(I2C_ERROR_CLEAR_MASK);
 // }
 

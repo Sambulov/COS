@@ -4,8 +4,6 @@
 
 #include "port_exti.h"
 
-#define HDL_INTERRUPT_PRV_SIZE       4
-
 #define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
 
 typedef enum {
@@ -268,7 +266,7 @@ typedef struct {
   hdl_nvic_irq_n_t irq_type;
   uint8_t priority_group;
   uint8_t priority;
-  PRIVATE(hw, HDL_INTERRUPT_PRV_SIZE);
+  hdl_event_t event;
 } hdl_interrupt_t;
 
 

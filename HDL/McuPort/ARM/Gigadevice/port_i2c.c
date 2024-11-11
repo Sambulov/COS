@@ -402,8 +402,10 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     _i2c->private.er_isr.context = i2c;
     _i2c->private.er_isr.handler = &event_i2c_er_isr; 
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)_i2c->module.dependencies[3];
-    hdl_interrupt_request(ic, _i2c->config->err_interrupt, &_i2c->private.er_isr);
-    hdl_interrupt_request(ic, _i2c->config->ev_interrupt, &_i2c->private.ev_isr);
+    hdl_event_subscribe(&_i2c->config->err_interrupt->event, &_i2c->private.er_isr);
+    hdl_interrupt_request(ic, _i2c->config->err_interrupt);
+    hdl_event_subscribe(&_i2c->config->ev_interrupt->event, &_i2c->private.ev_isr);
+    hdl_interrupt_request(ic, _i2c->config->ev_interrupt);
 
     i2c_periph->CTL1 |= (I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
     i2c_periph->CTL0 |= I2C_CTL0_I2CEN;

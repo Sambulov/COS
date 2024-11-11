@@ -12,8 +12,8 @@ typedef struct {
                 stretch_enable      : 1;
   const uint16_t addr0;
   const uint16_t addr1;
-  const hdl_interrupt_t *err_interrupt;
-  const hdl_interrupt_t *ev_interrupt;
+  hdl_interrupt_t *err_interrupt;
+  hdl_interrupt_t *ev_interrupt;
   const rcu_periph_enum rcu;
 } hdl_i2c_config_t;
 

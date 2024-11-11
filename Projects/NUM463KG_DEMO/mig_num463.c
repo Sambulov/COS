@@ -17,11 +17,8 @@
 #define HDL_SYSTICK_CLOCK                 mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_systick_ref*/
 #define HDL_SYSTICK_RELOAD                200000 - 1
 
+#define HDL_I2C_SLAVE_ADDR                50
 
-#define HDL_PLL_N_MULTIPLY                96                            /* Note that, don`t excceed 500MHz; Can be 64, 65 .. 500 */ 
-#define HDL_PLL_P_PRESCALER               2                             /* Note that, don`t excceed 240MHz; Can be 2, 4, 6, 8 */
-#define HDL_PLL_Q_PRESCALER               10                            /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
-#define HDL_AHB_PRESCALER                 1                             /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
 
 
 const hdl_core_config_t mod_sys_core_cnf = {
@@ -47,6 +44,12 @@ hdl_interrupt_t mod_irq_systick = {
 
 hdl_interrupt_t mod_irq_gpio_e = {
   .irq_type = HDL_NVIC_IRQ20_GPE_IRQn,
+  .priority = 0,
+  .priority_group = 0,
+};
+
+hdl_interrupt_t mod_irq_i2c0 = {
+  .irq_type = HDL_NVIC_IRQ38_I2C0_IRQn,
   .priority = 0,
   .priority_group = 0,
 };
@@ -207,7 +210,7 @@ const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
 const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .vector = &irq_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_gpio_e),
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_gpio_e, &mod_irq_i2c0),
 };
 
 hdl_interrupt_controller_t mod_nvic = {
@@ -454,25 +457,66 @@ const hdl_gpio_pin_hw_config_t gpio_pin_input_pu_slow_int_cnf = {
 	.func = GPIO_MODE_INPUT,
 	.pull_mode = GPIO_PUSEL_PULL_UP,
 	.slew_mode = GPIO_SLEWCTL_NORMAL,
-  .int_mode = GPIO_INT_FALLING
+  .int_mode = GPIO_INT_FALLING,
+  .func_alternate = 0
 };
 
 const hdl_gpio_pin_hw_config_t gpio_pin_input_pu_slow_cnf = {
 	.func = GPIO_MODE_INPUT,
 	.pull_mode = GPIO_PUSEL_PULL_UP,
 	.slew_mode = GPIO_SLEWCTL_NORMAL,
-  .int_mode = GPIO_INT_NONE
+  .int_mode = GPIO_INT_NONE,
+  .func_alternate = 0
 };
 
 const hdl_gpio_pin_hw_config_t gpio_pin_output_slow_cnf = {
 	.func = GPIO_MODE_OUTPUT,
 	.pull_mode = GPIO_PUSEL_DISABLE,
-	.slew_mode = GPIO_SLEWCTL_NORMAL
+	.slew_mode = GPIO_SLEWCTL_NORMAL,
+  .func_alternate = 0
+};
+
+const hdl_gpio_pin_hw_config_t gpio_pin_hw_pc0_i2c_sda_cnf = {
+	.func = GPIO_MODE_OPEN_DRAIN,
+	.pull_mode = GPIO_PUSEL_PULL_UP,
+	.slew_mode = GPIO_SLEWCTL_NORMAL,
+  .func_alternate = 9
+};
+
+const hdl_gpio_pin_hw_config_t gpio_pin_hw_pc1_i2c_scl_cnf = {
+	.func = GPIO_MODE_OPEN_DRAIN,
+	.pull_mode = GPIO_PUSEL_PULL_UP,
+	.slew_mode = GPIO_SLEWCTL_NORMAL,
+  .func_alternate = 9
 };
 
 const hdl_gpio_pin_config_t gpio_pin_out_low_cnf = {
   .hwc = &gpio_pin_output_slow_cnf,
   .inactive_default = HDL_GPIO_HIGH
+};
+
+const hdl_gpio_pin_config_t gpio_pin_pc0_i2c_sda_cnf = {
+  .hwc = &gpio_pin_hw_pc0_i2c_sda_cnf,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+const hdl_gpio_pin_config_t gpio_pin_pc1_i2c_scl_cnf = {
+  .hwc = &gpio_pin_hw_pc1_i2c_scl_cnf,
+  .inactive_default = HDL_GPIO_HIGH
+};
+
+hdl_gpio_pin_t mod_gpio_pin_pc0_i2c_sda = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_port_c.module),
+  .module.reg = (void *)0,
+  .config = &gpio_pin_pc0_i2c_sda_cnf,
+};
+
+hdl_gpio_pin_t mod_gpio_pin_pc1_i2c_scl = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_port_c.module),
+  .module.reg = (void *)1,
+  .config = &gpio_pin_pc1_i2c_scl_cnf,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_ph4 = {
@@ -520,7 +564,28 @@ hdl_gpio_pin_t mod_gpio_pin_pe9 = {
   .config = &gpio_pin_in_high_cnf,
 };
 
- 
+const hdl_i2c_config_t i2c0_cnf = {
+  .addr0 = HDL_I2C_SLAVE_ADDR,
+  .addr1 = 0,
+  .addr2 = 0,
+  .addr3 = 0,
+  .addr_10_bits = 0,
+  .interrupt = &mod_irq_i2c0,
+  .general_call_enable = 0,
+  .speed = 400000,
+  .stretch_enable = 1,
+  .rcu = CLK_APBCLK0_I2C0CKEN_Msk
+};
+
+hdl_i2c_t mod_i2c0 = {
+  .module.init = &hdl_i2c,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb0.module,
+    &mod_gpio_pin_pc1_i2c_scl.module, &mod_gpio_pin_pc0_i2c_sda.module,
+    &mod_nvic.module, &mod_timer_ms.module),
+  .module.reg = (void*)I2C0,
+  .config = &i2c0_cnf
+};
+
 extern hdl_time_counter_t mod_timer_ms        __attribute__ ((alias ("mod_systick_timer_ms")));
 extern hdl_gpio_pin_t mod_gpio_pin_btn_0      __attribute__ ((alias ("mod_gpio_pin_pe8")));
 extern hdl_gpio_pin_t mod_gpio_pin_btn_1      __attribute__ ((alias ("mod_gpio_pin_pe9")));

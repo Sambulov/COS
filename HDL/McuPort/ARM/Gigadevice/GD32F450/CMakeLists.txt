@@ -36,6 +36,12 @@ else ()
   set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -mfloat-abi=soft)
 endif()
 
+# if(CMAKE_MINOR_VERSION GREATER 20)
+#   file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
+# else()
+#   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd" COPYONLY)
+# endif()
+
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
 

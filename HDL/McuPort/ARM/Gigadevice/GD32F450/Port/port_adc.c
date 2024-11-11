@@ -82,7 +82,8 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)hdl_adc->module.dependencies[3];
         hdl_adc->private.adc_end_of_conversion.context = desc;
         hdl_adc->private.adc_end_of_conversion.handler = &event_adc_end_of_conversion;
-        hdl_interrupt_request(ic, hdl_adc->config->adc_interrupt, &hdl_adc->private.adc_end_of_conversion);
+        hdl_event_subscribe(&hdl_adc->config->adc_interrupt->event, &hdl_adc->private.adc_end_of_conversion);
+        hdl_interrupt_request(ic, hdl_adc->config->adc_interrupt);
         /* There must be 14 CK_ADC tact */
         for(uint16_t i = 0; i < 10 * 14; i++)
           __NOP();

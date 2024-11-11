@@ -23,7 +23,8 @@ hdl_module_state_t hdl_time_counter(void *desc, const uint8_t enable) {
     timer->private.reload_isr.context = desc;
     timer->private.reload_isr.handler = &event_timer_isr;
     timer->private.count = 0;
-    if(hdl_interrupt_request(ic, timer->config->reload_interrupt, &timer->private.reload_isr))
+    hdl_event_subscribe(&timer->config->reload_interrupt->event, &timer->private.reload_isr);
+    if(hdl_interrupt_request(ic, timer->config->reload_interrupt))
       return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_UNLOADED;

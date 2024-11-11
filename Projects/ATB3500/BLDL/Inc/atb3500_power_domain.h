@@ -30,7 +30,7 @@
 #define POWER_RAIL_STAB_DELAY_1V8               ((uint32_t)(100))
 
 /* ADC threshold */
-#define POWER_RAIL_UV_TRHESHOLD_24V             ((uint16_t)21600)  /* -10% from 24v */
+#define POWER_RAIL_UV_TRHESHOLD_24V             ((uint16_t)19000)  /*  */
 #define POWER_RAIL_UV_TRHESHOLD_24VPOE          ((uint16_t)15000)  /* ~ -30% from 24v poe */
 #define POWER_RAIL_UV_TRHESHOLD_5V              ((uint16_t)4500)   /* -10% from 5v */
 #define POWER_RAIL_UV_TRHESHOLD_3V3             ((uint16_t)2970)   /* -10% from 3v3 */

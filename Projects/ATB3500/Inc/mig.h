@@ -27,4 +27,11 @@ extern atb3500_i2c_gateway_t mod_i2c_gateway;
 extern hdl_module_t power_domain;
 extern hdl_module_t app_module;
 
+extern hdl_gpio_pin_t mod_do_rs485_dir;
+extern hdl_gpio_pin_t mod_di_rs485_tx;
+extern hdl_interrupt_t rs485_tx_int;
+extern hdl_interrupt_t rs485_timer_int;
+extern hdl_tick_counter_t mod_rs485_tick_counter;
+
+extern hdl_interrupt_controller_t mod_int_ctrlr;
 #endif // MIG_ATB3500_H_

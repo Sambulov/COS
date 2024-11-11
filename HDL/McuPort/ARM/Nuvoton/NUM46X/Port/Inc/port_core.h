@@ -4,8 +4,6 @@
 
 #define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
 
-#define HDL_INTERRUPT_PRV_SIZE       4
-
 typedef enum
 {
   /* Cortex-M4 processor exceptions numbers */
@@ -153,7 +151,7 @@ typedef struct {
   hdl_nvic_irq_n_t irq_type;
   uint8_t priority_group;
   uint8_t priority;
-  PRIVATE(hw, HDL_INTERRUPT_PRV_SIZE);
+  hdl_event_t event;
 } hdl_interrupt_t;
 
 typedef struct {

@@ -19,6 +19,12 @@
 #define HDL_APB1_PRESCALER                4                /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_APB2_PRESCALER                4                /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
+//#define BAUD_RATE    115200
+#define BAUD_RATE       9600   //по умолчанию. Должно быть можно изменить через команды по spi
+#define TMR0_FREQ       120000000     //Clock freq is 120 MHz not 60?
+#define UART_DATA_BITS  10  //1 start bit, 8 data bits, 0 parity bits, 1 stop bit
+#define DELAY_CNT(freq) ((TMR0_FREQ / freq) * UART_DATA_BITS)   //mks
+
 const hdl_core_config_t mod_sys_core_cnf = {
   .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
 };
@@ -47,6 +53,11 @@ hdl_interrupt_t mod_irq_timer1 = {
   .priority = 0,
   .priority_group = 2,
 };
+hdl_interrupt_t mod_irq_timer4 = {
+  .irq_type = HDL_NVIC_IRQ50_TIMER4,
+  .priority = 0,
+  .priority_group = 2,
+};
 
 hdl_interrupt_t mod_irq_i2c_0_ev = {
   .irq_type = HDL_NVIC_IRQ31_I2C0_EV,
@@ -61,6 +72,11 @@ hdl_interrupt_t mod_irq_i2c_0_err = {
 
 hdl_interrupt_t mod_irq_exti_4 = {
   .irq_type = HDL_NVIC_IRQ10_EXTI4,
+  .priority = 0,
+  .priority_group = 1,
+};
+hdl_interrupt_t mod_irq_exti_5_9 = {
+  .irq_type = HDL_NVIC_IRQ23_EXTI5_9,
   .priority = 0,
   .priority_group = 1,
 };
@@ -292,7 +308,7 @@ const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .vector = &irq_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc,
-                              &mod_irq_i2c_0_ev, &mod_irq_i2c_0_err),
+                              &mod_irq_i2c_0_ev, &mod_irq_i2c_0_err, &mod_irq_exti_5_9, &mod_irq_timer4),
 };
 
 hdl_interrupt_controller_t mod_nvic = {
@@ -313,11 +329,18 @@ hdl_exti_t mod_nvic_exti_line_4 = {
   .trigger = HDL_EXTI_TRIGGER_RISING_FALLING,
 };
 
+hdl_exti_t mod_nvic_exti_line_5 = {
+  .line = HDL_EXTI_LINE_5,
+  .mode = HDL_EXTI_MODE_INTERRUPT,
+  .source = HDL_EXTI_SOURCE_PD,
+  .trigger = HDL_EXTI_TRIGGER_RISING_FALLING,
+};
+
 hdl_exti_controller_t mod_exti = {
   .module.init = &hdl_exti,
   .module.reg = (void *)EXTI,
   .module.dependencies = hdl_module_dependencies(&mod_nvic.module),
-  .extis = hdl_extis(&mod_nvic_exti_line_4)
+  .extis = hdl_extis(&mod_nvic_exti_line_4, &mod_nvic_exti_line_5)
 };
 
 /***********************************************************
@@ -444,6 +467,16 @@ const hdl_tick_counter_timer_config_t mod_tick_counter1_cnf = {
   .rcu = RCU_TIMER1
 };
 
+const hdl_tick_counter_timer_config_t mod_tick_counter4_cnf = {
+  .alignedmode = TIMER_COUNTER_EDGE,
+  .clockdivision = TIMER_CKDIV_DIV1,
+  .counterdirection = TIMER_COUNTER_UP,
+  .period = DELAY_CNT(BAUD_RATE),
+  .prescaler = 0,
+  .repetitioncounter = 0,
+  .rcu = RCU_TIMER1
+};
+
 const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
   .period = 240000 - 1
 };
@@ -468,6 +501,13 @@ hdl_tick_counter_t mod_timer1_counter = {
   .module.reg = (void *)TIMER1,
   .config = &mod_tick_counter1_cnf
 };
+
+hdl_tick_counter_t mod_timer4_counter = {
+  .module.init = &hdl_tick_counter,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module),
+  .module.reg = (void *)TIMER4,
+  .config = &mod_tick_counter4_cnf
+};
 /***********************************************************
  *                          TIMER
  ***********************************************************/
@@ -482,6 +522,10 @@ const hdl_time_counter_config_t mod_timer0_cnf = {
 
 const hdl_time_counter_config_t mod_timer1_cnf = {
   .reload_interrupt = &mod_irq_timer1,
+};
+
+const hdl_time_counter_config_t mod_timer4_cnf = {
+  .reload_interrupt = &mod_irq_timer4,
 };
 
 hdl_time_counter_t mod_systick_timer_ms = {
@@ -687,6 +731,18 @@ hdl_gpio_pin_t mod_do_relay2 = {
 /***********************************************************
  *                        Other
 ***********************************************************/
+hdl_gpio_pin_t mod_do_rs485_dir = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d.module),
+  .module.reg = (void *)GPIO_PIN_4,
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+};
+hdl_gpio_pin_t mod_di_rs485_tx = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d.module),
+  .module.reg = (void *)GPIO_PIN_5,
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_input_floating)
+};
 hdl_gpio_pin_t mod_do_pci_switch = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
@@ -1329,18 +1385,29 @@ hdl_module_t power_domain = {
     &rail_1v8.module)
 };
 
-hdl_module_t app_module = {
-    .dependencies = hdl_module_dependencies(
-        &power_domain,
-        &mod_smarc.module,
-        &mod_carrier_io.module,
-        &mod_watchdog.module,
-        &mod_serial.module,
-        &mod_spi3_server_dma.module,
-        &mod_i2c_gateway.module
-   )
+hdl_module_t rs485_ctrl = {
+  .dependencies = hdl_module_dependencies(
+    &mod_do_rs485_dir.module,
+    &mod_di_rs485_tx.module,
+    &mod_timer4_counter.module)
 };
 
+hdl_module_t app_module = {
+  .dependencies = hdl_module_dependencies(
+    &power_domain,
+    &mod_smarc.module,
+    &mod_carrier_io.module,
+    &mod_watchdog.module,
+    &mod_serial.module,
+    &mod_spi3_server_dma.module,
+    &mod_i2c_gateway.module,
+    &rs485_ctrl
+  )
+};
 
+extern hdl_interrupt_t rs485_tx_int              __attribute__ ((alias ("mod_irq_exti_5_9")));
+extern hdl_interrupt_t rs485_timer_int           __attribute__ ((alias ("mod_irq_timer4")));
+extern hdl_tick_counter_t mod_rs485_tick_counter __attribute__ ((alias ("mod_timer4_counter")));
+extern hdl_interrupt_controller_t mod_int_ctrlr  __attribute__ ((alias ("mod_nvic")));
 
 #endif

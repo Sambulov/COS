@@ -581,7 +581,7 @@ hdl_i2c_t mod_i2c0 = {
   .module.init = &hdl_i2c,
   .module.dependencies = hdl_module_dependencies(&mod_clock_apb0.module,
     &mod_gpio_pin_pc1_i2c_scl.module, &mod_gpio_pin_pc0_i2c_sda.module,
-    &mod_nvic.module, &mod_timer_ms.module),
+    &mod_nvic.module, &mod_systick_timer_ms.module),
   .module.reg = (void*)I2C0,
   .config = &i2c0_cnf
 };

@@ -179,7 +179,8 @@ void button_int() {
     cooperative_scheduler(false);
   }
   extern hdl_interrupt_t mod_irq_svc;
-  hdl_interrupt_request(&mod_nvic, &mod_irq_svc, &svc_deleagate);
+  hdl_event_subscribe(&mod_irq_svc.event, &svc_deleagate);
+  hdl_interrupt_request(&mod_nvic, &mod_irq_svc);
   asm("SVC 44");
   hdl_event_subscribe(&sw_timer.event, &sw_timer_deleagate);
   hdl_event_subscribe(&button.event, &button_deleagate);

@@ -48,8 +48,8 @@ typedef struct {
   rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
-  const hdl_interrupt_t *spi_interrupt;
-  const hdl_interrupt_t *nss_interrupt;
+  hdl_interrupt_t *spi_interrupt;
+  hdl_interrupt_t *nss_interrupt;
 } hdl_spi_server_config_t;
 
 /* depends on:

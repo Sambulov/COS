@@ -9,12 +9,15 @@
 #include "CodeLib.h"
 
 void clear_rts(uint32_t event_trigger, void *sender, void *context) {
-    hdl_gpio_set_inactive(&mod_do_rs485_dir);
-    hdl_tick_counter_stop(&mod_rs485_tick_counter);
+    if(event_trigger & RS485_TIMER_RELOAD_EVENT) {
+        hdl_gpio_set_inactive(&mod_do_rs485_dir);
+        hdl_tick_counter_stop(&mod_rs485_tick_counter);
+    }
 }
 
 void set_rts(uint32_t event_trigger, void *sender, void *context) {
-	if(event_trigger & (uint32_t)mod_di_rs485_tx.module.reg) {
+    uint32_t tx_pin = (uint32_t)mod_di_rs485_tx.module.reg;
+	if(event_trigger & tx_pin) {
         hdl_gpio_set_active(&mod_do_rs485_dir);
         hdl_tick_counter_set(&mod_rs485_tick_counter, 0, mod_rs485_tick_counter.config.timer->period);
 	}

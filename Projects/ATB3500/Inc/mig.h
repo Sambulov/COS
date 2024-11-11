@@ -1,6 +1,7 @@
 #ifndef MIG_ATB3500_H_
 #define MIG_ATB3500_H_
 
+
 /***********************************************************
  *                          TIMER
  ***********************************************************/
@@ -34,4 +35,7 @@ extern hdl_interrupt_t rs485_timer_int;
 extern hdl_tick_counter_t mod_rs485_tick_counter;
 
 extern hdl_interrupt_controller_t mod_int_ctrlr;
+
+extern const uint32_t RS485_TIMER_RELOAD_EVENT;
+
 #endif // MIG_ATB3500_H_

@@ -25,6 +25,8 @@
 #define UART_DATA_BITS  10  //1 start bit, 8 data bits, 0 parity bits, 1 stop bit
 #define DELAY_CNT(freq) ((TMR0_FREQ / freq) * UART_DATA_BITS)   //mks
 
+const uint32_t RS485_TIMER_RELOAD_EVENT = TIMER_INT_FLAG_UP;
+
 const hdl_core_config_t mod_sys_core_cnf = {
   .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
 };

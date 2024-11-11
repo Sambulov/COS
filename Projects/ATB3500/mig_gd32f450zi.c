@@ -28,7 +28,7 @@
 const uint32_t RS485_TIMER_RELOAD_EVENT = TIMER_INT_FLAG_UP;
 
 const hdl_core_config_t mod_sys_core_cnf = {
-  .flash_latency = WS_WSCNT_2 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
+  .flash_latency = WS_WSCNT_9 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
 };
 
 hdl_core_t mod_sys_core = {

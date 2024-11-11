@@ -34,19 +34,25 @@ void CAN0_TX_IRQHandler()               { call_isr( HDL_NVIC_IRQ19_CAN0_TX, 0); 
 void CAN0_RX0_IRQHandler()              { call_isr( HDL_NVIC_IRQ20_CAN0_RX0, 0); }
 void CAN0_RX1_IRQHandler()              { call_isr( HDL_NVIC_IRQ21_CAN0_RX1, 0); }
 void CAN0_EWMC_IRQHandler()             { call_isr( HDL_NVIC_IRQ22_CAN0_EWMC, 0); }
-void EXTI5_9_IRQHandler()               { call_isr( HDL_NVIC_IRQ23_EXTI5_9, EXTI_LINES_5_9); EXTI_PD |= EXTI_LINES_5_9; }
-void TIMER0_BRK_TIMER8_IRQHandler()     { call_isr( HDL_NVIC_IRQ24_TIMER0_BRK_TIMER8, 0); }
-void TIMER0_UP_TIMER9_IRQHandler()      { call_isr(HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, 0);
+void EXTI5_9_IRQHandler()               { call_isr( HDL_NVIC_IRQ23_EXTI5_9, EXTI_PD & EXTI_LINES_5_9); EXTI_PD |= EXTI_LINES_5_9; }
+void TIMER0_BRK_TIMER8_IRQHandler()     { call_isr( HDL_NVIC_IRQ24_TIMER0_BRK_TIMER8, TIMER_INTF(TIMER8)); 
+                                          TIMER_INTF(TIMER0) &= ~TIMER_INTF_BRKIF;
+                                          TIMER_INTF(TIMER8) &= ~TIMER_INTF(TIMER8);
+                                        }
+void TIMER0_UP_TIMER9_IRQHandler()      { call_isr(HDL_NVIC_IRQ25_TIMER0_UP_TIMER9, TIMER_INTF(TIMER9));
                                           TIMER_INTF(TIMER0) &= ~TIMER_INTF_UPIF;
-                                          TIMER_INTF(TIMER9) &= ~TIMER_INTF_UPIF;
+                                          TIMER_INTF(TIMER9) &= ~(TIMER_INTF(TIMER9));
                                         }
-void TIMER0_TRG_CMT_TIMER10_IRQHandler(){ call_isr( HDL_NVIC_IRQ26_TIMER0_TRG_CMT_TIMER10, 0); }
+void TIMER0_TRG_CMT_TIMER10_IRQHandler(){ call_isr( HDL_NVIC_IRQ26_TIMER0_TRG_CMT_TIMER10, TIMER_INTF(TIMER10));
+                                          TIMER_INTF(TIMER0) &= ~TIMER_INTF_CMTIF;
+                                          TIMER_INTF(TIMER10) &= ~(TIMER_INTF(TIMER10));
+                                        }
 void timer0_channel_handler()           { call_isr( HDL_NVIC_IRQ27_TIMER0_Channel, 0); }
-void TIMER1_IRQHandler()                { call_isr(HDL_NVIC_IRQ28_TIMER1, 0);
-                                          TIMER_INTF(TIMER1) &= ~TIMER_INTF_UPIF;
+void TIMER1_IRQHandler()                { call_isr(HDL_NVIC_IRQ28_TIMER1, TIMER_INTF(TIMER1));
+                                          TIMER_INTF(TIMER1) &= ~TIMER_INTF(TIMER1);
                                         }
-void timer2_handler()                   { call_isr( HDL_NVIC_IRQ29_TIMER2, 0); }
-void TIMER3_IRQHandler()                { call_isr( HDL_NVIC_IRQ30_TIMER3, 0); }
+void timer2_handler()                   { call_isr( HDL_NVIC_IRQ29_TIMER2, TIMER_INTF(TIMER2)); TIMER_INTF(TIMER2) &= ~TIMER_INTF(TIMER2); }
+void TIMER3_IRQHandler()                { call_isr( HDL_NVIC_IRQ30_TIMER3, TIMER_INTF(TIMER3)); TIMER_INTF(TIMER3) &= ~TIMER_INTF(TIMER3); }
 void i2c0_ev_handler()                  { call_isr( HDL_NVIC_IRQ31_I2C0_EV, 0); }
 void i2c0_er_handler()                  { call_isr( HDL_NVIC_IRQ32_I2C0_ER, 0); }
 void i2c1_ev_handler()                  { call_isr( HDL_NVIC_IRQ33_I2C1_EV, 0); }
@@ -62,17 +68,17 @@ void USBFS_WKUP_IRQHandler()            { call_isr( HDL_NVIC_IRQ42_USBFS_WKUP, 0
 void TIMER7_BRK_TIMER11_IRQHandler()    { call_isr( HDL_NVIC_IRQ43_TIMER7_BRK_TIMER11, 0); }
 void TIMER7_UP_TIMER12_IRQHandler()     { call_isr( HDL_NVIC_IRQ44_TIMER7_UP_TIMER12, 0); }
 void TIMER7_TRG_CMT_TIMER13_IRQHandler(){ call_isr( HDL_NVIC_IRQ45_TIMER7_TRG_CMT_TIMER13, 0); }
-void TIMER7_Channel_IRQHandler()        { call_isr( HDL_NVIC_IRQ46_TIMER7_Channel, 0); }
+void TIMER7_Channel_IRQHandler()        { call_isr( HDL_NVIC_IRQ46_TIMER7_Channel, TIMER_INTF(TIMER7)); TIMER_INTF(TIMER7) &= ~TIMER_INTF(TIMER7); }
 void DMA0_Channel7_IRQHandler()         { call_isr( HDL_NVIC_IRQ47_DMA0_Channel7, 0); }
 #if defined (GD32F450) || defined (GD32F470)
 void EXMC_IRQHandler()                  { call_isr( HDL_NVIC_IRQ48_EXMC, 0); }
 void SDIO_IRQHandler()                  { call_isr( HDL_NVIC_IRQ49_SDIO, 0); }
-void TIMER4_IRQHandler()                { call_isr( HDL_NVIC_IRQ50_TIMER4, 0); }
+void TIMER4_IRQHandler()                { call_isr( HDL_NVIC_IRQ50_TIMER4, TIMER_INTF(TIMER4)); TIMER_INTF(TIMER4) &= ~TIMER_INTF(TIMER4); }
 void SPI2_IRQHandler()                  { call_isr( HDL_NVIC_IRQ51_SPI2, 0); }
 void UART3_IRQHandler()                 { call_isr( HDL_NVIC_IRQ52_UART3, 0); }
 void UART4_IRQHandler()                 { call_isr( HDL_NVIC_IRQ53_UART4, 0); }
 void TIMER5_DAC_IRQHandler()            { call_isr( HDL_NVIC_IRQ54_TIMER5_DAC, 0); }
-void TIMER6_IRQHandler()                { call_isr( HDL_NVIC_IRQ55_TIMER6, 0); }
+void TIMER6_IRQHandler()                { call_isr( HDL_NVIC_IRQ55_TIMER6, TIMER_INTF(TIMER6)); TIMER_INTF(TIMER6) &= ~TIMER_INTF(TIMER6); }
 void DMA1_Channel0_IRQHandler()         { call_isr( HDL_NVIC_IRQ56_DMA1_Channel0, 0); }
 void DMA1_Channel1_IRQHandler()         { call_isr( HDL_NVIC_IRQ57_DMA1_Channel1, 0); }
 void DMA1_Channel2_IRQHandler()         { call_isr( HDL_NVIC_IRQ58_DMA1_Channel2, 0); }
@@ -109,12 +115,12 @@ void IPA_IRQHandler()                   { call_isr( HDL_NVIC_IRQ90_IPA, 0); }
 #endif /* GD32F450_470 */
 #if defined (GD32F405) || defined (GD32F425)
 void SDIO_IRQHandler()                  { call_isr( HDL_NVIC_IRQ49_SDIO, 0); }
-void TIMER4_IRQHandler()                { call_isr( HDL_NVIC_IRQ50_TIMER4, 0); }
+void TIMER4_IRQHandler()                { call_isr( HDL_NVIC_IRQ50_TIMER4, TIMER_INTF(TIMER4)); TIMER_INTF(TIMER4) &= ~TIMER_INTF(TIMER4); }
 void SPI2_IRQHandler()                  { call_isr( HDL_NVIC_IRQ51_SPI2, 0); }
 void UART3_IRQHandler()                 { call_isr( HDL_NVIC_IRQ52_UART3, 0); }
 void UART4_IRQHandler()                 { call_isr( HDL_NVIC_IRQ53_UART4, 0); }
 void TIMER5_DAC_IRQHandler()            { call_isr( HDL_NVIC_IRQ54_TIMER5_DAC, 0); }
-void TIMER6_IRQHandler()                { call_isr( HDL_NVIC_IRQ55_TIMER6, 0); }
+void TIMER6_IRQHandler()                { call_isr( HDL_NVIC_IRQ55_TIMER6, TIMER_INTF(TIMER6)); TIMER_INTF(TIMER6) &= ~TIMER_INTF(TIMER6); }
 void DMA1_Channel0_IRQHandler()         { call_isr( HDL_NVIC_IRQ56_DMA1_Channel0, 0); }
 void DMA1_Channel1_IRQHandler()         { call_isr( HDL_NVIC_IRQ57_DMA1_Channel1, 0); }
 void DMA1_Channel2_IRQHandler()         { call_isr( HDL_NVIC_IRQ58_DMA1_Channel2, 0); }
@@ -142,12 +148,12 @@ void FPU_IRQHandler()                   { call_isr( HDL_NVIC_IRQ81_FPU, 0); }
 #if defined (GD32F407) || defined (GD32F427)
 void EXMC_IRQHandler()                  { call_isr( HDL_NVIC_IRQ48_EXMC, 0); }
 void SDIO_IRQHandler()                  { call_isr( HDL_NVIC_IRQ49_SDIO, 0); }
-void TIMER4_IRQHandler()                { call_isr( HDL_NVIC_IRQ50_TIMER4, 0); }
+void TIMER4_IRQHandler()                { call_isr( HDL_NVIC_IRQ50_TIMER4, TIMER_INTF(TIMER4)); TIMER_INTF(TIMER4) &= ~TIMER_INTF(TIMER4) }
 void SPI2_IRQHandler()                  { call_isr( HDL_NVIC_IRQ51_SPI2, 0); }
 void UART3_IRQHandler()                 { call_isr( HDL_NVIC_IRQ52_UART3, 0); }
 void UART4_IRQHandler()                 { call_isr( HDL_NVIC_IRQ53_UART4, 0); }
 void TIMER5_DAC_IRQHandler()            { call_isr( HDL_NVIC_IRQ54_TIMER5_DAC, 0); }
-void TIMER6_IRQHandler()                { call_isr( HDL_NVIC_IRQ55_TIMER6, 0); }
+void TIMER6_IRQHandler()                { call_isr( HDL_NVIC_IRQ55_TIMER6, TIMER_INTF(TIMER4)); TIMER_INTF(TIMER6) &= ~TIMER_INTF(TIMER6)}
 void DMA1_Channel0_IRQHandler()         { call_isr( HDL_NVIC_IRQ56_DMA1_Channel0, 0); }
 void DMA1_Channel1_IRQHandler()         { call_isr( HDL_NVIC_IRQ57_DMA1_Channel1, 0); }
 void DMA1_Channel2_IRQHandler()         { call_isr( HDL_NVIC_IRQ58_DMA1_Channel2, 0); }

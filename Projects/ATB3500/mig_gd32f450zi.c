@@ -77,8 +77,8 @@ hdl_interrupt_t mod_irq_exti_4 = {
 };
 hdl_interrupt_t mod_irq_exti_5_9 = {
   .irq_type = HDL_NVIC_IRQ23_EXTI5_9,
-  .priority = 0,
-  .priority_group = 1,
+  .priority = 1,
+  .priority_group = 2,
 };
 hdl_interrupt_t mod_irq_spi_3 = {
   .irq_type = HDL_NVIC_IRQ84_SPI3,

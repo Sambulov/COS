@@ -469,7 +469,7 @@ const hdl_tick_counter_timer_config_t mod_tick_counter1_cnf = {
 
 const hdl_tick_counter_timer_config_t mod_tick_counter4_cnf = {
   .alignedmode = TIMER_COUNTER_EDGE,
-  .clockdivision = TIMER_CKDIV_DIV1,
+  .clockdivision = TIMER_CKDIV_DIV2,
   .counterdirection = TIMER_COUNTER_UP,
   .period = 0,
   .prescaler = 0,

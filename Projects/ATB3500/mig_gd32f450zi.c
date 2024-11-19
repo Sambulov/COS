@@ -56,13 +56,13 @@ hdl_interrupt_t mod_irq_nmi = {
 hdl_interrupt_t mod_irq_timer4 = {
   .irq_type = HDL_NVIC_IRQ50_TIMER4,
   .priority = 0,
-  .priority_group = 2,
+  .priority_group = 0,
 };
 
 hdl_interrupt_t mod_irq_i2c_0_ev = {
   .irq_type = HDL_NVIC_IRQ31_I2C0_EV,
   .priority = 0,
-  .priority_group = 1,
+  .priority_group = 2,
 };
 hdl_interrupt_t mod_irq_i2c_0_err = {
   .irq_type = HDL_NVIC_IRQ32_I2C0_ER,
@@ -78,17 +78,17 @@ hdl_interrupt_t mod_irq_exti_4 = {
 hdl_interrupt_t mod_irq_exti_5_9 = {
   .irq_type = HDL_NVIC_IRQ23_EXTI5_9,
   .priority = 1,
-  .priority_group = 2,
+  .priority_group = 0,
 };
 hdl_interrupt_t mod_irq_spi_3 = {
   .irq_type = HDL_NVIC_IRQ84_SPI3,
   .priority = 0,
-  .priority_group = 0,
+  .priority_group = 2,
 };
 hdl_interrupt_t mod_irq_adc = {
   .irq_type = HDL_NVIC_IRQ18_ADC,
   .priority = 0,
-  .priority_group = 0,
+  .priority_group = 2,
 };
 
 /***********************************************************
@@ -751,7 +751,7 @@ hdl_gpio_pin_t mod_di_rs485_tx = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d.module),
   .module.reg = (void *)GPIO_PIN_5,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_input_pu)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_input_floating)
 };
 hdl_gpio_pin_t mod_do_pci_switch = {
   .module.init = &hdl_gpio_pin,

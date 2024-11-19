@@ -67,7 +67,8 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
   }
   //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
 	asm("bkpt 255");
-  for(;;) ;
+  while(irq < 0) ;
+  NVIC_DisableIRQ(irq);
 }
 
 void irq_n_handler() {

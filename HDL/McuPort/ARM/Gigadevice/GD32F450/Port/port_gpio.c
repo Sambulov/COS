@@ -25,9 +25,7 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
   if(enable) {
     gpio_af_set(gpio_port, gpio->config->hwc->af, (uint32_t)gpio->module.reg);
     gpio_mode_set(gpio_port, gpio->config->hwc->type, gpio->config->hwc->pull, (uint32_t)gpio->module.reg);
-    
-    if(gpio->config->hwc->otype == GPIO_OTYPE_PP || gpio->config->hwc->otype == GPIO_OTYPE_OD)
-      gpio_output_options_set(gpio_port, gpio->config->hwc->otype, gpio->config->hwc->ospeed, (uint32_t)gpio->module.reg);
+    gpio_output_options_set(gpio_port, gpio->config->hwc->otype, gpio->config->hwc->ospeed, (uint32_t)gpio->module.reg);
   }
   else{
      gpio_af_set(gpio_port, 0, (uint32_t)gpio->module.reg);

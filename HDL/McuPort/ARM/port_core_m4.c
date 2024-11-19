@@ -54,6 +54,9 @@ __attribute__((naked, noreturn)) void reset_handler() {
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
   hdl_interrupt_controller_config_t *ic = (hdl_interrupt_controller_config_t *)((uint32_t *)SCB->VTOR)[0];
   hdl_interrupt_t **isrs = ic->interrupts;
+  if(irq == -14) {
+    NVIC_DisableIRQ(irq);
+  }
   if(isrs != NULL) {
     while (*isrs != NULL) {
       if((*isrs)->irq_type == irq) {
@@ -67,7 +70,8 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
   }
   //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
 	asm("bkpt 255");
-  for(;;) ;
+  while(irq < 0) ;
+  NVIC_DisableIRQ(irq);
 }
 
 void irq_n_handler() {

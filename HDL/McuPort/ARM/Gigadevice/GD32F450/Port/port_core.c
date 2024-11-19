@@ -1,16 +1,6 @@
 #include "hdl_portable.h"
 #include "Macros.h"
 
-void NMI_Handler()                      { call_isr(HDL_NVIC_EXCEPTION_NonMaskableInt, 0); }
-void HardFault_Handler()                { call_isr(HDL_NVIC_EXCEPTION_HardFault, 0); }
-void MemManage_Handler()                { call_isr(HDL_NVIC_EXCEPTION_MemoryManagement, 0); } /* MPU Fault Handler */
-void BusFault_Handler()                 { call_isr(HDL_NVIC_EXCEPTION_BusFault, 0); }
-void UsageFault_Handler()               { call_isr(HDL_NVIC_EXCEPTION_UsageFault, 0); }
-void SVC_Handler();                     /* HDL_NVIC_EXCEPTION_SVCall */
-void DebugMon_Handler()                 { call_isr(HDL_NVIC_EXCEPTION_DebugMonitor, 0); }
-void PendSV_Handler()                   { call_isr(HDL_NVIC_EXCEPTION_PendSV, 0); }
-void SysTick_Handler()                  { call_isr(HDL_NVIC_EXCEPTION_SysTick, 0); }
-
 void wwdgt_handler()                    { call_isr(HDL_NVIC_IRQ0_WWDGT, 0); } 
 void lvd_handler()                      { call_isr(HDL_NVIC_IRQ1_LVD, 0); }    
 void TAMPER_STAMP_IRQHandler()          { call_isr(HDL_NVIC_IRQ2_TAMPER_STAMP, 0); }

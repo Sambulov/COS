@@ -3,6 +3,9 @@
 
 #include "port_tick_counter.h"
 
+/* depends on:
+   hdl_clock_t
+ */
 typedef struct {
   hdl_module_t module;
   const hdl_tick_counter_config_t config;

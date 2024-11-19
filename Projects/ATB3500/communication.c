@@ -5,12 +5,17 @@
 #define IO_CMD             0x000000D0
 #define SERIAL_CMD         0x00000065
 #define I2C_GW_CMD         0x00012C6E
+#define RTS_CMD            0x00000075
 
 void spi_event_handler(uint32_t recieved, void *sender, void *context) {
     dev_context_t *cont = (dev_context_t *)context;
     if(recieved > 0) {
         uint32_t cmd = *(uint32_t *)cont->spi_buffer.data;
         uint8_t *res = NULL;
+        if(cmd == RTS_CMD) {
+            res = (uint8_t *)atb3500_rs485_ctrl_update(&mod_rs485_ctrl, (atb3500_rs485_ctrl_proto_rx_t *)(cont->spi_buffer.data + 4));
+            cont->spi_tx_buffer.size = sizeof(atb3500_watchdog_proto_tx_t);
+        }
         if(cmd == WDT_CMD) {
             res = (uint8_t *)atb3500_watchdog_update(&mod_watchdog, (atb3500_watchdog_proto_rx_t *)(cont->spi_buffer.data + 4));
             cont->spi_tx_buffer.size = sizeof(atb3500_watchdog_proto_tx_t);

@@ -22,8 +22,7 @@ typedef struct {
 
 /*
   depends on:
-  communication
-  hdl_timer_event 
+  hdl_timer 
 */
 typedef struct {
     hdl_module_t module;

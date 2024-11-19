@@ -19,14 +19,6 @@
 #define HDL_APB1_PRESCALER                4                /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_APB2_PRESCALER                4                /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
-//#define BAUD_RATE    115200
-#define BAUD_RATE       9600   //по умолчанию. Должно быть можно изменить через команды по spi
-#define TMR0_FREQ       120000000     //Clock freq is 120 MHz not 60?
-#define UART_DATA_BITS  10  //1 start bit, 8 data bits, 0 parity bits, 1 stop bit
-#define DELAY_CNT(freq) ((TMR0_FREQ / freq) * UART_DATA_BITS)   //mks
-
-const uint32_t RS485_TIMER_RELOAD_EVENT = TIMER_INT_FLAG_UP;
-
 const hdl_core_config_t mod_sys_core_cnf = {
   .flash_latency = WS_WSCNT_9 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
 };
@@ -45,16 +37,22 @@ hdl_interrupt_t mod_irq_systick = {
   .priority = 0,
   .priority_group = 0,
 };
-hdl_interrupt_t mod_irq_timer0 = {
-  .irq_type = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
-  .priority = 0,
-  .priority_group = 1,
-};
-hdl_interrupt_t mod_irq_timer1 = {
-  .irq_type = HDL_NVIC_IRQ28_TIMER1,
+// hdl_interrupt_t mod_irq_timer0 = {
+//   .irq_type = HDL_NVIC_IRQ25_TIMER0_UP_TIMER9,
+//   .priority = 0,
+//   .priority_group = 1,
+// };
+// hdl_interrupt_t mod_irq_timer1 = {
+//   .irq_type = HDL_NVIC_IRQ28_TIMER1,
+//   .priority = 0,
+//   .priority_group = 2,
+// };
+hdl_interrupt_t mod_irq_nmi = {
+  .irq_type = HDL_NVIC_EXCEPTION_NonMaskableInt,
   .priority = 0,
   .priority_group = 2,
 };
+
 hdl_interrupt_t mod_irq_timer4 = {
   .irq_type = HDL_NVIC_IRQ50_TIMER4,
   .priority = 0,
@@ -309,7 +307,7 @@ const void * const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
 const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .vector = &irq_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_timer0, &mod_irq_timer1, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc,
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_nmi, &mod_irq_exti_4, &mod_irq_spi_3, &mod_irq_adc,
                               &mod_irq_i2c_0_ev, &mod_irq_i2c_0_err, &mod_irq_exti_5_9, &mod_irq_timer4),
 };
 
@@ -473,10 +471,10 @@ const hdl_tick_counter_timer_config_t mod_tick_counter4_cnf = {
   .alignedmode = TIMER_COUNTER_EDGE,
   .clockdivision = TIMER_CKDIV_DIV1,
   .counterdirection = TIMER_COUNTER_UP,
-  .period = DELAY_CNT(BAUD_RATE),
+  .period = 0,
   .prescaler = 0,
   .repetitioncounter = 0,
-  .rcu = RCU_TIMER1
+  .rcu = RCU_TIMER4
 };
 
 const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
@@ -490,19 +488,19 @@ hdl_tick_counter_t mod_systick_counter = {
   .config.systick = &mod_systick_counter_cnf
 };
 
-hdl_tick_counter_t mod_timer0_counter = {
-  .module.init = &hdl_tick_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module),
-  .module.reg = (void *)TIMER0,
-  .config = &mod_tick_counter0_cnf
-};
+// hdl_tick_counter_t mod_timer0_counter = {
+//   .module.init = &hdl_tick_counter,
+//   .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module),
+//   .module.reg = (void *)TIMER0,
+//   .config = &mod_tick_counter0_cnf
+// };
 
-hdl_tick_counter_t mod_timer1_counter = {
-  .module.init = &hdl_tick_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module),
-  .module.reg = (void *)TIMER1,
-  .config = &mod_tick_counter1_cnf
-};
+// hdl_tick_counter_t mod_timer1_counter = {
+//   .module.init = &hdl_tick_counter,
+//   .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module),
+//   .module.reg = (void *)TIMER1,
+//   .config = &mod_tick_counter1_cnf
+// };
 
 hdl_tick_counter_t mod_timer4_counter = {
   .module.init = &hdl_tick_counter,
@@ -518,17 +516,17 @@ const hdl_time_counter_config_t mod_systick_timer_cnf = {
   .reload_interrupt = &mod_irq_systick,
 };
 
-const hdl_time_counter_config_t mod_timer0_cnf = {
-  .reload_interrupt = &mod_irq_timer0,
-};
+// const hdl_time_counter_config_t mod_timer0_cnf = {
+//   .reload_interrupt = &mod_irq_timer0,
+// };
 
-const hdl_time_counter_config_t mod_timer1_cnf = {
-  .reload_interrupt = &mod_irq_timer1,
-};
+// const hdl_time_counter_config_t mod_timer1_cnf = {
+//   .reload_interrupt = &mod_irq_timer1,
+// };
 
-const hdl_time_counter_config_t mod_timer4_cnf = {
-  .reload_interrupt = &mod_irq_timer4,
-};
+// const hdl_time_counter_config_t mod_timer4_cnf = {
+//   .reload_interrupt = &mod_irq_timer4,
+// };
 
 hdl_time_counter_t mod_systick_timer_ms = {
   .module.init = hdl_time_counter,
@@ -537,19 +535,19 @@ hdl_time_counter_t mod_systick_timer_ms = {
   .config = &mod_systick_timer_cnf
 };
 
-hdl_time_counter_t mod_timer0_ms = {
-  .module.init = hdl_time_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
-  .module.reg = NULL,
-  .config = &mod_timer0_cnf
-};
+// hdl_time_counter_t mod_timer0_ms = {
+//   .module.init = hdl_time_counter,
+//   .module.dependencies = hdl_module_dependencies(&mod_timer0_counter.module, &mod_nvic.module),
+//   .module.reg = NULL,
+//   .config = &mod_timer0_cnf
+// };
 
-hdl_time_counter_t mod_timer1_ms = {
-  .module.init = hdl_time_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
-  .module.reg = NULL,
-  .config = &mod_timer1_cnf
-};
+// hdl_time_counter_t mod_timer1_ms = {
+//   .module.init = hdl_time_counter,
+//   .module.dependencies = hdl_module_dependencies(&mod_timer1_counter.module, &mod_nvic.module),
+//   .module.reg = NULL,
+//   .config = &mod_timer1_cnf
+// };
 
 hdl_timer_t mod_watchdog_timer = {
   .module.dependencies = hdl_module_dependencies(&mod_systick_timer_ms.module),
@@ -647,17 +645,27 @@ hdl_gpio_port_t hdl_gpio_port_g = {
 const hdl_gpio_pin_hw_config_t hdl_gpio_mode_input_floating = {
   .type = GPIO_MODE_INPUT,
   .pull = GPIO_PUPD_NONE,
-  .ospeed = GPIO_OSPEED_2MHZ
+  .ospeed = GPIO_OSPEED_2MHZ,
+  .af = GPIO_AF_0
 };
-const hdl_gpio_pin_hw_config_t hdl_gpio_mode_output_no_pull = {
+const hdl_gpio_pin_hw_config_t hdl_gpio_mode_input_pu = {
+  .type = GPIO_MODE_INPUT,
+  .pull = GPIO_PUPD_PULLUP,
+  .ospeed = GPIO_OSPEED_2MHZ,
+  .af = GPIO_AF_0
+};
+const hdl_gpio_pin_hw_config_t hdl_gpio_mode_output_pp = {
   .type = GPIO_MODE_OUTPUT,
   .pull = GPIO_PUPD_NONE,
   .ospeed = GPIO_OSPEED_2MHZ,
+  .otype = GPIO_OTYPE_PP,
+  .af = GPIO_AF_0
 };
 const hdl_gpio_pin_hw_config_t hdl_gpio_mode_analog = {
   .type = GPIO_MODE_ANALOG,
   .pull = GPIO_PUPD_NONE,
   .ospeed = GPIO_OSPEED_2MHZ,
+  .af = GPIO_AF_0
 };
 const hdl_gpio_pin_hw_config_t hdl_gpio_spi_mode = {
   .type = GPIO_MODE_AF,
@@ -695,13 +703,13 @@ hdl_gpio_pin_t mod_do_5v_power_on = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_g.module),
   .module.reg = (void *)GPIO_PIN_2,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_24v_poe_power_on = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_g.module),
   .module.reg = (void *)GPIO_PIN_3,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_di_24v_poe_power_fault = {
   .module.init = &hdl_gpio_pin,
@@ -722,13 +730,13 @@ hdl_gpio_pin_t mod_do_relay1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_g.module),
   .module.reg = (void *)GPIO_PIN_0,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_relay2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_g.module),
   .module.reg = (void *)GPIO_PIN_1,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 /***********************************************************
  *                        Other
@@ -737,25 +745,25 @@ hdl_gpio_pin_t mod_do_rs485_dir = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d.module),
   .module.reg = (void *)GPIO_PIN_4,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_di_rs485_tx = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_d.module),
   .module.reg = (void *)GPIO_PIN_5,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_input_floating)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_input_pu)
 };
 hdl_gpio_pin_t mod_do_pci_switch = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_9,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_lte_reset = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
   .module.reg = (void *)GPIO_PIN_6,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 /***********************************************************
  *               SMARC POWER UP and SMARC GPIO
@@ -764,7 +772,7 @@ hdl_gpio_pin_t mod_do_smarc_reset_in = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_b.module),
   .module.reg = (void *)GPIO_PIN_0,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_di_smarc_reset_out = {
   .module.init = &hdl_gpio_pin,
@@ -776,37 +784,37 @@ hdl_gpio_pin_t mod_do_smarc_boot_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
   .module.reg = (void *)GPIO_PIN_13,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_smarc_boot_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
   .module.reg = (void *)GPIO_PIN_14,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_smarc_boot_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
   .module.reg = (void *)GPIO_PIN_15,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_smarc_power_btn = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
   .module.reg = (void *)GPIO_PIN_12,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_smarc_irq_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_10,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_smarc_irq_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_11,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_HIGH, .hwc = &hdl_gpio_mode_output_pp)
 };
 
 /***********************************************************
@@ -858,13 +866,13 @@ hdl_gpio_pin_t mod_do_external_output_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
   .module.reg = (void *)GPIO_PIN_3,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_external_output_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_f.module),
   .module.reg = (void *)GPIO_PIN_4,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 /***********************************************************
  *                          LED
@@ -884,55 +892,55 @@ hdl_gpio_pin_t mod_do_led_0_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
     .module.reg = (void *)GPIO_PIN_3,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_led_0_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_4,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_led_0_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_5,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_led_1_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_6,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_led_1_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_7,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_led_1_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_8,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_led_2_0 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_0,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_led_2_1 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_1,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 hdl_gpio_pin_t mod_do_led_2_2 = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&hdl_gpio_port_c.module),
   .module.reg = (void *)GPIO_PIN_2,
-  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_no_pull)
+  .config = hdl_gpio_pin_config(.inactive_default = HDL_GPIO_LOW, .hwc = &hdl_gpio_mode_output_pp)
 };
 /***********************************************************
  *                    ANALOG PIN
@@ -1387,11 +1395,24 @@ hdl_module_t power_domain = {
     &rail_1v8.module)
 };
 
-hdl_module_t rs485_ctrl = {
-  .dependencies = hdl_module_dependencies(
-    &mod_do_rs485_dir.module,
+const atb3500_rs485_ctrl_config_t mod_rs485_ctrl_cnf = {
+  .counter_reload_int = &mod_irq_timer4,
+  .tx_pin_int = &mod_irq_exti_5_9,
+  .pin_trigger = EXTI_5,
+  .counter_trigger = TIMER_INT_FLAG_UP,
+  .boud_rate_default = 9600,
+  .trunsfer_unit_size = 10 // 1 start bit, 8 data bits, 0 parity bits, 1 stop bit
+};
+
+atb3500_rs485_ctrl_t mod_rs485_ctrl = {
+  .module.init = &atb3500_rs485_ctrl,
+  .module.dependencies = hdl_module_dependencies(
+    &mod_timer4_counter.module,
+    &mod_nvic.module,
     &mod_di_rs485_tx.module,
-    &mod_timer4_counter.module)
+    &mod_do_rs485_dir.module
+    ),
+  .config = &mod_rs485_ctrl_cnf
 };
 
 hdl_module_t app_module = {
@@ -1403,13 +1424,8 @@ hdl_module_t app_module = {
     &mod_serial.module,
     &mod_spi3_server_dma.module,
     &mod_i2c_gateway.module,
-    &rs485_ctrl
+    &mod_rs485_ctrl.module
   )
 };
-
-extern hdl_interrupt_t rs485_tx_int              __attribute__ ((alias ("mod_irq_exti_5_9")));
-extern hdl_interrupt_t rs485_timer_int           __attribute__ ((alias ("mod_irq_timer4")));
-extern hdl_tick_counter_t mod_rs485_tick_counter __attribute__ ((alias ("mod_timer4_counter")));
-extern hdl_interrupt_controller_t mod_int_ctrlr  __attribute__ ((alias ("mod_nvic")));
 
 #endif

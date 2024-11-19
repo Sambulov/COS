@@ -25,6 +25,8 @@ hdl_module_state_t hdl_tick_counter(void *desc, const uint8_t enable) {
       .repetitioncounter = config->repetitioncounter
     };
     timer_init(periph, &init_p);
+    timer_interrupt_flag_clear(periph, TIMER_INT_FLAG_UP);
+    timer_interrupt_enable(periph, TIMER_INT_UP);
     timer_enable(periph);
     return HDL_MODULE_ACTIVE; 
   }

@@ -13,6 +13,7 @@ typedef struct{
   const hdl_adc_config_t *config;
   struct {
     hdl_delegate_t adc_end_of_conversion;
+    hdl_delegate_t start_conversion;
     uint32_t time_stamp;
     gd_adc_state_machine_e state_machine;      /* gd_adc_state_machine_e */
     uint8_t channels_count;
@@ -22,9 +23,14 @@ typedef struct{
 HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_private_t, hdl_adc_t, HDL_ADC_PRV_SIZE, hdl_adc.h);
 
 static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
-    hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
-    hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
-    hdl_adc->private.time_stamp = hdl_time_counter_get(timer);
+  hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
+  hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
+  hdl_adc->private.time_stamp = hdl_time_counter_get(timer);
+}
+
+static void event_adc_start_conversion(uint32_t event, void *sender, void *context) {
+  hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
+  adc_software_trigger_enable((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL);
 }
 
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
@@ -58,7 +64,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         rcu_periph_clock_enable(rcu);
         adc_sync_mode_config(ADC_SYNC_MODE_INDEPENDENT);
         adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_SCAN_MODE, ENABLE);
-        adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_CONTINUOUS_MODE, ENABLE);
+        adc_special_function_config((uint32_t)hdl_adc->module.reg, ADC_CONTINUOUS_MODE, DISABLE);
         hdl_adc_source_t **adc_source = hdl_adc->config->sources;
         hdl_adc->private.channels_count = 0;
         if(adc_source != NULL) {
@@ -77,13 +83,14 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         adc_external_trigger_source_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, ADC_EXTTRIG_ROUTINE_T0_CH0); 
         adc_external_trigger_config((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL, EXTERNAL_TRIGGER_DISABLE);
         adc_dma_request_after_last_enable((uint32_t)hdl_adc->module.reg);
-        ADC_CTL0((uint32_t)hdl_adc->module.reg) |= ADC_CTL0_EOCIE;
         adc_enable((uint32_t)hdl_adc->module.reg);
         hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)hdl_adc->module.dependencies[3];
         hdl_adc->private.adc_end_of_conversion.context = desc;
         hdl_adc->private.adc_end_of_conversion.handler = &event_adc_end_of_conversion;
         hdl_event_subscribe(&hdl_adc->config->adc_interrupt->event, &hdl_adc->private.adc_end_of_conversion);
         hdl_interrupt_request(ic, hdl_adc->config->adc_interrupt);
+        ADC_CTL0((uint32_t)hdl_adc->module.reg) |= ADC_CTL0_EOCIE;
+
         /* There must be 14 CK_ADC tact */
         for(uint16_t i = 0; i < 10 * 14; i++)
           __NOP();
@@ -102,10 +109,14 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
           return HDL_MODULE_LOADING;
         }
       case GD_ADC_STATE_MACHINE_RUN:
+        hdl_adc->private.start_conversion.context = desc;
+        hdl_adc->private.start_conversion.handler = &event_adc_start_conversion;
+        hdl_event_subscribe(&timer->config->reload_interrupt->event, &hdl_adc->private.start_conversion);
+
         adc_dma_mode_enable((uint32_t)hdl_adc->module.reg);
         hdl_dma_run(dma, (uint32_t)&ADC_RDATA((uint32_t)hdl_adc->module.reg), (uint32_t)hdl_adc->config->values, (uint32_t)hdl_adc->private.channels_count);
-        adc_software_trigger_enable((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL);
-        hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_WORKING;        
+        //adc_software_trigger_enable((uint32_t)hdl_adc->module.reg, ADC_ROUTINE_CHANNEL);
+        hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_WORKING;
       case GD_ADC_STATE_MACHINE_WORKING:
         return HDL_MODULE_ACTIVE;
       default:

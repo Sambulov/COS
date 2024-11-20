@@ -67,6 +67,7 @@ void hdl_tick_counter_set(hdl_tick_counter_t *counter, uint32_t value, uint32_t 
     }
     else {
       timer_disable(periph);
+      timer_interrupt_flag_clear(periph, TIMER_INT_FLAG_UP);
       if(config->counterdirection == TIMER_COUNTER_UP) {
         TIMER_CNT(periph) = value;
       }
@@ -88,6 +89,7 @@ void hdl_tick_counter_stop(hdl_tick_counter_t *counter) {
     }
     else {
       timer_disable(periph);
+      timer_interrupt_flag_clear(periph, TIMER_INT_FLAG_UP);
     }
   }  
 }

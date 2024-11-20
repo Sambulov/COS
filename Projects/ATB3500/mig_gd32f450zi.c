@@ -17,7 +17,7 @@
 #define HDL_PLL_Q_PRESCALER               10               /* Note that, don`t excceed 48MHz; Can be 2, 3 .. 15 */
 #define HDL_AHB_PRESCALER                 1                /* Note that, don`t excceed 200MHz; Can be 1, 2, 4, 8, 16, 64, 128, 256, 512 */
 #define HDL_APB1_PRESCALER                4                /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
-#define HDL_APB2_PRESCALER                4                /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB2_PRESCALER                2                /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 
 const hdl_core_config_t mod_sys_core_cnf = {
   .flash_latency = WS_WSCNT_9 /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
@@ -444,6 +444,37 @@ hdl_clock_t mod_clock_apb2 = {
     .property.div = HDL_APB2_PRESCALER
   }})
 };
+
+hdl_clock_t mod_clock_apb1_timers = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB1_TIMERS,
+    .property.mul = 2
+  }})
+};
+
+hdl_clock_t mod_clock_apb2_timers = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_APB2_TIMERS,
+    .property.mul = 2
+  }})
+};
+
+hdl_clock_t mod_clock_adc = {
+  .module.init = &hdl_clock,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module),
+  .module.reg = (void *)RCU,
+  .config = ((const hdl_clock_config_t const []) {{
+    .type = HDL_CLOCK_TYPE_ADC,
+    .property.div = 8
+  }})
+};
+
 /***********************************************************
  *                          COUNTER
 ***********************************************************/
@@ -469,7 +500,7 @@ const hdl_tick_counter_timer_config_t mod_tick_counter1_cnf = {
 
 const hdl_tick_counter_timer_config_t mod_tick_counter4_cnf = {
   .alignedmode = TIMER_COUNTER_EDGE,
-  .clockdivision = TIMER_CKDIV_DIV2,
+  .clockdivision = TIMER_CKDIV_DIV1,
   .counterdirection = TIMER_COUNTER_UP,
   .period = 0,
   .prescaler = 0,
@@ -504,7 +535,7 @@ hdl_tick_counter_t mod_systick_counter = {
 
 hdl_tick_counter_t mod_timer4_counter = {
   .module.init = &hdl_tick_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module),
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2_timers.module),
   .module.reg = (void *)TIMER4,
   .config = &mod_tick_counter4_cnf
 };
@@ -1105,7 +1136,7 @@ const hdl_adc_config_t mod_adc_cnf = {
 
 hdl_adc_t mod_adc = {
   .module.init = &hdl_adc,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module, &mod_nvic.module),
+  .module.dependencies = hdl_module_dependencies(&mod_clock_adc.module, &mod_systick_timer_ms.module, &mod_adc_dma_ch.module, &mod_nvic.module),
   .module.reg = (void *)ADC0,
   .config = &mod_adc_cnf
 };

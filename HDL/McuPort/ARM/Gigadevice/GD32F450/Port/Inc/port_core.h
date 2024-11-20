@@ -6,7 +6,7 @@
 
 #define HDL_INTERRUPT_PRV_SIZE       4
 
-#define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
+#define HDL_VTOR_TAB_ALIGN         1024  //(2 << SCB_VTOR_TBLOFF_Pos)
 
 typedef enum
 {

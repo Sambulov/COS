@@ -225,6 +225,50 @@ static hdl_module_state_t _hdl_clock_pll_vco(hdl_clock_private_t *clk, uint8_t e
   return HDL_MODULE_UNLOADED;
 }
 
+static hdl_module_state_t _hdl_apb_timers_clock_cnf(hdl_clock_private_t *clk, uint8_t enable) {
+  if (enable) {
+    if ((clk->module.dependencies == NULL) || 
+       (clk->module.dependencies[0] == NULL) || 
+       ((clk->config->property.mul != 2) && (clk->config->property.mul != 4))) return HDL_MODULE_FAULT;
+    rcu_timer_clock_prescaler_config((clk->config->property.mul == 4)? RCU_TIMER_PSC_MUL4: RCU_TIMER_PSC_MUL2);
+    hdl_clock_private_t *apb = (hdl_clock_private_t *)clk->module.dependencies[0];
+    if(apb->config->property.div == 1) {
+      hdl_clock_private_t *ahb = (hdl_clock_private_t *)apb->module.dependencies[0];
+      hdl_clock_calc_mul(&ahb->freq, 1, &clk->freq);
+    }
+    else 
+      hdl_clock_calc_mul(&apb->freq, clk->config->property.mul, &clk->freq);
+    return HDL_MODULE_ACTIVE;
+  }
+  rcu_timer_clock_prescaler_config(RCU_TIMER_PSC_MUL2);
+  return HDL_MODULE_UNLOADED;
+}
+
+static hdl_module_state_t _hdl_adc_clock_cnf(hdl_clock_private_t *clk, uint8_t enable) {
+  if (enable) {
+    if ((clk->module.dependencies == NULL) || (clk->module.dependencies[0] == NULL)) return HDL_MODULE_FAULT;
+    hdl_clock_private_t *src_clk = (hdl_clock_private_t *)clk->module.dependencies[0];
+    volatile uint32_t reg = 0;
+    if(src_clk->config->type == HDL_CLOCK_TYPE_AHB) {
+      if((clk->config->property.div != 5) && (clk->config->property.mul != 6) && 
+         (clk->config->property.div != 10) && (clk->config->property.mul != 20)) return HDL_MODULE_FAULT;
+      reg = 0b100 + ((clk->config->property.div == 10)? 2: (clk->config->property.div / 6));
+    } else if (src_clk->config->type == HDL_CLOCK_TYPE_APB2) {
+      if((clk->config->property.div != 2) && (clk->config->property.mul != 4) && 
+         (clk->config->property.div != 6) && (clk->config->property.mul != 8)) return HDL_MODULE_FAULT;
+      reg = 0b000 + ((clk->config->property.div == 8)? 3: (clk->config->property.div / 3));
+    }
+    else return HDL_MODULE_FAULT;
+    hdl_clock_calc_div(&src_clk->freq, clk->config->property.div, &clk->freq);
+    if((clk->freq.num / clk->freq.denom)> 40000000) return HDL_MODULE_FAULT;
+    rcu_periph_clock_enable(RCU_ADC0);
+    HDL_REG_MODIFY(ADC_SYNCCTL, ADC_SYNCCTL_ADCCK, reg << 16);
+    rcu_periph_clock_disable(RCU_ADC0);
+    return HDL_MODULE_ACTIVE;
+  }
+  return HDL_MODULE_UNLOADED;
+}
+
 hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
   hdl_clock_private_t *clk = (hdl_clock_private_t *)desc;
   clk->freq.denom = 1;
@@ -279,6 +323,13 @@ hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
       if (enable) return _hdl_bus_clock_cnf(clk, 13, 15, APB2_MAX_FREQ, HDL_CLOCK_TYPE_AHB);
       rcu_apb2_clock_config(RCU_APB2_CKAHB_DIV16);
       return HDL_MODULE_UNLOADED;
+
+    case HDL_CLOCK_TYPE_APB1_TIMERS:
+    case HDL_CLOCK_TYPE_APB2_TIMERS:
+      return _hdl_apb_timers_clock_cnf(clk, enable);
+
+    case HDL_CLOCK_TYPE_ADC:
+      return _hdl_adc_clock_cnf(clk, enable);
 
     case HDL_CLOCK_TYPE_IRC48M:
       clk->freq.num = 48000000;

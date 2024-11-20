@@ -16,6 +16,11 @@ typedef enum {
   HDL_CLOCK_TYPE_APB1,           /* property: div (can be 1, 2, 4, 8, 16), module depends on AHB */
   HDL_CLOCK_TYPE_APB2,           /* property: div (can be 1, 2, 4, 8, 16), module depends on AHB */
 
+  HDL_CLOCK_TYPE_APB1_TIMERS,    /* property: mul (can be 2, 4), module depends on APB1 */
+  HDL_CLOCK_TYPE_APB2_TIMERS,    /* property: mul (can be 2, 4), module depends on APB2 */
+
+  HDL_CLOCK_TYPE_ADC,            /* property: div (can be: 5, 6, 10, 20 for AHB bus;  2, 4, 6, 8 for APB2 bus;) module depends on AHB or APB2 */
+
   HDL_CLOCK_TYPE_IRC48M,         /* property: freq = 48000000 const */
   HDL_CLOCK_TYPE_IRC40K,         /* property: freq = 40000 const */
 } hdl_clock_type_t;

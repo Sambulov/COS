@@ -451,7 +451,7 @@ hdl_clock_t mod_clock_apb1_timers = {
   .module.reg = (void *)RCU,
   .config = ((const hdl_clock_config_t const []) {{
     .type = HDL_CLOCK_TYPE_APB1_TIMERS,
-    .property.mul = 2
+    .property.mul = 4
   }})
 };
 
@@ -535,7 +535,7 @@ hdl_tick_counter_t mod_systick_counter = {
 
 hdl_tick_counter_t mod_timer4_counter = {
   .module.init = &hdl_tick_counter,
-  .module.dependencies = hdl_module_dependencies(&mod_clock_apb2_timers.module),
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1_timers.module),
   .module.reg = (void *)TIMER4,
   .config = &mod_tick_counter4_cnf
 };

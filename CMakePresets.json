@@ -77,13 +77,33 @@
             }
         },
         {
+            "name": "ATB_USPD20K_MB_C0_D_D",
+            "displayName": "ATB_USPD20K_MB_C0_D Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_USPD20K_MB_C0_D"
+            }
+        },
+        {
             "name": "ATB3500_D",
             "displayName": "ATB3500 Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_3500"
+                "BOARD": "ATB3500"
+            }
+        },
+        {
+            "name": "ATB3500_R",
+            "displayName": "ATB3500 Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BOARD": "ATB3500"
             }
         },
         {

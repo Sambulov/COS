@@ -26,6 +26,8 @@ extern hdl_module_t hdl_null_module;
 
 #define hdl_module_dependencies(...) ((hdl_module_t *[]){__VA_ARGS__, NULL})
 
+#define hdl_module_config(type, ...) (const type []){{__VA_ARGS__}}
+
 void hdl_enable(hdl_module_t *desc);
 void hdl_kill(hdl_module_t *desc);
 hdl_module_state_t hdl_state(const hdl_module_t *desc);

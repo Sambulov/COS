@@ -6,7 +6,6 @@
 #include "ms5194t.h"
 #include "uspd_ain_port.h"
 #include "som_link.h"
-#include "median_filter.h"
 
 #include "mig.h"
 

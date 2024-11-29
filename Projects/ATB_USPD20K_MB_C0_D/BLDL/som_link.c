@@ -1,5 +1,13 @@
 #include "app.h"
 
+extern const app_mem_map_item_t app_r_mem_map[APP_R_MEM_MAP_SIZE];
+extern const app_mem_map_item_t app_w_mem_map[APP_W_MEM_MAP_SIZE];
+
+typedef struct {
+  uint16_t current_address;
+  uint8_t state;
+} som_proto_context_t;
+
 #define SOM_COMM_STATE_IDLE            0
 #define SOM_COMM_STATE_RX_ADDR_HIGH    SOM_COMM_STATE_IDLE
 #define SOM_COMM_STATE_RX_ADDR_LOW     1

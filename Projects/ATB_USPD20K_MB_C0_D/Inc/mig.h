@@ -42,4 +42,13 @@ extern hdl_gpio_pin_t uspd20k_som_int;              // (PA1)
 
 extern hdl_i2c_t uspd20k_i2c_som;               // (PB8->SCL),(PB9->SDA)
 
+extern bldl_uspd_dio_port_t io_port1;
+extern bldl_uspd_dio_port_t io_port2;
+extern bldl_uspd_dio_port_t io_port3;
+extern bldl_uspd_dio_port_t io_port4;
+extern bldl_uspd_dio_port_t io_port5;
+extern bldl_uspd_dio_port_t io_port6;
+extern bldl_uspd_dio_port_t io_port7;
+extern bldl_uspd_dio_port_t io_port8;
+
 #endif // ATB_USPD20K_H_

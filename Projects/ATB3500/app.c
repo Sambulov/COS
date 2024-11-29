@@ -13,10 +13,10 @@ void carrier_shutdown(dev_context_t *dev) {
     /* This pins aren`t provided, we have to notify driver about this */
     hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_POWER_ON, HDL_FALSE); 
     hdl_smarc_carrier_force_state(&mod_smarc, HDL_SMARC_CARRIER_STATE_CARRIER_STANDBY, HDL_FALSE);
-    atb3500_power_rail_set(&rail_1v8, HDL_FALSE);
-    atb3500_power_rail_set(&rail_2v5, HDL_FALSE);
-    atb3500_power_rail_set(&rail_3v3, HDL_FALSE);
-    atb3500_power_rail_set(&rail_5v, HDL_FALSE);
+    //atb3500_power_rail_set(&rail_1v8, HDL_FALSE);
+    //atb3500_power_rail_set(&rail_2v5, HDL_FALSE);
+    //atb3500_power_rail_set(&rail_3v3, HDL_FALSE);
+    //atb3500_power_rail_set(&rail_5v, HDL_FALSE);
     smarc_carrier_shutdown(&mod_smarc);
     dev->restart_delay = 3000;
     dev->time_stamp = hdl_time_counter_get(&mod_systick_timer_ms);

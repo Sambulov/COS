@@ -117,6 +117,16 @@
             }
         },
         {
+            "name": "ATB_MUVV_R0_D",
+            "displayName": "ATB_MUVV_R0 Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BOARD": "ATB_MUVV_R0"
+            }
+        },
+        {
             "name": "GD32E23X_DEMO_D",
             "displayName": "GD32E23X_DEMO Debug",
             "generator": "Ninja",

@@ -6,6 +6,15 @@
 #define APP_STATE_WORK_ADC    2
 #define APP_STATE_RESET       3
 
+
+void update_dio() {
+  if(app_dio.sync_key == DIO_CONFIG_SYNC_KEY) {
+    //TODO: set dio
+  }
+  //TODO: read dio
+  //TODO: debounce 10ms
+}
+
 void main() {
   uint8_t state = APP_STATE_ENABLE_ADC;
 

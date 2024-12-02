@@ -5,10 +5,11 @@
 
 //Register Addresses
 #define REG_VERSION_ADDR		0x00
-#define REG_UINT16_RW_ADDR		0x01
-#define REG_INT16_RW_ADDR		0x02
-#define REG_BOOL_RW_ADDR		0x03
-#define REG_CHAR_RW_ADDR		0x04
+#define REG_ID_ADDR	        	0x01
+#define REG_UINT16_RW_ADDR		0x02
+#define REG_INT16_RW_ADDR		0x03
+#define REG_BOOL_RW_ADDR		0x04
+#define REG_CHAR_RW_ADDR		0x05
 #define REG_UINT16_RO_ADDR		0x11
 #define REG_INT16_RO_ADDR		0x12
 #define REG_BOOL_RO_ADDR		0x13
@@ -17,10 +18,15 @@
 //Register value types
 typedef enum val_type_t {
     EMPTY,
+    ID1,
+    ID2,
+    ID3,
     UNDEFINED,
     BOOL,
     UINT16,
 	INT16,
+    UINT32,
+	INT32,
     CHAR
 } val_type_t;
 
@@ -30,12 +36,19 @@ typedef enum reg_idx_t {
     NONE = -1,
     ECHO = 0,
     VERSION,
+    ID1_RO,
+    ID2_RO,
+    ID3_RO,
 	UINT16_RW,
 	INT16_RW,
+	UINT32_RW,
+	INT32_RW,
 	BOOL_RW,
 	CHAR_RW,
 	UINT16_RO,
 	INT16_RO,
+	UINT32_RO,
+	INT32_RO,
 	BOOL_RO,
 	CHAR_RO,
 	REGISTER_NUM
@@ -54,6 +67,8 @@ typedef union var_t {
     uint8_t  bool_val;
     uint16_t uint16_val;
     int16_t  int16_val;
+    uint32_t uint32_val;
+    int32_t  int32_val;
     char     char_val;
 } var_t;
 

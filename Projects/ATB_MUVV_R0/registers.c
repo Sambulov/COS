@@ -3,6 +3,9 @@
 volatile reg_t g_i2c_reg_data[] =
 {
 		[VERSION] = 		{ READ_ONLY, 	REG_VERSION_ADDR, 	CHAR,   {.char_val = 0x01}, 	{0} },
+		[ID1_RO] = 	        { READ_ONLY, 	REG_ID_ADDR,        ID1,   {.uint32_val = 0x0}, 	{0} },
+		[ID2_RO] = 	        { READ_ONLY, 	REG_ID_ADDR,        ID2,   {.uint32_val = 0x0}, 	{0} },
+		[ID3_RO] = 	        { READ_ONLY, 	REG_ID_ADDR,        ID3,   {.uint32_val = 0x0}, 	{0} },
 		[UINT16_RW] = 		{ FULL_ACCESS, 	REG_UINT16_RW_ADDR, UINT16,   {.uint16_val = 0x00}, 	{0} },
 		[INT16_RW] = 		{ FULL_ACCESS, 	REG_INT16_RW_ADDR, 	INT16, {.int16_val = 0x00}, 	{0} },
 		[BOOL_RW] = 		{ FULL_ACCESS, 	REG_BOOL_RW_ADDR, 	BOOL, {.bool_val = 0x00}, 	{0} },
@@ -33,6 +36,13 @@ int reg_get_len(reg_idx_t idx){
 	case INT16:
 		data_len = 2;
 		break;
+	case ID1:
+	case ID2:
+	case ID3:
+	case UINT32:
+	case INT32:
+		data_len = 4;
+		break;
 	default:
 		break;
 	}
@@ -47,6 +57,13 @@ void reg_factory(void) {
 		switch (g_i2c_reg_data[reg_idx].value_type) {
 		case UNDEFINED:
 			break;
+		case ID1:
+			g_i2c_reg_data[reg_idx].value.uint32_val = *(((const uint32_t *)UID_BASE));
+		case ID2:
+			g_i2c_reg_data[reg_idx].value.uint32_val = *(((const uint32_t *)UID_BASE + 4));
+		case ID3:
+			g_i2c_reg_data[reg_idx].value.uint32_val = *(((const uint32_t *)UID_BASE + 8));
+			break;
 		case BOOL:
 			g_i2c_reg_data[reg_idx].value.bool_val =
 					g_i2c_reg_data[reg_idx].def_val.bool_val;
@@ -58,6 +75,14 @@ void reg_factory(void) {
 		case INT16:
 			g_i2c_reg_data[reg_idx].value.int16_val =
 					g_i2c_reg_data[reg_idx].def_val.int16_val;
+			break;
+		case UINT32:
+			g_i2c_reg_data[reg_idx].value.int32_val =
+					g_i2c_reg_data[reg_idx].def_val.int32_val;
+			break;
+		case INT32:
+			g_i2c_reg_data[reg_idx].value.int32_val =
+					g_i2c_reg_data[reg_idx].def_val.int32_val;
 			break;
 		case CHAR:
 			g_i2c_reg_data[reg_idx].value.char_val =

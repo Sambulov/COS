@@ -15,10 +15,10 @@ extern reg_t g_i2c_reg_data[];
 // Delay has to constant expression
 static void inline __attribute__((always_inline)) delayus(unsigned us_mul_5)
 {
-    uint32_t ticks = SYSTICKPERUS * us_mul_5;
-    uint32_t start_tick = SysTick->VAL;
+  uint32_t ticks = SYSTICKPERUS * us_mul_5;
+  uint32_t start_tick = SysTick->VAL;
 
-    while(SysTick->VAL - start_tick < ticks);
+  while(SysTick->VAL - start_tick < ticks);
 }
 
 
@@ -46,22 +46,21 @@ void i2c_slave_check_timeout(void){
 	static int rx_busy_counter = 0;
 	HAL_I2C_StateTypeDef status = HAL_OK;
 
-	 status = HAL_I2C_GetState(I2C_slave_obj.i2c_handler);
+  status = HAL_I2C_GetState(I2C_slave_obj.i2c_handler);
 
-	  if (status == HAL_I2C_STATE_BUSY_RX_LISTEN){
-		  rx_busy_counter++;
-	  }
-	  else{
-		  rx_busy_counter = 0;
-	  }
+  if (status == HAL_I2C_STATE_BUSY_RX_LISTEN){
+    rx_busy_counter++;
+  }
+  else {
+    rx_busy_counter = 0;
+  }
 
-	  if (rx_busy_counter > I2C_RX_BUSY_CNTR){
-		  	HAL_I2C_DisableListen_IT(I2C_slave_obj.i2c_handler);
-			HAL_I2C_DeInit(I2C_slave_obj.i2c_handler);
-			HAL_I2C_Init(I2C_slave_obj.i2c_handler);
-			HAL_I2C_EnableListen_IT(I2C_slave_obj.i2c_handler);
-			rx_busy_counter = 0;
-	  }
+  if (rx_busy_counter > I2C_RX_BUSY_CNTR){
+    //HAL_I2C_DisableListen_IT(I2C_slave_obj.i2c_handler);
+    ResetI2C(I2C_slave_obj.i2c_handler);
+    HAL_I2C_EnableListen_IT(I2C_slave_obj.i2c_handler);
+    rx_busy_counter = 0;
+  }
 }
 
 //******************

@@ -55,7 +55,7 @@ void i2c_slave_check_timeout(void){
     rx_busy_counter = 0;
   }
 
-  if (rx_busy_counter > I2C_RX_BUSY_CNTR){
+  if ((rx_busy_counter > I2C_RX_BUSY_CNTR) || (I2C_slave_obj.i2c_handler->ErrorCode != 0)){
     //HAL_I2C_DisableListen_IT(I2C_slave_obj.i2c_handler);
     ResetI2C(I2C_slave_obj.i2c_handler);
     HAL_I2C_EnableListen_IT(I2C_slave_obj.i2c_handler);
@@ -81,7 +81,7 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 		// Если мастер отправляет запрос на чтение, вернуть значение данных в запрошенном регистре.
 		I2C_slave_obj.curr_idx = reg_get_idx(I2C_slave_obj.reg_address);
 		if ((I2C_slave_obj.curr_idx != NONE)&& (I2C_slave_obj.curr_idx != ECHO)&& (g_i2c_reg_data[I2C_slave_obj.curr_idx].access != WRITE_ONLY)){
-			HAL_I2C_Slave_Sequential_Transmit_IT(hi2c, (uint8_t*)&g_i2c_reg_data[I2C_slave_obj.curr_idx].value.uint16_val, reg_get_len(I2C_slave_obj.curr_idx), I2C_LAST_FRAME);
+			HAL_I2C_Slave_Sequential_Transmit_IT(hi2c, (uint8_t*)&g_i2c_reg_data[I2C_slave_obj.curr_idx].value.uint32_val, reg_get_len(I2C_slave_obj.curr_idx), I2C_LAST_FRAME);
 		}
 	}
 }

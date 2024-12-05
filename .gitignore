@@ -1,9 +1,9 @@
-.DS_Store
 *.hex
 *.bin
 *.o
 *.elf
 build/
+!Projects/
 Projects/*
 !Projects/DEMO_*
 .cortex-debug.*

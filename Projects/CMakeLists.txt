@@ -1,0 +1,18 @@
+set(BOARD "DEMO_GD32E23X")
+#set(BOARD "DEMO_NUM463KG")
+#set(BOARD "")
+
+set(dir "${CMAKE_CURRENT_SOURCE_DIR}/${BOARD}")
+if((BOARD STREQUAL "ATB_RK3568J_SMC_R3") OR 
+   (BOARD STREQUAL "ATB_RK3568J_SMC_R1") OR
+   (BOARD STREQUAL "ATB_RK3568J_SMC_R0"))
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ATB_RK3568J_SMC")
+elseif (EXISTS "${dir}")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/${BOARD}")
+else()
+  message( SEND_ERROR "Board (${BOARD}) not supported!" )
+endif()
+
+set_property(GLOBAL APPEND PROPERTY PROJECT_DEFINITIONS 
+  ${BOARD}
+)

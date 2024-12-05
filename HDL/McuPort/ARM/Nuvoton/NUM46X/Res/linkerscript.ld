@@ -44,8 +44,9 @@ ENTRY(reset_handler)
 
 SECTIONS
 {
-	.text :
+	.text (READONLY):
 	{
+		. = ALIGN(4);
 		KEEP(*(.isr_vector))
 		__Vectors_End = .;
 		/* __Vectors_Size = __Vectors_End - irq_vector; */
@@ -75,13 +76,13 @@ SECTIONS
 		KEEP(*(.eh_frame*))
 	} > FLASH
 
-	.ARM.extab :
+	.ARM.extab (READONLY):
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
 	} > FLASH
 
 	__exidx_start = .;
-	.ARM.exidx :
+	.ARM.exidx (READONLY):
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
 	} > FLASH
@@ -91,7 +92,7 @@ SECTIONS
 	 * uncomment .copy.table section and,
 	 * define __STARTUP_COPY_MULTIPLE in startup_ARMCMx.S */
 	/*
-	.copy.table :
+	.copy.table (READONLY):
 	{
 		. = ALIGN(4);
 		__copy_table_start__ = .;
@@ -109,7 +110,7 @@ SECTIONS
 	 * uncomment .zero.table section and,
 	 * define __STARTUP_CLEAR_BSS_MULTIPLE in startup_ARMCMx.S */
 	/*
-	.zero.table :
+	.zero.table (READONLY):
 	{
 		. = ALIGN(4);
 		__zero_table_start__ = .;
@@ -125,6 +126,7 @@ SECTIONS
 
 	.data : AT (_sidata)
 	{
+		. = ALIGN(4);
 		_sdata = .;
 		*(vtable)
 		*(.data*)

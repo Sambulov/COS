@@ -1,4 +1,5 @@
 #include "hdl_portable.h"
+#include "Macros.h"
 
 void BOD_IRQHandler()        { call_isr(HDL_NVIC_IRQ0_BOD_IRQn, 0); }
 void IRC_IRQHandler()        { call_isr(HDL_NVIC_IRQ1_IRC_IRQn, 0); }
@@ -16,12 +17,12 @@ void EINT2_IRQHandler()      { call_isr(HDL_NVIC_IRQ12_EINT2_IRQn, 0); }
 void EINT3_IRQHandler()      { call_isr(HDL_NVIC_IRQ13_EINT3_IRQn, 0); }
 void EINT4_IRQHandler()      { call_isr(HDL_NVIC_IRQ14_EINT4_IRQn, 0); }
 void EINT5_IRQHandler()      { call_isr(HDL_NVIC_IRQ15_EINT5_IRQn, 0); }
-void GPA_IRQHandler()        { call_isr(HDL_NVIC_IRQ16_GPA_IRQn, 0); }
-void GPB_IRQHandler()        { call_isr(HDL_NVIC_IRQ17_GPB_IRQn, 0); }
-void GPC_IRQHandler()        { call_isr(HDL_NVIC_IRQ18_GPC_IRQn, 0); }
-void GPD_IRQHandler()        { call_isr(HDL_NVIC_IRQ19_GPD_IRQn, 0); }
-void GPE_IRQHandler()        { call_isr(HDL_NVIC_IRQ20_GPE_IRQn, 0); }
-void GPF_IRQHandler()        { call_isr(HDL_NVIC_IRQ21_GPF_IRQn, 0); }
+void GPA_IRQHandler()        { uint32_t src = GPA->INTSRC; call_isr(HDL_NVIC_IRQ16_GPA_IRQn, src); GPA->INTSRC |= src; }
+void GPB_IRQHandler()        { uint32_t src = GPB->INTSRC; call_isr(HDL_NVIC_IRQ17_GPB_IRQn, src); GPB->INTSRC |= src;  }
+void GPC_IRQHandler()        { uint32_t src = GPC->INTSRC; call_isr(HDL_NVIC_IRQ18_GPC_IRQn, src); GPC->INTSRC |= src; }
+void GPD_IRQHandler()        { uint32_t src = GPD->INTSRC; call_isr(HDL_NVIC_IRQ19_GPD_IRQn, src); GPD->INTSRC |= src; }
+void GPE_IRQHandler()        { uint32_t src = GPE->INTSRC; call_isr(HDL_NVIC_IRQ20_GPE_IRQn, src); GPE->INTSRC |= src; }
+void GPF_IRQHandler()        { uint32_t src = GPF->INTSRC; call_isr(HDL_NVIC_IRQ21_GPF_IRQn, src); GPF->INTSRC |= src; }
 void QSPI0_IRQHandler()      { call_isr(HDL_NVIC_IRQ22_QSPI0_IRQn, 0); }
 void SPI0_IRQHandler()       { call_isr(HDL_NVIC_IRQ23_SPI0_IRQn, 0); }
 void BRAKE0_IRQHandler()     { call_isr(HDL_NVIC_IRQ24_BRAKE0_IRQn, 0); }
@@ -61,7 +62,7 @@ void SPI5_IRQHandler()       { call_isr(HDL_NVIC_IRQ57_SPI5_IRQn, 0); }
 void SC0_IRQHandler()        { call_isr(HDL_NVIC_IRQ58_SC0_IRQn, 0); }
 void SC1_IRQHandler()        { call_isr(HDL_NVIC_IRQ59_SC1_IRQn, 0); }
 void SC2_IRQHandler()        { call_isr(HDL_NVIC_IRQ60_SC2_IRQn, 0); }
-void GPJ_IRQHandler()        { call_isr(HDL_NVIC_IRQ61_GPJ_IRQn, 0); }
+void GPJ_IRQHandler()        { uint32_t src = GPJ->INTSRC; call_isr(HDL_NVIC_IRQ61_GPJ_IRQn, src); GPJ->INTSRC |= src; }
 void SPI3_IRQHandler()       { call_isr(HDL_NVIC_IRQ62_SPI3_IRQn, 0); }
 void SPI4_IRQHandler()       { call_isr(HDL_NVIC_IRQ63_SPI4_IRQn, 0); }
 void SDH0_IRQHandler()       { call_isr(HDL_NVIC_IRQ64_SDH0_IRQn, 0); }
@@ -71,7 +72,7 @@ void I2S0_IRQHandler()       { call_isr(HDL_NVIC_IRQ68_I2S0_IRQn, 0); }
 void I2S1_IRQHandler()       { call_isr(HDL_NVIC_IRQ69_I2S1_IRQn, 0); }
 void SPI6_IRQHandler()       { call_isr(HDL_NVIC_IRQ70_SPI6_IRQn, 0); }
 void CRPT_IRQHandler()       { call_isr(HDL_NVIC_IRQ71_CRPT_IRQn, 0); }
-void GPG_IRQHandler()        { call_isr(HDL_NVIC_IRQ72_GPG_IRQn, 0); }
+void GPG_IRQHandler()        { uint32_t src = GPG->INTSRC; call_isr(HDL_NVIC_IRQ72_GPG_IRQn, src); GPG->INTSRC |= src; }
 void EINT6_IRQHandler()      { call_isr(HDL_NVIC_IRQ73_EINT6_IRQn, 0); }
 void UART4_IRQHandler()      { call_isr(HDL_NVIC_IRQ74_UART4_IRQn, 0); }
 void UART5_IRQHandler()      { call_isr(HDL_NVIC_IRQ75_UART5_IRQn, 0); }
@@ -87,7 +88,7 @@ void EQEI0_IRQHandler()      { call_isr(HDL_NVIC_IRQ84_EQEI0_IRQn, 0); }
 void EQEI1_IRQHandler()      { call_isr(HDL_NVIC_IRQ85_EQEI1_IRQn, 0); }
 void ECAP0_IRQHandler()      { call_isr(HDL_NVIC_IRQ86_ECAP0_IRQn, 0); }
 void ECAP1_IRQHandler()      { call_isr(HDL_NVIC_IRQ87_ECAP1_IRQn, 0); }
-void GPH_IRQHandler()        { call_isr(HDL_NVIC_IRQ88_GPH_IRQn, 0); }
+void GPH_IRQHandler()        { uint32_t src = GPH->INTSRC; call_isr(HDL_NVIC_IRQ88_GPH_IRQn, src); GPH->INTSRC |= src; }
 void EINT7_IRQHandler()      { call_isr(HDL_NVIC_IRQ89_EINT7_IRQn, 0); }
 void SDH1_IRQHandler()       { call_isr(HDL_NVIC_IRQ90_SDH1_IRQn, 0); }
 void PSIO_IRQHandler()       { call_isr(HDL_NVIC_IRQ91_PSIO_IRQn, 0); }
@@ -109,7 +110,7 @@ void EADC12_IRQHandler()     { call_isr(HDL_NVIC_IRQ106_EADC12_IRQn, 0); }
 void EADC13_IRQHandler()     { call_isr(HDL_NVIC_IRQ107_EADC13_IRQn, 0); }
 void SPI8_IRQHandler()       { call_isr(HDL_NVIC_IRQ108_SPI8_IRQn, 0); }
 void KS_IRQHandler()         { call_isr(HDL_NVIC_IRQ109_KS_IRQn, 0); }
-void GPI_IRQHandler()        { call_isr(HDL_NVIC_IRQ110_GPI_IRQn, 0); }
+void GPI_IRQHandler()        { uint32_t src = GPI->INTSRC; call_isr(HDL_NVIC_IRQ110_GPI_IRQn, src); GPI->INTSRC |= src; }
 void SPI9_IRQHandler()       { call_isr(HDL_NVIC_IRQ111_SPI9_IRQn, 0); }
 void CANFD00_IRQHandler()    { call_isr(HDL_NVIC_IRQ112_CANFD00_IRQn, 0); }
 void CANFD01_IRQHandler()    { call_isr(HDL_NVIC_IRQ113_CANFD01_IRQn, 0); }
@@ -128,31 +129,44 @@ void EADC21_IRQHandler()     { call_isr(HDL_NVIC_IRQ125_EADC21_IRQn, 0); }
 void EADC22_IRQHandler()     { call_isr(HDL_NVIC_IRQ126_EADC22_IRQn, 0); }
 void EADC23_IRQHandler()     { call_isr(HDL_NVIC_IRQ127_EADC23_IRQn, 0); }
 
+#define CPU_POWER_LEVEL_VALID(pl)   ((pl == SYS_PLCTL_PLSEL_PL0) || (pl == SYS_PLCTL_PLSEL_PL1))
+#define CPU_FLASH_LATENCY_VALID(fl)   ((fl > 0) || (fl <= 8))
+
 hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
-  if(enable) {
+  while(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     // /*  Unlock Register */
-    //   UnlockRegister();
+    SYS_UnlockReg();
+    if(!CPU_POWER_LEVEL_VALID(core->config->power_level)) break;
+    if(!CPU_FLASH_LATENCY_VALID(core->config->flash_latency)) break;
+    HDL_REG_MODIFY(SYS->PLCTL, SYS_PLCTL_PLSEL_Msk, core->config->power_level);
+    uint32_t u32TimeOutCount = 12000000; /* 1 second time-out */
+    while(SYS->PLSTS & SYS_PLSTS_PLCBUSY_Msk) {
+        if(u32TimeOutCount-- == 0) break;
+    }
+    if(SYS->PLSTS & SYS_PLSTS_PLCBUSY_Msk) break;
 
-    // #ifndef ENABLE_SPIM_CACHE
-    //   SystemEnableSpimCache();
-    // #endif
+    HDL_REG_MODIFY(FMC->CYCCTL, FMC_CYCCTL_CYCLE_Msk, core->config->flash_latency);
 
-    // #ifndef __NO_SYSTEM_INIT
-    // 	SystemInit();
-    // #endif
+    #ifdef ENABLE_SPIM_CACHE
+      SystemEnableSpimCache();
+    #endif
 
-    // //TODO: turn off JTAG if needed;
+    #ifdef SYSTEM_INIT
+    	SystemInit();
+    #endif
 
-    // /* Init POR */
-    // #if 0
-    // 	ldr	r0, =0x40000024
-    // 	ldr	r1, =0x00005AA5
-    // 	str	r1, [r0]
-    // #endif
+    //TODO: turn off JTAG if needed;
 
-    // /* Lock register */
-    //   LockRegister();
+    /* Init POR */
+    #if POR_INIT
+    	ldr	r0, =0x40000024
+    	ldr	r1, =0x00005AA5
+    	str	r1, [r0]
+    #endif
+
+    /* Lock register */
+    SYS_LockReg();
     return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_UNLOADED;

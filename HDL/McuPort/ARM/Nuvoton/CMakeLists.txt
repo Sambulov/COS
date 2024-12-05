@@ -2,14 +2,15 @@ if(NOT MANUFACTURER STREQUAL "Nuvoton")
   return()
 endif()
 
-set_target_properties(HDL PROPERTIES MANUFACTURER_SUPPORTED "OK")
+set_property(GLOBAL PROPERTY MANUFACTURER_SUPPORTED "OK")
 
-file(GLOB NU_COMMON
+file(GLOB SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
 )
 
-target_sources(HDL PUBLIC ${NU_COMMON})
-target_include_directories(HDL PUBLIC
+set_property(GLOBAL APPEND PROPERTY HDL_SOURCES ${SRC})
+
+set_property(GLOBAL APPEND PROPERTY HDL_HEADERS
   "${CMAKE_CURRENT_SOURCE_DIR}/Inc"
 )
 

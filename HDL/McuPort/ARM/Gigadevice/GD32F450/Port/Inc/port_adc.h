@@ -1,7 +1,7 @@
 #ifndef PORT_ADC_H_
 #define PORT_ADC_H_
 
-#define HDL_ADC_PRV_SIZE  (32)
+#define HDL_ADC_PRV_SIZE  (56)
 
 // typedef enum {
 //     ADC_OPERATION_MODE_SINGLE_SCAN,    /* Single SCAN, user must launched every conversion with some triger */
@@ -74,10 +74,10 @@ typedef enum {
 
 /* TODO: Amend  uint16_t values to uint32_t values */
 /* depends on:
-  apb2_bus
-  timer
-  dma_ch
-  interrupt controller (nvic)
+  hdl_clock_t
+  hdl_time_counter_t
+  hdl_dma_channel_t
+  hdl_interrupt_controller_t
  */
 typedef struct{
     hdl_interrupt_t *adc_interrupt;

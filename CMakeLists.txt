@@ -29,13 +29,13 @@ else()
   message(STATUS "Minimal optimization, debug info included")
   add_compile_definitions("DEBUG")
   add_compile_options(-O0 -ggdb)
+  add_link_options(-O0 -ggdb)
 endif()
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/Projects")
 
 get_property(PROJECT_SOURCES GLOBAL PROPERTY PROJECT_SOURCES)
 get_property(PROJECT_HEADERS GLOBAL PROPERTY PROJECT_HEADERS)
-include_directories( ${PROJECT_HEADERS} )
 
 get_property(PROJECT_DEFINITIONS GLOBAL PROPERTY PROJECT_DEFINITIONS)
 add_compile_definitions(${PROJECT_DEFINITIONS})
@@ -51,19 +51,32 @@ set(CMAKE_OBJDUMP ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}objdump)
 set(CMAKE_SIZE ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}size)
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/HDL")
-
 # Set compiler options
-get_target_property(MAIN_CFLAGS HDL COMPILE_OPTIONS)
-# Set linker options
-get_target_property(LINKER_FLAGS HDL LINK_OPTIONS)
-
+get_property(MAIN_CFLAGS GLOBAL PROPERTY HDL_COMPILE_OPTIONS)
 add_compile_options(${MAIN_CFLAGS})
+# Set linker options
+get_property(LINKER_FLAGS GLOBAL PROPERTY HDL_LINK_OPTIONS)
 add_link_options(${LINKER_FLAGS})
+# Set compile def
+get_property(DEFINITIONS GLOBAL PROPERTY HDL_DEFINES)
+add_compile_definitions(${DEFINITIONS})
+get_property(HDL_SOURCES GLOBAL PROPERTY HDL_SOURCES)
+get_property(HDL_HEADERS GLOBAL PROPERTY HDL_HEADERS)
 
-add_subdirectory("${CMAKE_SOURCE_DIR}/CL")  
 
-add_executable(${EXECUTABLE} ${PROJECT_SOURCES} ${LINKER_SCRIPT})
-target_link_libraries(${EXECUTABLE} PUBLIC HDL CodeLib)
+add_subdirectory("${CMAKE_SOURCE_DIR}/CL")
+# Set compile def
+get_property(DEFINITIONS GLOBAL PROPERTY CL_DEFINES)
+add_compile_definitions(${DEFINITIONS})
+get_property(CL_SOURCES GLOBAL PROPERTY CL_SOURCES)
+get_property(CL_HEADERS GLOBAL PROPERTY CL_HEADERS)
+
+include_directories( ${PROJECT_HEADERS} )
+include_directories( ${HDL_HEADERS} )
+include_directories( ${CL_HEADERS} )
+
+
+add_executable(${EXECUTABLE} ${PROJECT_SOURCES} ${HDL_SOURCES} ${CL_SOURCES} ${LINKER_SCRIPT})
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)

@@ -23,8 +23,8 @@ cmake --build . --clean-first
 ```powershell
 $ nuopenocd.exe -s "./HDL/McuPort/ARM/Nuvoton/NUM463KG/Res" -f "./HDL/McuPort/ARM/Nuvoton/NUM463KG/Res/tool.cfg" -f "./HDL/McuPort/ARM/Nuvoton/NUM463KG/Res/mcu.cfg" -c "init" -c "halt" -c "flash write_image erase ./build/bmc.hex" -c "reset run"
 ```
-Где tool.cfg - конфиг NuLink, 
-mcu.cfg - конфиг контроллера
+Где `tool.cfg` - конфиг NuLink, 
+`mcu.cfg` - конфиг контроллера.
 Все можно найти в пакете SDK под конкретную серию микроконтроллера.
 
 ### Удаленно через GDB + OpenOCD:
@@ -50,7 +50,34 @@ $ arm-none-eabi-gdb.exe
 Готово. 
 
 ### Сборка
-Для каждого проекта предоставляется CMake пресет:
+Для сборки проекта неоходимо определить имя платформы `BOARD`. Это мжно сделать через пресет `CMakePresets.json` в VisualCode:
+```
+  {
+      "name": "XXX_D",
+      "displayName": "XXX Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug",
+          "BOARD": "XXX"
+      }
+  },
+  {
+      "name": "XXX_R",
+      "displayName": "XXX Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release",
+          "BOARD": "XXX"
+      }
+  },
+```
+Либо в файле `.\Projects\CMakeLists.txt`:
+```
+set(BOARD "XXX")
+```
+Либо любым другим удобным способом.
 
 ### Прошивка
 В меню `Terminal->Run Task` доступны задания по прошивке различными инструментами. (TODO: протестировать)
@@ -79,9 +106,9 @@ $ arm-none-eabi-gdb.exe
 4) Для инструментов OpenOCD, также понадобятся фалы конфигурации `mcu.cfg` и `tool.cfg`, положить в `Res`. (см. примеры проектов)
 5) Скопировать содержимое `/McuPort/PortTemplate` в `/McuPort/<core>/<manufacturer>/<mcu>/Port`, 
 где `<core>` - архитектура микроконтроллера, `<manufacturer>` - производитель, `<mcu>` - модель
-6) Во всех папках добавить в `CMakeLists.txt` новые директории или создать `CMakeLists.txt` по аналогии.
+6) Во всех папках добавить или создать `CMakeLists.txt` по аналогии.
 7) Описать все необходимые портируемые интерфейсы. 
-8) Для ARM унифицированны порты для ядра. Точка входа для располагается в файле `port_core_x.c` в зависимости от выбранного микроконтроллера в проекте. Портирование следует начинать с файла `port_core.c` в котором описываются обработчики для прерываний и специфическая для данного микроконтроллера часть инициализации ядра.
+8) Для ARM унифицированны порты для ядра. Точка входа `reset_hundler` располагается в файле `McuPort/ARM/port_core_mx.c` в зависимости от выбранного ядра(m0,m3,m4 и т.п.) микроконтроллера в прокте. Портирование следует начинать с файла `/McuPort/<core>/<manufacturer>/<mcu>/Port/port_core.c` в котором описываются обработчики для прерываний и специфическая для данного микроконтроллера часть инициализации ядра.
 9) Создать тестовый проект для данного микроконтроллера.
 
 
@@ -97,6 +124,8 @@ PROJECT - имя проекта
 TOOLCHAIN_DIR
 TOOLCHAIN_PREFIX
 ```
+Данные свойства могут подменяться через условный оператор над свойством `BOARD`, если один проект расчитано запускать на разных платформах.
+
 3) Создать файл графа инициализации в директории `mig_<mcu>.c`. MIG файлы должны быть уникальны для платформы-проекта. Данный файл описывает модули используемые в проекте, их зависимости и конфигурации. Это полное описание системы от ядра контроллера и вектора его прерываний до высокоуровневых драйверов внешних связных устройств.
 *можно адаптировать существующий из другого проекта.
 4) Создать `./Inc/mig.h`, тут экспортируются все дескрипторы модулей задействованных в роекте
@@ -123,7 +152,7 @@ void main();
 
 #endif /* APP_H_ */
 ```
-6) Создать файл точки входа проекта `./app.c`
+6) Создать файл точку входа проекта `./app.c`
 ```
 #include "app.h"
 
@@ -139,31 +168,4 @@ void main() {
 	// логика приложения
   }
 }
-```
-7) Добавить пресет на сборку `CMakePresets.json`
-```
-   "configurePresets": [
-	    ...
-        {
-            "name": "Debug USPD",
-            "displayName": "Debug USPD",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "USPD"  <---- имя платформы/ревизии проекта
-            }
-        },
-        {
-            "name": "Release USPD",
-            "displayName": "Release USPD",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "BOARD": "USPD"
-            }
-        },
-		...
-	]
 ```

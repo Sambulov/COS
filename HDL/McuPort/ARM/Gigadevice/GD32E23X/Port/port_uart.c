@@ -92,7 +92,8 @@ hdl_module_state_t hdl_uart(void *desc, uint8_t enable) {
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)uart->module.dependencies[3];
     uart->private.uart_isr.context = desc;
     uart->private.uart_isr.handler = &event_uart_isr;
-    hdl_interrupt_request(ic, uart->config->interrupt, &uart->private.uart_isr);
+    hdl_event_subscribe(&uart->config->interrupt->event, &uart->private.uart_isr);
+    hdl_interrupt_request(ic, uart->config->interrupt);
     usart_interrupt_enable(periph, USART_INT_PERR);
     usart_interrupt_enable(periph, USART_INT_RBNE);
     usart_interrupt_enable(periph, USART_INT_ERR);

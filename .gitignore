@@ -1,9 +1,12 @@
-.DS_Store
 *.hex
 *.bin
 *.o
 *.elf
 build/
+!Projects/
+Projects/*
+!Projects/DEMO_*
+!Projects/CMakeLists.txt
 .cortex-debug.*
 .vscode/settings.json
 CMakeCache.txt

@@ -12,8 +12,9 @@ typedef struct{
   hdl_module_t module;
   const hdl_adc_config_t *config;
   struct {
+    hdl_delegate_t start_conversion;
     hdl_delegate_t adc_end_of_conversion;
-    uint32_t time_stamp;
+    uint32_t age;
     gd_adc_state_machine_e state_machine;      /* gd_adc_state_machine_e */
     uint8_t channels_count;    
   } private;
@@ -22,9 +23,14 @@ typedef struct{
 HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_private_t, hdl_adc_t, HDL_ADC_PRV_SIZE, hdl_adc.h);
 
 static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
-    hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
-    hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
-    hdl_adc->private.time_stamp = hdl_time_counter_get(timer);
+  hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
+  hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
+  hdl_adc->private.age++;
+}
+
+static void event_adc_start_conversion(uint32_t event, void *sender, void *context) {
+  hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
+  adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
 }
 
 hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
@@ -41,7 +47,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
       case GD_ADC_STATE_MACHINE_INITIAL: {
         rcu_periph_clock_enable(RCU_ADC);
         adc_special_function_config(ADC_SCAN_MODE, ENABLE);
-        adc_special_function_config(ADC_CONTINUOUS_MODE, ENABLE);
+        adc_special_function_config(ADC_CONTINUOUS_MODE, DISABLE);
         hdl_adc_source_t **adc_source = hdl_adc->config->sources;
         hdl_adc->private.channels_count = 0;
         if(adc_source != NULL) {
@@ -60,26 +66,31 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)hdl_adc->module.dependencies[3];
         hdl_adc->private.adc_end_of_conversion.context = desc;
         hdl_adc->private.adc_end_of_conversion.handler = &event_adc_end_of_conversion;
-        hdl_interrupt_request(ic, hdl_adc->config->adc_interrupt, &hdl_adc->private.adc_end_of_conversion);
+        hdl_event_subscribe(&hdl_adc->config->adc_interrupt->event, &hdl_adc->private.adc_end_of_conversion);
+        hdl_interrupt_request(ic, hdl_adc->config->adc_interrupt);
         //         for(uint16_t i = 0; i < adc_short_delay_after_start; i++)
         //     __NOP();
         /* There must be 14 CK_ADC tact */
         ADC_CTL1 |= (uint32_t)ADC_CTL1_RSTCLB;
         while ((ADC_CTL1 & ADC_CTL1_RSTCLB));
         ADC_CTL1 |= ADC_CTL1_CLB;
-        hdl_adc->private.time_stamp = hdl_time_counter_get(timer);
+        hdl_adc->private.age = hdl_time_counter_get(timer);
         hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_CALIBRATION;
       }
       case GD_ADC_STATE_MACHINE_CALIBRATION:
         if (ADC_CTL1 & ADC_CTL1_CLB) {
-          if (TIME_ELAPSED(hdl_adc->private.time_stamp, hdl_adc->config->init_timeout, hdl_time_counter_get(timer)))
+          if (TIME_ELAPSED(hdl_adc->private.age, hdl_adc->config->init_timeout, hdl_time_counter_get(timer)))
             return HDL_MODULE_FAULT;
           return HDL_MODULE_LOADING;
         }
       case GD_ADC_STATE_MACHINE_RUN:
         adc_dma_mode_enable();
         hdl_dma_run(dma, (uint32_t)&ADC_RDATA, (uint32_t)hdl_adc->config->values, (uint32_t)hdl_adc->private.channels_count);
-        adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
+        hdl_adc->private.age = 0;
+        hdl_adc->private.start_conversion.context = desc;
+        hdl_adc->private.start_conversion.handler = &event_adc_start_conversion;
+        hdl_event_subscribe(&timer->config->reload_interrupt->event, &hdl_adc->private.start_conversion);
+        //adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
         hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_WORKING;        
       case GD_ADC_STATE_MACHINE_WORKING:
         return HDL_MODULE_ACTIVE;
@@ -106,7 +117,7 @@ uint32_t hdl_adc_get(hdl_adc_t *hdl_adc, uint32_t src) {
 
 uint32_t hdl_adc_age(hdl_adc_t *hdl_adc) {
   if((hdl_adc != NULL) && (hdl_state(&hdl_adc->module) == HDL_MODULE_ACTIVE)) {
-    return ((hdl_adc_private_t *)hdl_adc)->private.time_stamp;
+    return ((hdl_adc_private_t *)hdl_adc)->private.age;
   }
   return 0;
 }

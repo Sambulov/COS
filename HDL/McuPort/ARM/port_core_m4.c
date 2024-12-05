@@ -51,23 +51,17 @@ __attribute__((naked, noreturn)) void reset_handler() {
   for (;;) ;
 }
 
-typedef struct {
-  hdl_nvic_irq_n_t irq_type;
-  uint8_t priority_group;
-  uint8_t priority;
-  struct {
-    hdl_event_t event;
-  } private;
-} hdl_nvic_interrupt_private_t;
-
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
   hdl_interrupt_controller_config_t *ic = (hdl_interrupt_controller_config_t *)((uint32_t *)SCB->VTOR)[0];
   hdl_interrupt_t **isrs = ic->interrupts;
+  if(irq == -14) {
+    NVIC_DisableIRQ(irq);
+  }
   if(isrs != NULL) {
     while (*isrs != NULL) {
       if((*isrs)->irq_type == irq) {
-        hdl_nvic_interrupt_private_t *isr = (hdl_nvic_interrupt_private_t *)*isrs;
-        if(!hdl_event_raise(&isr->private.event, ic, event))
+        hdl_interrupt_t *isr = *isrs;
+        if(!hdl_event_raise(&isr->event, ic, event))
           NVIC_DisableIRQ(irq);
         return;
       }
@@ -76,7 +70,8 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
   }
   //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
 	asm("bkpt 255");
-  for(;;) ;
+  while(irq < 0) ;
+  NVIC_DisableIRQ(irq);
 }
 
 void irq_n_handler() {
@@ -112,21 +107,19 @@ hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrupt_t *isr, hdl_delegate_t *delegate) {
-  if((hdl_state(&ic->module) != HDL_MODULE_ACTIVE) || (ic->config->interrupts == NULL) || (delegate == NULL) || (isr == NULL))
+uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrupt_t *isr) {
+  if((hdl_state(&ic->module) != HDL_MODULE_ACTIVE) || (ic->config->interrupts == NULL) || (isr == NULL))
     return HDL_FALSE;
-  hdl_nvic_interrupt_private_t *_isr = (hdl_nvic_interrupt_private_t *)isr;
-  hdl_event_subscribe(&_isr->private.event, delegate);
-  uint8_t prio = ((_isr->priority_group << (8U - ic->config->prio_bits)) | 
-                  (_isr->priority & (0xFF >> ic->config->prio_bits)) & 
+  uint8_t prio = ((isr->priority_group << (8U - ic->config->prio_bits)) | 
+                  (isr->priority & (0xFF >> ic->config->prio_bits)) & 
                   0xFFUL);
-  volatile uint8_t *ipr = (_isr->irq_type < 0)? &(SCB->SHP[(_isr->irq_type & 0xFUL) - 4UL]):
-                                                    &(NVIC->IP[_isr->irq_type]);
+  volatile uint8_t *ipr = (isr->irq_type < 0)? &(SCB->SHP[(isr->irq_type & 0xFUL) - 4UL]):
+                                                    &(NVIC->IP[isr->irq_type]);
   /* set priority for interrupt */
   *ipr = prio;
   /* interrupt enable */
-  if(_isr->irq_type < 0) {
-    switch (_isr->irq_type) {
+  if(isr->irq_type < 0) {
+    switch (isr->irq_type) {
       case HDL_NVIC_EXCEPTION_SysTick:
         SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;                  /* Enable SysTick IRQ */
         break;
@@ -147,7 +140,7 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrup
     }
   }
   else {
-    NVIC_EnableIRQ(_isr->irq_type);
+    NVIC_EnableIRQ(isr->irq_type);
   }
   return HDL_TRUE;
 }

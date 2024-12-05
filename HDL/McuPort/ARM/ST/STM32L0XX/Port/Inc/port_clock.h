@@ -1,23 +1,21 @@
 #ifndef PORT_CLOCK_H_
 #define PORT_CLOCK_H_
 
-// hdl_module_state_t hdl_clock_hxtal(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_lxtal(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_irc16m(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_irc40k(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_irc48m(void *desc, uint8_t enable);
+#define HDL_CLOCK_PRV_SIZE 8
 
-// hdl_module_state_t hdl_clock_selector_pll(void *desc, uint8_t enable);
+typedef enum {
+  HDL_CLOCK_TYPE_HXTAL,          /* property: freq (can be xx ~ yyMHz)*/
+} hdl_clock_type_t;
 
-// hdl_module_state_t hdl_clock_selector_pll_vco(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_pll_n(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_pll_p(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_pll_q(void *desc, uint8_t enable);
+typedef union {
+  uint32_t freq;
+  uint32_t mul;
+  uint32_t div;
+} hdl_clock_property_t;
 
-// hdl_module_state_t hdl_clock_system(void *desc, uint8_t enable);
-
-// hdl_module_state_t hdl_clock_ahb(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_apb1(void *desc, uint8_t enable);
-// hdl_module_state_t hdl_clock_apb2(void *desc, uint8_t enable);
+typedef struct {
+  hdl_clock_type_t type;
+  hdl_clock_property_t property;
+} hdl_clock_config_t;
 
 #endif

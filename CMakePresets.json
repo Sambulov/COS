@@ -7,93 +7,12 @@
     },
     "configurePresets": [
         {
-            "name": "ATB_RK3568J_SMC_R3_D",
-            "displayName": "ATB_RK3568J_SMC_R3 Debug",
+            "name": "Debug",
+            "displayName": "Debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_RK3568J_SMC_R3"
-            }
-        },
-        {
-            "name": "ATB_RK3568J_SMC_R1_D",
-            "displayName": "ATB_RK3568J_SMC_R1 Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_RK3568J_SMC_R1"
-            }
-        },
-        {
-            "name": "ATB_RK3568J_SMC_R0_D",
-            "displayName": "ATB_RK3568J_SMC_R0 Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_RK3568J_SMC_R0"
-            }
-        },
-        {
-            "name": "ATB_USPD_MPC_D",
-            "displayName": "ATB_USPD_MPC Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_USPD_MPC"
-            }
-        },
-        {
-            "name": "ATB_USPD_MPC2_D",
-            "displayName": "ATB_USPD_MPC2 Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_USPD_MPC2"
-            }
-        },
-        {
-            "name": "ATB_USPD20K_D",
-            "displayName": "ATB_USPD20K Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_USPD20K"
-            }
-        },
-        {
-            "name": "ATB3500_D",
-            "displayName": "ATB3500 Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_3500"
-            }
-        },
-        {
-            "name": "ATB_MUVV_D",
-            "displayName": "ATB_MUVV Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "ATB_MUVV"
-            }
-        },
-        {
-            "name": "GD32E23X_DEMO_D",
-            "displayName": "GD32E23X_DEMO Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "BOARD": "GD32E23X_DEMO"
+                "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {

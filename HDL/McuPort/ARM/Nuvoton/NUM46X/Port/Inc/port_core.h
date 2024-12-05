@@ -4,8 +4,6 @@
 
 #define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
 
-#define HDL_INTERRUPT_PRV_SIZE       4
-
 typedef enum
 {
   /* Cortex-M4 processor exceptions numbers */
@@ -153,7 +151,7 @@ typedef struct {
   hdl_nvic_irq_n_t irq_type;
   uint8_t priority_group;
   uint8_t priority;
-  PRIVATE(hw, HDL_INTERRUPT_PRV_SIZE);
+  hdl_event_t event;
 } hdl_interrupt_t;
 
 typedef struct {
@@ -165,6 +163,19 @@ typedef struct {
 } hdl_interrupt_controller_config_t;
 
 typedef struct{
+  /* SYS_CLK >= 180MHz : SYS_PLCTL_PLSEL_PL0
+              < 180MHz : SYS_PLCTL_PLSEL_PL1
+  */
+  uint32_t power_level;
+  /* SYS_CLK >= 175MHz : 8
+                150MHz : 7
+                125MHz : 6
+                100MHz : 5
+                 75MHz : 4
+                 50MHz : 3
+                 25MHz : 2
+               < 25MHz : 1
+  */
   uint32_t flash_latency;
 } hdl_core_config_t;
 
@@ -173,7 +184,7 @@ extern const void *_sidata, *_sdata, *_edata;
 extern const void *_sbss, *_ebss;
 extern const void *_eflash;
 
-#define hdl_interrupts(...) ((hdl_nvic_interrupt_t *[]){__VA_ARGS__, NULL})
+#define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
 

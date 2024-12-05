@@ -3,7 +3,7 @@
 
 typedef struct {
   uint32_t rcu; // RCC_IOPENR_GPIOAEN ...
-} hdl_gpio_port_hw_config_t;
+} hdl_gpio_port_config_t;
 
 typedef struct {
   const uint32_t af;        // see stm32l0xx_hal_gpio_ex.h, line 538

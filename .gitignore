@@ -5,6 +5,7 @@
 *.elf
 build/
 Projects/*
+!Projects/DEMO_*
 .cortex-debug.*
 .vscode/settings.json
 CMakeCache.txt

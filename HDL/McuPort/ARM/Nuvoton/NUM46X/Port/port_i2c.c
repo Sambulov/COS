@@ -1,407 +1,410 @@
 #include "hdl_portable.h"
 #include "CodeLib.h"
 
-// #define WRK_STATE_START    0
-// #define WRK_STATE_ADDR     1
-// #define WRK_STATE_DATA     2
-// #define WRK_STATE_STOP     3
-// #define WRK_STATE_COMPLETE 4
-// #define HDL_I2C_MESSAGE_FAULT_MASK 0x7F00
+#define WRK_START    0
+#define WRK_ADDR     1
+#define WRK_DATA     2
+#define WRK_STOP     3
+#define WRK_COMPLETE 4
 
-// #define I2C_ERROR_CLEAR_MASK (uint32_t)(I2C_STAT0_SMBALT | I2C_STAT0_SMBTO | I2C_STAT0_PECERR | \
-//                                         I2C_STAT0_OUERR | I2C_STAT0_AERR | I2C_STAT0_LOSTARB |  \
-//                                         I2C_STAT0_BERR)   
+#define I2C_ERROR_CLEAR_MASK (uint32_t)(I2C_STAT0_SMBALT | I2C_STAT0_SMBTO | I2C_STAT0_PECERR | \
+                                        I2C_STAT0_OUERR | I2C_STAT0_AERR | I2C_STAT0_LOSTARB |  \
+                                        I2C_STAT0_BERR)   
 
-// typedef struct {
-//   hdl_module_t module;
-//   hdl_i2c_config_t *config;
-//   struct {
-//     hdl_delegate_t ev_isr;
-//     coroutine_t i2c_worker;
-//     hdl_i2c_message_t *message;
-//     uint32_t wc_timeout;
-//     uint32_t wc_ts;
-//     __IO uint32_t *wc_reg;
-//     uint32_t wc_flags;
-//     uint8_t wc_flags_is_set;
-//     int8_t wc_state;
-//     uint8_t wrk_state;
-//     uint8_t wrk_state_substate;
-//     hdl_transceiver_t *transceiver;
-//     uint8_t is_master;
-//   } private;
-// } hdl_i2c_private_t;
+typedef struct {
+  hdl_module_t module;
+  hdl_i2c_config_t *config;
+  struct {
+    hdl_delegate_t ev_isr;
+    coroutine_t i2c_worker;
+    hdl_i2c_message_t *message;
+    uint32_t wc_timer;
+    uint32_t wc_ts;
+    uint32_t wc_status;
+    uint8_t wrk_handler;
+    uint8_t wrk_state;
+    hdl_transceiver_t *transceiver;
+  } private;
+} hdl_i2c_private_t;
 
-// HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_private_t, hdl_i2c_t, HDL_I2C_PRV_SIZE, hdl_i2c.h);
+typedef uint8_t (*i2c_master_handler_t)(hdl_i2c_private_t *i2c);
 
-// static void _i2c_clear_error(I2C_T *i2c_periph) {
-//   CLK->APBCLK0 |= CLK_APBCLK0_I2C0CKEN_Pos
-//   i2c_periph->
-//   //i2c_periph->STAT0 &= ~(I2C_ERROR_CLEAR_MASK);
-// }
+HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_private_t, hdl_i2c_t, HDL_I2C_PRV_SIZE, hdl_i2c.h);
 
-// static void event_i2c_isr(uint32_t event, void *sender, void *context) {
-//   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)context;
-//   I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
-//   uint32_t tmp = i2c_periph->STAT0;
-//   uint32_t tmp1 = 0;
-//   uint8_t data = 0;
-//   /* START condition */
-//   if(tmp & I2C_STAT0_SBSEND) { 
-//     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
-//   }
-//   if(tmp & I2C_STAT0_ADDSEND) {
-//     /* Clear bit ADDSEND*/
-//     tmp1 = i2c_periph->STAT1;
-//     if((i2c->private.transceiver == NULL) || (i2c->private.transceiver->rx_data == NULL) || 
-//       ((i2c->private.transceiver->rx_available != NULL) && (i2c->private.transceiver->rx_available(i2c->private.transceiver->proto_context) == 0))) {
-//       i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
-//     }
-//   }
-//   /* Read from slave */
-//   if(tmp & I2C_STAT0_TBE) {
-//     if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->tx_empty != NULL)) {
-//         i2c->private.transceiver->tx_empty(i2c->private.transceiver->proto_context, &data, 1);
-//         i2c_periph->DATA = data;
-//     }
-//   }
-//   /* Write to slave */
-//   if(tmp & I2C_STAT0_RBNE) {
-//     data = i2c_periph->DATA;
-//     if((i2c->private.transceiver == NULL) || (i2c->private.transceiver->rx_data == NULL) || 
-//       ((i2c->private.transceiver->rx_available != NULL) && (i2c->private.transceiver->rx_available(i2c->private.transceiver->proto_context) == 0))) {
-//       i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
-//     }
-//     else {
-//       i2c->private.transceiver->rx_data(i2c->private.transceiver->proto_context, &data, 1);
-//     }
-//   }
-//   /* STOP condition */
-//   if(tmp & I2C_STAT0_STPDET) { 
-//     if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->end_of_transmission != NULL))
-//       i2c->private.transceiver->end_of_transmission(i2c->private.transceiver->proto_context);
-//     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
-//   }
+typedef enum {
+  I2C_MM_START                       = 0x08,
+  I2C_MM_REPEAT_START                = 0x10,
+  I2C_MT_ADDRESS_ACK                 = 0x18,
+  I2C_MT_ADDRESS_NACK                = 0x20,
+  I2C_MT_DATA_ACK                    = 0x28,
+  I2C_MT_DATA_NACK                   = 0x30,
+  I2C_MM_ARBITRATION_LOST            = 0x38,
+  I2C_MR_ADDRESS_ACK                 = 0x40,
+  I2C_MR_ADDRESS_NACK                = 0x48,
+  I2C_MR_DATA_ACK                    = 0x50,
+  I2C_MR_DATA_NACK                   = 0x58,
 
-//   //err
+  I2C_MM_BUS_ERROR                   = 0x00,
 
-//   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)context;
-//   I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
-//   if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
-//     if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->end_of_transmission != NULL))
-//       i2c->private.transceiver->end_of_transmission(i2c->private.transceiver->proto_context);
-//     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
-//   }
-//   _i2c_clear_error(i2c_periph);
+  I2C_ST_STOP_REPEAT_START           = 0xA0,
+  I2C_ST_ADDRESS_ACK                 = 0xA8,
+  I2C_ST_DATA_ACK                    = 0xB8,
+  I2C_ST_DATA_NACK                   = 0xC0,
+  I2C_ST_LAST_DATA_ACK               = 0xC8,
+  I2C_SR_ADDRESS_ACK                 = 0x60,
+  I2C_SR_ARBITRATION_LOST            = 0x68,
+  I2C_SR_DATA_ACK                    = 0x80,
+  I2C_SR_DATA_NACK                   = 0x88,
+  I2C_GC_ADDRESS_ACK                 = 0x70,
+  I2C_GC_ARBITRATION_LOST            = 0x78,
+  I2C_GC_DATA_ACK                    = 0x90,
+  I2C_GC_DATA_NACK                   = 0x98,
+  I2C_SM_ADDRESS_TX_ARBITRATION_LOST = 0xB0,
+  I2C_SR_BMDEN_ACKMEN                = 0xF0,
+  I2C_BUS_RELEASED                   = 0xF8
+} i2c_status_t;
 
-// }
+#define HANDLER_WORK      0
+#define HANDLER_COMPLETE  1
+#define HANDLER_FAULT     2
 
-// #define WC_STATE_AWAITING    0
-// #define WC_STATE_TIMEOUT    -1
-// #define WC_STATE_HIT         1
+static uint8_t _i2c_msg_start_handler(hdl_i2c_private_t *i2c) {
+  I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
+  if(i2c->private.message->options & HDL_I2C_MESSAGE_START) {
+    if((i2c_periph->STATUS0 != I2C_MM_START) && 
+       (i2c_periph->STATUS0 != I2C_MM_REPEAT_START)) {
+      hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+      uint32_t now = hdl_time_counter_get(timer);
+      switch (i2c->private.wrk_state) {
+        case 0:
+          i2c->private.wc_timer = now;
+          i2c->private.wrk_state = 1;
+        case 1:
+          if(i2c_periph->CTL0 & I2C_CTL0_SI_Pos) {
+            i2c_periph->CTL0 &= ~(I2C_CTL0_INTEN_Msk | I2C_CTL0_STA_Pos | I2C_CTL0_STO_Pos | I2C_CTL0_SI_Pos | I2C_CTL0_AA_Pos);
+            i2c_periph->CTL0 |= I2C_CTL0_STA_Pos | I2C_CTL0_SI_Pos;
+            i2c->private.wrk_state = 2;
+          }
+        default:
+          if(TIME_ELAPSED(i2c->private.wc_timer, 1500, now)) {
+            i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
+            return HANDLER_FAULT;
+          }
+          break;
+      }
+      return HANDLER_WORK;
+    }
+    i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_START_ON_BUS;
+  }
+  return HANDLER_COMPLETE;
+}
 
-// static void _i2c_reg_set_wait_condition(hdl_i2c_private_t *i2c, __IO uint32_t *reg, uint32_t flags, uint8_t is_set, uint32_t timeout) {
-//   hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
-//   i2c->private.wc_ts = hdl_time_counter_get(timer);
-//   i2c->private.wc_flags = flags;
-//   i2c->private.wc_flags_is_set = is_set;
-//   i2c->private.wc_timeout = timeout;
-//   i2c->private.wc_reg = reg;
-//   i2c->private.wc_state = WC_STATE_AWAITING;
-// }
+static uint8_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
+  I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
+  if((i2c->private.message->options & HDL_I2C_MESSAGE_STOP) || 
+     (i2c->private.message->status & HDL_I2C_MESSAGE_FAULT_MASK)) {
+    if(i2c_periph->STATUS0 != I2C_BUS_RELEASED) {
+      hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+      uint32_t now = hdl_time_counter_get(timer);
+      switch (i2c->private.wrk_state) {
+        case 0:
+          i2c->private.wc_timer = now;
+          i2c->private.wrk_state = 1;
+        case 1:
+          if(i2c_periph->CTL0 & I2C_CTL0_SI_Pos) {
+            i2c_periph->CTL0 &= ~(I2C_CTL0_INTEN_Msk | I2C_CTL0_STA_Pos | I2C_CTL0_STO_Pos | I2C_CTL0_SI_Pos | I2C_CTL0_AA_Pos);
+            i2c_periph->CTL0 |= I2C_CTL0_STO_Pos | I2C_CTL0_SI_Pos;
+            i2c->private.wrk_state = 2;
+          }
+        default:
+          if(TIME_ELAPSED(i2c->private.wc_timer, 1500, now)) {
+            i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
+            return HANDLER_FAULT;
+          }
+          break;
+      }
+      return HANDLER_WORK;
+    }
+    i2c_periph->CTL0 |= I2C_CTL0_INTEN_Msk | I2C_CTL0_AA_Pos;
+    i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_STOP_ON_BUS;
+  }
+  return HANDLER_COMPLETE;
+}
 
-// static void _i2c_reg_wait_condition(hdl_i2c_private_t *i2c) {
-//   if(i2c->private.wc_state == WC_STATE_AWAITING) {
-//     hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
-//     uint32_t now = hdl_time_counter_get(timer);
-//     if(i2c->private.wc_flags_is_set) {
-//       if((*i2c->private.wc_reg & i2c->private.wc_flags) == i2c->private.wc_flags) i2c->private.wc_state = WC_STATE_HIT;
-//     }
-//     else {
-//       uint32_t flags = ~i2c->private.wc_flags;
-//       if((*i2c->private.wc_reg | flags) == flags) i2c->private.wc_state = WC_STATE_HIT;
-//     }
-//     if(TIME_ELAPSED(i2c->private.wc_ts, i2c->private.wc_timeout, now)) i2c->private.wc_state = WC_STATE_TIMEOUT;
-//   }
-// }
+static uint8_t _i2c_msg_addr_handler(hdl_i2c_private_t *i2c) {
+  I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
+  if(i2c->private.message->options & HDL_I2C_MESSAGE_ADDR) {
+    hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+    uint32_t now = hdl_time_counter_get(timer);
+    switch (i2c->private.wrk_state) {
+      case 0:
+        i2c->private.wc_timer = now;
+        i2c->private.wrk_state = 1;
+      case 1:
+        if(i2c_periph->CTL0 & I2C_CTL0_SI_Pos) {
+          if((i2c_periph->STATUS0 != I2C_MM_START) && (i2c_periph->STATUS0 != I2C_MM_REPEAT_START)) {            
+            i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
+            return HANDLER_FAULT;
+          }
+          i2c_periph->CTL0 &= ~(I2C_CTL0_INTEN_Msk | I2C_CTL0_STA_Pos | I2C_CTL0_STO_Pos | I2C_CTL0_SI_Pos | I2C_CTL0_AA_Pos);
+          i2c_periph->DAT = (i2c->private.message->address << 1) | 
+            ((i2c->private.message->options & HDL_I2C_MESSAGE_MRSW)? 0x01: 0x00);
+          i2c_periph->CTL0 |= I2C_CTL0_SI_Pos;
+          i2c->private.wrk_state = 2;
+        }
+        break;
+      case 2:
+      default:
+        if(i2c_periph->CTL0 & I2C_CTL0_SI_Pos) {
+          if(((i2c->private.message->options & HDL_I2C_MESSAGE_MRSW) && ((i2c_periph->STATUS0 == I2C_MR_ADDRESS_ACK) || (i2c_periph->STATUS0 == I2C_MR_ADDRESS_NACK))) ||
+            (!(i2c->private.message->options & HDL_I2C_MESSAGE_MRSW) && ((i2c_periph->STATUS0 == I2C_MT_ADDRESS_ACK) || (i2c_periph->STATUS0 == I2C_MT_ADDRESS_NACK)))) {
+            i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_ADDR_SENT;
+            if(i2c_periph->STATUS0 == I2C_MR_ADDRESS_NACK) i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
+            return HANDLER_COMPLETE;
+          }
+          i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_ARBITRATION_LOST;
+          return HANDLER_FAULT;
+        }
+        break;
+    }
+    if(TIME_ELAPSED(i2c->private.wc_timer, 1500, now)) {
+      i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
+      return HANDLER_FAULT;
+    }
+    return HANDLER_WORK;
+  }
+  return HANDLER_COMPLETE;
+}
 
-// static void _i2c_set_bus_to_default(I2C_T *i2c_periph) {
-//   uint32_t tmp = 0;
-//   i2c_periph->CTL0 &= ~I2C_CTL0_ACKEN;
-//   tmp = i2c_periph->STAT0;
-//   tmp = i2c_periph->STAT1; 
-//   while (i2c_periph->STAT0 & I2C_STAT0_RBNE)
-//     tmp = i2c_periph->DATA;
-// }
+static uint8_t _i2c_msg_data_handler(hdl_i2c_private_t *i2c) {
+  I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
+  if((i2c->private.message->length > 0) && (i2c->private.message->buffer != NULL)) {
+    hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+    uint32_t now = hdl_time_counter_get(timer);
+    switch (i2c->private.wrk_state) {
+      case 0:
+        i2c->private.wc_timer = now;
+        i2c->private.wrk_state = 1;
+      case 1: // tx/rx prepare
+        if(i2c_periph->CTL0 & I2C_CTL0_SI_Pos) {
+          i2c_periph->CTL0 &= ~(I2C_CTL0_INTEN_Msk | I2C_CTL0_STA_Pos | I2C_CTL0_STO_Pos | I2C_CTL0_SI_Pos | I2C_CTL0_AA_Pos);
+          switch (i2c_periph->STATUS0) {
+            case I2C_MT_DATA_ACK:     // 0x28,
+              i2c->private.message->transferred++;
+            case I2C_MT_ADDRESS_ACK:  // 0x18
+              i2c_periph->DAT = i2c->private.message->buffer[i2c->private.message->transferred];
+              break;
+            case I2C_MR_DATA_ACK:     // 0x50,
+              i2c->private.message->buffer[i2c->private.message->transferred] = i2c_periph->DAT;
+              i2c->private.message->transferred++;
+            case I2C_MR_ADDRESS_ACK:  // 0x40
+              if((i2c->private.message->transferred < (i2c->private.message->length - 1)) || !(i2c->private.message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
+                i2c_periph->CTL0 |= I2C_CTL0_AA_Pos;
+              }
+              break;
+            case I2C_MR_DATA_NACK:    // 0x58,
+              i2c->private.message->buffer[i2c->private.message->transferred] = i2c_periph->DAT;
+              i2c->private.message->transferred++;
+            case I2C_MT_ADDRESS_NACK: // 0x20
+            case I2C_MT_DATA_NACK:    // 0x30,
+            case I2C_MR_ADDRESS_NACK: // 0x48
+              i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_DATA;
+              return HANDLER_COMPLETE;
+            default:
+              i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
+              return HANDLER_FAULT;
+          }
+          i2c_periph->CTL0 |= I2C_CTL0_SI_Pos;
+          i2c->private.wc_timer = now;
+          i2c->private.wrk_state = 1;
+        }
+        break;
+      default:
+        i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
+        return HANDLER_FAULT;
+    }
+    if(TIME_ELAPSED(i2c->private.wc_timer, 1500, now)) {
+      i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
+      return HANDLER_FAULT;
+    }
+    return HANDLER_WORK;
+  }
+  return HANDLER_COMPLETE;
+}
 
-// static uint8_t _i2c_msg_start_handler(hdl_i2c_private_t *i2c) {
-//   I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
-//   if(i2c->private.wrk_state_substate == 1) {
-//     if(i2c->private.wc_state == WC_STATE_TIMEOUT) {
-//       i2c_periph->CTL0 &= ~I2C_CTL0_START;
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
-//     }
-//     else
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_START_ON_BUS;
-//     return HDL_TRUE;
-//   }
-//   if(i2c->private.wrk_state_substate == 0) {
-//     i2c_periph->CTL1 &= ~(I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
-//     i2c_ack_config(((uint32_t)i2c->module.reg), I2C_ACK_DISABLE);
-//     i2c_periph->CTL0 &= ~(I2C_CTL0_SS | I2C_CTL0_STOP);
-//     //_i2c_set_bus_to_default(i2c_periph);
-//     /* send a start condition to I2C bus */
-//     i2c_periph->CTL0 |= I2C_CTL0_START;
-//     /* wait until SBSEND bit is set */
-//     _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_SBSEND, 1, 10);
-//     i2c->private.wrk_state_substate = 1;
-//   }
-//   return HDL_FALSE;
-// }
+i2c_master_handler_t handlers[] = {&_i2c_msg_start_handler, &_i2c_msg_addr_handler, &_i2c_msg_data_handler, &_i2c_msg_stop_handler};
 
-// static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_private_t *i2c) {
-//   hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
-//   I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
-//   if(i2c->private.wrk_state_substate == 1) {
-//     if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
-//     }
-//     i2c->private.message->status |= (i2c->private.wc_state == WC_STATE_TIMEOUT)? HDL_I2C_MESSAGE_FAULT_BUS_ERROR : HDL_I2C_MESSAGE_STATUS_ADDR_SENT;
-//     return HDL_TRUE;
-//   }
-//   if(i2c->private.wrk_state_substate == 0) {
-//     if(!(i2c_periph->STAT0 & I2C_STAT0_SBSEND)) { 
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
-//       return HDL_TRUE;
-//     }
-//     /* send slave address */
-//     i2c_periph->DATA = (i2c->private.message->address << 1) | ((i2c->private.message->options & HDL_I2C_MESSAGE_MRSW)? I2C_RECEIVER: 0);
-//     /* wait until ADDSEND bit is set */
-//     _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_ADDSEND, 1, 10);
-//     i2c->private.wrk_state_substate = 1;
-//   }
-//   return HDL_FALSE;
-// }
+static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  hdl_i2c_private_t *i2c = (hdl_i2c_private_t *) arg;
+  if(i2c->private.message != NULL) {
+    uint8_t hr = handlers[i2c->private.wrk_handler](i2c);
+    if(hr == HANDLER_FAULT) i2c->private.wrk_handler = WRK_STOP;
+    if(hr == HANDLER_COMPLETE) i2c->private.wrk_handler++;
+    if(i2c->private.wrk_handler == WRK_COMPLETE) {
+      i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_COMPLETE;
+      i2c->private.message = NULL;
+    }
+  }
+  return cancel;
+}
 
-// static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_private_t *i2c) {
-//   hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
-//   I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
-//   uint32_t tmp = 0;
-//   if(i2c->private.wrk_state_substate == 1) { /* Awaiting rx byte */
-//     if(i2c->private.wc_state == WC_STATE_TIMEOUT) {
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE | HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
-//       return HDL_TRUE;
-//     }
-//     i2c->private.wrk_state_substate = 2;
-//   }
+static void event_i2c_isr(uint32_t event, void *sender, void *context) {
+  hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)context;
+  I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
+  // uint32_t tmp = i2c_periph->STAT0;
+  // uint32_t tmp1 = 0;
+  // uint8_t data = 0;
+  // /* START condition */
+  // if(tmp & I2C_STAT0_SBSEND) { 
+  //   i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
+  // }
+  // if(tmp & I2C_STAT0_ADDSEND) {
+  //   /* Clear bit ADDSEND*/
+  //   tmp1 = i2c_periph->STAT1;
+  //   if((i2c->private.transceiver == NULL) || (i2c->private.transceiver->rx_data == NULL) || 
+  //     ((i2c->private.transceiver->rx_available != NULL) && (i2c->private.transceiver->rx_available(i2c->private.transceiver->proto_context) == 0))) {
+  //     i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
+  //   }
+  // }
+  // /* Read from slave */
+  // if(tmp & I2C_STAT0_TBE) {
+  //   if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->tx_empty != NULL)) {
+  //       i2c->private.transceiver->tx_empty(i2c->private.transceiver->proto_context, &data, 1);
+  //       i2c_periph->DATA = data;
+  //   }
+  // }
+  // /* Write to slave */
+  // if(tmp & I2C_STAT0_RBNE) {
+  //   data = i2c_periph->DATA;
+  //   if((i2c->private.transceiver == NULL) || (i2c->private.transceiver->rx_data == NULL) || 
+  //     ((i2c->private.transceiver->rx_available != NULL) && (i2c->private.transceiver->rx_available(i2c->private.transceiver->proto_context) == 0))) {
+  //     i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
+  //   }
+  //   else {
+  //     i2c->private.transceiver->rx_data(i2c->private.transceiver->proto_context, &data, 1);
+  //   }
+  // }
+  // /* STOP condition */
+  // if(tmp & I2C_STAT0_STPDET) { 
+  //   if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->end_of_transmission != NULL))
+  //     i2c->private.transceiver->end_of_transmission(i2c->private.transceiver->proto_context);
+  //   i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
+  // }
 
-//   if(i2c->private.wrk_state_substate == 2) {
-//     if(i2c_periph->STAT0 & I2C_STAT0_RBNE) {
-//       if((i2c->private.message->transferred == (i2c->private.message->length - 3)) && !(i2c->private.message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
-//         return HDL_TRUE;
-//       }
-//       i2c->private.message->buffer[i2c->private.message->transferred] = i2c_periph->DATA;
-//       i2c->private.message->transferred++;
-//       if((i2c->private.message->transferred == (i2c->private.message->length - 2)) && (i2c->private.message->options & HDL_I2C_MESSAGE_NACK_LAST)) {
-//         i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
-//         i2c_periph->CTL0 &= ~I2C_CTL0_ACKEN;
-//       }
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_DATA;
-//       if(i2c->private.message->transferred == i2c->private.message->length) {
-//         return HDL_TRUE;
-//       }
-//     }
-//     _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
-//     i2c->private.wrk_state_substate = 1;
-//   }
-//   if(i2c->private.wrk_state_substate == 0) {
-//     i2c->private.message->transferred = 0;
-//     if(i2c_periph->STAT0 & I2C_STAT0_ADDSEND) {
-//       i2c_periph->CTL0 |= I2C_CTL0_ACKEN; 
-//       if((i2c->private.message->options & HDL_I2C_MESSAGE_NACK_LAST) || (i2c->private.message->length > 3)) { 
-//         // Clear I2C_STAT0_ADDSEND
-//         tmp = i2c_periph->STAT0;
-//         tmp = i2c_periph->STAT1;
-//         _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
-//       }
-//       else { 
-//         i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_DATA;
-//         return HDL_TRUE;
-//       }
-//     }
-//     _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
-//     i2c->private.wrk_state_substate = 1;
-//   }
-//   return HDL_FALSE;
-// }
+  // //err
 
-// static uint8_t _i2c_msg_data_transmitter_handler(hdl_i2c_private_t *i2c) {
-//   I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
-//   if(i2c->private.wrk_state_substate == 0) {
-//     i2c->private.message->transferred = 0;
-//     if(!(i2c_periph->STAT1 & I2C_STAT1_TR)) {
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
-//       return HDL_TRUE;
-//     }
-//     i2c->private.wrk_state_substate = 2;
-//   }
+  // hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)context;
+  // I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
+  // if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
+  //   if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->end_of_transmission != NULL))
+  //     i2c->private.transceiver->end_of_transmission(i2c->private.transceiver->proto_context);
+  //   i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
+  // }
+  // _i2c_clear_error(i2c_periph);
 
-//   if(i2c->private.wrk_state_substate == 1) { /* Awaiting TBE */
-//     if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
-//       return HDL_TRUE;
-//     }
-//     if(i2c->private.wc_state == WC_STATE_TIMEOUT) {
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
-//       return HDL_TRUE;
-//     }
-//     i2c->private.wrk_state_substate = 2;
-//   }
+  i2c_periph->CTL0 |= I2C_CTL0_SI_Msk;
+}
 
-//   if(i2c->private.wrk_state_substate == 2) {
-//     while((i2c_periph->STAT0 & I2C_STAT0_TBE) && (i2c->private.message->transferred < i2c->private.message->length)) {
-//       i2c_periph->DATA = i2c->private.message->buffer[i2c->private.message->transferred];
-//       i2c->private.message->transferred++;
-//     }
-//     if(i2c->private.message->transferred == i2c->private.message->length) {
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_DATA;
-//       return HDL_TRUE;
-//     }
-//     else {
-//       _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_TBE, 1, 10);
-//       i2c->private.wrk_state_substate = 1;
-//     }
-//   }
-//   return HDL_FALSE;
-// }
+static uint8_t _i2c_clk_reset(I2C_T *i2c_periph, uint8_t en) {
+  switch ((uint32_t)i2c_periph) {
+    case I2C0_BASE:
+      CLK->APBCLK0 |= CLK_APBCLK0_I2C0CKEN_Msk;
+      SYS->IPRST1 |= SYS_IPRST1_I2C0RST_Msk;
+      if(!en) CLK->APBCLK0 &= ~CLK_APBCLK0_I2C0CKEN_Msk;
+      break;
+    case I2C1_BASE:
+      CLK->APBCLK0 |= CLK_APBCLK0_I2C1CKEN_Msk;
+      SYS->IPRST1 |= SYS_IPRST1_I2C1RST_Msk;
+      if(!en) CLK->APBCLK0 &= ~CLK_APBCLK0_I2C1CKEN_Msk;
+      break;
+    case I2C2_BASE:
+      CLK->APBCLK0 |= CLK_APBCLK0_I2C2CKEN_Msk;
+      SYS->IPRST1 |= SYS_IPRST1_I2C2RST_Msk;
+      if(!en) CLK->APBCLK0 &= ~CLK_APBCLK0_I2C2CKEN_Msk;
+      break;
+    case I2C3_BASE:
+      CLK->APBCLK0 |= CLK_APBCLK0_I2C3CKEN_Msk;
+      SYS->IPRST1 |= SYS_IPRST1_I2C3RST_Msk;
+      if(!en) CLK->APBCLK0 &= ~CLK_APBCLK0_I2C3CKEN_Msk;
+      break;
+    case I2C4_BASE:
+      CLK->APBCLK1 |= CLK_APBCLK1_I2C4CKEN_Msk;
+      SYS->IPRST2 |= SYS_IPRST2_I2C4RST_Msk;
+      if(!en) CLK->APBCLK1 &= ~CLK_APBCLK1_I2C4CKEN_Msk;
+      break;
+    default:
+      return HDL_FALSE;
+  }
+  return HDL_TRUE;
+}
 
+hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
+  hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
+  I2C_T *i2c_periph = (I2C_T *)_i2c->module.reg;
+  if(enable) {
+    if(!_i2c_clk_reset(i2c_periph, HDL_TRUE)) return HDL_MODULE_FAULT;
+    
+    hdl_clock_t *clk = (hdl_clock_t *)_i2c->module.dependencies[0];
+    hdl_clock_freq_t freq;
+    hdl_get_clock(clk, &freq);
+    uint32_t div = (uint32_t)(((freq.num << 3) / (freq.denom * _i2c->config->speed * 4U) + 4U) >> 3 - 1U);
+    i2c_periph->CLKDIV = div;
 
-// static uint8_t _i2c_msg_data_handler(hdl_i2c_private_t *i2c) {
-//   if(i2c->private.message->options & HDL_I2C_MESSAGE_MRSW) {
-//     return _i2c_msg_data_receiver_handler(i2c);
-//   }
-//   else {
-//     return _i2c_msg_data_transmitter_handler(i2c);
-//   }
-// }
+    uint32_t st_limit = ((div * 2 - 6) << I2C_TMCTL_STCTL_Pos) & I2C_TMCTL_STCTL_Msk;
+    uint32_t ht_limit = ((div * 2 - 9) << I2C_TMCTL_HTCTL_Pos) & I2C_TMCTL_HTCTL_Msk;
+    i2c_periph->TMCTL = st_limit | ht_limit;
 
-// static hdl_i2c_message_status_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
-//   hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
-//   I2C_T *i2c_periph = (I2C_T *)i2c->module.reg;
-//   hdl_i2c_message_status_t result = HDL_I2C_MESSAGE_STATUS_INITIAL;
-//   if(i2c->private.wrk_state_substate == 1) {
-//     i2c->private.wrk_state_substate = 2;
-//   }
-//   if(i2c->private.wrk_state_substate == 0) {
-//     if(i2c_periph->STAT1 & I2C_STAT1_TR) {
-//       _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_BTC, 1, 10);
-//       i2c->private.wrk_state_substate = 1;
-//     }
-//     else {
-//       i2c->private.wrk_state_substate = 2;
-//     }
-//   }
-//   if(i2c->private.wrk_state_substate == 2) {
-//     _i2c_set_bus_to_default(i2c_periph);
-//     if(i2c_periph->STAT1 & I2C_STAT1_MASTER) {
-//       i2c_periph->CTL0 |= I2C_CTL0_STOP;
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_STOP_ON_BUS;
-//     }
-//     else 
-//       i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
-//     if(!(i2c->config->stretch_enable))
-//       i2c_periph->CTL0 |= I2C_SCLSTRETCH_DISABLE;
-//     i2c_ack_config(((uint32_t)i2c->module.reg), ((i2c->config->addr0 == 0) ? I2C_ACK_DISABLE : I2C_ACK_ENABLE));
-//     i2c_periph->CTL1 |= (I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
-//     i2c->private.is_master = HDL_FALSE;
-//     return HDL_TRUE;
-//   }
-//   return HDL_FALSE;
-// }
+    if(_i2c->config->addr0 != 0) I2C_SetSlaveAddr(i2c_periph, 0, _i2c->config->addr0, I2C_GCMODE_DISABLE);
+    if(_i2c->config->addr1 != 0) I2C_SetSlaveAddr(i2c_periph, 1, _i2c->config->addr0, I2C_GCMODE_DISABLE);
+    if(_i2c->config->addr2 != 0) I2C_SetSlaveAddr(i2c_periph, 2, _i2c->config->addr0, I2C_GCMODE_DISABLE);
+    if(_i2c->config->addr3 != 0) I2C_SetSlaveAddr(i2c_periph, 3, _i2c->config->addr0, I2C_GCMODE_DISABLE);
 
+    i2c_periph->CTL1 |= I2C_CTL1_SWITCHEN_Msk;
 
+    i2c_periph->CTL1 &= ~I2C_CTL1_ADDR10EN_Msk;
 
-// static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) {
-//   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *) arg;
-//   if(i2c->private.message != NULL) {
-//     if(i2c->private.wc_state == WC_STATE_AWAITING) {
-//       _i2c_reg_wait_condition(i2c);
-//     } else {
-//       if(i2c->private.wrk_state == WRK_STATE_START)
-//         if(!(i2c->private.message->options & HDL_I2C_MESSAGE_START) || _i2c_msg_start_handler(i2c)) { i2c->private.wrk_state++; i2c->private.wrk_state_substate = 0; }
-//       if(i2c->private.message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->private.wrk_state = WRK_STATE_STOP;
-//       else i2c->private.is_master = HDL_TRUE;
+    i2c_periph->CTL0 |= (I2C_CTL0_SRCINTEN_Msk | I2C_CTL0_INTEN_Msk);
 
-//       if(i2c->private.wrk_state == WRK_STATE_ADDR)
-//         if(!(i2c->private.message->options & HDL_I2C_MESSAGE_ADDR) || _i2c_msg_addr_handler(i2c)) { i2c->private.wrk_state++; i2c->private.wrk_state_substate = 0; }
-//       if(i2c->private.message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->private.wrk_state = WRK_STATE_STOP;
+    i2c_periph->CTL1 |= (I2C_CTL1_UDRIEN_Msk | I2C_CTL1_OVRIEN_Msk);
 
-//       if(i2c->private.wrk_state == WRK_STATE_DATA)
-//         if(!((i2c->private.message->length > 0) && (i2c->private.message->buffer != NULL)) || _i2c_msg_data_handler(i2c)) { i2c->private.wrk_state++; i2c->private.wrk_state_substate = 0; }
-//       if(i2c->private.message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c->private.wrk_state = WRK_STATE_STOP;
+    i2c_periph->CTL0 |= I2C_CTL0_I2CEN_Msk;
 
-//       if(i2c->private.wrk_state == WRK_STATE_STOP)
-//         if(!(i2c->private.message->options & HDL_I2C_MESSAGE_STOP) || _i2c_msg_stop_handler(i2c)) { i2c->private.wrk_state++; i2c->private.wrk_state_substate = 0; }
+    i2c_periph->CTL0 |= I2C_CTL0_AA_Msk;
 
-//       if(i2c->private.wrk_state == WRK_STATE_COMPLETE) {
-//         i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_COMPLETE;
-//         i2c->private.message = NULL;
-//       }
-//     }
-//   }
-//   return cancel;
-// }
+    //i2c_periph->BUSCTL |= I2C_BUSCTL_ACKMEN_Msk;
 
-// uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message) {
-//   hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
-//   if((message != NULL) && (i2c != NULL) && (hdl_state(&i2c->module) == HDL_MODULE_ACTIVE) && (_i2c->private.message == NULL)) {
-//     message->status = 0;
-//     message->transferred = 0;
-//     _i2c->private.message = message;
-//     _i2c->private.wrk_state = WRK_STATE_START;
-//     return HDL_TRUE;
-//   }
-//   return HDL_FALSE;
-// }
+    _i2c->private.ev_isr.context = i2c;
+    _i2c->private.ev_isr.handler = &event_i2c_isr;
 
-// hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
-//   hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
-//   I2C_T *i2c_periph = (I2C_T *)_i2c->module.reg;
-//   i2c_deinit((uint32_t)_i2c->module.reg);
-//   if(enable) {
-//     rcu_periph_clock_enable(_i2c->config->rcu);
-//     i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
-//     i2c_mode_addr_config((uint32_t)_i2c->module.reg, I2C_I2CMODE_ENABLE, 
-//       (_i2c->config->addr_10_bits? I2C_ADDFORMAT_10BITS: I2C_ADDFORMAT_7BITS), (_i2c->config->addr0 << 1));
-//     i2c_ackpos_config((uint32_t)_i2c->module.reg, I2C_ACKPOS_CURRENT);
-//     i2c_periph->SADDR1 = ((_i2c->config->addr1 << 1) & 0xFE);
-//     i2c_periph->SADDR1 |= (_i2c->config->dual_address? I2C_SADDR1_DUADEN : 0);
-//     i2c_periph->CTL0 |= 
-//       (_i2c->config->general_call_enable? I2C_GCEN_ENABLE : I2C_GCEN_DISABLE) |
-//       (_i2c->config->stretch_enable? I2C_SCLSTRETCH_ENABLE : I2C_SCLSTRETCH_DISABLE) |
-//       I2C_I2CMODE_ENABLE;   
-//     _i2c->private.ev_isr.context = i2c;
-//     _i2c->private.ev_isr.handler = &event_i2c_ev_isr;
-//     _i2c->private.er_isr.context = i2c;
-//     _i2c->private.er_isr.handler = &event_i2c_er_isr; 
-//     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)_i2c->module.dependencies[3];
-//     hdl_interrupt_request(ic, _i2c->config->err_interrupt, &_i2c->private.er_isr);
-//     hdl_interrupt_request(ic, _i2c->config->ev_interrupt, &_i2c->private.ev_isr);
+    hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)_i2c->module.dependencies[3];
+    hdl_event_subscribe(&_i2c->config->interrupt->event, &_i2c->private.ev_isr);
+    hdl_interrupt_request(ic, _i2c->config->interrupt);
 
-//     i2c_periph->CTL1 |= (I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
-//     i2c_periph->CTL0 |= I2C_CTL0_I2CEN;
-//     i2c_ack_config(((uint32_t)_i2c->module.reg), ((_i2c->config->addr0 == 0) ? I2C_ACK_DISABLE : I2C_ACK_ENABLE));
-//     _i2c->private.wc_state = WC_STATE_HIT;
-//     coroutine_add(&_i2c->private.i2c_worker, &_i2c_client_worker, (void*)_i2c);
-//     return HDL_MODULE_ACTIVE;
-//   }
-//   coroutine_cancel(&_i2c->private.i2c_worker);
-//   rcu_periph_clock_disable(_i2c->config->rcu);
-//   return HDL_MODULE_UNLOADED;
-// }
+    coroutine_add(&_i2c->private.i2c_worker, &_i2c_client_worker, (void*)_i2c);
 
-// void hdl_i2c_set_transceiver(hdl_i2c_t *i2c, hdl_transceiver_t *transceiver) {
-//   if(i2c != NULL) {
-//     ((hdl_i2c_private_t*)i2c)->private.transceiver = transceiver;
-//   }
-// }
+    _i2c->private.message = NULL;
+
+    return HDL_MODULE_ACTIVE;
+  }
+  coroutine_cancel(&_i2c->private.i2c_worker);
+  _i2c_clk_reset(i2c_periph, HDL_FALSE);
+  return HDL_MODULE_UNLOADED;
+}
+
+uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message) {
+  hdl_i2c_private_t *_i2c = (hdl_i2c_private_t *)i2c;
+  if((message != NULL) && (i2c != NULL) && (hdl_state(&i2c->module) == HDL_MODULE_ACTIVE) && (_i2c->private.message == NULL)) {
+    message->status = 0;
+    message->transferred = 0;
+    _i2c->private.message = message;
+    _i2c->private.wrk_handler = WRK_START;
+    return HDL_TRUE;
+  }
+  return HDL_FALSE;
+}
+
+void hdl_i2c_set_transceiver(hdl_i2c_t *i2c, hdl_transceiver_t *transceiver) {
+  if(i2c != NULL) {
+    ((hdl_i2c_private_t*)i2c)->private.transceiver = transceiver;
+  }
+}

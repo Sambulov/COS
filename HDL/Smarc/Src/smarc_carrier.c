@@ -16,7 +16,7 @@ typedef struct {
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_smarc_carrier_private_t, hdl_smarc_carrier_t, HDL_SMARC_CARRIER_PRV_SIZE, hdl_smarc_carrier.h);
 
-#define _call_event_hundler(c, e) { if(c->private.event != NULL) c->private.event(e, (void*)carrier, c->private.event_context); }
+#define _call_event_hundler(c, e) { if(c->private.event != NULL) c->private.event(e, (void*)c, c->private.event_context); }
 
 static hdl_gpio_pin_t *_smarc_get_ctrl_pin(hdl_smarc_carrier_private_t *carrier, uint32_t pin_no) {
   hdl_gpio_pin_t *pin = (hdl_gpio_pin_t *)carrier->module.dependencies[pin_no];

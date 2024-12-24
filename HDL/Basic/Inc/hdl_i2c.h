@@ -32,6 +32,7 @@ typedef enum {
   HDL_I2C_MESSAGE_FAULT_ARBITRATION_LOST   = 0x0100,
   HDL_I2C_MESSAGE_FAULT_BUS_ERROR          = 0x0200,
   HDL_I2C_MESSAGE_FAULT_BAD_STATE          = 0x0400,
+  HDL_I2C_MESSAGE_FAULT_MASK               = 0x0700,
   HDL_I2C_MESSAGE_STATUS_COMPLETE          = 0x8000
 } hdl_i2c_message_status_t;
 

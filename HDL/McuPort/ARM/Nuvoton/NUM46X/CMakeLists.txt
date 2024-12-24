@@ -5,6 +5,8 @@ else()
 endif()
 
 set(SWD_FILE "mcu.svd")
+set(OOCD_TOOL_CNF "tool.cfg")
+set(OOCD_MCU_CNF "mcu.cfg")
 
 file(GLOB MCU_PORT
   "${CMAKE_CURRENT_SOURCE_DIR}/Port/*.c"
@@ -38,5 +40,7 @@ endif()
 
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
+file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${OOCD_TOOL_CNF}" "${CMAKE_BINARY_DIR}/oocd_tool.cfg")
+file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${OOCD_MCU_CNF}" "${CMAKE_BINARY_DIR}/oocd_mcu.cfg")
 
 set_property(GLOBAL PROPERTY MCU_SUPPORTED "OK")

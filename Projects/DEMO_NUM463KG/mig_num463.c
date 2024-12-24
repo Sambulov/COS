@@ -19,8 +19,6 @@
 
 #define HDL_I2C_SLAVE_ADDR                50
 
-
-
 const hdl_core_config_t mod_sys_core_cnf = {
  .power_level = SYS_PLCTL_PLSEL_PL0,
  .flash_latency = 8
@@ -328,7 +326,7 @@ hdl_clock_t mod_clock_apb0 = {
   .module.dependencies = hdl_module_dependencies(&mod_clock_sys.module),
   .module.reg = (void *)CLK,
   .config = ((const hdl_clock_config_t const []) {{
-    .type = HDL_CLOCK_TYPE_APB1, 
+    .type = HDL_CLOCK_TYPE_APB0, 
     .property.div = HDL_APB0_PRESCALER
   }})
 };
@@ -564,26 +562,23 @@ hdl_gpio_pin_t mod_gpio_pin_pe9 = {
   .config = &gpio_pin_in_high_cnf,
 };
 
-const hdl_i2c_config_t i2c0_cnf = {
-  .addr0 = HDL_I2C_SLAVE_ADDR,
-  .addr1 = 0,
-  .addr2 = 0,
-  .addr3 = 0,
-  .addr_10_bits = 0,
-  .interrupt = &mod_irq_i2c0,
-  .general_call_enable = 0,
-  .speed = 400000,
-  .stretch_enable = 1,
-  .rcu = CLK_APBCLK0_I2C0CKEN_Msk
-};
-
 hdl_i2c_t mod_i2c0 = {
   .module.init = &hdl_i2c,
   .module.dependencies = hdl_module_dependencies(&mod_clock_apb0.module,
     &mod_gpio_pin_pc1_i2c_scl.module, &mod_gpio_pin_pc0_i2c_sda.module,
     &mod_nvic.module, &mod_systick_timer_ms.module),
   .module.reg = (void*)I2C0,
-  .config = &i2c0_cnf
+  .config = hdl_module_config(hdl_i2c_config_t,
+    .addr0 = 0, //HDL_I2C_SLAVE_ADDR,
+    .addr1 = 0,
+    .addr2 = 0,
+    .addr3 = 0,
+    .general_call_enable = 0,
+    .addr_10_bits = 0,
+    .interrupt = &mod_irq_i2c0,
+    .speed = 400000,
+    .stretch_enable = 1,
+  )
 };
 
 extern hdl_time_counter_t mod_timer_ms        __attribute__ ((alias ("mod_systick_timer_ms")));

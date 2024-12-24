@@ -62,6 +62,31 @@ hdl_delegate_t btn1_delegate = {
   .handler = &btn1_handler
 };
 
+void i2c_master_test() {
+  static uint8_t mess_buff[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+  static hdl_i2c_message_t test_mess = {.buffer = mess_buff, .length = sizeof(mess_buff)};
+  static uint8_t test_state = 0;
+  switch (test_state) {
+  case 0: // test start
+    test_mess.options = HDL_I2C_MESSAGE_START;
+    if(hdl_i2c_transfer_message(&mod_i2c0, &test_mess)) test_state++;
+    break;
+  case 2: // test addressing MT
+    test_mess.address = 0x55;
+    test_mess.options = HDL_I2C_MESSAGE_ADDR;
+    if(hdl_i2c_transfer_message(&mod_i2c0, &test_mess)) test_state++;
+    break;
+  case 3: // test data transfer
+    test_mess.options = 0;
+    if(hdl_i2c_transfer_message(&mod_i2c0, &test_mess)) test_state++;
+    break;
+  case 1:
+    if(test_mess.status & HDL_I2C_MESSAGE_STATUS_COMPLETE) test_state++;
+  default:
+    break;
+  }
+}
+
 void main() {
   hdl_enable(&mod_timer_ms.module);
   hdl_enable(&led_y_timer.module);
@@ -72,6 +97,7 @@ void main() {
   hdl_enable(&mod_gpio_pin_led_y.module);
   hdl_enable(&mod_gpio_pin_led_g.module);
   hdl_enable(&btn1.module);
+  //hdl_enable(&mod_i2c0.module);
 
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
@@ -90,5 +116,6 @@ void main() {
 
   while (1) {
     cooperative_scheduler(false);
+    //i2c_master_test();
   }
 }

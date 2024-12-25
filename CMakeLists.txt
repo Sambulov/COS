@@ -18,21 +18,24 @@ set(CMAKE_C_STANDARD 11)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register")
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
   message(STATUS "Maximum optimization for speed")
-  add_compile_options(-Ofast)
+  add_compile_options(-O2)
 elseif("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
   message(STATUS "Maximum optimization for speed, debug info included")
-  add_compile_options(-Ofast -g)
+  add_compile_options(-O2 -g)
 elseif("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
   message(STATUS "Maximum optimization for size")
   add_compile_options(-Os)
 else()
   message(STATUS "Minimal optimization, debug info included")
+  set(CMAKE_VERBOSE_MAKEFILE ON)
   add_compile_definitions("DEBUG")
-  add_compile_options(-O0 -ggdb)
-  add_link_options(-O0 -ggdb)
+  add_compile_options(-Og -g3 -gdwarf-2 -ggdb)
+  add_link_options(-Og -g3 -gdwarf-2 -ggdb)
 endif()
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/Projects")
+add_subdirectory("${CMAKE_SOURCE_DIR}/HDL")
+add_subdirectory("${CMAKE_SOURCE_DIR}/CL")
 
 get_property(PROJECT_SOURCES GLOBAL PROPERTY PROJECT_SOURCES)
 get_property(PROJECT_HEADERS GLOBAL PROPERTY PROJECT_HEADERS)
@@ -50,10 +53,10 @@ set(CMAKE_OBJCOPY ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}objcopy)
 set(CMAKE_OBJDUMP ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}objdump)
 set(CMAKE_SIZE ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}size)
 
-add_subdirectory("${CMAKE_SOURCE_DIR}/HDL")
 # Set compiler options
 get_property(MAIN_CFLAGS GLOBAL PROPERTY HDL_COMPILE_OPTIONS)
 add_compile_options(${MAIN_CFLAGS})
+
 # Set linker options
 get_property(LINKER_FLAGS GLOBAL PROPERTY HDL_LINK_OPTIONS)
 add_link_options(${LINKER_FLAGS})
@@ -64,7 +67,6 @@ get_property(HDL_SOURCES GLOBAL PROPERTY HDL_SOURCES)
 get_property(HDL_HEADERS GLOBAL PROPERTY HDL_HEADERS)
 
 
-add_subdirectory("${CMAKE_SOURCE_DIR}/CL")
 # Set compile def
 get_property(DEFINITIONS GLOBAL PROPERTY CL_DEFINES)
 add_compile_definitions(${DEFINITIONS})

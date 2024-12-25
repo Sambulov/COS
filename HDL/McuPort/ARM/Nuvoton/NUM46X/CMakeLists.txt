@@ -22,7 +22,7 @@ set_property(GLOBAL APPEND PROPERTY HDL_HEADERS
 )
 
 set(MCPU cortex-m4)
-set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mcpu=${MCPU})
+set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -specs=nano.specs -mcpu=${MCPU})
 
 set_property(GLOBAL APPEND PROPERTY HDL_DEFINES "__MCU_HAL_HDR__=<m460.h>")
 

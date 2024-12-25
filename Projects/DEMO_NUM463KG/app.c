@@ -62,27 +62,56 @@ hdl_delegate_t btn1_delegate = {
   .handler = &btn1_handler
 };
 
+typedef struct {
+uint16_t ac_x,
+         ac_y,
+         ac_z,
+         temp,
+         gy_x,
+         gy_y,
+         gy_z;
+} mpu_6050_data_t;
+
+volatile mpu_6050_data_t gy_ax_data;
+
 void i2c_master_test() {
   static uint8_t mess_buff[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
-  static hdl_i2c_message_t test_mess = {.buffer = mess_buff, .length = sizeof(mess_buff)};
+  static hdl_i2c_message_t test_mess = {.address = 0x68, .buffer = mess_buff, .length = sizeof(mess_buff)};
   static uint8_t test_state = 0;
   switch (test_state) {
-  case 0: // test start
-    test_mess.address = 0x55;
-    test_mess.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_STOP;
+  case 0: // init mpu-6050
+    test_mess.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_STOP; 
+    test_mess.buffer[0] = 0x6b;
+    test_mess.buffer[1] = 0x00;
+    test_mess.length = 2;
     if(hdl_i2c_transfer_message(&mod_i2c0, &test_mess)) test_state++;
     break;
-  case 2: // test addressing MT
-    test_mess.address = 0x55;
-    test_mess.options = HDL_I2C_MESSAGE_ADDR;
+  case 2: // mpu-6050 select 
+    test_mess.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR; 
+    test_mess.buffer[0] = 0x3b;
+    test_mess.length = 1;
     if(hdl_i2c_transfer_message(&mod_i2c0, &test_mess)) test_state++;
     break;
-  case 3: // test data transfer
-    test_mess.options = 0;
+  case 4: // mpu-6050 get
+    test_mess.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP;    
+    test_mess.length = 14;
     if(hdl_i2c_transfer_message(&mod_i2c0, &test_mess)) test_state++;
     break;
   case 1:
+  case 3:
     if(test_mess.status & HDL_I2C_MESSAGE_STATUS_COMPLETE) test_state++;
+    break;
+  case 5:
+    if(test_mess.status & HDL_I2C_MESSAGE_STATUS_COMPLETE) {
+      gy_ax_data.ac_x = (((uint16_t)test_mess.buffer[0]) << 8) | test_mess.buffer[1];
+      gy_ax_data.ac_y = (((uint16_t)test_mess.buffer[2]) << 8) | test_mess.buffer[3];
+      gy_ax_data.ac_z = (((uint16_t)test_mess.buffer[4]) << 8) | test_mess.buffer[5];
+      gy_ax_data.temp = (((uint16_t)test_mess.buffer[6]) << 8) | test_mess.buffer[7];
+      gy_ax_data.gy_x = (((uint16_t)test_mess.buffer[8]) << 8) | test_mess.buffer[9];
+      gy_ax_data.gy_y = (((uint16_t)test_mess.buffer[10]) << 8) | test_mess.buffer[11];
+      gy_ax_data.gy_z = (((uint16_t)test_mess.buffer[12]) << 8) | test_mess.buffer[13];
+      test_state = 2;
+    } 
   default:
     break;
   }

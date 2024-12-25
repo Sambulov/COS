@@ -474,14 +474,7 @@ const hdl_gpio_pin_hw_config_t gpio_pin_output_slow_cnf = {
   .func_alternate = 0
 };
 
-const hdl_gpio_pin_hw_config_t gpio_pin_hw_pc0_i2c_sda_cnf = {
-	.func = GPIO_MODE_OPEN_DRAIN,
-	.pull_mode = GPIO_PUSEL_PULL_UP,
-	.slew_mode = GPIO_SLEWCTL_NORMAL,
-  .func_alternate = 9
-};
-
-const hdl_gpio_pin_hw_config_t gpio_pin_hw_pc1_i2c_scl_cnf = {
+const hdl_gpio_pin_hw_config_t gpio_pin_hw_i2c_cnf = {
 	.func = GPIO_MODE_OPEN_DRAIN,
 	.pull_mode = GPIO_PUSEL_PULL_UP,
 	.slew_mode = GPIO_SLEWCTL_NORMAL,
@@ -493,13 +486,8 @@ const hdl_gpio_pin_config_t gpio_pin_out_low_cnf = {
   .inactive_default = HDL_GPIO_HIGH
 };
 
-const hdl_gpio_pin_config_t gpio_pin_pc0_i2c_sda_cnf = {
-  .hwc = &gpio_pin_hw_pc0_i2c_sda_cnf,
-  .inactive_default = HDL_GPIO_HIGH
-};
-
-const hdl_gpio_pin_config_t gpio_pin_pc1_i2c_scl_cnf = {
-  .hwc = &gpio_pin_hw_pc1_i2c_scl_cnf,
+const hdl_gpio_pin_config_t gpio_pin_i2c_cnf = {
+  .hwc = &gpio_pin_hw_i2c_cnf,
   .inactive_default = HDL_GPIO_HIGH
 };
 
@@ -507,14 +495,14 @@ hdl_gpio_pin_t mod_gpio_pin_pc0_i2c_sda = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_c.module),
   .module.reg = (void *)0,
-  .config = &gpio_pin_pc0_i2c_sda_cnf,
+  .config = &gpio_pin_i2c_cnf,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_pc1_i2c_scl = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_c.module),
   .module.reg = (void *)1,
-  .config = &gpio_pin_pc1_i2c_scl_cnf,
+  .config = &gpio_pin_i2c_cnf,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_ph4 = {

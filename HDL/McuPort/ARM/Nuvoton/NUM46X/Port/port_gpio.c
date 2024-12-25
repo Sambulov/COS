@@ -71,7 +71,6 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
   GPIO_T *gpio_port = (GPIO_T *)gpio->module.dependencies[0]->reg;
   uint32_t pin_no = (uint32_t)gpio->module.reg;
   uint32_t port_no = _hdl_gpio_port_to_num(gpio_port); 
-  __IO uint32_t *MFP = (__IO uint32_t *)((&SYS->GPA_MFP0)[port_no * 4 + (pin_no >> 2)]);
 
   if(gpio->config->inactive_default == HDL_GPIO_LOW) {
     gpio_port->DOUT &= ~(1 << pin_no);
@@ -84,25 +83,21 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable){
     GPIO_SetMode(gpio_port, (1 << pin_no), gpio->config->hwc->func);
     GPIO_SetPullCtl(gpio_port, (1 << pin_no), gpio->config->hwc->pull_mode);
     GPIO_SetSlewCtl(gpio_port, (1 << pin_no), gpio->config->hwc->slew_mode);
-
-    if(gpio->config->hwc->int_mode) {
-      gpio_port->INTTYPE = (gpio_port->INTTYPE & ~(1 << pin_no)) | (((gpio->config->hwc->int_mode >> 24) & 0xFFUL) << pin_no);
-      gpio_port->INTEN = (gpio_port->INTEN & ~(0x00010001ul << pin_no)) | ((gpio->config->hwc->int_mode & 0xFFFFFFUL) << pin_no);
-    }
-    GPIO_EnableInt(gpio_port, (1 << pin_no), gpio->config->hwc->int_mode);
+    GPIO_EnableInt(gpio_port, pin_no, gpio->config->hwc->int_mode);
+    __IO uint32_t *MFP = (__IO uint32_t *)&((&(SYS->GPA_MFP0))[port_no * 4 + (pin_no >> 2)]);
     if(gpio->config->hwc->func_alternate != 0) {
-      __IO uint32_t *MFOS = (__IO uint32_t *)((&SYS->GPA_MFOS)[port_no]);
+      __IO uint32_t *MFOS = (__IO uint32_t *)&((&SYS->GPA_MFOS)[port_no]);
       if(gpio->config->hwc->func == GPIO_MODE_OPEN_DRAIN) HDL_REG_SET(*MFOS, (0x1UL << pin_no));
       else HDL_REG_CLEAR(*MFOS, (0x1UL << pin_no));
     }
-    HDL_REG_MODIFY(*MFP, 0x1f << (pin_no & 0x3), (gpio->config->hwc->func_alternate & 0x1f) << (pin_no & 0x3));
+    uint32_t mfp_cnf_offset = 8 * (pin_no & 0x3);
+    HDL_REG_MODIFY(*MFP, 0x1f << mfp_cnf_offset, (gpio->config->hwc->func_alternate & 0x1f) << mfp_cnf_offset);
   }
   else {
-    HDL_REG_CLEAR(*MFP, 0x1f << (pin_no & 0x3));
     GPIO_SetMode(gpio_port, (1 << pin_no), GPIO_MODE_QUASI);
     GPIO_SetPullCtl(gpio_port, (1 << pin_no), GPIO_PUSEL_DISABLE);
     GPIO_SetSlewCtl(gpio_port, (1 << pin_no), GPIO_SLEWCTL_NORMAL);
-    GPIO_DisableInt(gpio_port, (1 << pin_no));
+    GPIO_DisableInt(gpio_port, pin_no);
     return HDL_MODULE_UNLOADED;
   }
 

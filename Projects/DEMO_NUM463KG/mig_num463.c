@@ -13,7 +13,7 @@
 #define HDL_SYSTICK_REF                   mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_hxtal, mod_clock_lxtal, mod_clock_irc */
 #define HDL_SYSTICK_REF_PRESCALER         2                             /* Can be 1 or 2 for mod_clock_hxtal, 1 for mod_clock_lxtal, 2 for mod_clock_sys,  mod_clock_irc */
 #define HDL_APB0_PRESCALER                4                             /* Note that, don`t excceed 60MHz; Can be 1, 2, 4, 8, 16 */
-#define HDL_APB1_PRESCALER                4                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
+#define HDL_APB1_PRESCALER                2                             /* Note that, don`t excceed 120MHz; Can be 1, 2, 4, 8, 16 */
 #define HDL_SYSTICK_CLOCK                 mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_systick_ref*/
 #define HDL_SYSTICK_RELOAD                200000 - 1
 

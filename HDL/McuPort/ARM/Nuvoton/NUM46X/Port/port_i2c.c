@@ -116,21 +116,18 @@ static uint8_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
           i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
           return HANDLER_FAULT;
         }
-        if((i2c_periph->CTL0 & I2C_CTL0_SI_Msk) || 
-           (i2c_periph->STATUS0 == I2C_MM_BUS_ERROR) ||
-           (i2c_periph->STATUS0 == I2C_BUS_RELEASED)) {
-          
-          if(I2C_MM_STATE(i2c_periph->STATUS0)) {
-            i2c_periph->CTL0 &= ~(I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk | I2C_CTL0_AA_Msk);
-            i2c_periph->DAT = 0x00;
-            i2c_periph->CTL0 |= I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk;
-          }
+        if((i2c_periph->CTL0 & I2C_CTL0_SI_Msk) && I2C_MM_STATE(i2c_periph->STATUS0) || 
+          (i2c_periph->STATUS0 == I2C_MM_BUS_ERROR) ||
+          (i2c_periph->STATUS0 == I2C_BUS_RELEASED)) {
+          i2c_periph->CTL0 &= ~(I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk | I2C_CTL0_AA_Msk);
+          i2c_periph->DAT = 0x00;
+          i2c_periph->CTL0 |= I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk;
+          i2c_periph->CTL0 &= ~I2C_CTL0_STO_Msk;
           i2c->private.wrk_state = 2;
         }
         else break;
       default:
-        if((i2c_periph->STATUS0 == I2C_BUS_RELEASED) ||
-           (i2c_periph->STATUS0 == I2C_MM_BUS_ERROR)) {
+        if(i2c_periph->STATUS0 == I2C_BUS_RELEASED) {
           if(i2c_periph->STATUS1 & I2C_STATUS1_ONBUSY_Msk) {
             i2c_periph->CTL0 &= ~(I2C_CTL0_I2CEN_Msk | I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_AA_Msk);
             i2c_periph->CTL0 |= I2C_CTL0_I2CEN_Msk;
@@ -395,10 +392,10 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     hdl_clock_t *clk = (hdl_clock_t *)_i2c->module.dependencies[0];
     hdl_clock_freq_t freq;
     hdl_get_clock(clk, &freq);
-    uint32_t div = (uint32_t)(((freq.num << 3) / (freq.denom * _i2c->config->speed * 4U) + 4U) >> 3 - 1U);
+    uint32_t div = (uint32_t)((((freq.num << 3) / (freq.denom * _i2c->config->speed * 4U) + 4U) >> 3) - 1U);
     i2c_periph->CLKDIV = div;
-    uint32_t st_limit = (((div * 2 - 6) >> 1) << I2C_TMCTL_STCTL_Pos) & I2C_TMCTL_STCTL_Msk;
-    uint32_t ht_limit = (((div * 2 - 9) >> 1) << I2C_TMCTL_HTCTL_Pos) & I2C_TMCTL_HTCTL_Msk;
+    uint32_t st_limit = (((div * 2 - 6) >> 3) << I2C_TMCTL_STCTL_Pos) & I2C_TMCTL_STCTL_Msk;
+    uint32_t ht_limit = (((div * 2 - 9) >> 3) << I2C_TMCTL_HTCTL_Pos) & I2C_TMCTL_HTCTL_Msk;
     i2c_periph->TMCTL = st_limit | ht_limit;
     if(_i2c->config->addr0 != 0) I2C_SetSlaveAddr(i2c_periph, 0, _i2c->config->addr0, I2C_GCMODE_DISABLE);
     if(_i2c->config->addr1 != 0) I2C_SetSlaveAddr(i2c_periph, 1, _i2c->config->addr0, I2C_GCMODE_DISABLE);

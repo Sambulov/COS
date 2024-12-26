@@ -82,6 +82,7 @@ static uint8_t _i2c_msg_start_handler(hdl_i2c_private_t *i2c) {
         i2c->private.wc_timer = now;
         i2c->private.wrk_state = 1;
       case 1:
+        if(i2c_periph->STATUS0 == I2C_MM_BUS_ERROR) i2c_periph->CTL0 |= I2C_CTL0_SI_Msk;
         if(I2C_MM_STATE(i2c_periph->STATUS0) || (i2c_periph->STATUS0 == I2C_BUS_RELEASED)) {
           i2c_periph->CTL0 &= ~(I2C_CTL0_INTEN_Msk | I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk | I2C_CTL0_AA_Msk);
           i2c_periph->CTL0 |= I2C_CTL0_STA_Msk | I2C_CTL0_SI_Msk;
@@ -111,23 +112,27 @@ static uint8_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
         i2c->private.wc_timer = now;
         i2c->private.wrk_state = 1;
       case 1:
-        if(i2c_periph->CTL0 & I2C_CTL0_SI_Msk) {
-          if(I2C_SM_STATE(i2c_periph->STATUS0)) {
-            i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
-            return HANDLER_FAULT;
-          }
+        if(I2C_SM_STATE(i2c_periph->STATUS0)) {
+          i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
+          return HANDLER_FAULT;
+        }
+        if((i2c_periph->CTL0 & I2C_CTL0_SI_Msk) || 
+           (i2c_periph->STATUS0 == I2C_MM_BUS_ERROR) ||
+           (i2c_periph->STATUS0 == I2C_BUS_RELEASED)) {
+          
           if(I2C_MM_STATE(i2c_periph->STATUS0)) {
             i2c_periph->CTL0 &= ~(I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk | I2C_CTL0_AA_Msk);
             i2c_periph->DAT = 0x00;
             i2c_periph->CTL0 |= I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk;
-            i2c->private.wrk_state = 2;
           }
+          i2c->private.wrk_state = 2;
         }
         else break;
       default:
-        if(i2c_periph->STATUS0 == I2C_BUS_RELEASED) {
+        if((i2c_periph->STATUS0 == I2C_BUS_RELEASED) ||
+           (i2c_periph->STATUS0 == I2C_MM_BUS_ERROR)) {
           if(i2c_periph->STATUS1 & I2C_STATUS1_ONBUSY_Msk) {
-            i2c_periph->CTL0 &= ~I2C_CTL0_STA_Msk;
+            i2c_periph->CTL0 &= ~(I2C_CTL0_I2CEN_Msk | I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_AA_Msk);
             i2c_periph->CTL0 |= I2C_CTL0_I2CEN_Msk;
           }
           i2c_periph->CTL0 |= I2C_CTL0_INTEN_Msk | I2C_CTL0_AA_Msk;

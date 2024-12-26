@@ -52,6 +52,12 @@ hdl_interrupt_t mod_irq_i2c0 = {
   .priority_group = 0,
 };
 
+hdl_interrupt_t mod_irq_i2c1 = {
+  .irq_type = HDL_NVIC_IRQ39_I2C1_IRQn,
+  .priority = 0,
+  .priority_group = 0,
+};
+
 /***********************************************************
  *                          NVIC
 ***********************************************************/
@@ -208,7 +214,7 @@ const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
 const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .vector = &irq_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_gpio_e, &mod_irq_i2c0),
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_gpio_e, &mod_irq_i2c0, &mod_irq_i2c1),
 };
 
 hdl_interrupt_controller_t mod_nvic = {
@@ -474,7 +480,7 @@ const hdl_gpio_pin_hw_config_t gpio_pin_output_slow_cnf = {
   .func_alternate = 0
 };
 
-const hdl_gpio_pin_hw_config_t gpio_pin_hw_i2c_cnf = {
+const hdl_gpio_pin_hw_config_t gpio_pin_hw_i2c0_1_cnf = {
 	.func = GPIO_MODE_OPEN_DRAIN,
 	.pull_mode = GPIO_PUSEL_PULL_UP,
 	.slew_mode = GPIO_SLEWCTL_NORMAL,
@@ -486,8 +492,8 @@ const hdl_gpio_pin_config_t gpio_pin_out_low_cnf = {
   .inactive_default = HDL_GPIO_HIGH
 };
 
-const hdl_gpio_pin_config_t gpio_pin_i2c_cnf = {
-  .hwc = &gpio_pin_hw_i2c_cnf,
+const hdl_gpio_pin_config_t gpio_pin_i2c0_1_cnf = {
+  .hwc = &gpio_pin_hw_i2c0_1_cnf,
   .inactive_default = HDL_GPIO_HIGH
 };
 
@@ -495,14 +501,28 @@ hdl_gpio_pin_t mod_gpio_pin_pc0_i2c_sda = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_c.module),
   .module.reg = (void *)0,
-  .config = &gpio_pin_i2c_cnf,
+  .config = &gpio_pin_i2c0_1_cnf,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_pc1_i2c_scl = {
   .module.init = &hdl_gpio_pin,
   .module.dependencies = hdl_module_dependencies(&mod_gpio_port_c.module),
   .module.reg = (void *)1,
-  .config = &gpio_pin_i2c_cnf,
+  .config = &gpio_pin_i2c0_1_cnf,
+};
+
+hdl_gpio_pin_t mod_gpio_pin_pb0_i2c_sda = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_port_b.module),
+  .module.reg = (void *)0,
+  .config = &gpio_pin_i2c0_1_cnf,
+};
+
+hdl_gpio_pin_t mod_gpio_pin_pb1_i2c_scl = {
+  .module.init = &hdl_gpio_pin,
+  .module.dependencies = hdl_module_dependencies(&mod_gpio_port_b.module),
+  .module.reg = (void *)1,
+  .config = &gpio_pin_i2c0_1_cnf,
 };
 
 hdl_gpio_pin_t mod_gpio_pin_ph4 = {
@@ -564,8 +584,25 @@ hdl_i2c_t mod_i2c0 = {
     .general_call_enable = 0,
     .addr_10_bits = 0,
     .interrupt = &mod_irq_i2c0,
-    .speed = 400000,
-    .stretch_enable = 1,
+    .speed = 400000
+  )
+};
+
+hdl_i2c_t mod_i2c1 = {
+  .module.init = &hdl_i2c,
+  .module.dependencies = hdl_module_dependencies(&mod_clock_apb1.module,
+    &mod_gpio_pin_pb1_i2c_scl.module, &mod_gpio_pin_pb0_i2c_sda.module,
+    &mod_nvic.module, &mod_systick_timer_ms.module),
+  .module.reg = (void*)I2C1,
+  .config = hdl_module_config(hdl_i2c_config_t,
+    .addr0 = 0, //HDL_I2C_SLAVE_ADDR,
+    .addr1 = 0,
+    .addr2 = 0,
+    .addr3 = 0,
+    .general_call_enable = 0,
+    .addr_10_bits = 0,
+    .interrupt = &mod_irq_i2c1,
+    .speed = 400000
   )
 };
 

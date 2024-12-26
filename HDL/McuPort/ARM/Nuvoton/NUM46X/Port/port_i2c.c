@@ -118,6 +118,7 @@ static uint8_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
           }
           if(I2C_MM_STATE(i2c_periph->STATUS0)) {
             i2c_periph->CTL0 &= ~(I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk | I2C_CTL0_AA_Msk);
+            i2c_periph->DAT = 0x00;
             i2c_periph->CTL0 |= I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk;
             i2c->private.wrk_state = 2;
           }
@@ -126,9 +127,10 @@ static uint8_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
       default:
         if(i2c_periph->STATUS0 == I2C_BUS_RELEASED) {
           if(i2c_periph->STATUS1 & I2C_STATUS1_ONBUSY_Msk) {
-            i2c_periph->CTL0 &= ~(I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_AA_Msk);
-            i2c_periph->CTL0 |= I2C_CTL0_I2CEN_Msk | I2C_CTL0_INTEN_Msk | I2C_CTL0_AA_Msk;
+            i2c_periph->CTL0 &= ~I2C_CTL0_STA_Msk;
+            i2c_periph->CTL0 |= I2C_CTL0_I2CEN_Msk;
           }
+          i2c_periph->CTL0 |= I2C_CTL0_INTEN_Msk | I2C_CTL0_AA_Msk;
           i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_STOP_ON_BUS;
           return HANDLER_COMPLETE;
         }
@@ -207,43 +209,46 @@ static uint8_t _i2c_msg_data_handler(hdl_i2c_private_t *i2c) {
         return HANDLER_FAULT;
       }
 
-      if((i2c_periph->STATUS0 == I2C_MR_DATA_NACK) ||
-          (i2c_periph->STATUS0 == I2C_MT_DATA_NACK)) {
-        i2c->private.message->transferred++;
-        i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
-        return HANDLER_COMPLETE;
-      }
-
-      if((i2c_periph->STATUS0 == I2C_MR_DATA_ACK) ||
-         (i2c_periph->STATUS0 == I2C_MT_DATA_ACK)) {
-        i2c->private.message->transferred++;
-      }
-
       if((i2c_periph->STATUS0 == I2C_MT_ADDRESS_NACK) ||
-          (i2c_periph->STATUS0 == I2C_MR_ADDRESS_NACK) ||
-          (i2c->private.message->transferred >= i2c->private.message->length)) {
+         (i2c_periph->STATUS0 == I2C_MR_ADDRESS_NACK)) {
         return HANDLER_COMPLETE;
       }
 
-      i2c_periph->CTL0 &= ~(I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk | I2C_CTL0_AA_Msk);
-      i2c_periph->CTL0 |= I2C_CTL0_AA_Msk;
+      uint32_t ack = 0;
 
       if((i2c_periph->STATUS0 == I2C_MR_ADDRESS_ACK) ||
-        (i2c_periph->STATUS0 == I2C_MR_DATA_ACK)) {
-        i2c->private.message->buffer[i2c->private.message->transferred] = i2c_periph->DAT;
-        if((i2c->private.message->options & HDL_I2C_MESSAGE_NACK_LAST) && 
-          (i2c->private.message->transferred == (i2c->private.message->length - 1))) {
-          i2c_periph->CTL0 &= ~I2C_CTL0_AA_Msk;
+         (i2c_periph->STATUS0 == I2C_MR_DATA_NACK) ||
+         (i2c_periph->STATUS0 == I2C_MR_DATA_ACK)) {
+        if(i2c_periph->STATUS0 != I2C_MR_ADDRESS_ACK) {
+          i2c->private.message->buffer[i2c->private.message->transferred] = i2c_periph->DAT;
+          i2c->private.message->transferred++;
+        }
+        if(i2c_periph->STATUS0 == I2C_MR_DATA_NACK) {
+          i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
+          return HANDLER_COMPLETE;
+        }
+        if(!(i2c->private.message->options & HDL_I2C_MESSAGE_NACK_LAST) || 
+          (i2c->private.message->transferred < (i2c->private.message->length - 1))) {
+          ack = I2C_CTL0_AA_Msk;
         }
       }
 
-      if((i2c_periph->STATUS0 == I2C_MT_DATA_ACK) ||
-        (i2c_periph->STATUS0 == I2C_MT_ADDRESS_ACK)) {
+      if((i2c_periph->STATUS0 == I2C_MT_DATA_NACK) ||
+         (i2c_periph->STATUS0 == I2C_MT_DATA_ACK) ||
+         (i2c_periph->STATUS0 == I2C_MT_ADDRESS_ACK)) {
+        if(i2c_periph->STATUS0 != I2C_MT_ADDRESS_ACK) i2c->private.message->transferred++;
+        if(i2c_periph->STATUS0 == I2C_MT_DATA_NACK) {
+          i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
+          return HANDLER_COMPLETE;
+        }
+        if(i2c->private.message->transferred >= i2c->private.message->length) {
+          return HANDLER_COMPLETE;
+        }
         i2c_periph->DAT = i2c->private.message->buffer[i2c->private.message->transferred];
       }
-
       i2c->private.message->status |= HDL_I2C_MESSAGE_STATUS_DATA;
-      i2c_periph->CTL0 |= I2C_CTL0_SI_Msk;
+      i2c_periph->CTL0 &= ~(I2C_CTL0_STA_Msk | I2C_CTL0_STO_Msk | I2C_CTL0_SI_Msk | I2C_CTL0_AA_Msk);
+      i2c_periph->CTL0 |= I2C_CTL0_SI_Msk | ack;
       i2c->private.wc_timer = now;
     }
     return HANDLER_CONTINUE;

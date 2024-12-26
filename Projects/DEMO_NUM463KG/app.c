@@ -63,16 +63,46 @@ hdl_delegate_t btn1_delegate = {
 };
 
 typedef struct {
-uint16_t ac_x,
-         ac_y,
-         ac_z,
-         temp,
-         gy_x,
-         gy_y,
-         gy_z;
+int16_t ac_x,
+        ac_y,
+        ac_z,
+        temp,
+        gy_x,
+        gy_y,
+        gy_z;
 } mpu_6050_data_t;
 
-volatile mpu_6050_data_t gy_ax_data;
+typedef struct {
+double gyro_x,
+       gyro_y,
+       gyro_z,
+       acel_x,
+       acel_y,
+       acel_z,
+       pitch_ang,
+       roll_ang, 
+       temp_cels;
+} gyro_axel_data_t;
+
+mpu_6050_data_t gy_ax_data;
+gyro_axel_data_t data;
+
+#include "math.h"
+
+void mpu6050_converter(mpu_6050_data_t *ga_data, gyro_axel_data_t *out) {
+  out->temp_cels = ((double)ga_data->temp - 1600) / 340.0 + 36.53;
+  double x = ga_data->ac_x;
+  double y = ga_data->ac_y;
+  double z = ga_data->ac_z;
+  out->pitch_ang = atan(x / sqrt((y * y) + (z * z))) * (180.0 / 3.14);
+  out->roll_ang = atan(y / sqrt((x * x) + (z * z))) * (180.0 / 3.14);
+  out->acel_x = ga_data->ac_x + -950;
+  out->acel_y = ga_data->ac_y + -300;
+  out->acel_z = ga_data->ac_z + 0;
+  out->gyro_x = ga_data->gy_x + 480;
+  out->gyro_y = ga_data->gy_y + 170;
+  out->gyro_z = ga_data->gy_z + 210;
+}
 
 void i2c_master_test() {
   static uint8_t mess_buff[16] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
@@ -110,6 +140,7 @@ void i2c_master_test() {
       gy_ax_data.gy_x = (((uint16_t)test_mess.buffer[8]) << 8) | test_mess.buffer[9];
       gy_ax_data.gy_y = (((uint16_t)test_mess.buffer[10]) << 8) | test_mess.buffer[11];
       gy_ax_data.gy_z = (((uint16_t)test_mess.buffer[12]) << 8) | test_mess.buffer[13];
+      mpu6050_converter(&gy_ax_data, &data);
       test_state = 2;
     } 
   default:

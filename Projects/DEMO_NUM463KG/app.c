@@ -161,7 +161,7 @@ void i2c_master_test(hdl_i2c_t *i2c) {
 }
 
 void i2c_slave_test(hdl_i2c_t *i2c) {
-  static uint8_t mess_buff[2] = {0xAA, 0x55};
+  static uint8_t mess_buff[2];
   static hdl_i2c_message_t test_mess = {.address = 0x68, .buffer = mess_buff, .length = sizeof(mess_buff)};
   static uint8_t test_state = 4;
   switch (test_state)
@@ -185,6 +185,8 @@ void i2c_slave_test(hdl_i2c_t *i2c) {
       break;
     case 3: // data      011
       test_mess.options = HDL_I2C_MESSAGE_NACK_LAST;
+      mess_buff[0] = 0x10;
+      mess_buff[1] = 0x00;
       test_mess.length = 2;
       test_state = 5;
       break;
@@ -248,6 +250,8 @@ void main() {
 
   hdl_event_subscribe(&mod_irq_gpio_btn_port.event, &btn0_int_delegate);
   hdl_interrupt_request(&mod_interrupt_controller, &mod_irq_gpio_btn_port);
+
+  hdl_i2c_set_transceiver(&mod_i2c0, bldl_som_link_init());
 
   while (1) {
     cooperative_scheduler(false);

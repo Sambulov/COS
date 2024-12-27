@@ -6,7 +6,7 @@
         {
             "type": "shell",
             "label": "Clean Rebuild",
-            "command": "cmake --build . --clean-first",
+            "command": "cmake --build . --target clean",
             "options": {
                 "cwd": "${workspaceFolder}/build"
             },

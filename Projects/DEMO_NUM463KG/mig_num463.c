@@ -17,7 +17,7 @@
 #define HDL_SYSTICK_CLOCK                 mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_systick_ref*/
 #define HDL_SYSTICK_RELOAD                200000 - 1
 
-#define HDL_I2C_SLAVE_ADDR                50
+#define HDL_I2C_SLAVE_ADDR                0x68
 
 const hdl_core_config_t mod_sys_core_cnf = {
  .power_level = SYS_PLCTL_PLSEL_PL0,
@@ -577,7 +577,7 @@ hdl_i2c_t mod_i2c0 = {
     &mod_nvic.module, &mod_systick_timer_ms.module),
   .module.reg = (void*)I2C0,
   .config = hdl_module_config(hdl_i2c_config_t,
-    .addr0 = 0, //HDL_I2C_SLAVE_ADDR,
+    .addr0 = HDL_I2C_SLAVE_ADDR,
     .addr1 = 0,
     .addr2 = 0,
     .addr3 = 0,

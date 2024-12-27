@@ -13,6 +13,9 @@
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "debug": {
+                "output": true
             }
         },
         {
@@ -52,6 +55,21 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
             }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Rebuild Debug",
+            "description": "",
+            "displayName": "Rebuild Debug",
+            "configurePreset": "Debug",
+            "cleanFirst": true
+        },
+        {
+            "name": "Build Debug",
+            "description": "",
+            "displayName": "Build Debug",
+            "configurePreset": "Debug"
         }
     ]
 }

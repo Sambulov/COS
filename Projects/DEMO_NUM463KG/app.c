@@ -1,45 +1,50 @@
 #include "app.h"
 #include "CodeLib.h"
 
-hdl_timer_t led_y_timer = {
-  .module.dependencies = hdl_module_dependencies(&mod_timer_ms.module),
-  .module.init = &hdl_timer,
-};
-
-hdl_timer_t led_g_timer = {
-  .module.dependencies = hdl_module_dependencies(&mod_timer_ms.module),
-  .module.init = &hdl_timer,
-};
-
-const hdl_button_config_t btn1_cnf = {
-  .debounce_delay = 50,
-  .hold_delay = 3000
-};
-
-hdl_button_t btn1 = {
-  .module.init = &hdl_button,
-  .module.dependencies = hdl_module_dependencies(&mod_gpio_pin_btn_1.module, &mod_timer_ms.module),
-  .config = &btn1_cnf,
-};
-
 void led_y_timer_handler(uint32_t event_trigger, void *sender, void *context) {
-  hdl_gpio_toggle(&mod_gpio_pin_led_y);
+  __NOP();
+  //hdl_gpio_toggle(&mod_gpio_pin_led_y);
 }
 
 void led_g_timer_handler(uint32_t event_trigger, void *sender, void *context) {
-  hdl_gpio_toggle(&mod_gpio_pin_led_g);
+  __NOP();
+  //hdl_gpio_toggle(&mod_gpio_pin_led_g);
 }
 
 void btn0_int_handler(uint32_t event_trigger, void *sender, void *context) {
-  if(event_trigger & 0x100)
-    hdl_gpio_toggle(&mod_gpio_pin_led_r);
+  __NOP();
+  //if(event_trigger & 0x100)
+  //  hdl_gpio_toggle(&mod_gpio_pin_led_r);
+}
+
+uint8_t slave_test_do = 0;
+uint8_t slave_test_no = 4;
+
+void set_leds(uint8_t mask) {
+  hdl_gpio_set_inactive(&mod_gpio_pin_led_y);
+  hdl_gpio_set_inactive(&mod_gpio_pin_led_r);
+  hdl_gpio_set_inactive(&mod_gpio_pin_led_g);
+  if(mask & 0x01) hdl_gpio_set_active(&mod_gpio_pin_led_y);
+  if(mask & 0x02) hdl_gpio_set_active(&mod_gpio_pin_led_r);
+  if(mask & 0x04) hdl_gpio_set_active(&mod_gpio_pin_led_g);
+}
+
+void btn0_handler(uint32_t event_trigger, void *sender, void *context) {
+  if(event_trigger == HDL_BTN_EVENT_CLICK) {
+    slave_test_no++;
+    if(slave_test_no > 4) slave_test_no = 0;
+    set_leds(slave_test_no);
+  }
 }
 
 void btn1_handler(uint32_t event_trigger, void *sender, void *context) {
-  if(event_trigger == HDL_BTN_EVENT_CLICK)
-    hdl_gpio_toggle(&mod_gpio_pin_led_r);
-  if(event_trigger == HDL_BTN_EVENT_HOLD)
-    hdl_gpio_set_active(&mod_gpio_pin_led_r);
+  if(event_trigger == HDL_BTN_EVENT_CLICK) {
+    slave_test_do = 1;
+  }
+  if(event_trigger == HDL_BTN_EVENT_HOLD) {
+    slave_test_no = 10;
+    slave_test_do = 1;
+  }
 }
 
 hdl_delegate_t led_y_timer_delegate = {
@@ -55,6 +60,11 @@ hdl_delegate_t led_g_timer_delegate = {
 hdl_delegate_t btn0_int_delegate = {
   .context = NULL,
   .handler = &btn0_int_handler
+};
+
+hdl_delegate_t btn0_delegate = {
+  .context = NULL,
+  .handler = &btn0_handler
 };
 
 hdl_delegate_t btn1_delegate = {
@@ -150,6 +160,63 @@ void i2c_master_test(hdl_i2c_t *i2c) {
   }
 }
 
+void i2c_slave_test(hdl_i2c_t *i2c) {
+  static uint8_t mess_buff[2] = {0xAA, 0x55};
+  static hdl_i2c_message_t test_mess = {.address = 0x68, .buffer = mess_buff, .length = sizeof(mess_buff)};
+  static uint8_t test_state = 4;
+  switch (test_state)
+  {         // leds      gry
+    case 0: // start     000
+      test_mess.options = HDL_I2C_MESSAGE_START; 
+      test_mess.length = 0;
+      test_state = 5;
+      break;
+    case 1: // addr_mt   001
+      test_mess.options = HDL_I2C_MESSAGE_ADDR; 
+      test_mess.address = 0x68;
+      test_mess.length = 0;
+      test_state = 5;
+      break;
+    case 2: // addr_mr   010
+      test_mess.options = HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW; 
+      test_mess.address = 0x68;
+      test_mess.length = 0;
+      test_state = 5;
+      break;
+    case 3: // data      011
+      test_mess.options = HDL_I2C_MESSAGE_NACK_LAST;
+      test_mess.length = 2;
+      test_state = 5;
+      break;
+    case 4: // stop      100
+      test_mess.options = HDL_I2C_MESSAGE_STOP;
+      test_mess.length = 0;
+      test_state = 5;
+      break;
+    case 5: // transfer
+      set_leds(5);
+      if(hdl_i2c_transfer_message(i2c, &test_mess)) test_state = 9;
+      break;
+    case 9: // awaite
+      set_leds(6);
+      if(test_mess.status & HDL_I2C_MESSAGE_STATUS_COMPLETE) {
+        set_leds(7);
+        test_state = -1;
+      }
+      break;
+    case 10:
+      i2c_master_test(&mod_i2c1);
+      if(slave_test_do) test_state = -1;
+      break;
+    default:
+      if(slave_test_do) {
+        slave_test_do = 0; 
+        test_state = slave_test_no;
+      }
+      break;
+    }
+}
+
 void main() {
   hdl_enable(&mod_timer_ms.module);
   hdl_enable(&led_y_timer.module);
@@ -159,6 +226,7 @@ void main() {
   hdl_enable(&mod_gpio_pin_led_r.module);
   hdl_enable(&mod_gpio_pin_led_y.module);
   hdl_enable(&mod_gpio_pin_led_g.module);
+  hdl_enable(&btn0.module);
   hdl_enable(&btn1.module);
   hdl_enable(&mod_i2c0.module);
   hdl_enable(&mod_i2c1.module);
@@ -167,6 +235,11 @@ void main() {
     cooperative_scheduler(false);
   }
 
+  hdl_gpio_set_inactive(&mod_gpio_pin_led_g);
+  hdl_gpio_set_inactive(&mod_gpio_pin_led_r);
+  hdl_gpio_set_inactive(&mod_gpio_pin_led_y);
+
+  hdl_event_subscribe(&btn0.event, &btn0_delegate);
   hdl_event_subscribe(&btn1.event, &btn1_delegate);
   hdl_event_subscribe(&led_y_timer.event, &led_y_timer_delegate);
   hdl_event_subscribe(&led_g_timer.event, &led_g_timer_delegate);
@@ -176,10 +249,8 @@ void main() {
   hdl_event_subscribe(&mod_irq_gpio_btn_port.event, &btn0_int_delegate);
   hdl_interrupt_request(&mod_interrupt_controller, &mod_irq_gpio_btn_port);
 
-  hdl_gpio_set_active(&mod_gpio_pin_led_y);
-
   while (1) {
     cooperative_scheduler(false);
-    i2c_master_test(&mod_i2c1);
+    i2c_slave_test(&mod_i2c1);
   }
 }

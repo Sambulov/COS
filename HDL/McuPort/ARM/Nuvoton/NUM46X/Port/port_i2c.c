@@ -401,7 +401,7 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     if(_i2c->config->addr1 != 0) I2C_SetSlaveAddr(i2c_periph, 1, _i2c->config->addr0, I2C_GCMODE_DISABLE);
     if(_i2c->config->addr2 != 0) I2C_SetSlaveAddr(i2c_periph, 2, _i2c->config->addr0, I2C_GCMODE_DISABLE);
     if(_i2c->config->addr3 != 0) I2C_SetSlaveAddr(i2c_periph, 3, _i2c->config->addr0, I2C_GCMODE_DISABLE);
-    //HDL_REG_SET(i2c_periph->CTL1, I2C_CTL1_SWITCHEN_Msk); // swap scl <--> sda
+    if(_i2c->config->swap_scl_sda) HDL_REG_SET(i2c_periph->CTL1, I2C_CTL1_SWITCHEN_Msk); // swap scl <-X-> sda
     HDL_REG_CLEAR(i2c_periph->CTL1, I2C_CTL1_ADDR10EN_Msk);
     HDL_REG_SET(i2c_periph->CTL0, I2C_CTL0_SRCINTEN_Msk | I2C_CTL0_INTEN_Msk);
     HDL_REG_SET(i2c_periph->CTL1, I2C_CTL1_UDRIEN_Msk | I2C_CTL1_OVRIEN_Msk);

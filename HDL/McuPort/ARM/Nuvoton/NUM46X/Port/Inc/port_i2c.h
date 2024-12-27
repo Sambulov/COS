@@ -14,6 +14,7 @@
 typedef struct {
   const uint32_t speed;        /* Max 1000000 */
   const uint8_t general_call_enable : 1,
+                swap_scl_sda        : 1,
                 addr_10_bits        : 1;
   const uint16_t addr0;
   const uint16_t addr1;

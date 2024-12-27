@@ -582,6 +582,7 @@ hdl_i2c_t mod_i2c0 = {
     .addr2 = 0,
     .addr3 = 0,
     .general_call_enable = 0,
+    .swap_scl_sda = 0,
     .addr_10_bits = 0,
     .interrupt = &mod_irq_i2c0,
     .speed = 400000
@@ -601,6 +602,7 @@ hdl_i2c_t mod_i2c1 = {
     .addr3 = 0,
     .general_call_enable = 0,
     .addr_10_bits = 0,
+    .swap_scl_sda = 0,
     .interrupt = &mod_irq_i2c1,
     .speed = 400000
   )

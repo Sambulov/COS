@@ -32,6 +32,7 @@ extern "C" {
 
 #include "RK809.h"
 #include "smarc_carrier.h"
+#include "smarc_module.h"
 
 #ifdef __cplusplus
 }

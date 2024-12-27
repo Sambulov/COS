@@ -6,17 +6,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug OOCD M463KGCAE",
+            "name": "Debug NuOpenOCD",
             "type": "cortex-debug",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "executable": "./build/firmware.elf",
             //"showDevDebugOutput": "parsed",
             "windows": {
-                "searchDir": [ 
-                    "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res"
-                ],
-                "serverpath": "C:/NuOpenOCD/bin/openocd.exe",
+                // "searchDir": [ 
+                //     "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res"
+                // ],
+                "serverpath": "C:\\NuOpenOCD\\bin\\openocd.exe",
                 "serverArgs": [],
                 "armToolchainPath": "",
                 "toolchainPrefix": ""
@@ -32,11 +32,11 @@
             "debuggerArgs": [],
             "rtos": "auto",
             "runToEntryPoint": "main",
-			"device": "M463KGCAE",
+			"device": "${config:MCU}",
             "svdFile": "./build/mcu.svd",
             "configFiles": [
-                "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res/tool.cfg",
-                "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res/mcu.cfg"
+                "./build/oocd_tool.cfg",
+                "./build/oocd_mcu.cfg"
             ],
             "preRestartCommands": [
                 "set remotetimeout 200",

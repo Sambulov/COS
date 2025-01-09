@@ -44,8 +44,9 @@ typedef struct {
     int8_t wc_state;
     uint8_t wrk_state;
     uint8_t wrk_state_substate;
-    hdl_transceiver_t *transceiver;
     uint8_t is_master;
+    uint8_t ch_amount;
+    hdl_transceiver_t *transceiver;
   } private;  
 } hdl_i2c_private_t;
 
@@ -64,6 +65,7 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   uint32_t tmp = i2c_periph->STAT0;
   uint32_t tmp1 = 0;
   uint8_t data = 0;
+  hdl_transceiver_t *transceiver = i2c->private.transceiver;
   /* START condition */
   if(tmp & I2C_STAT0_SBSEND) { 
     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
@@ -71,33 +73,37 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   if(tmp & I2C_STAT0_ADDSEND) {
     /* Clear bit ADDSEND*/
     tmp1 = i2c_periph->STAT1;
-    if((i2c->private.transceiver == NULL) || (i2c->private.transceiver->rx_data == NULL) || 
-      ((i2c->private.transceiver->rx_available != NULL) && (i2c->private.transceiver->rx_available(i2c->private.transceiver->proto_context) == 0))) {
+    uint8_t ch = (tmp1 & I2C_STAT1_DUMODF)? 1: 0;
+    transceiver = NULL;
+    if(ch < i2c->private.ch_amount) transceiver = i2c->config->channels[ch]->transceiver;
+    i2c->private.transceiver = transceiver;
+    if((transceiver == NULL) || (transceiver->rx_data == NULL) || 
+      ((transceiver->rx_available != NULL) && (transceiver->rx_available(transceiver->proto_context) == 0))) {
       i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
     }
   }
   /* Read from slave */
   if(tmp & I2C_STAT0_TBE) {
-    if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->tx_empty != NULL)) {
-        i2c->private.transceiver->tx_empty(i2c->private.transceiver->proto_context, &data, 1);
+    if((transceiver != NULL) && (transceiver->tx_empty != NULL)) {
+        transceiver->tx_empty(transceiver->proto_context, &data, 1);
         i2c_periph->DATA = data;
     }
   }
   /* Write to slave */
   if(tmp & I2C_STAT0_RBNE) {
     data = i2c_periph->DATA;
-    if((i2c->private.transceiver == NULL) || (i2c->private.transceiver->rx_data == NULL) || 
-      ((i2c->private.transceiver->rx_available != NULL) && (i2c->private.transceiver->rx_available(i2c->private.transceiver->proto_context) == 0))) {
+    if((transceiver == NULL) || (transceiver->rx_data == NULL) || 
+      ((transceiver->rx_available != NULL) && (transceiver->rx_available(transceiver->proto_context) == 0))) {
       i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
     }
     else {
-      i2c->private.transceiver->rx_data(i2c->private.transceiver->proto_context, &data, 1);
+      transceiver->rx_data(transceiver->proto_context, &data, 1);
     }
   }
   /* STOP condition */
   if(tmp & I2C_STAT0_STPDET) { 
-    if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->end_of_transmission != NULL))
-      i2c->private.transceiver->end_of_transmission(i2c->private.transceiver->proto_context);
+    if((transceiver != NULL) && (transceiver->end_of_transmission != NULL))
+      transceiver->end_of_transmission(transceiver->proto_context);
     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
   }
 }
@@ -105,9 +111,10 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
 static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)context;
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
+  hdl_transceiver_t *transceiver = i2c->private.transceiver;
   if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
-    if((i2c->private.transceiver != NULL) && (i2c->private.transceiver->end_of_transmission != NULL))
-      i2c->private.transceiver->end_of_transmission(i2c->private.transceiver->proto_context);
+    if((transceiver != NULL) && (transceiver->end_of_transmission != NULL))
+      transceiver->end_of_transmission(transceiver->proto_context);
     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
   }
   _i2c_clear_error(i2c_periph);
@@ -328,7 +335,7 @@ static hdl_i2c_message_status_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
       i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
     if(!(i2c->config->stretch_enable))
       i2c_periph->CTL0 |= I2C_SCLSTRETCH_DISABLE;
-    i2c_ack_config(((uint32_t)i2c->module.reg), ((i2c->config->addr0 == 0) ? I2C_ACK_DISABLE : I2C_ACK_ENABLE));
+    i2c_ack_config(((uint32_t)i2c->module.reg), (i2c->private.ch_amount)? I2C_ACK_ENABLE: I2C_ACK_DISABLE);
     i2c_periph->CTL1 |= (I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
     i2c->private.is_master = HDL_FALSE;
     return HDL_TRUE;
@@ -388,11 +395,20 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
   if(enable) {
     rcu_periph_clock_enable(_i2c->config->rcu);
     i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
-    i2c_mode_addr_config((uint32_t)_i2c->module.reg, I2C_I2CMODE_ENABLE, 
-      (_i2c->config->addr_10_bits? I2C_ADDFORMAT_10BITS: I2C_ADDFORMAT_7BITS), (_i2c->config->addr0 << 1));
-    i2c_ackpos_config((uint32_t)_i2c->module.reg, I2C_ACKPOS_CURRENT);
-    i2c_periph->SADDR1 = ((_i2c->config->addr1 << 1) & 0xFE);
-    i2c_periph->SADDR1 |= (_i2c->config->dual_address? I2C_SADDR1_DUADEN : 0);
+
+    for(uint32_t no = 0, ch = 0; no < 2; no++) {
+      uint16_t addr = 0;
+      if((_i2c->config->channels != NULL) && (_i2c->config->channels[ch] != NULL)) addr = _i2c->config->channels[ch++]->address;
+      _i2c->private.ch_amount = ch;
+      if(no == 0) {
+        i2c_mode_addr_config((uint32_t)_i2c->module.reg, I2C_I2CMODE_ENABLE, 
+          (_i2c->config->addr_10_bits? I2C_ADDFORMAT_10BITS: I2C_ADDFORMAT_7BITS), (addr << 1));
+      }
+      else {
+        i2c_periph->SADDR1 = (addr << 1);
+        i2c_periph->SADDR1 |= (_i2c->config->dual_address? I2C_SADDR1_DUADEN : 0);
+      }
+    }
     i2c_periph->CTL0 |= 
       (_i2c->config->general_call_enable? I2C_GCEN_ENABLE : I2C_GCEN_DISABLE) |
       (_i2c->config->stretch_enable? I2C_SCLSTRETCH_ENABLE : I2C_SCLSTRETCH_DISABLE) |
@@ -409,7 +425,9 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
 
     i2c_periph->CTL1 |= (I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
     i2c_periph->CTL0 |= I2C_CTL0_I2CEN;
-    i2c_ack_config(((uint32_t)_i2c->module.reg), ((_i2c->config->addr0 == 0) ? I2C_ACK_DISABLE : I2C_ACK_ENABLE));
+
+    i2c_ackpos_config((uint32_t)_i2c->module.reg, I2C_ACKPOS_CURRENT);
+    i2c_ack_config(((uint32_t)_i2c->module.reg), (_i2c->private.ch_amount)? I2C_ACK_ENABLE: I2C_ACK_DISABLE);
     _i2c->private.wc_state = WC_STATE_HIT;
     coroutine_add(&_i2c->private.i2c_worker, &_i2c_client_worker, (void*)_i2c);
     return HDL_MODULE_ACTIVE;
@@ -419,8 +437,16 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-void hdl_i2c_set_transceiver(hdl_i2c_t *i2c, hdl_transceiver_t *transceiver) {
-  if(i2c != NULL) {
-    ((hdl_i2c_private_t*)i2c)->private.transceiver = transceiver;
+uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel, hdl_transceiver_t *transceiver) {
+  if((i2c != NULL) && (i2c->config->channels != NULL) && (transceiver != NULL)) {
+    uint32_t ch = 0;
+    while (ch <= channel) {
+      if(i2c->config->channels[ch] == NULL) return HDL_FALSE;
+      ch++;
+    }
+    ch--;
+    i2c->config->channels[ch]->transceiver = transceiver;
+    return HDL_TRUE;
   }
+  return HDL_FALSE;
 }

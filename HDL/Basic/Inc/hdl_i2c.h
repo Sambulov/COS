@@ -3,16 +3,6 @@
 
 #include "port_i2c.h"
 
-#define HDL_I2C_MESSAGE_PRV_SIZE            16
-#define HDL_I2C_HW_MESSAGE_PRV_SIZE         8
-#define HDL_I2C_TRANSACTION_PRV_SIZE        28
-
-typedef enum {
-  HDL_I2C_HW_CLIENT_XFER_STATE_ONGOING,
-  HDL_I2C_HW_CLIENT_XFER_STATE_IDLE,
-  HDL_I2C_HW_CLIENT_XFER_STATE_ERROR, //  HDL_I2C_HW_CLIENT_BUS_ERROR,   /* Bus stretching */
-} hdl_i2c_hw_client_xfer_state_t;
-
 typedef enum {
   HDL_I2C_MESSAGE_START          = 0x01, /* Generate start condition */
   HDL_I2C_MESSAGE_ADDR           = 0x02, /* Send addr */
@@ -46,20 +36,14 @@ typedef struct {
 } hdl_i2c_message_t;
 
 typedef struct {
-  hdl_i2c_message_t **messages;
-  PRIVATE(hdl, HDL_I2C_TRANSACTION_PRV_SIZE);
-} hdl_i2c_transaction_t;
-
-#define hdl_i2c_transaction_messages(...) ((hdl_i2c_message_t *[]){__VA_ARGS__, NULL})
-
-typedef struct {
   hdl_module_t module;
   const hdl_i2c_config_t *config;
   PRIVATE(hdl, HDL_I2C_PRV_SIZE);
 } hdl_i2c_t;
 
 hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable);
+
 uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message);
-void hdl_i2c_set_transceiver(hdl_i2c_t *i2c, hdl_transceiver_t *transceiver);
+uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel, hdl_transceiver_t *transceiver);
 
 #endif /* HDL_I2C_H_ */

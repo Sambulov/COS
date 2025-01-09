@@ -619,8 +619,6 @@ hdl_gpio_pin_t mod_spi_0_cs = {
  *************************************************************/
 
 const hdl_i2c_config_t mod_i2c0_cnf = {
-  .addr0 = 0,
-  .addr1 = 0,
   .addr_10_bits = 0,
   .dtcy = I2C_DTCY_2,
   .dual_address = 0,
@@ -640,9 +638,10 @@ hdl_i2c_t mod_i2c0 = {
   .config = &mod_i2c0_cnf,
 };
 
+hdl_i2c_channel_t i2c1_ch0 = {.address = HDL_I2C_SLAVE_ADDR};
+
 const hdl_i2c_config_t mod_i2c1_cnf = {
-  .addr0 = HDL_I2C_SLAVE_ADDR,
-  .addr1 = 0,
+  .channels = hdl_i2c_channels(&i2c1_ch0),
   .addr_10_bits = 0,
   .dtcy = I2C_DTCY_2,
   .dual_address = 0,

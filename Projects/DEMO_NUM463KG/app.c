@@ -251,7 +251,7 @@ void main() {
   hdl_event_subscribe(&mod_irq_gpio_btn_port.event, &btn0_int_delegate);
   hdl_interrupt_request(&mod_interrupt_controller, &mod_irq_gpio_btn_port);
 
-  hdl_i2c_set_transceiver(&mod_i2c0, bldl_som_link_init());
+  hdl_i2c_set_transceiver(&mod_i2c0, 0, bldl_som_link_init());
 
   while (1) {
     cooperative_scheduler(false);

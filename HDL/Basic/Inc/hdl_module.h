@@ -15,7 +15,7 @@ typedef hdl_module_state_t (*hdl_module_initializer_t)(void *desc, uint8_t enabl
 
 typedef struct _HDL_MODULE_T_ {
   hdl_module_initializer_t init;
-  struct _HDL_MODULE_T_ **dependencies;
+  struct _HDL_MODULE_T_ * const *dependencies;
   void *reg;
   PRIVATE(hdl, HDL_MODULE_DESC_PRIVATE_SIZE);
 } hdl_module_t;
@@ -24,7 +24,7 @@ extern hdl_module_t hdl_null_module;
 
 #define HDL_IS_NULL_MODULE(mod)      ((void*)(mod) == (void*)&hdl_null_module)
 
-#define hdl_module_dependencies(...) ((hdl_module_t *[]){__VA_ARGS__, NULL})
+#define hdl_module_dependencies(...) ((hdl_module_t * const []){__VA_ARGS__, NULL})
 
 #define hdl_module_config(type, ...) (const type []){{__VA_ARGS__}}
 

@@ -570,6 +570,8 @@ hdl_gpio_pin_t mod_gpio_pin_pe9 = {
   .config = &gpio_pin_in_high_cnf,
 };
 
+hdl_i2c_channel_t i2c0_ch0 = {.address = HDL_I2C_SLAVE_ADDR};
+
 hdl_i2c_t mod_i2c0 = {
   .module.init = &hdl_i2c,
   .module.dependencies = hdl_module_dependencies(&mod_clock_apb0.module,
@@ -577,10 +579,7 @@ hdl_i2c_t mod_i2c0 = {
     &mod_nvic.module, &mod_systick_timer_ms.module),
   .module.reg = (void*)I2C0,
   .config = hdl_module_config(hdl_i2c_config_t,
-    .addr0 = HDL_I2C_SLAVE_ADDR,
-    .addr1 = 0,
-    .addr2 = 0,
-    .addr3 = 0,
+    .channels = hdl_i2c_channels(&i2c0_ch0),
     .general_call_enable = 0,
     .swap_scl_sda = 0,
     .addr_10_bits = 0,
@@ -596,10 +595,6 @@ hdl_i2c_t mod_i2c1 = {
     &mod_nvic.module, &mod_systick_timer_ms.module),
   .module.reg = (void*)I2C1,
   .config = hdl_module_config(hdl_i2c_config_t,
-    .addr0 = 0, //HDL_I2C_SLAVE_ADDR,
-    .addr1 = 0,
-    .addr2 = 0,
-    .addr3 = 0,
     .general_call_enable = 0,
     .addr_10_bits = 0,
     .swap_scl_sda = 0,

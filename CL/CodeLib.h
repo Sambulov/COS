@@ -53,6 +53,8 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #include "SimpleCircularBuffer.h"
 #include "Mem.h"
 #include "MedianFilter.h"
+#include "Crc32.h"
+#include "BitOp.h"
 
 #ifdef __cplusplus
 }

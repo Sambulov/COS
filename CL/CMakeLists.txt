@@ -4,6 +4,8 @@ file(GLOB SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/DataStructures/Src/*.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/Workflow/Src/*.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/Math/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Crypto/Src/*.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Binary/Src/*.c"
 )
 
 set_property(GLOBAL APPEND PROPERTY CL_SOURCES ${SRC})
@@ -13,4 +15,6 @@ set_property(GLOBAL APPEND PROPERTY CL_HEADERS
   "${CMAKE_CURRENT_SOURCE_DIR}/DataStructures/Inc"
   "${CMAKE_CURRENT_SOURCE_DIR}/Workflow/Inc"
   "${CMAKE_CURRENT_SOURCE_DIR}/Math/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Crypto/Inc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Binary/Inc"
 )

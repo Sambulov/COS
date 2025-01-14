@@ -411,6 +411,10 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     _i2c->private.message = NULL;
     return HDL_MODULE_ACTIVE;
   }
+  if(_i2c->private.message != NULL) {
+    _i2c->private.message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR | HDL_I2C_MESSAGE_STATUS_COMPLETE;
+  }
+
   coroutine_cancel(&_i2c->private.i2c_worker);
   _i2c_clk_reset(i2c_periph, HDL_FALSE);
   return HDL_MODULE_UNLOADED;
@@ -429,7 +433,7 @@ uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message) {
 }
 
 uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel, hdl_transceiver_t *transceiver) {
-  if((i2c != NULL) && (i2c->config->channels != NULL) && (transceiver != NULL)) {
+  if((i2c != NULL) && (i2c->config->channels != NULL)) {
     uint32_t ch = 0;
     while (ch <= channel) {
       if(i2c->config->channels[ch] == NULL) return HDL_FALSE;

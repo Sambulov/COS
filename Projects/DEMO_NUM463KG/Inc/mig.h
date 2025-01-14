@@ -16,4 +16,6 @@ extern hdl_interrupt_t mod_irq_gpio_btn_port;
 extern hdl_i2c_t mod_i2c0;
 extern hdl_i2c_t mod_i2c1;
 
+extern hdl_nvm_t mod_flash;
+
 #endif // MIG_ATB_RK3568J_SMC_H_

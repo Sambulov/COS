@@ -603,6 +603,17 @@ hdl_i2c_t mod_i2c1 = {
   )
 };
 
+hdl_nvm_t mod_flash = {
+  .module.init = &hdl_nvm,
+  .module.dependencies = NULL,
+  .config = hdl_module_config(hdl_nvm_config_t,
+    .address_start = FLASH_BASE + (128 * 1024),
+    .size = (128 * 1024),
+    .max_write_unit = -1,
+    .min_erase_unit = FMC_FLASH_PAGE_SIZE
+  )
+};
+
 extern hdl_time_counter_t mod_timer_ms        __attribute__ ((alias ("mod_systick_timer_ms")));
 extern hdl_gpio_pin_t mod_gpio_pin_btn_0      __attribute__ ((alias ("mod_gpio_pin_pe8")));
 extern hdl_gpio_pin_t mod_gpio_pin_btn_1      __attribute__ ((alias ("mod_gpio_pin_pe9")));

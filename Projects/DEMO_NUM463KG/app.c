@@ -232,11 +232,26 @@ void main() {
   hdl_enable(&btn1.module);
   hdl_enable(&mod_i2c0.module);
   hdl_enable(&mod_i2c1.module);
+  hdl_enable(&mod_flash.module);
 
   while (!hdl_init_complete()) {
     cooperative_scheduler(false);
   }
 
+  uint8_t fb[4096]={1,2,3,4,5,6,7,8};
+
+  hdl_nvm_message_t fm = {
+    .address = 1,
+    .buffer = fb,
+    .size = 4096,
+    .options = HDL_NVM_OPTION_ERASE
+  };
+
+  hdl_nvm_transfer(&mod_flash, &fm);
+  
+  while (fm.state & HDL_NVM_STATE_BUSY)
+    cooperative_scheduler(false);
+  
   hdl_gpio_set_inactive(&mod_gpio_pin_led_g);
   hdl_gpio_set_inactive(&mod_gpio_pin_led_r);
   hdl_gpio_set_inactive(&mod_gpio_pin_led_y);

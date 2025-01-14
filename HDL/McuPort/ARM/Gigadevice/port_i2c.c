@@ -438,7 +438,7 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
 }
 
 uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel, hdl_transceiver_t *transceiver) {
-  if((i2c != NULL) && (i2c->config->channels != NULL) && (transceiver != NULL)) {
+  if((i2c != NULL) && (i2c->config->channels != NULL)) {
     uint32_t ch = 0;
     while (ch <= channel) {
       if(i2c->config->channels[ch] == NULL) return HDL_FALSE;

@@ -22,6 +22,7 @@
 #include "hdl_module.h"
 #include "hdl_core.h"
 #include "hdl_clock.h"
+#include "hdl_nvm.h"
 #include "hdl_dma.h"
 #include "hdl_adc.h"
 #include "hdl_tick_counter.h"

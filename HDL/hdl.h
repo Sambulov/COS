@@ -28,16 +28,15 @@ extern "C" {
 #include "hdl_timer.h"
 
 #include "hdl_eeprom_i2c.h"
+#include "xl9535.h"
 #include "ms5194t.h"
-
 #include "RK809.h"
+
 #include "smarc_carrier.h"
 #include "smarc_module.h"
 
 #ifdef __cplusplus
 }
 #endif
-
-void test(void);
 
 #endif // HDL_H_

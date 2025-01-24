@@ -394,46 +394,7 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
   i2c_deinit((uint32_t)_i2c->module.reg);
   if(enable) {
     rcu_periph_clock_enable(_i2c->config->rcu);
-    //i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
-    
-    hdl_clock_t *clk = (hdl_clock_t *)_i2c->module.dependencies[2];
-    uint32_t freq_mhz;
-    uint32_t freq_hz;
-    {
-      hdl_clock_freq_t fr;
-      hdl_get_clock(clk, &fr);
-      freq_hz = (fr.num/fr.denom);
-      freq_mhz = freq_hz / 1000000;
-    }
-    if(freq_mhz > 36) freq_mhz = 36;
-    HDL_REG_MODIFY(i2c_periph->CTL1, I2C_CTL1_I2CCLK, freq_mhz);
-
-    if(100000U >= _i2c->config->speed) {
-      /* the maximum SCL rise time is 1000ns in standard mode */
-      uint32_t risetime = (uint32_t)(freq_mhz + 1U);
-      if(risetime > 36) i2c_periph->RT = 36;
-      else if(risetime < 2) i2c_periph->RT = 2;
-      else i2c_periph->RT = risetime;
-      uint32_t clkc = (uint32_t)(freq_hz/(_i2c->config->speed * 2U)); 
-      if(clkc < 4) clkc = 0x04U; /* the CLKC in standard mode minmum value is 4 */
-      HDL_REG_MODIFY(i2c_periph->CKCFG, I2C_CKCFG_CLKC, clkc);
-    }
-    else if(400000U >= _i2c->config->speed) {
-      /* the maximum SCL rise time is 300ns in fast mode */
-      i2c_periph->RT = (((freq_mhz * 300UL) / 1000UL) + 1UL);
-      uint32_t clkc = 1;
-      if(I2C_DTCY_2 == _i2c->config->dtcy) { /* I2C duty cycle is 2 */
-        clkc = (uint32_t)(freq_hz/(_i2c->config->speed * 3U));
-        i2c_periph->CKCFG &= ~I2C_CKCFG_DTCY;
-      }
-      else { /* I2C duty cycle is 16/9 */
-        clkc = (uint32_t)(freq_hz/(_i2c->config->speed * 25U));
-        i2c_periph->CKCFG |= I2C_CKCFG_DTCY;
-      }
-      if(0U == (clkc & I2C_CKCFG_CLKC)) clkc |= 0x0001U; /* the CLKC in fast mode minmum value is 1 */
-      i2c_periph->CKCFG |= I2C_CKCFG_FAST;
-      i2c_periph->CKCFG |= clkc;
-    }
+    i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
 
     for(uint32_t no = 0, ch = 0; no < 2; no++) {
       uint16_t addr = 0;

@@ -29,7 +29,7 @@ void usart1_handler()                { call_isr(USART1_IRQn, 0); }
 void i2c0_er_handler()               { call_isr(I2C0_ER_IRQn, 0); }
 void i2c1_er_handler()               { call_isr(I2C1_ER_IRQn, 0); }
 
-hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
+static hdl_module_state_t _hdl_core(void *desc, uint8_t enable) {
   if(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
@@ -40,3 +40,7 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
   return HDL_MODULE_UNLOADED;
 }
+
+hdl_module_base_iface_t hdl_core_iface = {
+  .init = _hdl_core
+};

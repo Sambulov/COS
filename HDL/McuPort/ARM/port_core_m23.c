@@ -114,7 +114,7 @@ void irq_n_handler() {
   call_isr(irq, 0);
 }
 
-hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
+static hdl_module_state_t _hdl_interrupt_controller(void *desc, uint8_t enable) {
   if(enable) {
     hdl_interrupt_controller_t *nvic = (hdl_interrupt_controller_t *)desc;
     /* NVIC_SetPriorityGrouping   not available for Cortex-M23 */
@@ -129,8 +129,8 @@ hdl_module_state_t hdl_interrupt_controller(void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrupt_t *isr) {
-  if((hdl_state(&ic->module) != HDL_MODULE_ACTIVE) || (ic->config->interrupts == NULL) || (isr == NULL))
+static uint8_t _hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrupt_t *isr) {
+  if((hdl_state(ic) != HDL_MODULE_ACTIVE) || (ic->config->interrupts == NULL) || (isr == NULL))
     return HDL_FALSE;
   uint32_t prio = ((isr->priority_group << (8U - ic->config->prio_bits)) | 
                   (isr->priority & (0xFF >> ic->config->prio_bits)) & 
@@ -167,5 +167,15 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrup
   }
   return HDL_TRUE;
 }
+
+static void _hdl_interrupt_sw_trigger(const hdl_interrupt_t *isr) {
+  NVIC_SetPendingIRQ(isr->irq_type);
+}
+
+hdl_interrupt_controller_iface_t hdl_interrupt_controller_iface = {
+  .init = &_hdl_interrupt_controller,
+  .request = &_hdl_interrupt_request,
+  .trigger = &_hdl_interrupt_sw_trigger
+};
 
 #endif

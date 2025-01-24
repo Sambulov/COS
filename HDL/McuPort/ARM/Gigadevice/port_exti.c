@@ -4,7 +4,7 @@
 #define hdl_exti_clear_pending(exti_line)       (EXTI_PD |= exti_line)
 
 void _hdl_exti_set(hdl_exti_controller_t *ext_ctrl) {
-  hdl_exti_t **extis = ext_ctrl->extis;
+  hdl_exti_t **extis = ext_ctrl->config->extis;
   if(extis != NULL) {
     while (*extis != NULL) {
       uint8_t exti_no = 31 - __CLZ((*extis)->line);
@@ -32,7 +32,7 @@ void _hdl_exti_set(hdl_exti_controller_t *ext_ctrl) {
   }
 }
 
-hdl_module_state_t hdl_exti(void *desc, uint8_t enable) {
+static hdl_module_state_t _hdl_exti(void *desc, uint8_t enable) {
   if(enable) {
     hdl_exti_controller_t *exti = (hdl_exti_controller_t *)desc;
     _hdl_exti_set(exti);
@@ -49,6 +49,11 @@ hdl_module_state_t hdl_exti(void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-void hdl_exti_sw_trigger(hdl_exti_controller_t *desc, hdl_exti_line_t line) {
+static void _hdl_exti_sw_trigger(hdl_exti_controller_t *desc, hdl_exti_line_t line) {
   EXTI_SWIEV |= line;
 }
+
+hdl_exti_controller_iface_t exti_controller_iface = {
+  .init = &_hdl_exti,
+  .trigger = &_hdl_exti_sw_trigger
+};

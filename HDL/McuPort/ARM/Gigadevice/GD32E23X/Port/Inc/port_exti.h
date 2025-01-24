@@ -71,20 +71,29 @@ typedef struct {
   hdl_exti_trigger_t trigger;
 } hdl_exti_t;
 
+typedef struct {
+  hdl_exti_t (*extis)[];
+} hdl_exti_controller_config_t;
+
+#define hdl_extis(...) ((hdl_exti_t *[]){__VA_ARGS__, NULL})
+
+typedef void (*hdl_exti_sw_trigger_t)(const hdl_module_base_t *, hdl_exti_line_t);
+
+typedef struct {
+  hdl_module_initializer_t init;
+  hdl_exti_sw_trigger_t trigger;
+} hdl_exti_controller_iface_t;
+
 /* 
   depends on:
   nvic
 */
+hdl_module_new_t(hdl_exti_controller_t, 0, hdl_exti_controller_config_t, hdl_exti_controller_iface_t);
 
-typedef struct {
-  hdl_module_t module;
-  hdl_exti_t **extis;
-} hdl_exti_controller_t;
+extern hdl_exti_controller_iface_t exti_controller_iface;
 
-#define hdl_extis(...) ((hdl_exti_t *[]){__VA_ARGS__, NULL})
-
-hdl_module_state_t hdl_exti(void *desc, uint8_t enable);
-
-void hdl_exti_sw_trigger(hdl_exti_controller_t *desc, hdl_exti_line_t line);
+__STATIC_INLINE void hdl_exti_sw_trigger(const hdl_module_base_t *exti, hdl_exti_line_t line) {
+  ((hdl_exti_controller_iface_t *)exti->iface)->trigger(exti, line);
+}
 
 #endif // PORT_EXTI_H_

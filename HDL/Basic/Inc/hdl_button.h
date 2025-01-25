@@ -10,7 +10,7 @@ typedef enum {
   HDL_BTN_CLICKED,
 } hdl_btn_state_t;
 
-#define HDL_BUTTON_PRV_SIZE    36
+#define HDL_BUTTON_VAR_SIZE    40
 
 typedef enum {
   HDL_BTN_EVENT_RELEASE = 0x01,
@@ -24,23 +24,45 @@ typedef struct {
   uint32_t hold_delay;
 } hdl_button_config_t;
 
+typedef hdl_btn_state_t (* hdl_button_state_get_t)(const void *);
+typedef uint8_t (* hdl_button_sw_action_t)(const void *);
+typedef void (* hdl_button_subscribe_t)(const void *, hdl_delegate_t *delegate);
+
+typedef struct {
+  hdl_module_initializer_t init;
+  hdl_button_subscribe_t subscribe;
+  hdl_button_state_get_t state_get;
+  hdl_button_sw_action_t press;
+  hdl_button_sw_action_t click;
+  hdl_button_sw_action_t release;
+} hdl_button_iface_t;
+
 /* depends on:
   gpio
   time_counter
  */
-typedef struct {
-  hdl_module_t module;
-  const hdl_button_config_t *config;
-  hdl_event_t event;
-  PRIVATE(hdl, HDL_BUTTON_PRV_SIZE);
-} hdl_button_t;
+hdl_module_new_t(hdl_button_t, HDL_BUTTON_VAR_SIZE, hdl_button_config_t, hdl_button_iface_t);
 
-hdl_module_state_t hdl_button(void *desc, uint8_t enable);
+extern hdl_button_iface_t hdl_button_iface;
 
-hdl_btn_state_t hdl_btn_state_get(hdl_button_t *btn);
+__STATIC_INLINE hdl_btn_state_t hdl_button_state_get(const void *btn) {
+  return ((hdl_button_t *)btn)->iface->state_get(btn);
+}
 
-uint8_t hdl_btn_sw_press(hdl_button_t *btn);
-uint8_t hdl_btn_sw_click(hdl_button_t *btn);
-uint8_t hdl_btn_sw_release(hdl_button_t *btn);
+__STATIC_INLINE uint8_t hdl_button_sw_press(const void *btn) {
+  return ((hdl_button_t *)btn)->iface->press(btn);
+}
+
+__STATIC_INLINE uint8_t hdl_button_sw_click(const void *btn) {
+  return ((hdl_button_t *)btn)->iface->click(btn);
+}
+
+__STATIC_INLINE uint8_t hdl_button_sw_release(const void *btn) {
+  return ((hdl_button_t *)btn)->iface->release(btn);
+}
+
+__STATIC_INLINE void hdl_button_subscribe(const void *btn, hdl_delegate_t *delegate) {
+  ((hdl_button_t *)btn)->iface->subscribe(btn, delegate);
+}
 
 #endif /* HDL_BUTTON_H_ */

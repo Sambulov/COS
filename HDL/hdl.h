@@ -23,7 +23,7 @@ extern "C" {
 
 #include "hdl_portable.h"
 
-//#include "hdl_button.h"
+#include "hdl_button.h"
 //#include "hdl_shift_reg.h"
 //#include "hdl_timer.h"
 

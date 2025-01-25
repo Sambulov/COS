@@ -20,9 +20,9 @@ typedef struct {
   const hdl_gpio_pin_hw_config_t *hwc;
 } hdl_gpio_pin_config_t;
 
-typedef hdl_gpio_state (*hdl_gpio_read_t)(const hdl_module_base_t *gpio);
-typedef void (*hdl_gpio_write_t)(const hdl_module_base_t *gpio, const hdl_gpio_state);
-typedef void (*hdl_gpio_toggle_t)(const hdl_module_base_t *gpio);
+typedef hdl_gpio_state (*hdl_gpio_read_t)(const void *gpio);
+typedef void (*hdl_gpio_write_t)(const void *gpio, const hdl_gpio_state);
+typedef void (*hdl_gpio_toggle_t)(const void *gpio);
 
 typedef struct {
   hdl_module_initializer_t init;
@@ -43,21 +43,21 @@ extern hdl_gpio_pin_iface_t hdl_gpio_pin_iface;
 #define hdl_gpio_is_set_as_inactive(gpio)      (hdl_gpio_read_output(gpio) == gpio->config->inactive_default)
 #define hdl_gpio_is_set_as_active(gpio)        (!hdl_gpio_is_set_as_inactive(gpio))
 
-__STATIC_INLINE hdl_gpio_state hdl_gpio_read(const hdl_module_base_t *gpio) {
-  return ((hdl_gpio_pin_iface_t *)gpio->iface)->read(gpio);
+__STATIC_INLINE hdl_gpio_state hdl_gpio_read(const void *gpio) {
+  return ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)gpio)->iface)->read(gpio);
 }
 
-__STATIC_INLINE hdl_gpio_state hdl_gpio_read_output(const hdl_module_base_t *gpio) {
-  return ((hdl_gpio_pin_iface_t *)gpio->iface)->read_ouput(gpio);
+__STATIC_INLINE hdl_gpio_state hdl_gpio_read_output(const void *gpio) {
+  return ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)gpio)->iface)->read_ouput(gpio);
 }
 
-__STATIC_INLINE void hdl_gpio_write(const hdl_module_base_t *gpio, const hdl_gpio_state state) {
-  ((hdl_gpio_pin_iface_t *)gpio->iface)->write(gpio, state);
+__STATIC_INLINE void hdl_gpio_write(const void *gpio, const hdl_gpio_state state) {
+  ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)gpio)->iface)->write(gpio, state);
 }
 
 
-__STATIC_INLINE void hdl_gpio_toggle(const hdl_module_base_t *gpio) {
-  ((hdl_gpio_pin_iface_t *)gpio->iface)->toggle(gpio);
+__STATIC_INLINE void hdl_gpio_toggle(const void *gpio) {
+  ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)gpio)->iface)->toggle(gpio);
 }
 
 #endif // HDL_GPIO_H_

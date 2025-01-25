@@ -27,7 +27,7 @@ static hdl_module_state_t _hdl_time_counter(const void *desc, const uint8_t enab
   return HDL_MODULE_UNLOADED;
 }
 
-static uint32_t _hdl_time_counter_get(const hdl_module_base_t *desc) {
+static uint32_t _hdl_time_counter_get(const void *desc) {
   if(hdl_state(desc) != HDL_MODULE_FAULT) {
     return ((hdl_time_counter_var_t *)((hdl_time_counter_t *)desc)->obj_var)->count;
   }

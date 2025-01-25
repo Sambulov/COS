@@ -29,7 +29,7 @@ const hdl_core_config_t mod_sys_core_cnf = {
   .reg = (void *)SCB_BASE
 };
 
-hdl_core_t mod_sys_core = {
+const hdl_core_t mod_sys_core = {
   .iface = &hdl_core_iface,
   .dependencies = NULL,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
@@ -141,7 +141,7 @@ const hdl_interrupt_controller_config_t mod_nvic_cnf = {
   .reg = (void *)NVIC,
 };
 
-hdl_interrupt_controller_t mod_nvic = {
+const hdl_interrupt_controller_t mod_nvic = {
   .iface = &hdl_interrupt_controller_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_sys_core),
   .config = &mod_nvic_cnf,
@@ -152,7 +152,7 @@ hdl_interrupt_controller_t mod_nvic = {
  *  Clock
  *************************************************************/
 
-hdl_clock_t mod_clock_irc8m = {
+const hdl_clock_t mod_clock_irc8m = {
   .iface = &hdl_clock_iface,
   .dependencies = NULL,
   .config = hdl_module_config(hdl_clock_config_t,
@@ -164,7 +164,7 @@ hdl_clock_t mod_clock_irc8m = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_hxtal = {
+const hdl_clock_t mod_clock_hxtal = {
   .iface = &hdl_clock_iface,
   .dependencies = NULL,
   .config = hdl_module_config(hdl_clock_config_t,
@@ -176,7 +176,7 @@ hdl_clock_t mod_clock_hxtal = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_lxtal = {
+const hdl_clock_t mod_clock_lxtal = {
   .iface = &hdl_clock_iface,
   .dependencies = NULL,
   .config = hdl_module_config(hdl_clock_config_t,
@@ -188,7 +188,7 @@ hdl_clock_t mod_clock_lxtal = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_irc28m = {
+const hdl_clock_t mod_clock_irc28m = {
   .iface = &hdl_clock_iface,
   .dependencies = NULL,
   .config = hdl_module_config(hdl_clock_config_t,
@@ -200,7 +200,7 @@ hdl_clock_t mod_clock_irc28m = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_irc40k = {
+const hdl_clock_t mod_clock_irc40k = {
   .iface = &hdl_clock_iface,
   .dependencies = NULL,
   .config = hdl_module_config(hdl_clock_config_t,
@@ -212,7 +212,7 @@ hdl_clock_t mod_clock_irc40k = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_pll_sel = {
+const hdl_clock_t mod_clock_pll_sel = {
   .iface = &hdl_clock_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&HDL_PLL_MUL_CLOCK),
   .config = hdl_module_config(hdl_clock_config_t,
@@ -225,7 +225,7 @@ hdl_clock_t mod_clock_pll_sel = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_pll = {
+const hdl_clock_t mod_clock_pll = {
   .iface = &hdl_clock_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_pll_sel),
   .config = hdl_module_config(hdl_clock_config_t,
@@ -238,7 +238,7 @@ hdl_clock_t mod_clock_pll = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_system = {
+const hdl_clock_t mod_clock_system = {
   .iface = &hdl_clock_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_sys_core, 
     (hdl_module_base_t *)&mod_clock_irc8m, (hdl_module_base_t *)&HDL_SYS_CLOCK),
@@ -250,7 +250,7 @@ hdl_clock_t mod_clock_system = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_rtc = {
+const hdl_clock_t mod_clock_rtc = {
   .iface = &hdl_clock_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&HDL_RTC_CLOCK),
   .config = hdl_module_config(hdl_clock_config_t,
@@ -261,7 +261,7 @@ hdl_clock_t mod_clock_rtc = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_ahb = {
+const hdl_clock_t mod_clock_ahb = {
   .iface = &hdl_clock_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_system),
   .config = hdl_module_config(hdl_clock_config_t,
@@ -273,7 +273,7 @@ hdl_clock_t mod_clock_ahb = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_apb1 = {
+const hdl_clock_t mod_clock_apb1 = {
   .iface = &hdl_clock_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
   .config = hdl_module_config(hdl_clock_config_t,
@@ -285,7 +285,7 @@ hdl_clock_t mod_clock_apb1 = {
   .obj_var = static_malloc(HDL_CLOCK_PRV_SIZE)
 };
 
-hdl_clock_t mod_clock_apb2 = {
+const hdl_clock_t mod_clock_apb2 = {
   .iface = &hdl_clock_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
   .config = hdl_module_config(hdl_clock_config_t,
@@ -301,7 +301,7 @@ const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
   .period = HDL_SYSTICK_COUNTER_RELOAD
 };
 
-hdl_tick_counter_t mod_systick_counter = {
+const hdl_tick_counter_t mod_systick_counter = {
   .iface = &hdl_tick_counter_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
   .config = hdl_module_config(hdl_tick_counter_config_t,
@@ -311,7 +311,7 @@ hdl_tick_counter_t mod_systick_counter = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
-hdl_time_counter_t mod_timer_ms = {
+const hdl_time_counter_t mod_timer_ms = {
   .iface = &hdl_time_counter_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_systick_counter, (hdl_module_base_t *)&mod_nvic),
   .config = hdl_module_config(hdl_time_counter_config_t, .reload_interrupt = &mod_irq_systick),
@@ -323,7 +323,7 @@ hdl_time_counter_t mod_timer_ms = {
  *  GPIO
  *************************************************************/
 
-hdl_gpio_port_t hdl_gpio_port_a = {
+const hdl_gpio_port_t hdl_gpio_port_a = {
   .iface = &hdl_gpio_port_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
   .config = hdl_module_config(hdl_gpio_port_config_t,
@@ -333,7 +333,7 @@ hdl_gpio_port_t hdl_gpio_port_a = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
-hdl_gpio_port_t hdl_gpio_port_b = {
+const hdl_gpio_port_t hdl_gpio_port_b = {
   .iface = &hdl_gpio_port_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
   .config = hdl_module_config(hdl_gpio_port_config_t,
@@ -343,7 +343,7 @@ hdl_gpio_port_t hdl_gpio_port_b = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
-hdl_gpio_port_t hdl_gpio_port_c = {
+const hdl_gpio_port_t hdl_gpio_port_c = {
   .iface = &hdl_gpio_port_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
   .config = hdl_module_config(hdl_gpio_port_config_t,
@@ -353,7 +353,7 @@ hdl_gpio_port_t hdl_gpio_port_c = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
-hdl_gpio_port_t hdl_gpio_port_f = {
+const hdl_gpio_port_t hdl_gpio_port_f = {
   .iface = &hdl_gpio_port_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
   .config = hdl_module_config(hdl_gpio_port_config_t,
@@ -408,7 +408,7 @@ const hdl_gpio_pin_hw_config_t hdl_gpio_spi_mode = {
   .otype = GPIO_OTYPE_PP,
 };
 
-hdl_gpio_pin_t uspd20k_ai1_ntc_pu = {
+const hdl_gpio_pin_t uspd20k_ai1_ntc_pu = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -419,7 +419,7 @@ hdl_gpio_pin_t uspd20k_ai1_ntc_pu = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA8)
 
-hdl_gpio_pin_t uspd20k_ai1_1k_pd = {
+const hdl_gpio_pin_t uspd20k_ai1_1k_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -430,7 +430,7 @@ hdl_gpio_pin_t uspd20k_ai1_1k_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA9)
 
-hdl_gpio_pin_t uspd20k_ai1_cur_scr_low = {
+const hdl_gpio_pin_t uspd20k_ai1_cur_scr_low = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -441,7 +441,7 @@ hdl_gpio_pin_t uspd20k_ai1_cur_scr_low = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA15)
 
-hdl_gpio_pin_t uspd20k_ai1_cur_scr_high = {
+const hdl_gpio_pin_t uspd20k_ai1_cur_scr_high = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -452,7 +452,7 @@ hdl_gpio_pin_t uspd20k_ai1_cur_scr_high = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB3)
 
-hdl_gpio_pin_t uspd20k_ai1_150r_pd = {
+const hdl_gpio_pin_t uspd20k_ai1_150r_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -463,7 +463,7 @@ hdl_gpio_pin_t uspd20k_ai1_150r_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA10)
 
-hdl_gpio_pin_t uspd20k_ai1_4K3_pd = {
+const hdl_gpio_pin_t uspd20k_ai1_4K3_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -474,7 +474,7 @@ hdl_gpio_pin_t uspd20k_ai1_4K3_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA11)
 
-hdl_gpio_pin_t uspd20k_ai2_ntc_pu = {
+const hdl_gpio_pin_t uspd20k_ai2_ntc_pu = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_c),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -485,7 +485,7 @@ hdl_gpio_pin_t uspd20k_ai2_ntc_pu = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PC13)
 
-hdl_gpio_pin_t uspd20k_ai2_1k_pd = {
+const hdl_gpio_pin_t uspd20k_ai2_1k_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -496,7 +496,7 @@ hdl_gpio_pin_t uspd20k_ai2_1k_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB4)
 
-hdl_gpio_pin_t uspd20k_ai2_cur_scr_low = {
+const hdl_gpio_pin_t uspd20k_ai2_cur_scr_low = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -507,7 +507,7 @@ hdl_gpio_pin_t uspd20k_ai2_cur_scr_low = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB7)
 
-hdl_gpio_pin_t uspd20k_ai2_cur_scr_high = {
+const hdl_gpio_pin_t uspd20k_ai2_cur_scr_high = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -518,7 +518,7 @@ hdl_gpio_pin_t uspd20k_ai2_cur_scr_high = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB15)
 
-hdl_gpio_pin_t uspd20k_ai2_150r_pd = {
+const hdl_gpio_pin_t uspd20k_ai2_150r_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -529,7 +529,7 @@ hdl_gpio_pin_t uspd20k_ai2_150r_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB5)
 
-hdl_gpio_pin_t uspd20k_ai2_4K3_pd = {
+const hdl_gpio_pin_t uspd20k_ai2_4K3_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -540,7 +540,7 @@ hdl_gpio_pin_t uspd20k_ai2_4K3_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB6)
 
-hdl_gpio_pin_t uspd20k_ai3_ntc_pu = {
+const hdl_gpio_pin_t uspd20k_ai3_ntc_pu = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -551,7 +551,7 @@ hdl_gpio_pin_t uspd20k_ai3_ntc_pu = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB14)
 
-hdl_gpio_pin_t uspd20k_ai3_1k_pd = {
+const hdl_gpio_pin_t uspd20k_ai3_1k_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -562,7 +562,7 @@ hdl_gpio_pin_t uspd20k_ai3_1k_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB12)
 
-hdl_gpio_pin_t uspd20k_ai3_cur_scr_low = {
+const hdl_gpio_pin_t uspd20k_ai3_cur_scr_low = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -573,7 +573,7 @@ hdl_gpio_pin_t uspd20k_ai3_cur_scr_low = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB13)
 
-hdl_gpio_pin_t uspd20k_ai3_cur_scr_high = {
+const hdl_gpio_pin_t uspd20k_ai3_cur_scr_high = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -584,7 +584,7 @@ hdl_gpio_pin_t uspd20k_ai3_cur_scr_high = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB2)
 
-hdl_gpio_pin_t uspd20k_ai3_150r_pd = {
+const hdl_gpio_pin_t uspd20k_ai3_150r_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -595,7 +595,7 @@ hdl_gpio_pin_t uspd20k_ai3_150r_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB11)
 
-hdl_gpio_pin_t uspd20k_ai3_4K3_pd = {
+const hdl_gpio_pin_t uspd20k_ai3_4K3_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -606,7 +606,7 @@ hdl_gpio_pin_t uspd20k_ai3_4K3_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB10)
 
-hdl_gpio_pin_t uspd20k_ai4_ntc_pu = {
+const hdl_gpio_pin_t uspd20k_ai4_ntc_pu = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -617,7 +617,7 @@ hdl_gpio_pin_t uspd20k_ai4_ntc_pu = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB1)
 
-hdl_gpio_pin_t uspd20k_ai4_1k_pd = {
+const hdl_gpio_pin_t uspd20k_ai4_1k_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -628,18 +628,18 @@ hdl_gpio_pin_t uspd20k_ai4_1k_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA1)
 
-hdl_gpio_pin_t uspd20k_ai4_cur_scr_low = {
+const hdl_gpio_pin_t uspd20k_ai4_cur_scr_low = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
-    .hwc = &mod_gpio_output_pp_mode,
-    .inactive_default = HDL_GPIO_LOW,
+    .hwc = &mod_gpio_input_pullup_mode,
+    .inactive_default = HDL_GPIO_HIGH,
     .pin = GPIO_PIN_0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA0)
 
-hdl_gpio_pin_t uspd20k_ai4_cur_scr_high = {
+const hdl_gpio_pin_t uspd20k_ai4_cur_scr_high = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -650,7 +650,7 @@ hdl_gpio_pin_t uspd20k_ai4_cur_scr_high = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB0)
 
-hdl_gpio_pin_t uspd20k_ai4_150r_pd = {
+const hdl_gpio_pin_t uspd20k_ai4_150r_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -661,7 +661,7 @@ hdl_gpio_pin_t uspd20k_ai4_150r_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA2)
 
-hdl_gpio_pin_t uspd20k_ai4_4K3_pd = {
+const hdl_gpio_pin_t uspd20k_ai4_4K3_pd = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -672,7 +672,7 @@ hdl_gpio_pin_t uspd20k_ai4_4K3_pd = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA3)
 
-hdl_gpio_pin_t uspd20k_som_int = {
+const hdl_gpio_pin_t uspd20k_som_int = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -683,7 +683,7 @@ hdl_gpio_pin_t uspd20k_som_int = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA12)
 
-hdl_gpio_pin_t mod_pin_12c0_scl = {
+const hdl_gpio_pin_t mod_pin_12c0_scl = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -694,7 +694,7 @@ hdl_gpio_pin_t mod_pin_12c0_scl = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB8)
 
-hdl_gpio_pin_t mod_pin_12c0_sda = {
+const hdl_gpio_pin_t mod_pin_12c0_sda = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -705,7 +705,7 @@ hdl_gpio_pin_t mod_pin_12c0_sda = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PB9)
 
-hdl_gpio_pin_t mod_pin_12c1_scl = {
+const hdl_gpio_pin_t mod_pin_12c1_scl = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_f),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -716,7 +716,7 @@ hdl_gpio_pin_t mod_pin_12c1_scl = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PF6)
 
-hdl_gpio_pin_t mod_pin_12c1_sda = {
+const hdl_gpio_pin_t mod_pin_12c1_sda = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_f),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -727,7 +727,7 @@ hdl_gpio_pin_t mod_pin_12c1_sda = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PF7)
 
-hdl_gpio_pin_t mod_spi_0_mosi = {
+const hdl_gpio_pin_t mod_spi_0_mosi = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -738,7 +738,7 @@ hdl_gpio_pin_t mod_spi_0_mosi = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA7)
 
-hdl_gpio_pin_t mod_spi_0_miso = {
+const hdl_gpio_pin_t mod_spi_0_miso = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -749,7 +749,7 @@ hdl_gpio_pin_t mod_spi_0_miso = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA6)
 
-hdl_gpio_pin_t mod_spi_0_sck = {
+const hdl_gpio_pin_t mod_spi_0_sck = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -760,7 +760,7 @@ hdl_gpio_pin_t mod_spi_0_sck = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA5)
 
-hdl_gpio_pin_t mod_spi_0_cs = {
+const hdl_gpio_pin_t mod_spi_0_cs = {
   .iface = &hdl_gpio_pin_iface,
   .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
@@ -770,6 +770,17 @@ hdl_gpio_pin_t mod_spi_0_cs = {
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 }; //(PA4)
+
+const hdl_button_t button = {
+  .iface = &hdl_button_iface,
+  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&uspd20k_ai4_cur_scr_low, (hdl_module_base_t *)&mod_timer_ms),
+  .config = hdl_module_config(hdl_button_config_t,
+    .debounce_delay = 30,
+    .hold_delay = 3000
+  ),
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .obj_var = static_malloc(HDL_BUTTON_VAR_SIZE)
+};
 
 /**************************************************************
  *  I2C

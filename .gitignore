@@ -6,6 +6,7 @@ build/
 !Projects/
 Projects/*
 !Projects/DEMO_*
+!Projects/TEST_*
 !Projects/CMakeLists.txt
 .cortex-debug.*
 .vscode/settings.json

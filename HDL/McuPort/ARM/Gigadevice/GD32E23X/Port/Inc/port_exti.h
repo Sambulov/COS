@@ -72,7 +72,7 @@ typedef struct {
 } hdl_exti_t;
 
 typedef struct {
-  hdl_exti_t (*extis)[];
+  hdl_exti_t **extis;
 } hdl_exti_controller_config_t;
 
 #define hdl_extis(...) ((hdl_exti_t *[]){__VA_ARGS__, NULL})

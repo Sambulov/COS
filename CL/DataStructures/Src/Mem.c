@@ -20,7 +20,7 @@ void mem_move(void* dst, const void* src, size_t cnt)
 {
 	if (src != dst && cnt != 0)
 	{
-		ptrdiff_t dif = src - dst;
+		size_t dif = src - dst;
 		if (dif > 0 || -dif >= cnt)
 		{
 			mem_cpy(dst, src, cnt);

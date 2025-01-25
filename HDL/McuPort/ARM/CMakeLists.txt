@@ -20,5 +20,5 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ST")
 
 #=================
 #-ffunction-sections -fdata-sections -fno-common
-set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mthumb -mlittle-endian -mthumb-interwork -fmessage-length=0)
+#set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -fdata-sections -mthumb -mlittle-endian -mthumb-interwork -fmessage-length=0)
 set_property(GLOBAL APPEND PROPERTY HDL_DEFINES "ARM_MATH_CM3;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING;")

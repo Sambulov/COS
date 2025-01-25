@@ -10,28 +10,31 @@ typedef enum {
 
 _Static_assert(HDL_GPIO_LOW == !HDL_GPIO_HIGH, "Expression (HDL_GPIO_LOW == !HDL_GPIO_HIGH) must always be true");
 
-// typedef struct {
-//   const hdl_gpio_port_hw_config_t *hwc;
-// } hdl_gpio_port_config_t;
+hdl_module_new_t(hdl_gpio_port_t, 0, hdl_gpio_port_config_t, hdl_module_base_iface_t);
 
-// #define hdl_gpio_port_config(...) (hdl_gpio_port_config_t []){{__VA_ARGS__}}
-
-typedef struct {
-  hdl_module_t module;
-  const hdl_gpio_port_config_t *config;
-} hdl_gpio_port_t;
+extern hdl_module_base_iface_t hdl_gpio_port_iface;
 
 typedef struct {
   hdl_gpio_state inactive_default;
+  uint32_t pin;
   const hdl_gpio_pin_hw_config_t *hwc;
 } hdl_gpio_pin_config_t;
 
-#define hdl_gpio_pin_config(...) (const hdl_gpio_pin_config_t []){{__VA_ARGS__}}
+typedef hdl_gpio_state (*hdl_gpio_read_t)(const hdl_module_base_t *gpio);
+typedef void (*hdl_gpio_write_t)(const hdl_module_base_t *gpio, const hdl_gpio_state);
+typedef void (*hdl_gpio_toggle_t)(const hdl_module_base_t *gpio);
 
 typedef struct {
-  hdl_module_t module;
-  const hdl_gpio_pin_config_t *config;
-} hdl_gpio_pin_t;
+  hdl_module_initializer_t init;
+  hdl_gpio_read_t read;
+  hdl_gpio_read_t read_ouput;
+  hdl_gpio_write_t write;
+  hdl_gpio_toggle_t toggle;
+} hdl_gpio_pin_iface_t;
+
+hdl_module_new_t(hdl_gpio_pin_t, 0, hdl_gpio_pin_config_t, hdl_gpio_pin_iface_t);
+
+extern hdl_gpio_pin_iface_t hdl_gpio_pin_iface;
 
 #define hdl_gpio_set_inactive(gpio)            (hdl_gpio_write((gpio), (gpio)->config->inactive_default))
 #define hdl_gpio_set_active(gpio)              (hdl_gpio_write((gpio), !((gpio)->config->inactive_default)))
@@ -40,12 +43,21 @@ typedef struct {
 #define hdl_gpio_is_set_as_inactive(gpio)      (hdl_gpio_read_output(gpio) == gpio->config->inactive_default)
 #define hdl_gpio_is_set_as_active(gpio)        (!hdl_gpio_is_set_as_inactive(gpio))
 
-hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable);
-hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable);
+__STATIC_INLINE hdl_gpio_state hdl_gpio_read(const hdl_module_base_t *gpio) {
+  return ((hdl_gpio_pin_iface_t *)gpio->iface)->read(gpio);
+}
 
-hdl_gpio_state hdl_gpio_read(const hdl_gpio_pin_t *gpio);
-hdl_gpio_state hdl_gpio_read_output(const hdl_gpio_pin_t *gpio);
-void hdl_gpio_write(const hdl_gpio_pin_t *gpio, const hdl_gpio_state state);
-void hdl_gpio_toggle(const hdl_gpio_pin_t *gpio);
+__STATIC_INLINE hdl_gpio_state hdl_gpio_read_output(const hdl_module_base_t *gpio) {
+  return ((hdl_gpio_pin_iface_t *)gpio->iface)->read_ouput(gpio);
+}
+
+__STATIC_INLINE void hdl_gpio_write(const hdl_module_base_t *gpio, const hdl_gpio_state state) {
+  ((hdl_gpio_pin_iface_t *)gpio->iface)->write(gpio, state);
+}
+
+
+__STATIC_INLINE void hdl_gpio_toggle(const hdl_module_base_t *gpio) {
+  ((hdl_gpio_pin_iface_t *)gpio->iface)->toggle(gpio);
+}
 
 #endif // HDL_GPIO_H_

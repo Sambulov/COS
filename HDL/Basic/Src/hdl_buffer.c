@@ -57,7 +57,7 @@ uint32_t hdl_isr_buffer_tx_av(void *proto) {
 }
 
 void hdl_isr_buffer_eot(void *proto) {
-
+  (void)proto;
 }
 
 hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_isr_buffer_config_t *cnf) {

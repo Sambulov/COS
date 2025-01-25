@@ -114,7 +114,7 @@ void irq_n_handler() {
   call_isr(irq, 0);
 }
 
-static hdl_module_state_t _hdl_interrupt_controller(void *desc, uint8_t enable) {
+static hdl_module_state_t _hdl_interrupt_controller(const void *desc, uint8_t enable) {
   if(enable) {
     hdl_interrupt_controller_t *nvic = (hdl_interrupt_controller_t *)desc;
     /* NVIC_SetPriorityGrouping   not available for Cortex-M23 */
@@ -129,12 +129,12 @@ static hdl_module_state_t _hdl_interrupt_controller(void *desc, uint8_t enable) 
   return HDL_MODULE_UNLOADED;
 }
 
-static uint8_t _hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrupt_t *isr) {
-  if((hdl_state(ic) != HDL_MODULE_ACTIVE) || (ic->config->interrupts == NULL) || (isr == NULL))
+static uint8_t _hdl_interrupt_request(const hdl_module_base_t *int_ctr, const hdl_interrupt_t *isr) {
+  hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)int_ctr;
+  if((hdl_state(int_ctr) != HDL_MODULE_ACTIVE) || (ic->config->interrupts == NULL) || (isr == NULL))
     return HDL_FALSE;
   uint32_t prio = ((isr->priority_group << (8U - ic->config->prio_bits)) | 
-                  (isr->priority & (0xFF >> ic->config->prio_bits)) & 
-                  0xFFUL);
+                  ((isr->priority & (0xFF >> ic->config->prio_bits)) & 0xFFUL));
   uint32_t shift = _BIT_SHIFT(isr->irq_type);
   volatile uint32_t *ipr = (isr->irq_type < 0)? &(SCB->SHPR[_SHP_IDX(isr->irq_type)]):
                                                     &(NVIC->IPR[_IP_IDX(isr->irq_type)]);
@@ -168,7 +168,8 @@ static uint8_t _hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_
   return HDL_TRUE;
 }
 
-static void _hdl_interrupt_sw_trigger(const hdl_interrupt_t *isr) {
+static void _hdl_interrupt_sw_trigger(const hdl_module_base_t *int_ctr, const hdl_interrupt_t *isr) {
+  (void)int_ctr;
   NVIC_SetPendingIRQ(isr->irq_type);
 }
 

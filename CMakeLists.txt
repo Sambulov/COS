@@ -15,33 +15,10 @@ set(CMAKE_C_STANDARD 11)
 #set(CMAKE_C_EXTENSIONS OFF)
 
 # Uncomment to mitigate c++17 absolute addresses warnings
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register")
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-  message(STATUS "Maximum optimization for speed")
-  add_compile_options(-O2)
-elseif("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-  message(STATUS "Maximum optimization for speed, debug info included")
-  add_compile_options(-O2 -g)
-elseif("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
-  message(STATUS "Maximum optimization for size")
-  add_compile_options(-Os)
-else()
-  message(STATUS "Minimal optimization, debug info included")
-  set(CMAKE_VERBOSE_MAKEFILE ON)
-  add_compile_definitions("DEBUG")
-  add_compile_options(-Og -g3 -gdwarf-2 -ggdb)
-  add_link_options(-Og -g3 -gdwarf-2 -ggdb)
-endif()
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/Projects")
 add_subdirectory("${CMAKE_SOURCE_DIR}/HDL")
 add_subdirectory("${CMAKE_SOURCE_DIR}/CL")
-
-get_property(PROJECT_SOURCES GLOBAL PROPERTY PROJECT_SOURCES)
-get_property(PROJECT_HEADERS GLOBAL PROPERTY PROJECT_HEADERS)
-
-get_property(PROJECT_DEFINITIONS GLOBAL PROPERTY PROJECT_DEFINITIONS)
-add_compile_definitions(${PROJECT_DEFINITIONS})
 
 get_property(TOOLCHAIN_PREFIX GLOBAL PROPERTY TOOLCHAIN_PREFIX)
 get_property(TOOLCHAIN_DIR GLOBAL PROPERTY TOOLCHAIN_DIR)
@@ -53,32 +30,67 @@ set(CMAKE_OBJCOPY ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}objcopy)
 set(CMAKE_OBJDUMP ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}objdump)
 set(CMAKE_SIZE ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}size)
 
-# Set compiler options
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+  message(STATUS "Maximum optimization for speed")
+  set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -O2)
+  set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -O2)
+elseif("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+  message(STATUS "Maximum optimization for speed, debug info included")
+  set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -O2 -g)
+  set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -O2 -g)
+elseif("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
+  message(STATUS "Maximum optimization for size")
+  set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -Os)
+  set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -Os)
+else()
+  message(STATUS "Minimal optimization, debug info included")
+  set(CMAKE_VERBOSE_MAKEFILE ON)
+  add_compile_definitions("DEBUG")
+  set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -O0 -Og -g3 -gdwarf-2 -ggdb)
+  set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -O0 -Og -g3 -gdwarf-2 -ggdb)
+endif()
+
+# Get compiler options
 get_property(MAIN_CFLAGS GLOBAL PROPERTY HDL_COMPILE_OPTIONS)
-add_compile_options(${MAIN_CFLAGS})
-
-# Set linker options
+# Get linker options
 get_property(LINKER_FLAGS GLOBAL PROPERTY HDL_LINK_OPTIONS)
-add_link_options(${LINKER_FLAGS})
-# Set compile def
-get_property(DEFINITIONS GLOBAL PROPERTY HDL_DEFINES)
-add_compile_definitions(${DEFINITIONS})
+# Get compile def
+get_property(PROJECT_DEFINITIONS GLOBAL PROPERTY PROJECT_DEFINITIONS)
+get_property(HDL_DEFINITIONS GLOBAL PROPERTY HDL_DEFINES)
+get_property(CL_DEFINITIONS GLOBAL PROPERTY CL_DEFINES)
+# Get sources
+get_property(PROJECT_SOURCES GLOBAL PROPERTY PROJECT_SOURCES)
 get_property(HDL_SOURCES GLOBAL PROPERTY HDL_SOURCES)
-get_property(HDL_HEADERS GLOBAL PROPERTY HDL_HEADERS)
-
-
-# Set compile def
-get_property(DEFINITIONS GLOBAL PROPERTY CL_DEFINES)
-add_compile_definitions(${DEFINITIONS})
 get_property(CL_SOURCES GLOBAL PROPERTY CL_SOURCES)
+# Get headers
 get_property(CL_HEADERS GLOBAL PROPERTY CL_HEADERS)
+get_property(HDL_HEADERS GLOBAL PROPERTY HDL_HEADERS)
+get_property(PROJECT_HEADERS GLOBAL PROPERTY PROJECT_HEADERS)
+
 
 include_directories( ${PROJECT_HEADERS} )
 include_directories( ${HDL_HEADERS} )
 include_directories( ${CL_HEADERS} )
 
 
-add_executable(${EXECUTABLE} ${PROJECT_SOURCES} ${HDL_SOURCES} ${CL_SOURCES} ${LINKER_SCRIPT})
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g3 -Wall -Wextra -fno-builtin -ffunction-sections -fdata-sections -fno-builtin -mthumb -mlittle-endian -mfloat-abi=soft -ffreestanding -std=gnu11 -mcpu=cortex-m23")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -Wl,--print-memory-usage -Wl,-Map=output.map -T ${CMAKE_BINARY_DIR}/linkerscript.ld")
+
+#add_compile_options(${MAIN_CFLAGS})
+#add_link_options(${LINKER_FLAGS})
+add_compile_definitions(${HDL_DEFINITIONS})
+add_compile_definitions(${CL_DEFINITIONS})
+add_compile_definitions(${PROJECT_DEFINITIONS})
+
+add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES}  ${CL_SOURCES} ${LINKER_SCRIPT})
+
+# Указываем, что нужно использовать newlib-nano
+#target_link_libraries(${EXECUTABLE} -specs=nano.specs)
+
+# Указываем, что нужно использовать nosys.specs (если не используются системные вызовы)
+target_link_libraries(${EXECUTABLE} -specs=nosys.specs)
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
@@ -91,7 +103,6 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
 # Print executable size
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
   COMMAND ${CMAKE_SIZE} ${EXECUTABLE})
-
 
 get_property(PROJECT_BOARD GLOBAL PROPERTY BOARD)
 get_property(PROJECT_CORE GLOBAL PROPERTY CORE)

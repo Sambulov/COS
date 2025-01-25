@@ -17,15 +17,11 @@ typedef struct {
   hdl_module_initializer_t init;
 } hdl_module_base_iface_t;
 
-typedef struct {
-  PRIVATE(mod, HDL_MODULE_VAR_SIZE);
-} hdl_module_base_var_t;
-
 typedef struct _HDL_MODULE_BASE_T_ {
   const hdl_module_base_iface_t *iface;
   struct _HDL_MODULE_BASE_T_ * const *dependencies;
   void *config;
-  hdl_module_base_var_t *mod_var;
+  size_t (*mod_var)[((HDL_MODULE_VAR_SIZE + (sizeof(size_t) - 1)) >> 2)];
 } hdl_module_base_t;
 
 extern hdl_module_base_t hdl_null_module;
@@ -36,12 +32,12 @@ extern hdl_module_base_t hdl_null_module;
 
 #define hdl_module_config(type, ...) (const type []){{__VA_ARGS__}}
 
-#define hdl_module_new_t(name, var_size, config_t, iface_t) \ 
+#define hdl_module_new_t(name, var_size, config_t, iface_t) \
   typedef struct { \
     iface_t *iface; \
     hdl_module_base_t * const *dependencies; \
     const config_t *config; \
-    hdl_module_base_var_t *mod_var; \
+    size_t (*mod_var)[((HDL_MODULE_VAR_SIZE + (sizeof(size_t) - 1)) >> 2)];\
     size_t (*obj_var)[((var_size + (sizeof(size_t) - 1)) >> 2)];\
   } name;
 

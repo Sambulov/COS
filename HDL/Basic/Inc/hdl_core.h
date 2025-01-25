@@ -21,7 +21,7 @@ extern hdl_module_base_iface_t hdl_core_iface;
 extern hdl_interrupt_controller_iface_t hdl_interrupt_controller_iface;
 
 __STATIC_INLINE uint8_t hdl_interrupt_request(const hdl_module_base_t *ic, const hdl_interrupt_t *isr) {
-  ((hdl_interrupt_controller_iface_t *)ic->iface)->request(ic, isr);
+  return ((hdl_interrupt_controller_iface_t *)ic->iface)->request(ic, isr);
 }
 
 __STATIC_INLINE void hdl_interrupt_sw_trigger(const hdl_module_base_t *ic, const hdl_interrupt_t *isr) {

@@ -23,8 +23,6 @@ void vMedianFilterInit(MedianFilter_t *pxFilter, uint32_t ulDefaultValue, uint32
 }
 
 static uint32_t _bFilterFindMedian(MedianFilterPrv_t *pxFlt) {
-  uint32_t tmp;
-  uint8_t inserted = 0;
   uint32_t median = pxFlt->ulData[pxFlt->xPrivate.usIndex];
   while(1) {
     uint32_t bigger = 0;

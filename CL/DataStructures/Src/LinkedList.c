@@ -166,6 +166,7 @@ uint32_t ulLinkedListCount(LinkedList_t xList, LinkedListMatch_t pfMatch, void *
 }
 
 static inline void _vUnlinkForeachWrap(LinkedListItem_t *pxItem, void *pxArg) {
+	(void)pxArg;
 	vLinkedListUnlink(pxItem);
 }
 

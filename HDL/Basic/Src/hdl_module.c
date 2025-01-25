@@ -14,13 +14,14 @@ hdl_module_base_t hdl_null_module = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_module_var_t, hdl_module_base_var_t, HDL_MODULE_VAR_SIZE, hdl_module.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_module_var_t, *((hdl_module_base_t *)0)->mod_var, HDL_MODULE_VAR_SIZE, hdl_module.h);
 
 static linked_list_t _mod_load = NULL;
 static linked_list_t _mod_active = NULL;
 static linked_list_t _mod_unload = NULL;
 
 static uint8_t _hdl_module_work(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this; (void)arg;
   hdl_module_state_t res;
   hdl_module_var_t *mod_var = linked_list_get_object(hdl_module_var_t, _mod_unload);
   if(mod_var != NULL) {
@@ -77,7 +78,9 @@ void hdl_enable(const void *desc) {
   hdl_module_var_t *module_var = (hdl_module_var_t *)((hdl_module_base_t *)desc)->mod_var;
   hdl_module_state_t res = hdl_state(desc);
   if(res < HDL_MODULE_ACTIVE) {
-    _hdl_hw_enable_parents((hdl_module_base_t *)desc);
+    hdl_module_base_t *mod = (hdl_module_base_t *)desc;
+    ((hdl_module_var_t *)mod->mod_var)->mod = mod;
+    _hdl_hw_enable_parents(mod);
     module_var->dependents = 1;
     linked_list_insert_last(&_mod_load, linked_list_item(module_var));
     coroutine_add(&hdl_module_worker, &_hdl_module_work, NULL);

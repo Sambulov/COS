@@ -91,7 +91,7 @@ void svc_handler() {
   // asm ("AND            R3, R2");
   // asm ("CBZ            R3, test");
   // asm ("MRS            R1, PSP");
-  // asm ("test:\n\
+  // asm ("test:\n
   //       ADD            R1, R1, #40");
   // asm ("MOV            %0, R1" : "=r" (result));
   // result = *(uint32_t*)result;

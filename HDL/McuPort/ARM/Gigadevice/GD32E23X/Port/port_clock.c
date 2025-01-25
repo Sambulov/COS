@@ -227,12 +227,13 @@ static hdl_module_state_t _hdl_clock(const void *desc, const uint8_t enable) {
   return HDL_MODULE_FAULT;
 }
 
-static void _hdl_get_clock(hdl_clock_t *clock, hdl_clock_freq_t *freq) {
+static void _hdl_get_clock(const hdl_module_base_t *clock, hdl_clock_freq_t *freq) {
   if(freq != NULL) {
     freq->num = 0;
     freq->denom = 1;
     if(hdl_state(clock) != HDL_MODULE_FAULT) {
-      hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clock->obj_var;
+      hdl_clock_t *clk = (hdl_clock_t *)clock;
+      hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
       freq->num = clock_var->freq.num;
       freq->denom = clock_var->freq.denom;
     }

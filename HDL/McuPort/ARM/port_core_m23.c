@@ -25,7 +25,7 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
       if((*isrs)->irq_type == irq) {
         hdl_interrupt_t *isr = *isrs;
         if(!hdl_event_raise(&isr->event, ic, event))
-          NVIC_DisableIRQ(irq);
+          NVIC_DisableIRQ((IRQn_Type)irq);
         return;
       }
       isrs++;
@@ -34,7 +34,7 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
   //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
 	asm("bkpt 255");
   while(irq < 0) ;
-  NVIC_DisableIRQ(irq);
+  NVIC_DisableIRQ((IRQn_Type)irq);
 }
 
 // __attribute__((naked)) void switch_to_psp(void) {
@@ -97,13 +97,13 @@ void svc_handler() {
 
 void irq_n_handler() {
   uint32_t prio = -1;
-  IRQn_Type irq = 0;
+  hdl_nvic_irq_n_t irq = 0;
   for(uint32_t i = 0; i < sizeof(NVIC->IABR)/sizeof(NVIC->IABR[0]); i++) {
     uint32_t iabr = NVIC->IABR[i];
     while(iabr) {
       uint8_t bit = 31 - __CLZ(iabr);
-      IRQn_Type cur_irq = (32 * i) + bit;
-      uint32_t cur_prio = NVIC_GetPriority(cur_irq);
+      hdl_nvic_irq_n_t cur_irq = (32 * i) + bit;
+      uint32_t cur_prio = NVIC_GetPriority((IRQn_Type)cur_irq);
       if(cur_prio < prio) {
         irq = cur_irq;
         prio = cur_prio;
@@ -163,14 +163,14 @@ static uint8_t _hdl_interrupt_request(const hdl_module_base_t *int_ctr, const hd
     }
   }
   else {
-    NVIC_EnableIRQ(isr->irq_type);
+    NVIC_EnableIRQ((IRQn_Type)isr->irq_type);
   }
   return HDL_TRUE;
 }
 
 static void _hdl_interrupt_sw_trigger(const hdl_module_base_t *int_ctr, const hdl_interrupt_t *isr) {
   (void)int_ctr;
-  NVIC_SetPendingIRQ(isr->irq_type);
+  NVIC_SetPendingIRQ((IRQn_Type)isr->irq_type);
 }
 
 hdl_interrupt_controller_iface_t hdl_interrupt_controller_iface = {
@@ -178,5 +178,12 @@ hdl_interrupt_controller_iface_t hdl_interrupt_controller_iface = {
   .request = &_hdl_interrupt_request,
   .trigger = &_hdl_interrupt_sw_trigger
 };
+
+__WEAK void _read(void) { }
+__WEAK void _write(void) { }
+__WEAK void _close(void) { }
+__WEAK void _lseek(void) { }
+__WEAK void _isatty(void) { }
+__WEAK void _fstat(void) { }
 
 #endif

@@ -175,4 +175,11 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrup
   return HDL_TRUE;
 }
 
+__WEAK void _read(void) { }
+__WEAK void _write(void) { }
+__WEAK void _close(void) { }
+__WEAK void _lseek(void) { }
+__WEAK void _isatty(void) { }
+__WEAK void _fstat(void) { }
+
 #endif

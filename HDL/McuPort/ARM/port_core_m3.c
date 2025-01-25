@@ -146,4 +146,11 @@ void hdl_interrupt_sw_trigger(const hdl_interrupt_t *isr) {
   NVIC_SetPendingIRQ(isr->irq_type);
 }
 
+__WEAK void _read(void) { }
+__WEAK void _write(void) { }
+__WEAK void _close(void) { }
+__WEAK void _lseek(void) { }
+__WEAK void _isatty(void) { }
+__WEAK void _fstat(void) { }
+
 #endif

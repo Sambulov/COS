@@ -47,12 +47,15 @@ else()
   message(STATUS "Minimal optimization, debug info included")
   set(CMAKE_VERBOSE_MAKEFILE ON)
   add_compile_definitions("DEBUG")
-  set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -O0 -Og -g3 -gdwarf-2 -ggdb)
-  set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -O0 -Og -g3 -gdwarf-2 -ggdb)
+  set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -O0 -g3 -ggdb -fno-builtin)
+  set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -O0 -g3 -ggdb -fno-builtin)
 endif()
 
+set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -Wl,--gc-sections -Wl,--print-memory-usage -Wl,-Map=output.map -T ${CMAKE_BINARY_DIR}/linkerscript.ld)
+set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -std=gnu11 -Wall -Wextra -ffunction-sections -fdata-sections -ffreestanding)
+
 # Get compiler options
-get_property(MAIN_CFLAGS GLOBAL PROPERTY HDL_COMPILE_OPTIONS)
+get_property(COMPILE_FLAGS GLOBAL PROPERTY HDL_COMPILE_OPTIONS)
 # Get linker options
 get_property(LINKER_FLAGS GLOBAL PROPERTY HDL_LINK_OPTIONS)
 # Get compile def
@@ -73,13 +76,21 @@ include_directories( ${PROJECT_HEADERS} )
 include_directories( ${HDL_HEADERS} )
 include_directories( ${CL_HEADERS} )
 
+string (REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
+string (REPLACE ";" " " LINKER_FLAGS "${LINKER_FLAGS}")
 
-set(CMAKE_C_FLAGS_DEBUG "-O0 -g3 -Wall -Wextra -fno-builtin -ffunction-sections -fdata-sections -fno-builtin -mthumb -mlittle-endian -mfloat-abi=soft -ffreestanding -std=gnu11 -mcpu=cortex-m23")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -Wl,--print-memory-usage -Wl,-Map=output.map -T ${CMAKE_BINARY_DIR}/linkerscript.ld")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  #"-mthumb-interwork -fmessage-length=0 -O0 -g3 -ggdb -fno-builtin -std=gnu11 -Wall -Wextra -ffunction-sections -fdata-sections -ffreestanding -mthumb -mlittle-endian -mfloat-abi=soft -mcpu=cortex-m23"
+  set(CMAKE_C_FLAGS_DEBUG ${COMPILE_FLAGS})
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}")
+  #"-O0 -g3 -ggdb -fno-builtin -Wl,--gc-sections -Wl,--print-memory-usage -Wl,-Map=output.map -T ${CMAKE_BINARY_DIR}/linkerscript.ld"
+else()
+  set(CMAKE_C_FLAGS ${COMPILE_FLAGS})
+  set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS_DEBUG}")
+endif()
 
-#add_compile_options(${MAIN_CFLAGS})
-#add_link_options(${LINKER_FLAGS})
+set(CMAKE_EXE_LINKER_FLAGS ${LINKER_FLAGS})
+
 add_compile_definitions(${HDL_DEFINITIONS})
 add_compile_definitions(${CL_DEFINITIONS})
 add_compile_definitions(${PROJECT_DEFINITIONS})

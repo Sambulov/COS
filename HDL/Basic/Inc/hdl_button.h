@@ -26,11 +26,10 @@ typedef struct {
 
 typedef hdl_btn_state_t (* hdl_button_state_get_t)(const void *);
 typedef uint8_t (* hdl_button_sw_action_t)(const void *);
-typedef void (* hdl_button_subscribe_t)(const void *, hdl_delegate_t *delegate);
 
 typedef struct {
   hdl_module_initializer_t init;
-  hdl_button_subscribe_t subscribe;
+  hdl_event_subscribe_t subscribe;
   hdl_button_state_get_t state_get;
   hdl_button_sw_action_t press;
   hdl_button_sw_action_t click;

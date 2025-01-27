@@ -16,8 +16,7 @@ hdl_module_state_t hdl_gpio_pin(const void *desc, const uint8_t enable) {
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
   if (gpio->config->hwc == NULL || gpio->dependencies == NULL || gpio->dependencies[0] == NULL)
     return HDL_MODULE_FAULT;
-  /* gpio_port it`s GPIOx(x = A,B,C) */
-  uint32_t gpio_port = ((hdl_gpio_port_config_t *)(gpio->dependencies[0]->config))->reg;
+  uint32_t gpio_port = ((hdl_gpio_port_t *)gpio->dependencies[0])->config->reg;
   gpio_bit_write(gpio_port, (uint32_t)gpio->config->pin, (gpio->config->inactive_default == HDL_GPIO_LOW) ? RESET : SET);
   if(enable) {
     gpio_af_set(gpio_port, gpio->config->hwc->af, gpio->config->pin);
@@ -33,6 +32,6 @@ hdl_module_state_t hdl_gpio_pin(const void *desc, const uint8_t enable) {
   return HDL_MODULE_ACTIVE;
 }
 
-hdl_module_base_iface_t hdl_gpio_port_iface = {
+const hdl_module_base_iface_t hdl_gpio_port_iface = {
   .init = &_hdl_gpio_port
 };

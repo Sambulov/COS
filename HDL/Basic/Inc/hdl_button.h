@@ -42,7 +42,7 @@ typedef struct {
  */
 hdl_module_new_t(hdl_button_t, HDL_BUTTON_VAR_SIZE, hdl_button_config_t, hdl_button_iface_t);
 
-extern hdl_button_iface_t hdl_button_iface;
+extern const hdl_button_iface_t hdl_button_iface;
 
 __STATIC_INLINE hdl_btn_state_t hdl_button_state_get(const void *btn) {
   return ((hdl_button_t *)btn)->iface->state_get(btn);

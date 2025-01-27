@@ -19,7 +19,7 @@ typedef struct {
  */
 hdl_module_new_t(hdl_tick_counter_t, 0, hdl_tick_counter_config_t, hdl_tick_counter_iface_t);
 
-extern hdl_tick_counter_iface_t hdl_tick_counter_iface;
+extern const hdl_tick_counter_iface_t hdl_tick_counter_iface;
 
 __STATIC_INLINE uint32_t hdl_tick_counter_get(const hdl_module_base_t *counter) {
   return ((hdl_tick_counter_iface_t *)counter->iface)->get(counter);

@@ -84,7 +84,7 @@ static void _hdl_timer_subscribe(const void *timer, hdl_delegate_t *delegate) {
   hdl_event_subscribe(&((hdl_timer_var_t *)((hdl_timer_t *)timer)->obj_var)->event, delegate);  
 }
 
-hdl_timer_iface_t hdl_timer_iface = {
+const hdl_timer_iface_t hdl_timer_iface = {
   .init = &hdl_timer,
   .subscribe = &_hdl_timer_subscribe,
   .reset = &_hdl_timer_reset

@@ -143,7 +143,7 @@ const hdl_interrupt_controller_config_t mod_nvic_cnf = {
 
 const hdl_interrupt_controller_t mod_nvic = {
   .iface = &hdl_interrupt_controller_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_sys_core),
+  .dependencies = hdl_module_dependencies(&mod_sys_core),
   .config = &mod_nvic_cnf,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
@@ -214,7 +214,7 @@ const hdl_clock_t mod_clock_irc40k = {
 
 const hdl_clock_t mod_clock_pll_sel = {
   .iface = &hdl_clock_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&HDL_PLL_MUL_CLOCK),
+  .dependencies = hdl_module_dependencies(&HDL_PLL_MUL_CLOCK),
   .config = hdl_module_config(hdl_clock_config_t,
     .type = HDL_CLOCK_TYPE_PLL_SEL, 
     /* If source IRC8M prescaler fixed on 2 */
@@ -227,7 +227,7 @@ const hdl_clock_t mod_clock_pll_sel = {
 
 const hdl_clock_t mod_clock_pll = {
   .iface = &hdl_clock_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_pll_sel),
+  .dependencies = hdl_module_dependencies(&mod_clock_pll_sel),
   .config = hdl_module_config(hdl_clock_config_t,
     .type = HDL_CLOCK_TYPE_PLL, 
     /* If source IRC8M prescaler fixed on 2 */
@@ -240,8 +240,7 @@ const hdl_clock_t mod_clock_pll = {
 
 const hdl_clock_t mod_clock_system = {
   .iface = &hdl_clock_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_sys_core, 
-    (hdl_module_base_t *)&mod_clock_irc8m, (hdl_module_base_t *)&HDL_SYS_CLOCK),
+  .dependencies = hdl_module_dependencies(&mod_sys_core, &mod_clock_irc8m, &HDL_SYS_CLOCK),
   .config = hdl_module_config(hdl_clock_config_t,
     .type = HDL_CLOCK_TYPE_SYS_SEL,
     .reg = (void *)RCU
@@ -252,7 +251,7 @@ const hdl_clock_t mod_clock_system = {
 
 const hdl_clock_t mod_clock_rtc = {
   .iface = &hdl_clock_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&HDL_RTC_CLOCK),
+  .dependencies = hdl_module_dependencies(&HDL_RTC_CLOCK),
   .config = hdl_module_config(hdl_clock_config_t,
     .type = HDL_CLOCK_TYPE_RTC_SEL,
     .reg = (void *)RCU
@@ -263,7 +262,7 @@ const hdl_clock_t mod_clock_rtc = {
 
 const hdl_clock_t mod_clock_ahb = {
   .iface = &hdl_clock_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_system),
+  .dependencies = hdl_module_dependencies(&mod_clock_system),
   .config = hdl_module_config(hdl_clock_config_t,
     .type = HDL_CLOCK_TYPE_AHB,
     .property.div = HDL_AHB_PREDIV,
@@ -275,7 +274,7 @@ const hdl_clock_t mod_clock_ahb = {
 
 const hdl_clock_t mod_clock_apb1 = {
   .iface = &hdl_clock_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb),
   .config = hdl_module_config(hdl_clock_config_t,
     .type = HDL_CLOCK_TYPE_APB1,
     .property.div = HDL_APB1_PREDIV,
@@ -287,7 +286,7 @@ const hdl_clock_t mod_clock_apb1 = {
 
 const hdl_clock_t mod_clock_apb2 = {
   .iface = &hdl_clock_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb),
   .config = hdl_module_config(hdl_clock_config_t,
     .type = HDL_CLOCK_TYPE_APB2,
     .property.div = HDL_APB2_PREDIV,
@@ -303,7 +302,7 @@ const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
 
 const hdl_tick_counter_t mod_systick_counter = {
   .iface = &hdl_tick_counter_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb),
   .config = hdl_module_config(hdl_tick_counter_config_t,
     .reg = (void *)SysTick,
     .type.systick = &mod_systick_counter_cnf
@@ -313,7 +312,7 @@ const hdl_tick_counter_t mod_systick_counter = {
 
 const hdl_time_counter_t mod_timer_ms = {
   .iface = &hdl_time_counter_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_systick_counter, (hdl_module_base_t *)&mod_nvic),
+  .dependencies = hdl_module_dependencies(&mod_systick_counter, &mod_nvic),
   .config = hdl_module_config(hdl_time_counter_config_t, .reload_interrupt = &mod_irq_systick),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .obj_var = static_malloc(HDL_TIME_COUNTER_PRV_SIZE),
@@ -325,7 +324,7 @@ const hdl_time_counter_t mod_timer_ms = {
 
 const hdl_gpio_port_t hdl_gpio_port_a = {
   .iface = &hdl_gpio_port_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb),
   .config = hdl_module_config(hdl_gpio_port_config_t,
     .rcu = RCU_GPIOA,
     .reg = GPIOA
@@ -335,7 +334,7 @@ const hdl_gpio_port_t hdl_gpio_port_a = {
 
 const hdl_gpio_port_t hdl_gpio_port_b = {
   .iface = &hdl_gpio_port_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb),
   .config = hdl_module_config(hdl_gpio_port_config_t,
     .rcu = RCU_GPIOB,
     .reg = GPIOB
@@ -345,7 +344,7 @@ const hdl_gpio_port_t hdl_gpio_port_b = {
 
 const hdl_gpio_port_t hdl_gpio_port_c = {
   .iface = &hdl_gpio_port_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb),
   .config = hdl_module_config(hdl_gpio_port_config_t,
     .rcu = RCU_GPIOC,
     .reg = GPIOC
@@ -355,7 +354,7 @@ const hdl_gpio_port_t hdl_gpio_port_c = {
 
 const hdl_gpio_port_t hdl_gpio_port_f = {
   .iface = &hdl_gpio_port_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&mod_clock_ahb),
+  .dependencies = hdl_module_dependencies(&mod_clock_ahb),
   .config = hdl_module_config(hdl_gpio_port_config_t,
     .rcu = RCU_GPIOF,
     .reg = GPIOF
@@ -410,7 +409,7 @@ const hdl_gpio_pin_hw_config_t hdl_gpio_spi_mode = {
 
 const hdl_gpio_pin_t uspd20k_ai1_ntc_pu = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -421,7 +420,7 @@ const hdl_gpio_pin_t uspd20k_ai1_ntc_pu = {
 
 const hdl_gpio_pin_t uspd20k_ai1_1k_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -432,7 +431,7 @@ const hdl_gpio_pin_t uspd20k_ai1_1k_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai1_cur_scr_low = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -443,7 +442,7 @@ const hdl_gpio_pin_t uspd20k_ai1_cur_scr_low = {
 
 const hdl_gpio_pin_t uspd20k_ai1_cur_scr_high = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -454,7 +453,7 @@ const hdl_gpio_pin_t uspd20k_ai1_cur_scr_high = {
 
 const hdl_gpio_pin_t uspd20k_ai1_150r_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -465,7 +464,7 @@ const hdl_gpio_pin_t uspd20k_ai1_150r_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai1_4K3_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -476,7 +475,7 @@ const hdl_gpio_pin_t uspd20k_ai1_4K3_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai2_ntc_pu = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_c),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -487,7 +486,7 @@ const hdl_gpio_pin_t uspd20k_ai2_ntc_pu = {
 
 const hdl_gpio_pin_t uspd20k_ai2_1k_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -498,7 +497,7 @@ const hdl_gpio_pin_t uspd20k_ai2_1k_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai2_cur_scr_low = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -509,7 +508,7 @@ const hdl_gpio_pin_t uspd20k_ai2_cur_scr_low = {
 
 const hdl_gpio_pin_t uspd20k_ai2_cur_scr_high = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -520,7 +519,7 @@ const hdl_gpio_pin_t uspd20k_ai2_cur_scr_high = {
 
 const hdl_gpio_pin_t uspd20k_ai2_150r_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -531,7 +530,7 @@ const hdl_gpio_pin_t uspd20k_ai2_150r_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai2_4K3_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -542,7 +541,7 @@ const hdl_gpio_pin_t uspd20k_ai2_4K3_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai3_ntc_pu = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -553,7 +552,7 @@ const hdl_gpio_pin_t uspd20k_ai3_ntc_pu = {
 
 const hdl_gpio_pin_t uspd20k_ai3_1k_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -564,7 +563,7 @@ const hdl_gpio_pin_t uspd20k_ai3_1k_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai3_cur_scr_low = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -575,7 +574,7 @@ const hdl_gpio_pin_t uspd20k_ai3_cur_scr_low = {
 
 const hdl_gpio_pin_t uspd20k_ai3_cur_scr_high = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -586,7 +585,7 @@ const hdl_gpio_pin_t uspd20k_ai3_cur_scr_high = {
 
 const hdl_gpio_pin_t uspd20k_ai3_150r_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -597,7 +596,7 @@ const hdl_gpio_pin_t uspd20k_ai3_150r_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai3_4K3_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -608,7 +607,7 @@ const hdl_gpio_pin_t uspd20k_ai3_4K3_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai4_ntc_pu = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -619,7 +618,7 @@ const hdl_gpio_pin_t uspd20k_ai4_ntc_pu = {
 
 const hdl_gpio_pin_t uspd20k_ai4_1k_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -630,7 +629,7 @@ const hdl_gpio_pin_t uspd20k_ai4_1k_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai4_cur_scr_low = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_input_pullup_mode,
     .inactive_default = HDL_GPIO_HIGH,
@@ -641,7 +640,7 @@ const hdl_gpio_pin_t uspd20k_ai4_cur_scr_low = {
 
 const hdl_gpio_pin_t uspd20k_ai4_cur_scr_high = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -652,7 +651,7 @@ const hdl_gpio_pin_t uspd20k_ai4_cur_scr_high = {
 
 const hdl_gpio_pin_t uspd20k_ai4_150r_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -663,7 +662,7 @@ const hdl_gpio_pin_t uspd20k_ai4_150r_pd = {
 
 const hdl_gpio_pin_t uspd20k_ai4_4K3_pd = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -674,7 +673,7 @@ const hdl_gpio_pin_t uspd20k_ai4_4K3_pd = {
 
 const hdl_gpio_pin_t uspd20k_som_int = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -685,7 +684,7 @@ const hdl_gpio_pin_t uspd20k_som_int = {
 
 const hdl_gpio_pin_t mod_pin_12c0_scl = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_i2c_0_mode,
     .inactive_default = HDL_GPIO_HIGH,
@@ -696,7 +695,7 @@ const hdl_gpio_pin_t mod_pin_12c0_scl = {
 
 const hdl_gpio_pin_t mod_pin_12c0_sda = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_b),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_i2c_0_mode,
     .inactive_default = HDL_GPIO_HIGH,
@@ -707,7 +706,7 @@ const hdl_gpio_pin_t mod_pin_12c0_sda = {
 
 const hdl_gpio_pin_t mod_pin_12c1_scl = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_f),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_i2c_1_mode,
     .inactive_default = HDL_GPIO_HIGH,
@@ -718,7 +717,7 @@ const hdl_gpio_pin_t mod_pin_12c1_scl = {
 
 const hdl_gpio_pin_t mod_pin_12c1_sda = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_f),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_f),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_i2c_1_mode,
     .inactive_default = HDL_GPIO_HIGH,
@@ -729,7 +728,7 @@ const hdl_gpio_pin_t mod_pin_12c1_sda = {
 
 const hdl_gpio_pin_t mod_spi_0_mosi = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &hdl_gpio_spi_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -740,7 +739,7 @@ const hdl_gpio_pin_t mod_spi_0_mosi = {
 
 const hdl_gpio_pin_t mod_spi_0_miso = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &hdl_gpio_spi_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -751,7 +750,7 @@ const hdl_gpio_pin_t mod_spi_0_miso = {
 
 const hdl_gpio_pin_t mod_spi_0_sck = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &hdl_gpio_spi_mode,
     .inactive_default = HDL_GPIO_LOW,
@@ -762,7 +761,7 @@ const hdl_gpio_pin_t mod_spi_0_sck = {
 
 const hdl_gpio_pin_t mod_spi_0_cs = {
   .iface = &hdl_gpio_pin_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&hdl_gpio_port_a),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode,
     .inactive_default = HDL_GPIO_HIGH,
@@ -773,7 +772,7 @@ const hdl_gpio_pin_t mod_spi_0_cs = {
 
 const hdl_button_t button = {
   .iface = &hdl_button_iface,
-  .dependencies = hdl_module_dependencies((hdl_module_base_t *)&uspd20k_ai4_cur_scr_low, (hdl_module_base_t *)&mod_timer_ms),
+  .dependencies = hdl_module_dependencies(&uspd20k_ai4_cur_scr_low, &mod_timer_ms),
   .config = hdl_module_config(hdl_button_config_t,
     .debounce_delay = 30,
     .hold_delay = 3000
@@ -786,48 +785,52 @@ const hdl_button_t button = {
  *  I2C
  *************************************************************/
 
-// const hdl_i2c_config_t mod_i2c0_cnf = {
-//   .addr_10_bits = 0,
-//   .dtcy = I2C_DTCY_2,
-//   .dual_address = 0,
-//   .err_interrupt = &mod_irq_i2c0_er,
-//   .ev_interrupt = &mod_irq_i2c0_ev,
-//   .general_call_enable = 0,
-//   .speed = 400000,
-//   .stretch_enable = 1,
-//   .rcu = RCU_I2C0
-// };
+const hdl_i2c_config_t mod_i2c0_cnf = {
+  .addr_10_bits = 0,
+  .dtcy = I2C_DTCY_2,
+  .dual_address = 0,
+  .err_interrupt = &mod_irq_i2c0_er,
+  .ev_interrupt = &mod_irq_i2c0_ev,
+  .general_call_enable = 0,
+  .speed = 400000,
+  .stretch_enable = 1,
+  .rcu = RCU_I2C0,
+  .reg = (void *)I2C0
+};
 
-// hdl_i2c_t mod_i2c0 = {
-//   .module.init = &hdl_i2c,
-//   .module.dependencies = hdl_module_dependencies(&mod_pin_12c0_scl.module, &mod_pin_12c0_sda.module,
-//                                                  &mod_clock_apb1.module, &mod_nvic.module, &mod_timer_ms.module),
-//   .module.reg = (void *)I2C0,
-//   .config = &mod_i2c0_cnf,
-// };
+const hdl_i2c_t mod_i2c0 = {
+  .iface = &hdl_i2c_iface,
+  .dependencies = hdl_module_dependencies(&mod_pin_12c0_scl, &mod_pin_12c0_sda,
+                                          &mod_clock_apb1, &mod_nvic, &mod_timer_ms),
+  .config = &mod_i2c0_cnf,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .obj_var = static_malloc(HDL_I2C_VAR_SIZE)
+};
 
-// hdl_i2c_channel_t i2c1_ch0 = {.address = HDL_I2C_SLAVE_ADDR};
+hdl_i2c_channel_t i2c1_ch0 = {.address = HDL_I2C_SLAVE_ADDR};
 
-// const hdl_i2c_config_t mod_i2c1_cnf = {
-//   .channels = hdl_i2c_channels(&i2c1_ch0),
-//   .addr_10_bits = 0,
-//   .dtcy = I2C_DTCY_2,
-//   .dual_address = 0,
-//   .err_interrupt = &mod_irq_i2c1_er,
-//   .ev_interrupt = &mod_irq_i2c1_ev,
-//   .general_call_enable = 0,
-//   .speed = 400000,
-//   .stretch_enable = 1,
-//   .rcu = RCU_I2C1
-// };
+const hdl_i2c_config_t mod_i2c1_cnf = {
+  .channels = hdl_i2c_channels(&i2c1_ch0),
+  .addr_10_bits = 0,
+  .dtcy = I2C_DTCY_2,
+  .dual_address = 0,
+  .err_interrupt = &mod_irq_i2c1_er,
+  .ev_interrupt = &mod_irq_i2c1_ev,
+  .general_call_enable = 0,
+  .speed = 400000,
+  .stretch_enable = 1,
+  .rcu = RCU_I2C1,
+  .reg = (void *)I2C1
+};
 
-// hdl_i2c_t mod_i2c1 = {
-//   .module.init = &hdl_i2c,
-//   .module.dependencies = hdl_module_dependencies(&mod_pin_12c1_scl.module, &mod_pin_12c1_sda.module,
-//                                                  &mod_clock_apb1.module, &mod_nvic.module, &mod_timer_ms.module),
-//   .module.reg = (void *)I2C1,
-//   .config = &mod_i2c1_cnf,
-// };
+const hdl_i2c_t mod_i2c1 = {
+  .iface = &hdl_i2c_iface,
+  .dependencies = hdl_module_dependencies(&mod_pin_12c1_scl, &mod_pin_12c1_sda,
+                                          &mod_clock_apb1, &mod_nvic, &mod_timer_ms),
+  .config = &mod_i2c1_cnf,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .obj_var = static_malloc(HDL_I2C_VAR_SIZE)
+};
 
 /**************************************************************
  *  SPI

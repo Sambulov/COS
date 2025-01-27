@@ -135,7 +135,7 @@ static void _hdl_button_subscribe(const void *btn, hdl_delegate_t *delegate) {
   hdl_event_subscribe(&((hdl_button_var_t *)((hdl_button_t *)btn)->obj_var)->event, delegate);  
 }
 
-hdl_button_iface_t hdl_button_iface = {
+const hdl_button_iface_t hdl_button_iface = {
   .init = &_hdl_button,
   .subscribe = &_hdl_button_subscribe,
   .state_get = &_hdl_btn_state_get,

@@ -35,15 +35,25 @@ typedef struct {
   uint8_t *buffer;
 } hdl_i2c_message_t;
 
+typedef uint8_t (* hdl_i2c_transfer_message_t)(const void *desc, hdl_i2c_message_t *message);
+typedef uint8_t (* hdl_i2c_transceiver_set_t)(const void *desc, uint32_t channel, hdl_transceiver_t *transceiver);
+
 typedef struct {
-  hdl_module_t module;
-  const hdl_i2c_config_t *config;
-  PRIVATE(hdl, HDL_I2C_PRV_SIZE);
-} hdl_i2c_t;
+  hdl_module_initializer_t init;
+  hdl_i2c_transfer_message_t transfer;
+  hdl_i2c_transceiver_set_t transceiver_set;
+} hdl_i2c_iface_t;
 
-hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable);
+hdl_module_new_t(hdl_i2c_t, HDL_I2C_VAR_SIZE, hdl_i2c_config_t, hdl_i2c_iface_t);
 
-uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message);
-uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel, hdl_transceiver_t *transceiver);
+extern const hdl_i2c_iface_t hdl_i2c_iface;
+
+__STATIC_INLINE uint8_t hdl_i2c_transfer(const void *desc, hdl_i2c_message_t *message) {
+  return ((hdl_i2c_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);
+}
+
+__STATIC_INLINE uint8_t hdl_i2c_transceiver_set(const void *desc, uint32_t channel, hdl_transceiver_t *transceiver) {
+  return ((hdl_i2c_iface_t *)((hdl_module_base_t *)desc)->iface)->transceiver_set(desc, channel, transceiver);
+}
 
 #endif /* HDL_I2C_H_ */

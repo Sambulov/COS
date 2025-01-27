@@ -227,7 +227,7 @@ static hdl_module_state_t _hdl_clock(const void *desc, const uint8_t enable) {
   return HDL_MODULE_FAULT;
 }
 
-static void _hdl_get_clock(const hdl_module_base_t *clock, hdl_clock_freq_t *freq) {
+static void _hdl_get_clock(const void *clock, hdl_clock_freq_t *freq) {
   if(freq != NULL) {
     freq->num = 0;
     freq->denom = 1;
@@ -240,7 +240,7 @@ static void _hdl_get_clock(const hdl_module_base_t *clock, hdl_clock_freq_t *fre
   }
 }
 
-hdl_clock_iface_t hdl_clock_iface = {
+const hdl_clock_iface_t hdl_clock_iface = {
   .init = &_hdl_clock,
   .get = &_hdl_get_clock
 };

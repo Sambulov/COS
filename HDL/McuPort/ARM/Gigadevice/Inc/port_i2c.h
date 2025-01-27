@@ -1,7 +1,7 @@
 #ifndef PORT_I2C_H_
 #define PORT_I2C_H_
 
-#define HDL_I2C_PRV_SIZE                    104
+#define HDL_I2C_VAR_SIZE                    104
 
 typedef struct {
   uint16_t address;
@@ -19,6 +19,7 @@ typedef struct {
   hdl_interrupt_t *err_interrupt;
   hdl_interrupt_t *ev_interrupt;
   const rcu_periph_enum rcu;
+  void *reg;
 } hdl_i2c_config_t;
 
 #define hdl_i2c_channels(...) ((hdl_i2c_channel_t *[]){__VA_ARGS__, NULL})

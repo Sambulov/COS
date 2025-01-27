@@ -49,12 +49,12 @@ static hdl_module_state_t _hdl_exti(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-static void _hdl_exti_sw_trigger(const hdl_module_base_t *desc, hdl_exti_line_t line) {
+static void _hdl_exti_sw_trigger(const void *desc, hdl_exti_line_t line) {
   (void)desc;
   EXTI_SWIEV |= line;
 }
 
-hdl_exti_controller_iface_t exti_controller_iface = {
+const hdl_exti_controller_iface_t exti_controller_iface = {
   .init = &_hdl_exti,
   .trigger = &_hdl_exti_sw_trigger
 };

@@ -16,7 +16,7 @@ typedef struct {
 
 hdl_module_new_t(hdl_time_counter_t, HDL_TIME_COUNTER_PRV_SIZE, hdl_time_counter_config_t, hdl_time_counter_iface_t);
 
-extern hdl_time_counter_iface_t hdl_time_counter_iface;
+extern const hdl_time_counter_iface_t hdl_time_counter_iface;
 
 __STATIC_INLINE uint32_t hdl_time_counter_get(const void *counter) {
   return ((hdl_time_counter_iface_t *)((hdl_time_counter_t *)counter)->iface)->get(counter);

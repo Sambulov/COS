@@ -3,12 +3,6 @@
 
 #include "port_nvm.h"
 
-typedef struct {
-  hdl_module_t module;
-  const hdl_nvm_config_t *config;
-  PRIVATE(hw, HDL_NVM_PRV_SIZE);
-} hdl_nvm_t;
-
 typedef enum {
   HDL_NVM_OPTION_READ            = 0x01,
   HDL_NVM_OPTION_WRITE           = 0x02,
@@ -42,9 +36,21 @@ typedef struct {
   uint32_t block_size;
 } hdl_nvm_info_t;
 
-hdl_module_state_t hdl_nvm(void *desc, uint8_t enable);
+typedef uint8_t (* hdl_nvm_transfer_t)(const void *desc, hdl_nvm_message_t *message);
+typedef uint8_t (* hdl_nvm_info_get_t)(const void *desc, hdl_nvm_info_t *out_info);
 
-uint8_t hdl_nvm_transfer(hdl_nvm_t *desc, hdl_nvm_message_t *message);
-uint8_t hdl_nvm_info(hdl_nvm_t *desc, hdl_nvm_info_t *out_info);
+typedef struct{
+  hdl_module_initializer_t init;
+  hdl_nvm_info_get_t info;
+  hdl_nvm_transfer_t transfer;
+} hdl_nvm_iface_t;
+
+__STATIC_INLINE uint8_t hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
+  return ((hdl_nvm_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);
+}
+
+__STATIC_INLINE uint8_t hdl_nvm_info_get(const void *desc, hdl_nvm_info_t *out_info) {
+  return ((hdl_nvm_iface_t *)((hdl_module_base_t *)desc)->iface)->info(desc, out_info);
+}
 
 #endif /* HDL_NVM_H_ */

@@ -12,7 +12,7 @@ _Static_assert(HDL_GPIO_LOW == !HDL_GPIO_HIGH, "Expression (HDL_GPIO_LOW == !HDL
 
 hdl_module_new_t(hdl_gpio_port_t, 0, hdl_gpio_port_config_t, hdl_module_base_iface_t);
 
-extern hdl_module_base_iface_t hdl_gpio_port_iface;
+extern const hdl_module_base_iface_t hdl_gpio_port_iface;
 
 typedef struct {
   hdl_gpio_state inactive_default;
@@ -34,7 +34,7 @@ typedef struct {
 
 hdl_module_new_t(hdl_gpio_pin_t, 0, hdl_gpio_pin_config_t, hdl_gpio_pin_iface_t);
 
-extern hdl_gpio_pin_iface_t hdl_gpio_pin_iface;
+extern const hdl_gpio_pin_iface_t hdl_gpio_pin_iface;
 
 #define hdl_gpio_set_inactive(gpio)            (hdl_gpio_write((gpio), (gpio)->config->inactive_default))
 #define hdl_gpio_set_active(gpio)              (hdl_gpio_write((gpio), !((gpio)->config->inactive_default)))

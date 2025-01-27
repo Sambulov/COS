@@ -96,7 +96,7 @@ void _hdl_tick_counter_stop(const hdl_module_base_t *counter) {
   }  
 }
 
-hdl_tick_counter_iface_t hdl_tick_counter_iface = {
+const hdl_tick_counter_iface_t hdl_tick_counter_iface = {
   .init = &_hdl_tick_counter,
   .get = &_hdl_tick_counter_get,
   .set = &_hdl_tick_counter_set,

@@ -138,7 +138,7 @@ typedef struct {
 #define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
 
 typedef struct{
-  uint32_t flash_latency;
+  uint32_t flash_latency; /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
   void *reg;
 } hdl_core_config_t;
 

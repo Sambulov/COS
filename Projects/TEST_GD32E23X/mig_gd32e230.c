@@ -25,7 +25,7 @@
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
 const hdl_core_config_t mod_sys_core_cnf = {
-  .flash_latency = WS_WSCNT_2, /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
+  .flash_latency = WS_WSCNT_2,
   .reg = (void *)SCB_BASE
 };
 

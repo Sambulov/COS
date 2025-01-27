@@ -27,7 +27,7 @@ extern "C" {
 #include "hdl_timer.h"
 
 //#include "hdl_eeprom_i2c.h"
-//#include "xl9535.h"
+#include "xl9535.h"
 //#include "ms5194t.h"
 //#include "RK809.h"
 

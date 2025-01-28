@@ -17,9 +17,9 @@ typedef struct {
   hdl_module_initializer_t init;
 } hdl_module_base_iface_t;
 
-typedef struct _HDL_MODULE_BASE_T_ {
+typedef struct {
   const hdl_module_base_iface_t *iface;
-  struct _HDL_MODULE_BASE_T_ * const *dependencies;
+  const void * const *dependencies;
   void *config;
   size_t (*mod_var)[((HDL_MODULE_VAR_SIZE + (sizeof(size_t) - 1)) >> 2)];
 } hdl_module_base_t;

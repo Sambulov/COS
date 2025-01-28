@@ -24,12 +24,12 @@ static uint8_t _timer_work_handler(coroutine_t *this, uint8_t cancel, void *arg)
   hdl_timer_t *timer = (hdl_timer_t *)arg;
   hdl_time_counter_t *time = (hdl_time_counter_t *)timer->dependencies[0];
   hdl_timer_var_t *timer_var = (hdl_timer_var_t *)timer->obj_var;
-  if(timer_var->mode != HDL_TIMER_EVENT_IDLE) {
+  if(timer_var->mode != HDL_TIMER_MODE_IDLE) {
     uint32_t now = hdl_time_counter_get(time);
     if(TIME_ELAPSED(timer_var->time_stamp, timer_var->delay, now)) {
       timer_var->time_stamp += timer_var->delay;
-      if(timer_var->mode == HDL_TIMER_EVENT_SINGLE) {
-        timer_var->mode = HDL_TIMER_EVENT_IDLE;
+      if(timer_var->mode == HDL_TIMER_MODE_SINGLE) {
+        timer_var->mode = HDL_TIMER_MODE_IDLE;
       }
       hdl_event_raise(&timer_var->event, arg, 0);
     }

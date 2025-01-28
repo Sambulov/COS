@@ -65,7 +65,7 @@ hdl_module_state_t hdl_state(const void *desc) {
 
 static void _hdl_hw_enable_parents(hdl_module_base_t *desc) {
   if(desc->dependencies != NULL) {
-    hdl_module_base_t * const *dependency = desc->dependencies;
+    hdl_module_base_t * const *dependency = (hdl_module_base_t **)desc->dependencies;
     while(*dependency != NULL) {
       hdl_enable(*dependency);
       dependency++;

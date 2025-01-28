@@ -24,16 +24,14 @@
 
 #define HDL_INTERRUPT_PRIO_GROUP_BITS   __NVIC_PRIO_BITS
 
-const hdl_core_config_t mod_sys_core_cnf = {
-  .flash_latency = WS_WSCNT_2,
-  .reg = (void *)SCB_BASE
-};
-
 const hdl_core_t mod_sys_core = {
   .iface = &hdl_core_iface,
   .dependencies = NULL,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
-  .config = &mod_sys_core_cnf
+  .config = hdl_module_config(hdl_core_config_t, 
+    .flash_latency = WS_WSCNT_2,
+    .reg = (void *)SCB_BASE
+  )
 };
 
 /**************************************************************

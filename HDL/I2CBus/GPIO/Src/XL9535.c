@@ -151,6 +151,8 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
 
     case XL9535_STATE_IDLE:
     default: {
+      if((port_var->output_port0 ^ port_var->user_output_port0) ||
+         (port_var->output_port1 ^ port_var->user_output_port1)) port_var->state |= XL9535_STATE_SYNC_W;
       if(port_var->state & XL9535_STATE_SYNC_R) {
         HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
         HDL_REG_CLEAR(port_var->state, XL9535_STATE_SYNC_R);
@@ -159,7 +161,11 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_SEL);
         HDL_REG_CLEAR(port_var->state, XL9535_STATE_SYNC_W);
       }
-      //todo read int
+      hdl_gpio_pin_t *int_p = (hdl_gpio_pin_t *)port->dependencies[2];
+      if(!HDL_IS_NULL_MODULE(int_p) && hdl_gpio_is_active(int_p)) {
+        HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
+        HDL_REG_CLEAR(port_var->state, XL9535_STATE_SYNC_R);
+      }
       break;
     }
   }
@@ -210,9 +216,9 @@ static hdl_module_state_t _hdl_xl9535_pin(const void *desc, const uint8_t enable
       pin_no -= 8;
     }
     uint8_t mask = 1 << pin_no;
-    HDL_REG_MODIFY(*mode, mask, (pin->config->mode << pin_no));
-    HDL_REG_MODIFY(*output, mask, (pin->config->output << pin_no));
-    HDL_REG_MODIFY(*pol, mask, (pin->config->polarity << pin_no));
+    HDL_REG_MODIFY(*mode, mask, (pin->config->hwc->mode << pin_no));
+    HDL_REG_MODIFY(*output, mask, (pin->config->hwc->output << pin_no));
+    HDL_REG_MODIFY(*pol, mask, (pin->config->hwc->polarity << pin_no));
     port_var->state |= XL9535_STATE_SYNC_W;
     return HDL_MODULE_ACTIVE;
   }
@@ -258,7 +264,6 @@ static void _hdl_xl9535_write_io(const void *desc, const hdl_gpio_state state, u
   uint8_t val;
   if(toggle) val = *reg ^ mask;
   else val = (state == HDL_GPIO_HIGH)? mask: 0;
-  if(*reg ^ val) port_var->state |= XL9535_STATE_SYNC_W;
   HDL_REG_MODIFY(*reg, mask, val);
 }
 

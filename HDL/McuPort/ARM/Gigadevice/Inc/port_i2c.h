@@ -15,13 +15,13 @@ typedef struct {
                 addr_10_bits        : 1,
                 dual_address        : 1,
                 stretch_enable      : 1;
-  hdl_i2c_channel_t **channels;
+   hdl_i2c_channel_t * const *channels;
   hdl_interrupt_t *err_interrupt;
   hdl_interrupt_t *ev_interrupt;
   const rcu_periph_enum rcu;
   void *reg;
 } hdl_i2c_config_t;
 
-#define hdl_i2c_channels(...) ((hdl_i2c_channel_t *[]){__VA_ARGS__, NULL})
+#define hdl_i2c_channels(...) (( hdl_i2c_channel_t * const []){__VA_ARGS__, NULL})
 
 #endif // PORT_I2C_H_

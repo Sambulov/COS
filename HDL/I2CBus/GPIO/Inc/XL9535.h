@@ -26,11 +26,15 @@ extern const hdl_module_base_iface_t hdl_xl9535_port_iface;
 #define HDL_XL9535_CNF_MODE_INPUT           1
 
 typedef struct {
-  hdl_gpio_state inactive_default;
-  uint16_t pin_no;  /* 0 - 15*/
   uint8_t output   :1,
           polarity :1,
           mode     :1;
+} hdl_xl9535_pin_config_hw_t;
+
+typedef struct {
+  hdl_gpio_state inactive_default;
+  uint32_t pin_no;  /* 0 - 15*/
+  const hdl_xl9535_pin_config_hw_t *hwc;
 } hdl_xl9535_pin_config_t;
 
 /* depends on

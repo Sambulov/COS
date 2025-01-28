@@ -4,9 +4,9 @@
 #define HDL_TIMER_VAR_SIZE         40
 
 typedef enum {
-  HDL_TIMER_EVENT_IDLE,
-  HDL_TIMER_EVENT_LOOP,
-  HDL_TIMER_EVENT_SINGLE
+  HDL_TIMER_MODE_IDLE,
+  HDL_TIMER_MODE_LOOP,
+  HDL_TIMER_MODE_SINGLE
 } hdl_timer_mode_t;
 
 typedef struct {
@@ -28,6 +28,10 @@ typedef struct {
 hdl_module_new_t(hdl_timer_t, HDL_TIMER_VAR_SIZE, hdl_timer_config_t, hdl_timer_iface_t);
 
 extern const hdl_timer_iface_t hdl_timer_iface;
+
+__STATIC_INLINE void hdl_timer_subscribe(const void *timer, hdl_delegate_t *delegate) {
+  ((hdl_timer_t *)timer)->iface->subscribe(timer, delegate);
+}
 
 __STATIC_INLINE uint8_t hdl_timer_reset(const void *timer, uint32_t delay, hdl_timer_mode_t mode) {
   return ((hdl_timer_t *)timer)->iface->reset(timer, delay, mode);

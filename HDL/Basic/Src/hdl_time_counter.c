@@ -13,6 +13,7 @@ typedef struct {
 HDL_ASSERRT_STRUCTURE_CAST(hdl_time_counter_private_t, hdl_time_counter_t, HDL_TIME_COUNTER_PRV_SIZE, hdl_time_counter.h);
 
 static void event_timer_isr(uint32_t event, void *sender, void *context) {
+  (void)event; (void)sender;
   ((hdl_time_counter_private_t *)context)->private.count++;
 }
 

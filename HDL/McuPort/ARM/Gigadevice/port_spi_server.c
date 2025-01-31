@@ -17,6 +17,7 @@ typedef struct {
 HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_server_private_t, hdl_spi_server_t, SPI_SERVER_PRIVATE_SIZE, port_spi.h);
 
 static void event_spi_nss(uint32_t event, void *sender, void *context) {
+  (void)sender;
   hdl_spi_server_private_t *spi = (hdl_spi_server_private_t*)context;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->module.dependencies[3];
   if(event & (uint32_t)nss->module.reg){
@@ -26,7 +27,8 @@ static void event_spi_nss(uint32_t event, void *sender, void *context) {
 }
 
 static void event_spi_isr_server(uint32_t event, void *sender, void *context) {
-hdl_spi_server_private_t *spi = (hdl_spi_server_private_t *)context;
+  (void)event; (void)sender;
+  hdl_spi_server_private_t *spi = (hdl_spi_server_private_t *)context;
   uint32_t state = SPI_STAT((uint32_t)spi->module.reg);
   uint32_t cr1 = SPI_CTL1((uint32_t)spi->module.reg);
 	if ((state & SPI_ERROR_MASK) == 0) {

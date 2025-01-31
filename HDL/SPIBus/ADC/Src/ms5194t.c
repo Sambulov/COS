@@ -117,6 +117,7 @@ static void _adc_xfer(hdl_adc_ms5194t_private_t *adc) {
 #define _adc_ms5194t_msb_u24_data(x)             (((x >> 16) & 0x0000ff) | (x & 0x00ff00) | ((x << 16) & (0xff0000)))
 
 static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_adc_ms5194t_private_t *adc = (hdl_adc_ms5194t_private_t *)arg;
   if(adc->private.command_state != MS5194T_ADC_COMMAND_STATE_IDLE) {
     _adc_xfer(adc);
@@ -134,7 +135,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
 
       case MS5194T_ADC_STATE_SET_MODE: {
         adc->private.comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
-        uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_PWR_DWN;
+        uint16_t mode = (adc->config->mode_reg & ~MS5194T_MODE_REG_MS) | MS5194T_MODE_REG_MS_PWR_DWN;
         adc->private.tx_data = _adc_ms5194t_msb_u16_data(mode);
         adc->private.command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
           MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
@@ -181,8 +182,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
       }
 
       case MS5194T_ADC_STATE_GET_CH_CONFIG: {
-        adc->private.comm_reg = !MS5194T_COMM_REG_WEN | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_CONFIG_REG | !MS5194T_COMM_REG_CREAD;
-        uint16_t cnf = adc->config->sources[adc->private.src_current]->config_reg;
+        adc->private.comm_reg = (!MS5194T_COMM_REG_WEN) | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_CONFIG_REG | !MS5194T_COMM_REG_CREAD;
         adc->private.tx_data = 0;
         adc->private.command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
           MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
@@ -227,7 +227,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
           adc->private.state = (adc->private.state & ~MS5194T_ADC_TASK_MASK) | MS5194T_ADC_TASK_FS_CALIBR;
           if(adc->config->sources[adc->private.src_current]->options & HDL_ADC_MS5194T_CHANNEL_ZERO_SCALE_CALIBRATE) {
             adc->private.comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
-            uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_CAL_I_ZERO_SCALE;
+            uint16_t mode = (adc->config->mode_reg & ~MS5194T_MODE_REG_MS) | MS5194T_MODE_REG_MS_CAL_I_ZERO_SCALE;
             adc->private.tx_data = _adc_ms5194t_msb_u16_data(mode);
             adc->private.command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
               MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
@@ -239,7 +239,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
           adc->private.state = (adc->private.state & ~MS5194T_ADC_TASK_MASK) | MS5194T_ADC_TASK_CALIB_COMPLETE;
           if(adc->config->sources[adc->private.src_current]->options & HDL_ADC_MS5194T_CHANNEL_FULL_SCALE_CALIBRATE) {
             adc->private.comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
-            uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_CAL_I_FULL_SCALE;
+            uint16_t mode = (adc->config->mode_reg & ~MS5194T_MODE_REG_MS) | MS5194T_MODE_REG_MS_CAL_I_FULL_SCALE;
             adc->private.tx_data = _adc_ms5194t_msb_u16_data(mode);
             adc->private.command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
               MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
@@ -250,7 +250,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
         if((adc->private.state & MS5194T_ADC_TASK_MASK) == MS5194T_ADC_TASK_CONVERT) {
           adc->private.state = (adc->private.state & ~MS5194T_ADC_TASK_MASK) | MS5194T_ADC_TASK_GET_VALUE;
           adc->private.comm_reg = !MS5194T_COMM_REG_WEN | !MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_MODE_REG | !MS5194T_COMM_REG_CREAD;
-          uint16_t mode = adc->config->mode_reg & ~MS5194T_MODE_REG_MS | MS5194T_MODE_REG_MS_SINGLE;
+          uint16_t mode = (adc->config->mode_reg & ~MS5194T_MODE_REG_MS) | MS5194T_MODE_REG_MS_SINGLE;
           adc->private.tx_data = _adc_ms5194t_msb_u16_data(mode);
           adc->private.command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
             MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
@@ -263,7 +263,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
             adc->private.rx_data = HDL_ADC_MS5194T_INVALID_VALUE;
           }
           else {
-            adc->private.comm_reg = !MS5194T_COMM_REG_WEN | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_DATA_REG | !MS5194T_COMM_REG_CREAD;
+            adc->private.comm_reg = (!MS5194T_COMM_REG_WEN) | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_DATA_REG | !MS5194T_COMM_REG_CREAD;
             adc->private.tx_data = 0;
             adc->private.command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
               MS5194T_ADC_COMMAND_STATE_XFER_DATA_16 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;
@@ -288,7 +288,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
         adc->private.state = (adc->private.state & ~MS5194T_ADC_STATE_MASK) | MS5194T_ADC_STATE_CS;
         hdl_gpio_pin_t *rdy_pin = (hdl_gpio_pin_t *)adc->module.dependencies[1];
         if(hdl_gpio_read(rdy_pin) == HDL_GPIO_LOW) {
-          adc->private.comm_reg = !MS5194T_COMM_REG_WEN | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_STATUS_REG | !MS5194T_COMM_REG_CREAD;
+          adc->private.comm_reg = (!MS5194T_COMM_REG_WEN) | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_STATUS_REG | !MS5194T_COMM_REG_CREAD;
           adc->private.tx_data = 0;
           adc->private.command_state = MS5194T_ADC_COMMAND_STATE_CS | MS5194T_ADC_COMMAND_STATE_TX_COMM_REG | 
             MS5194T_ADC_COMMAND_STATE_XFER_DATA_8 | MS5194T_ADC_COMMAND_STATE_CS_RELEASE;

@@ -13,6 +13,7 @@ typedef struct {
 } hdl_module_private_t;
 
 hdl_module_state_t hdl_null_module_init(void *desc, const uint8_t enable) {
+  (void)desc;
   if(enable)
     return HDL_MODULE_ACTIVE;
   return HDL_MODULE_UNLOADED;
@@ -29,6 +30,7 @@ static linked_list_t _mod_active = NULL;
 static linked_list_t _mod_unload = NULL;
 
 static uint8_t _hdl_module_work(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this; (void)arg;
   hdl_module_state_t res;
   hdl_module_private_t *dev = linked_list_get_object(hdl_module_private_t, _mod_unload);
   if(dev != NULL) {

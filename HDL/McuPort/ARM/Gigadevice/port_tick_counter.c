@@ -82,7 +82,6 @@ void hdl_tick_counter_set(hdl_tick_counter_t *counter, uint32_t value, uint32_t 
 
 void hdl_tick_counter_stop(hdl_tick_counter_t *counter) {
   uint32_t periph = (uint32_t)counter->module.reg;
-  const hdl_tick_counter_timer_config_t *config = counter->config.timer;
   if(hdl_state(&counter->module) != HDL_MODULE_FAULT) {
     if(periph == (uint32_t)SysTick) {
        SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;

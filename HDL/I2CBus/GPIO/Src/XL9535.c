@@ -53,6 +53,7 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_xl9535_port_private_t, hdl_xl9535_port_t, HDL_XL9
 #define XL9535_STATE_SYNC_W             0x80
 
 static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_xl9535_port_private_t *gpio = (hdl_xl9535_port_private_t *)arg;
   hdl_i2c_t *i2c = (hdl_i2c_t *)gpio->module.dependencies[0];
 

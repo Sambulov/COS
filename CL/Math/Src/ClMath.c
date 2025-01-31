@@ -8,12 +8,12 @@ int32_t lGcd(int32_t a, int32_t b) {
 uint32_t ulArrayMedian(uint32_t aulArr[], uint32_t ulLen) {
   uint32_t am = ulLen >> 1;
   if(ulLen && am) {
-    for(int j = 0; j < ulLen; j++) {
+    for(uint32_t j = 0; j < ulLen; j++) {
       uint8_t bigger = 0;
       uint8_t lower = 0;
       uint32_t nb = -1;
       uint32_t nl = 0;            
-      for(int i = 0; i < ulLen && (bigger <= am) && (lower <= am); i++) {
+      for(uint32_t i = 0; i < ulLen && (bigger <= am) && (lower <= am); i++) {
         if(aulArr[i] > aulArr[j]) {
           bigger++;
           if(nb > aulArr[i]) {

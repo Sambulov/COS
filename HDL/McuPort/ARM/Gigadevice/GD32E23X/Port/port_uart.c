@@ -18,6 +18,7 @@ __STATIC_INLINE uint8_t _hdl_uart_word_len(hdl_uart_private_t *uart) {
 }
 
 static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_uart_private_t *uart = (hdl_uart_private_t *) arg;
   if((uart->private.transceiver != NULL) && !(USART_CTL0((uint32_t)uart->module.reg) & USART_CTL0_TBEIE)) {
     if((uart->private.transceiver->tx_available != NULL) && (uart->private.transceiver->tx_empty != NULL) && 
@@ -36,6 +37,7 @@ static void _rst_uart_status(hdl_uart_private_t *uart) {
 }
 
 static void event_uart_isr(uint32_t event, void *sender, void *context) {
+  (void)event; (void)sender;
   hdl_uart_private_t *uart = (hdl_uart_private_t *)context;
   uint32_t periph = (uint32_t)uart->module.reg;
 	if (usart_interrupt_flag_get(periph, USART_INT_FLAG_IDLE)) {
@@ -44,8 +46,8 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
       uart->private.transceiver->end_of_transmission(uart->private.transceiver->proto_context);
 	}
 	if (usart_interrupt_flag_get(periph, USART_INT_FLAG_ERR_NERR) ||
-      usart_interrupt_flag_get(periph, USART_FLAG_FERR) ||
-      usart_interrupt_flag_get(periph, USART_FLAG_PERR)) {
+      usart_interrupt_flag_get(periph, USART_INT_FLAG_ERR_FERR) ||
+      usart_interrupt_flag_get(periph, USART_INT_FLAG_ERR_ORERR)) {
       _rst_uart_status(uart);
       return;
   }

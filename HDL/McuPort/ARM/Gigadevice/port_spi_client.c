@@ -24,6 +24,7 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_private_t, hdl_spi_client_t, HDL_SPI_C
 HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_private_t, hdl_spi_client_ch_t, HDL_SPI_CLIENT_CH_PRIVATE_SIZE, port_spi.h);
 
 static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
+  (void)event; (void)sender;
   hdl_spi_client_private_t *spi = (hdl_spi_client_private_t *)context;
   hdl_spi_message_t *msg = spi->private.curent_spi_ch->private.curent_msg;
 
@@ -71,6 +72,7 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
 }
 
 static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_spi_client_ch_private_t *ch = (hdl_spi_client_ch_private_t *) arg;
   hdl_spi_client_private_t *spi = (hdl_spi_client_private_t *)ch->module.dependencies[0];
   if((spi->private.curent_spi_ch == NULL) && (ch->private.curent_msg != NULL)) {

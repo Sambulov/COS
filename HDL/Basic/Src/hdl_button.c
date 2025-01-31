@@ -26,6 +26,7 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_button_private_t, hdl_button_t, HDL_BUTTON_PRV_SI
 _Static_assert(offsetof(hdl_button_private_t, event) == offsetof(hdl_button_t, event), "In hdl_button.h hdl_button_t properties order doesn't match");
 
 static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_button_private_t *btn = (hdl_button_private_t *)arg;
   hdl_gpio_pin_t *btn_gpio = (hdl_gpio_pin_t *)btn->module.dependencies[0];
   hdl_time_counter_t *btn_timer = (hdl_time_counter_t *)btn->module.dependencies[1];
@@ -33,6 +34,7 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
     case HDL_BTN_O_CLICK_PRESS:
       btn->private.output_state = HDL_BTN_O_CLICK_DEBOUNCE;
       btn->private.output_change_time = hdl_time_counter_get(btn_timer);
+      break;
     case HDL_BTN_O_PRESS:
       hdl_gpio_set_active(btn_gpio);
       break;
@@ -58,6 +60,7 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
         break;
       btn->private.input_change_time = hdl_time_counter_get(btn_timer);
       btn->private.input_state = HDL_BTN_PRESS_DEBOUNCE;
+      break;
     case HDL_BTN_PRESS_DEBOUNCE: {
       if(!btn_active) {
         btn->private.input_state = HDL_BTN_RELEASED;
@@ -68,6 +71,7 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
         btn->private.input_state = HDL_BTN_PRESSED;
         hdl_event_raise(&btn->event, (void *)btn, HDL_BTN_EVENT_PRESS);
       }
+      break;
     }
     case HDL_BTN_PRESSED:
       if(btn_active) {

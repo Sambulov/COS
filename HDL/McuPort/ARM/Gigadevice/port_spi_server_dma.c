@@ -41,6 +41,7 @@ static void _hdl_spi_mem_full_reset(hdl_spi_server_dma_private_t *spi) {
 }
 
 static void event_spi_nss(uint32_t event, void *sender, void *context) {
+  (void)sender;
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t*)context;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->module.dependencies[3];
   if((event & (uint32_t)nss->module.reg) && hdl_gpio_is_inactive(nss)) {
@@ -52,9 +53,11 @@ static void event_spi_nss(uint32_t event, void *sender, void *context) {
 }
 
 static void event_spi_isr(uint32_t event, void *sender, void *context) {
+  (void)event; (void)sender;
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t *)context;
   uint32_t state = SPI_STAT((uint32_t)spi->module.reg);
   uint32_t cr1 = SPI_CTL1((uint32_t)spi->module.reg);
+  (void)cr1;
   if ((state & SPI_ERROR_MASK) != 0) {
     hdl_spi_reset_status((uint32_t)spi->module.reg);
   }
@@ -100,6 +103,7 @@ uint8_t hdl_spi_server_dma_set_tx_data(hdl_spi_server_dma_t *desc, hdl_basic_buf
 }
 
 static uint8_t _spi_server_dma_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_spi_server_dma_private_t *spi = (hdl_spi_server_dma_private_t *) arg;
   if(spi->private.received != 0) {
     _hdl_spi_mem_full_reset(spi);

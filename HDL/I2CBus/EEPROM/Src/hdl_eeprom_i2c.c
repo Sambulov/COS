@@ -27,6 +27,7 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_eeprom_i2c_private_t, hdl_eeprom_i2c_t, HDL_EEPRO
 
 
 static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_eeprom_i2c_private_t *eeprom = (hdl_eeprom_i2c_private_t *)arg;
   switch (eeprom->private.state) {
     case EE_STATE_SET_MEM_ADDR_MSG: {
@@ -34,8 +35,6 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       uint16_t addr_msb = eeprom->private.eeprom_msg->address + eeprom->private.eeprom_msg->transferred;
       eeprom->private.mem_addr = (addr_msb >> 8) | (addr_msb << 8);
       eeprom->private.i2c_msg.buffer = (uint8_t *)&(eeprom->private.mem_addr);
-      volatile uint8_t x = eeprom->private.i2c_msg.buffer[0];
-      volatile uint8_t y = eeprom->private.i2c_msg.buffer[1];
       eeprom->private.i2c_msg.length = 2;
       eeprom->private.i2c_msg.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR;
       eeprom->private.state = EE_STATE_TX_MEM_ADDR_MSG;

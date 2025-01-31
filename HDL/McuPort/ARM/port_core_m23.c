@@ -25,7 +25,7 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
       if((*isrs)->irq_type == irq) {
         hdl_interrupt_t *isr = *isrs;
         if(!hdl_event_raise(&isr->event, ic, event))
-          NVIC_DisableIRQ(irq);
+          NVIC_DisableIRQ((IRQn_Type)irq);
         return;
       }
       isrs++;
@@ -34,7 +34,7 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
   //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
 	asm("bkpt 255");
   while(irq < 0) ;
-  NVIC_DisableIRQ(irq);
+  NVIC_DisableIRQ((IRQn_Type)irq);
 }
 
 // __attribute__((naked)) void switch_to_psp(void) {
@@ -97,13 +97,13 @@ void svc_handler() {
 
 void irq_n_handler() {
   uint32_t prio = -1;
-  IRQn_Type irq = 0;
+  hdl_nvic_irq_n_t irq = 0;
   for(uint32_t i = 0; i < sizeof(NVIC->IABR)/sizeof(NVIC->IABR[0]); i++) {
     uint32_t iabr = NVIC->IABR[i];
     while(iabr) {
       uint8_t bit = 31 - __CLZ(iabr);
-      IRQn_Type cur_irq = (32 * i) + bit;
-      uint32_t cur_prio = NVIC_GetPriority(cur_irq);
+      hdl_nvic_irq_n_t cur_irq = (32 * i) + bit;
+      uint32_t cur_prio = NVIC_GetPriority((IRQn_Type)cur_irq);
       if(cur_prio < prio) {
         irq = cur_irq;
         prio = cur_prio;
@@ -133,8 +133,7 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrup
   if((hdl_state(&ic->module) != HDL_MODULE_ACTIVE) || (ic->config->interrupts == NULL) || (isr == NULL))
     return HDL_FALSE;
   uint32_t prio = ((isr->priority_group << (8U - ic->config->prio_bits)) | 
-                  (isr->priority & (0xFF >> ic->config->prio_bits)) & 
-                  0xFFUL);
+                  ((isr->priority & (0xFF >> ic->config->prio_bits)) & 0xFFUL));
   uint32_t shift = _BIT_SHIFT(isr->irq_type);
   volatile uint32_t *ipr = (isr->irq_type < 0)? &(SCB->SHPR[_SHP_IDX(isr->irq_type)]):
                                                     &(NVIC->IPR[_IP_IDX(isr->irq_type)]);
@@ -163,7 +162,7 @@ uint8_t hdl_interrupt_request(hdl_interrupt_controller_t *ic, const hdl_interrup
     }
   }
   else {
-    NVIC_EnableIRQ(isr->irq_type);
+    NVIC_EnableIRQ((IRQn_Type)isr->irq_type);
   }
   return HDL_TRUE;
 }

@@ -50,5 +50,6 @@ hdl_module_state_t hdl_exti(void *desc, uint8_t enable) {
 }
 
 void hdl_exti_sw_trigger(hdl_exti_controller_t *desc, hdl_exti_line_t line) {
+  (void)desc;
   EXTI_SWIEV |= line;
 }

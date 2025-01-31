@@ -23,6 +23,7 @@ typedef struct {
 HDL_ASSERRT_STRUCTURE_CAST(hdl_timer_private_t, hdl_timer_t, HDL_TIMER_EVENT_PRV_SIZE, hdl_timer_event.h);
 
 static uint8_t _timer_events_handler(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_timer_private_t *timer_event = (hdl_timer_private_t *)arg;
   hdl_time_counter_t *timer = (hdl_time_counter_t *)timer_event->module.dependencies[0];
   if(timer_event->private.mode != HDL_TIMER_EVENT_IDLE) {

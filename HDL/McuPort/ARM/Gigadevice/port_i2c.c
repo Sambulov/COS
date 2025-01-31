@@ -60,6 +60,7 @@ static void _i2c_clear_error(i2c_periph_t *i2c_periph) {
 }
 
 static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
+  (void)event; (void)sender;
   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)context;
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   uint32_t tmp = i2c_periph->STAT0;
@@ -109,6 +110,7 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
 }
 
 static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
+  (void)event; (void)sender;
   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *)context;
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   hdl_transceiver_t *transceiver = i2c->private.transceiver;
@@ -156,6 +158,7 @@ static void _i2c_set_bus_to_default(i2c_periph_t *i2c_periph) {
   tmp = i2c_periph->STAT1; 
   while (i2c_periph->STAT0 & I2C_STAT0_RBNE)
     tmp = i2c_periph->DATA;
+  (void)tmp;
 }
 
 static uint8_t _i2c_msg_start_handler(hdl_i2c_private_t *i2c) {
@@ -184,7 +187,7 @@ static uint8_t _i2c_msg_start_handler(hdl_i2c_private_t *i2c) {
 }
 
 static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_private_t *i2c) {
-  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+  //hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   if(i2c->private.wrk_state_substate == 1) {
     if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
@@ -208,7 +211,7 @@ static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_private_t *i2c) {
 }
 
 static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_private_t *i2c) {
-  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+  //hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
   uint32_t tmp = 0;
   if(i2c->private.wrk_state_substate == 1) { /* Awaiting rx byte */
@@ -246,6 +249,7 @@ static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_private_t *i2c) {
         // Clear I2C_STAT0_ADDSEND
         tmp = i2c_periph->STAT0;
         tmp = i2c_periph->STAT1;
+        (void)tmp;
         _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
       }
       else { 
@@ -309,10 +313,9 @@ static uint8_t _i2c_msg_data_handler(hdl_i2c_private_t *i2c) {
   }
 }
 
-static hdl_i2c_message_status_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
-  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
+static uint8_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
+  //hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->module.dependencies[4];
   i2c_periph_t *i2c_periph = (i2c_periph_t *)i2c->module.reg;
-  hdl_i2c_message_status_t result = HDL_I2C_MESSAGE_STATUS_INITIAL;
   if(i2c->private.wrk_state_substate == 1) {
     i2c->private.wrk_state_substate = 2;
   }
@@ -346,6 +349,7 @@ static hdl_i2c_message_status_t _i2c_msg_stop_handler(hdl_i2c_private_t *i2c) {
 
 
 static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_i2c_private_t *i2c = (hdl_i2c_private_t *) arg;
   if(i2c->private.message != NULL) {
     if(i2c->private.wc_state == WC_STATE_AWAITING) {

@@ -75,6 +75,7 @@ void hdl_smarc_carrier_boot_select(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_
 }
 
 static uint8_t _smarc_carrier_work(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
   hdl_smarc_carrier_private_t *carrier = (hdl_smarc_carrier_private_t *)arg;
 
   hdl_gpio_pin_t *power_bad = _smarc_get_ctrl_pin(carrier, HDL_SMARC_CARRIER_DEPENDENCY_POWER_BAD_PIN);

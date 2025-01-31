@@ -23,13 +23,13 @@ typedef struct{
 HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_private_t, hdl_adc_t, HDL_ADC_PRV_SIZE, hdl_adc.h);
 
 static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
+  (void)event; (void)sender;
   hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
-  hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->module.dependencies[1];
   hdl_adc->private.age++;
 }
 
 static void event_adc_start_conversion(uint32_t event, void *sender, void *context) {
-  hdl_adc_private_t *hdl_adc = (hdl_adc_private_t *)context;
+  (void)event; (void)sender; (void)context;
   adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
 }
 
@@ -76,13 +76,16 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         ADC_CTL1 |= ADC_CTL1_CLB;
         hdl_adc->private.age = hdl_time_counter_get(timer);
         hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_CALIBRATION;
+        break;
       }
       case GD_ADC_STATE_MACHINE_CALIBRATION:
         if (ADC_CTL1 & ADC_CTL1_CLB) {
           if (TIME_ELAPSED(hdl_adc->private.age, hdl_adc->config->init_timeout, hdl_time_counter_get(timer)))
             return HDL_MODULE_FAULT;
-          return HDL_MODULE_LOADING;
+          break;
         }
+        hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_RUN;
+        break;
       case GD_ADC_STATE_MACHINE_RUN:
         adc_dma_mode_enable();
         hdl_dma_run(dma, (uint32_t)&ADC_RDATA, (uint32_t)hdl_adc->config->values, (uint32_t)hdl_adc->private.channels_count);
@@ -91,7 +94,8 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
         hdl_adc->private.start_conversion.handler = &event_adc_start_conversion;
         hdl_event_subscribe(&timer->config->reload_interrupt->event, &hdl_adc->private.start_conversion);
         //adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
-        hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_WORKING;        
+        hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_WORKING;
+        return HDL_MODULE_ACTIVE;
       case GD_ADC_STATE_MACHINE_WORKING:
         return HDL_MODULE_ACTIVE;
       default:
@@ -105,6 +109,7 @@ hdl_module_state_t hdl_adc(void *desc, uint8_t enable){
     hdl_adc->private.state_machine = GD_ADC_STATE_MACHINE_INITIAL;
     return HDL_MODULE_UNLOADED;
   }
+  return HDL_MODULE_LOADING;
 }
 
 uint32_t hdl_adc_get(hdl_adc_t *hdl_adc, uint32_t src) {

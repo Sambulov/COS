@@ -398,8 +398,7 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
   i2c_deinit((uint32_t)_i2c->module.reg);
   if(enable) {
     rcu_periph_clock_enable(_i2c->config->rcu);
-    //i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
-    
+   
     hdl_clock_t *clk = (hdl_clock_t *)_i2c->module.dependencies[2];
     uint32_t freq_mhz;
     uint32_t freq_hz;
@@ -455,7 +454,7 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
     i2c_periph->CTL0 |= 
       (_i2c->config->general_call_enable? I2C_GCEN_ENABLE : I2C_GCEN_DISABLE) |
       (_i2c->config->stretch_enable? I2C_SCLSTRETCH_ENABLE : I2C_SCLSTRETCH_DISABLE) |
-      I2C_I2CMODE_ENABLE;   
+      I2C_I2CMODE_ENABLE;
     _i2c->private.ev_isr.context = i2c;
     _i2c->private.ev_isr.handler = &event_i2c_ev_isr;
     _i2c->private.er_isr.context = i2c;
@@ -480,16 +479,12 @@ hdl_module_state_t hdl_i2c(void *i2c, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel, hdl_transceiver_t *transceiver) {
-  if((i2c != NULL) && (i2c->config->channels != NULL)) {
-    uint32_t ch = 0;
-    while (ch <= channel) {
-      if(i2c->config->channels[ch] == NULL) return HDL_FALSE;
-      ch++;
-    }
-    ch--;
-    i2c->config->channels[ch]->transceiver = transceiver;
-    return HDL_TRUE;
-  }
-  return HDL_FALSE;
+uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel_id, hdl_transceiver_t *transceiver) {
+  if((i2c == NULL) || (i2c->config->channels == NULL)) return HDL_FALSE;
+  uint32_t ch_id = 0;
+  while (ch_id <= channel_id)
+    if(i2c->config->channels[ch_id++] == NULL) return HDL_FALSE;
+  ch_id--;
+  i2c->config->channels[ch_id]->transceiver = transceiver;
+  return HDL_TRUE;
 }

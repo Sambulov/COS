@@ -432,16 +432,12 @@ uint8_t hdl_i2c_transfer_message(hdl_i2c_t *i2c, hdl_i2c_message_t *message) {
   return HDL_FALSE;
 }
 
-uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel, hdl_transceiver_t *transceiver) {
-  if((i2c != NULL) && (i2c->config->channels != NULL)) {
-    uint32_t ch = 0;
-    while (ch <= channel) {
-      if(i2c->config->channels[ch] == NULL) return HDL_FALSE;
-      ch++;
-    }
-    ch--;
-    i2c->config->channels[ch]->transceiver = transceiver;
-    return HDL_TRUE;
-  }
-  return HDL_FALSE;
+uint8_t hdl_i2c_set_transceiver(hdl_i2c_t *i2c, uint32_t channel_id, hdl_transceiver_t *transceiver) {
+  if((i2c == NULL) || (i2c->config->channels == NULL)) return HDL_FALSE;
+  uint32_t ch_id = 0;
+  while (ch_id <= channel_id)
+    if(i2c->config->channels[ch_id++] == NULL) return HDL_FALSE;
+  ch_id--;
+  i2c->config->channels[ch_id]->transceiver = transceiver;
+  return HDL_TRUE;
 }

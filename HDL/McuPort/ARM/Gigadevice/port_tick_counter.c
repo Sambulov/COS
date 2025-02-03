@@ -41,7 +41,7 @@ static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enab
   /* TODO init timers */
 }
 
-static uint32_t _hdl_tick_counter_get(const hdl_module_base_t *counter) {
+static uint32_t _hdl_tick_counter_get(const void *counter) {
   if(hdl_state(counter) != HDL_MODULE_FAULT) {
     hdl_tick_counter_t *tick_cnt = (hdl_tick_counter_t *)counter;
     uint32_t periph = (uint32_t)tick_cnt->config->reg;
@@ -56,7 +56,7 @@ static uint32_t _hdl_tick_counter_get(const hdl_module_base_t *counter) {
   return 0;
 }
 
-void _hdl_tick_counter_set(const hdl_module_base_t *counter, uint32_t value, uint32_t period) {
+void _hdl_tick_counter_set(const void *counter, uint32_t value, uint32_t period) {
   if(hdl_state(counter) != HDL_MODULE_FAULT) {
     hdl_tick_counter_t *tick_cnt = (hdl_tick_counter_t *)counter;
     uint32_t periph = (uint32_t)tick_cnt->config->reg;
@@ -82,7 +82,7 @@ void _hdl_tick_counter_set(const hdl_module_base_t *counter, uint32_t value, uin
   }  
 }
 
-void _hdl_tick_counter_stop(const hdl_module_base_t *counter) {
+void _hdl_tick_counter_stop(const void *counter) {
   if(hdl_state(counter) != HDL_MODULE_FAULT) {
     hdl_tick_counter_t *tick_cnt = (hdl_tick_counter_t *)counter;
     uint32_t periph = (uint32_t)tick_cnt->config->reg;

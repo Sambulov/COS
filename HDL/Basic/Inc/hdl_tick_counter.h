@@ -3,9 +3,9 @@
 
 #include "port_tick_counter.h"
 
-typedef void (*hdl_tick_counter_set_t)(const hdl_module_base_t *counter, uint32_t value, uint32_t period);
-typedef uint32_t (*hdl_tick_counter_get_t)(const hdl_module_base_t *counter);
-typedef void (*hdl_tick_counter_stop_t)(const hdl_module_base_t *counter);
+typedef void (*hdl_tick_counter_set_t)(const void *counter, uint32_t value, uint32_t period);
+typedef uint32_t (*hdl_tick_counter_get_t)(const void *counter);
+typedef void (*hdl_tick_counter_stop_t)(const void *counter);
 
 typedef struct {
   hdl_module_initializer_t init;
@@ -21,16 +21,16 @@ hdl_module_new_t(hdl_tick_counter_t, 0, hdl_tick_counter_config_t, hdl_tick_coun
 
 extern const hdl_tick_counter_iface_t hdl_tick_counter_iface;
 
-__STATIC_INLINE uint32_t hdl_tick_counter_get(const hdl_module_base_t *counter) {
-  return ((hdl_tick_counter_iface_t *)counter->iface)->get(counter);
+__STATIC_INLINE uint32_t hdl_tick_counter_get(const void *counter) {
+  return ((hdl_tick_counter_t *)counter)->iface->get(counter);
 }
 
-__STATIC_INLINE void hdl_tick_counter_set(const hdl_module_base_t *counter, uint32_t value, uint32_t period) {
-  ((hdl_tick_counter_iface_t *)counter->iface)->set(counter, value, period);
+__STATIC_INLINE void hdl_tick_counter_set(const void *counter, uint32_t value, uint32_t period) {
+  ((hdl_tick_counter_t *)counter)->iface->set(counter, value, period);
 }
 
-__STATIC_INLINE void hdl_tick_counter_stop(const hdl_module_base_t *counter) {
-  ((hdl_tick_counter_iface_t *)counter->iface)->stop(counter);
+__STATIC_INLINE void hdl_tick_counter_stop(const void *counter) {
+  ((hdl_tick_counter_t *)counter)->iface->stop(counter);
 }
 
 #endif /* HDL_TICK_COUNTER_H_ */ 

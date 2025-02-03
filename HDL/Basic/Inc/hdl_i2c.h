@@ -35,6 +35,18 @@ typedef struct {
   uint8_t *buffer;
 } hdl_i2c_message_t;
 
+typedef struct {
+  uint16_t address;
+  hdl_transceiver_t *transceiver;
+} hdl_i2c_channel_t;
+
+typedef struct {
+  hdl_i2c_channel_t * const *channels;
+  const void *hwc;
+} hdl_i2c_config_t;
+
+#define hdl_i2c_channels(...) (( hdl_i2c_channel_t * const []){__VA_ARGS__, NULL})
+
 typedef uint8_t (* hdl_i2c_transfer_message_t)(const void *desc, hdl_i2c_message_t *message);
 typedef uint8_t (* hdl_i2c_transceiver_set_t)(const void *desc, uint32_t channel, hdl_transceiver_t *transceiver);
 

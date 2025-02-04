@@ -3,6 +3,7 @@
 
 typedef struct {
   hdl_module_base_t const *mod;
+  const void *owner;
   uint32_t dependents;
   __linked_list_object__
 } hdl_module_var_t;
@@ -140,4 +141,20 @@ void hdl_kill(const void *desc) {
 
 uint8_t hdl_init_complete() {
   return (_mod_load == NULL)? HDL_TRUE: HDL_FALSE;
+}
+
+uint8_t hdl_take(const void *desc, const void *owner) {
+  hdl_module_var_t *module_var = (hdl_module_var_t *)((hdl_module_base_t *)desc)->mod_var;
+  if(module_var->owner == NULL) {
+    module_var->owner = owner;
+  }
+  return (module_var->owner == owner);
+}
+
+uint8_t hdl_give(const void *desc, const void *owner) {
+  hdl_module_var_t *module_var = (hdl_module_var_t *)((hdl_module_base_t *)desc)->mod_var;
+  if(module_var->owner == owner) {
+    module_var->owner = NULL;
+  }
+  return (module_var->owner == NULL);
 }

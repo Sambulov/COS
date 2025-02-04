@@ -504,6 +504,8 @@ static uint8_t _hdl_i2c_transceiver_set(const void *desc, uint32_t channel, hdl_
   return HDL_FALSE;
 }
 
+
+
 const hdl_i2c_iface_t hdl_i2c_iface = {
   .init = &_hdl_i2c,
   .transfer = &_hdl_i2c_transfer,

@@ -1,7 +1,7 @@
 #ifndef HDL_MODULE_H_
 #define HDL_MODULE_H_
 
-#define HDL_MODULE_VAR_SIZE              24
+#define HDL_MODULE_VAR_SIZE              28
 
 typedef enum {
   HDL_MODULE_LOADING   = 1,
@@ -41,6 +41,8 @@ extern hdl_module_base_t hdl_null_module;
     size_t (*obj_var)[((var_size + (sizeof(size_t) - 1)) >> 2)];\
   } name;
 
+uint8_t hdl_take(const void *desc, const void *owner);
+uint8_t hdl_give(const void *desc, const void *owner);
 void hdl_enable(const void *desc);
 void hdl_kill(const void *desc);
 hdl_module_state_t hdl_state(const void *desc);

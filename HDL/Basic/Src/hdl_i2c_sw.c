@@ -4,14 +4,11 @@
 typedef struct {
   coroutine_t i2c_worker;
   hdl_i2c_message_t *message;
-  uint32_t wc_timeout;
-  uint32_t wc_ts;
-  uint32_t wc_flags;
-  uint8_t wc_flags_is_set;
-  int8_t wc_state;
   uint8_t wrk_state;
-  uint8_t wrk_state_substate;
-  uint8_t is_master;
+  uint8_t is_master   :1,
+          addr        :1,
+          dev_ack     :1,
+          is_receiver :1;
   uint8_t ch_amount;
   hdl_transceiver_t *transceiver;
 } hdl_i2c_sw_var_t;
@@ -36,24 +33,48 @@ void _sw_i2c_line_switch_delay(hdl_i2c_t *i2c) {
   while ((hdl_tick_counter_get(tc) - ticks) < hwc->switch_delay);
 }
 
-void _sw_i2c_start(hdl_i2c_t *i2c) {
-  hdl_gpio_pin_t *scl = (hdl_gpio_pin_t *)i2c->dependencies[0];
-  hdl_gpio_pin_t *sda = (hdl_gpio_pin_t *)i2c->dependencies[1];
-  hdl_gpio_set_active(sda);
-  _sw_i2c_line_switch_delay(i2c);
-  hdl_gpio_set_active(scl);
-  _sw_i2c_line_switch_delay(i2c);
+static uint8_t _sw_i2c_start(hdl_i2c_t *i2c) {
+  hdl_i2c_sw_var_t *i2c_var = (hdl_i2c_sw_var_t *)i2c->obj_var;
+  if(i2c_var->message->options & HDL_I2C_MESSAGE_START) {
+    if(!i2c_var->is_master || i2c_var->addr) {
+      hdl_gpio_pin_t *scl = (hdl_gpio_pin_t *)i2c->dependencies[0];
+      hdl_gpio_pin_t *sda = (hdl_gpio_pin_t *)i2c->dependencies[1];
+      hdl_gpio_set_inactive(sda);
+      _sw_i2c_line_switch_delay(i2c);
+      hdl_gpio_set_inactive(scl);
+      _sw_i2c_line_switch_delay(i2c);
+      hdl_gpio_set_active(sda);
+      _sw_i2c_line_switch_delay(i2c);
+      hdl_gpio_set_active(scl);
+      _sw_i2c_line_switch_delay(i2c);
+      i2c_var->message->status |= HDL_I2C_MESSAGE_STATUS_START_ON_BUS;
+      i2c_var->addr = 0;
+      i2c_var->dev_ack = 0;
+      i2c_var->is_master = 1;
+    }
+    else 
+      i2c_var->message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
+  }
+  return HDL_TRUE;
 }
 
-void _sw_i2c_stop(hdl_i2c_t *i2c) {
-  hdl_gpio_pin_t *scl = (hdl_gpio_pin_t *)i2c->dependencies[0];
-  hdl_gpio_pin_t *sda = (hdl_gpio_pin_t *)i2c->dependencies[1];
-  hdl_gpio_set_active(sda);
-  _sw_i2c_line_switch_delay(i2c);
-  hdl_gpio_set_inactive(scl);
-  _sw_i2c_line_switch_delay(i2c);
-  hdl_gpio_set_inactive(sda);
-  _sw_i2c_line_switch_delay(i2c);
+uint8_t _sw_i2c_stop_handler(hdl_i2c_t *i2c) {
+  hdl_i2c_sw_var_t *i2c_var = (hdl_i2c_sw_var_t *)i2c->obj_var;
+  if(i2c_var->message->options & HDL_I2C_MESSAGE_STOP) {
+    hdl_gpio_pin_t *scl = (hdl_gpio_pin_t *)i2c->dependencies[0];
+    hdl_gpio_pin_t *sda = (hdl_gpio_pin_t *)i2c->dependencies[1];
+    hdl_gpio_set_active(sda);
+    _sw_i2c_line_switch_delay(i2c);
+    hdl_gpio_set_inactive(scl);
+    _sw_i2c_line_switch_delay(i2c);
+    hdl_gpio_set_inactive(sda);
+    _sw_i2c_line_switch_delay(i2c);
+    i2c_var->message->status |= HDL_I2C_MESSAGE_STATUS_STOP_ON_BUS;
+    i2c_var->is_master = 0;
+    i2c_var->addr = 0;
+    i2c_var->dev_ack = 0;
+  }
+  return HDL_TRUE;
 }
 
 uint8_t _sw_i2c_send_byte(hdl_i2c_t *i2c, uint8_t data) {
@@ -100,41 +121,86 @@ uint8_t _sw_i2c_read_byte(hdl_i2c_t *i2c, uint8_t ack) {
   return data;
 }
 
+uint8_t _sw_i2c_addr_handler(hdl_i2c_t *i2c) {
+  hdl_i2c_sw_var_t *i2c_var = (hdl_i2c_sw_var_t *)i2c->obj_var;
+  if(i2c_var->message->options & HDL_I2C_MESSAGE_ADDR) {
+    if((i2c_var->is_master) && (!i2c_var->addr)) {
+      uint8_t data = i2c_var->message->address << 1;
+      if(i2c_var->message->options & HDL_I2C_MESSAGE_MRSW) data |= 1;
+      i2c_var->is_master = HDL_TRUE;
+      if(_sw_i2c_send_byte(i2c, data)) {
+        i2c_var->dev_ack = 1;
+        i2c_var->is_receiver = (i2c_var->message->options & HDL_I2C_MESSAGE_MRSW) != 0;
+      }
+      i2c_var->addr = 1;
+      i2c_var->message->status |= HDL_I2C_MESSAGE_STATUS_ADDR_SENT;
+    }
+    else
+      i2c_var->message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
+  }
+  return HDL_TRUE;
+}
 
-
-
-
-
+uint8_t _sw_i2c_data_handler(hdl_i2c_t *i2c) {
+  hdl_i2c_sw_var_t *i2c_var = (hdl_i2c_sw_var_t *)i2c->obj_var;
+  if((i2c_var->message->length > 0) && (i2c_var->message->buffer != NULL)) {
+    if(i2c_var->dev_ack) {
+      if(i2c_var->message->transferred < i2c_var->message->length) {
+        if(i2c_var->is_receiver) {
+          uint8_t ack = 1;
+          if((i2c_var->message->options & HDL_I2C_MESSAGE_NACK_LAST) && (i2c_var->message->transferred == (i2c_var->message->length - 1)))
+            ack = 0;
+          i2c_var->message->buffer[i2c_var->message->transferred] = _sw_i2c_read_byte(i2c, ack);
+          if(!ack) i2c_var->message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
+          i2c_var->message->transferred++;
+        }
+        else {
+          if(!_sw_i2c_send_byte(i2c, i2c_var->message->buffer[i2c_var->message->transferred])) {
+            i2c_var->message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
+            return HDL_TRUE;
+          }
+          else i2c_var->message->transferred++;
+        }
+        return HDL_FALSE;
+      }
+    }
+    else
+      i2c_var->message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE;
+  }
+  return HDL_TRUE;
+}
 
 static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
   hdl_i2c_t *i2c = (hdl_i2c_t *)arg;
   hdl_i2c_sw_var_t *i2c_var = (hdl_i2c_sw_var_t *)i2c->obj_var;
   if(i2c_var->message != NULL) {
-    if(i2c_var->wc_state == WC_STATE_AWAITING) {
-      _i2c_reg_wait_condition(i2c);
-    } else {
-      if(i2c_var->wrk_state == WRK_STATE_START)
-        if(!(i2c_var->message->options & HDL_I2C_MESSAGE_START) || _i2c_msg_start_handler(i2c)) { i2c_var->wrk_state++; i2c_var->wrk_state_substate = 0; }
-      if(i2c_var->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c_var->wrk_state = WRK_STATE_STOP;
-      else i2c_var->is_master = HDL_TRUE;
-
-      if(i2c_var->wrk_state == WRK_STATE_ADDR)
-        if(!(i2c_var->message->options & HDL_I2C_MESSAGE_ADDR) || _i2c_msg_addr_handler(i2c)) { i2c_var->wrk_state++; i2c_var->wrk_state_substate = 0; }
-      if(i2c_var->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c_var->wrk_state = WRK_STATE_STOP;
-
-      if(i2c_var->wrk_state == WRK_STATE_DATA)
-        if(!((i2c_var->message->length > 0) && (i2c_var->message->buffer != NULL)) || _i2c_msg_data_handler(i2c)) { i2c_var->wrk_state++; i2c_var->wrk_state_substate = 0; }
-      if(i2c_var->message->status & HDL_I2C_MESSAGE_FAULT_MASK) i2c_var->wrk_state = WRK_STATE_STOP;
-
-      if(i2c_var->wrk_state == WRK_STATE_STOP)
-        if(!(i2c_var->message->options & HDL_I2C_MESSAGE_STOP) || _i2c_msg_stop_handler(i2c)) { i2c_var->wrk_state++; i2c_var->wrk_state_substate = 0; }
-
-      if(i2c_var->wrk_state == WRK_STATE_COMPLETE) {
+    switch (i2c_var->wrk_state) {
+      case WRK_STATE_START:
+        if(_sw_i2c_start(i2c))
+          i2c_var->wrk_state++;
+        break;
+      case WRK_STATE_ADDR:
+        if(_sw_i2c_addr_handler(i2c)) 
+          i2c_var->wrk_state++;
+        break;
+      case WRK_STATE_DATA:
+          if(_sw_i2c_data_handler(i2c)) 
+            i2c_var->wrk_state++;
+        break;
+      case WRK_STATE_STOP:
+        _sw_i2c_stop_handler(i2c);
+        i2c_var->wrk_state++;
+        break;
+      case WRK_STATE_COMPLETE:
         i2c_var->message->status |= HDL_I2C_MESSAGE_STATUS_COMPLETE;
         i2c_var->message = NULL;
-      }
+        break;
+      default:
+        break;
     }
+    if((i2c_var->message->status & HDL_I2C_MESSAGE_FAULT_MASK) && (i2c_var->wrk_state != WRK_STATE_COMPLETE)) 
+      i2c_var->wrk_state = WRK_STATE_STOP;
   }
   return cancel;
 }
@@ -143,7 +209,6 @@ static hdl_module_state_t _hdl_i2c_sw(const void *desc, uint8_t enable) {
   hdl_i2c_t *i2c = (hdl_i2c_t *)desc;
   hdl_i2c_sw_var_t *i2c_var = (hdl_i2c_sw_var_t *)i2c->obj_var;
   if(enable) {
-
     coroutine_add(&i2c_var->i2c_worker, &_i2c_client_worker, (void *)i2c);
     return HDL_MODULE_ACTIVE;
   }

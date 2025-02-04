@@ -3,7 +3,7 @@
 
 #include "hdl_i2c.h"
 
-#define HDL_I2C_SW_VAR_SIZE     12
+#define HDL_I2C_SW_VAR_SIZE     36
 
 /* depends on
   gpio scl

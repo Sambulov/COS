@@ -1,155 +1,195 @@
-// #include "app.h"
-// #include "CodeLib.h"
+#include "hdl.h"
+#include "CodeLib.h"
 
-// #define ATB3500_SERIAL_ADDRESS       (((void *)&_eflash) - (ATB3500_SERIAL_SIZE))
+typedef struct {
+  coroutine_t worker;
+  hdl_nvm_message_t *message;
+  uint8_t wrk_state;
+} hdl_mcu_flash_var_t;
 
-// typedef struct {
-//   hdl_module_t module;
-//   atb3500_flash_serial_proto_tx_t tx_buf;
-// } atb3500_flash_serial_private_t;
+#define WRK_STATE_START            0
+#define WRK_STATE_READ             1
+#define WRK_STATE_VALIDATE         2
+#define WRK_STATE_ERASE_PAGE       3
+#define WRK_STATE_ERASE_AWAITE     4
+#define WRK_STATE_WRITE            5
+#define WRK_STATE_WRITE_AWAITE     6
+#define WRK_STATE_COMPLETE         7
 
-// HDL_ASSERRT_STRUCTURE_CAST(atb3500_flash_serial_private_t, atb3500_flash_serial_t, ATB3500_FLASH_SERIAL_PRV_SIZE, atb3500_flash_serial.h);
+static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
+  (void)this;
+  hdl_mcu_flash_t *flash = (hdl_mcu_flash_t *)arg;
+  hdl_mcu_flash_var_t *flash_var = (hdl_mcu_flash_var_t *)flash->obj_var;
+  if(flash_var->message != NULL) {
+    hdl_nvm_message_t *message = flash_var->message;
+    switch (flash_var->wrk_state) {
+      case WRK_STATE_START:
+        message->transferred = 0;
+        if ((!message->options) ||
+            ((message->options & ~HDL_NVM_OPTION_ERASE) && 
+              ((message->buffer == NULL) || (message->options & HDL_NVM_OPTION_ERASE))) ||
+            ((message->options & HDL_NVM_OPTION_READ) && (message->options & HDL_NVM_OPTION_WRITE)) ||
+            (message->size == 0)) {
+          message->status |= HDL_NVM_ERROR_BAD_ARG;
+          flash_var->wrk_state = WRK_STATE_COMPLETE;
+        }
+        else {
+          uint32_t fend = (flash->config->page_size * flash->config->pages_amount);
+          uint32_t edst = message->address + message->size;
+          if(edst > fend) {
+            message->status |= HDL_NVM_ERROR_OUT_OF_RANGE;
+            flash_var->wrk_state = WRK_STATE_COMPLETE;
+          }
+          else {
+            if(message->options & HDL_NVM_OPTION_ERASE) {
+              if((message->address % flash->config->page_size) || (message->size % flash->config->page_size)) {
+                message->status |= HDL_NVM_ERROR_PAGE_UNALIGNED;
+                flash_var->wrk_state = WRK_STATE_COMPLETE;
+              }
+              else {
+                flash_var->wrk_state = WRK_STATE_ERASE_PAGE;
+                fmc_unlock();
+              }
+            }
+            else if(message->options & HDL_NVM_OPTION_WRITE) {
+              flash_var->wrk_state = WRK_STATE_WRITE;
+              fmc_unlock();
+            }
+            else if(message->options & HDL_NVM_OPTION_READ) flash_var->wrk_state = WRK_STATE_READ;
+            else if(message->options & HDL_NVM_OPTION_VALIDATE) flash_var->wrk_state = WRK_STATE_VALIDATE;
+          }
+        }
+        break;
 
-// hdl_module_state_t atb3500_flash_serial(void *desc, uint8_t enable) {
-//   if(enable) {
-//     return HDL_MODULE_ACTIVE;
-//   }
-//   return HDL_MODULE_UNLOADED;
-// }
+      case WRK_STATE_WRITE: {
+        uint32_t address = flash->config->page_address + message->address + message->transferred;
+        uint8_t *src = message->buffer + message->transferred;
+        uint8_t *esrc = message->buffer + message->size;
+        FMC_CTL |= FMC_CTL_PG;
+        FMC_WS |= FMC_WS_PGW;
+        while (message->transferred < message->size) {
+          uint64_t data = *((uint64_t *)(address & ~0x07UL));
+          do {
+            if(src != esrc) ((uint8_t *)&data)[address & 0x07] = *src++;
+          } while (++address & 0x07);
+          REG32(address - 8) = ((uint32_t *)&data)[0];
+          REG32(address - 4) = ((uint32_t *)&data)[1];
+          message->transferred = src - message->buffer;
+          if(!(address & 0x07)) break;
+        }
+        flash_var->wrk_state = WRK_STATE_WRITE_AWAITE;
+        break;
+      }
+      
+      case WRK_STATE_WRITE_AWAITE:
+        if(!(FMC_STAT & FMC_STAT_BUSY)) {
+          FMC_CTL &= ~FMC_CTL_PG;
+          FMC_WS &= ~(FMC_WS_PGW);
+          flash_var->wrk_state = WRK_STATE_COMPLETE;
+          if((FMC_STAT & FMC_STAT_WPERR) || (FMC_STAT & FMC_STAT_PGERR) || (FMC_STAT & FMC_STAT_PGAERR))
+            message->status |= HDL_NVM_ERROR_INTERNAL_FAULT;
+          else {
+            if(message->transferred < message->size)
+              flash_var->wrk_state = WRK_STATE_WRITE;
+            else if(message->options & HDL_NVM_OPTION_VALIDATE) 
+              flash_var->wrk_state = WRK_STATE_VALIDATE;
+          }
+        }
+        break;
 
-// typedef struct
-// {
-//   __IO uint32_t WS;              /*!< FMC wait state register */
-//   __IO uint32_t KEY;             /*!< FMC unlock key register */
-//   __IO uint32_t OBKEY;           /*!< FMC option byte unlock key register */
-//   __IO uint32_t STAT;            /*!< FMC status register */
-//   __IO uint32_t CTL;             /*!< FMC control register */
-//   __IO uint32_t OBCTL0;          /*!< FMC option byte control register 0 */
-//   __IO uint32_t OBCTL1;          /*!< FMC option byte control register 1 */
-//   __IO uint32_t _reserved;
-//   __IO uint32_t PECFG;           /*!< FMC page erase configuration register */
-//   __IO uint32_t PEKEY;           /*!< FMC unlock page erase key register */
-//   __IO uint32_t __reserved[54];
-//   __IO uint32_t WSEN;            /*!< FMC wait state enable register */
-//   __IO uint32_t PID;             /*!< FMC product ID register */
-// } FMC_t;
+      case WRK_STATE_ERASE_PAGE: {
+        uint32_t eaddr = flash->config->page_address + message->address + message->transferred;
+        /* start page erase */
+        FMC_CTL |= FMC_CTL_PER;
+        FMC_ADDR = eaddr;
+        FMC_CTL |= FMC_CTL_START;
+        flash_var->wrk_state = WRK_STATE_ERASE_AWAITE;
+        break;
+      }
+      
+      case WRK_STATE_ERASE_AWAITE:
+        if(!(FMC_STAT & FMC_STAT_BUSY)) {
+          FMC_CTL &= ~FMC_CTL_PER;
+          if((FMC_STAT & FMC_STAT_WPERR) || (FMC_STAT & FMC_STAT_PGERR) || (FMC_STAT & FMC_STAT_PGAERR)) {
+            message->status |= HDL_NVM_ERROR_INTERNAL_FAULT;
+            flash_var->wrk_state = WRK_STATE_COMPLETE;
+          }
+          else {
+            message->transferred += flash->config->page_size;
+            if(message->transferred >= message->size) flash_var->wrk_state = WRK_STATE_COMPLETE;
+            else flash_var->wrk_state = WRK_STATE_ERASE_PAGE;
+          }
+        }
+        break;
 
-// uint8_t flash_unlock(void) {
-//   FMC_t *FLASH = (FMC_t *)FMC;
-//   if (!(FLASH->STAT & FMC_STAT_BUSY) && (FLASH->CTL & FMC_CTL_LK)) {
-//     FLASH->KEY = UNLOCK_KEY0;
-//     FLASH->KEY = UNLOCK_KEY1;
-//   }
-// 	return (FLASH->CTL & FMC_CTL_LK) == 0;
-// }
+      case WRK_STATE_VALIDATE: {
+        uint8_t *src = message->buffer;
+        uint8_t *dst = (uint8_t *)(flash->config->page_address + message->address);
+        uint32_t i = 0;
+        for(; i < message->size; i++) {
+          if(src[i] != dst[i]) {
+            message->status |= HDL_NVM_ERROR_VALIDATION_FAULT;
+            break;
+          }
+        }
+        message->transferred = i;
+        flash_var->wrk_state = WRK_STATE_COMPLETE;
+        break;
+      }
 
-// uint8_t burn_flash(uint32_t addr, uint8_t *data, uint8_t len) {
-//   FMC_t *FLASH = (FMC_t *)FMC;
-// 	if (flash_unlock()) {
-//     FLASH->CTL |= FMC_CTL_PG;
-//     while (len) {
-//       FMC_CTL &= ~FMC_CTL_PSZ;
-//       __IO uint32_t* f_ref = (uint32_t *)addr;
-//       uint32_t f_data;
-//       if((len >= 4) && !((uint32_t)data & 0x3) && !((uint32_t)addr & 0x3) ) {
-//         FLASH->CTL |= CTL_PSZ_WORD;
-//         f_data = *(uint32_t *)data;
-//         data += 4;
-//         addr += 4;
-//         len -= 4;
-//       } else if((len >= 2) && !((uint32_t)data & 0x1) && !((uint32_t)addr & 0x1)) {
-//         FLASH->CTL |= CTL_PSZ_HALF_WORD;
-//         f_data = *(uint16_t *)data;
-//         data += 2;
-//         addr += 2;
-//         len -= 2;
-//       }
-//       else {
-//         FLASH->CTL |= CTL_PSZ_BYTE;
-//         f_data = *data;
-//         data++;
-//         addr++;
-//         len--;
-//       }
-//       *f_ref = f_data;
-// 			while ((FLASH->STAT & FMC_STAT_BUSY) != 0) {
+      case WRK_STATE_READ:
+        mem_cpy(message->buffer, (uint8_t *)(flash->config->page_address + message->address), message->size);
+        message->transferred = message->size;
+        flash_var->wrk_state = WRK_STATE_COMPLETE;
+        break;
 
-// 			}
-// 		}
-// 		FLASH->CTL &= ~FMC_CTL_PG; 
-// 		FLASH->CTL |= FMC_CTL_LK;
-//     return HDL_TRUE;
-// 	}
-//   return HDL_FALSE;
-// }
+      case WRK_STATE_COMPLETE:
+        fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGERR | FMC_FLAG_PGAERR);
+        fmc_lock();
+        HDL_REG_MODIFY(message->status, HDL_NVM_STATE, HDL_NVM_STATE_COMPLETE);
+        flash_var->message = NULL;
+      default:
+        break;
+    }    
+  }
+  return cancel;
+}
 
-// uint8_t verify_flash(uint32_t addr, uint8_t *data, uint8_t len) {
-//   __IO uint8_t *f_ref = (uint8_t *)addr;
-//   while (len--) {
-//     if(*f_ref != *data) return HDL_FALSE;
-//     f_ref++;
-//     data++;
-//   }
-//   return HDL_TRUE;
-// }
+static hdl_module_state_t _hdl_nvm_init(const void *desc, uint8_t enable) {
+  hdl_mcu_flash_t *flash = (hdl_mcu_flash_t *)desc;
+  hdl_mcu_flash_var_t *flash_var = (hdl_mcu_flash_var_t *)flash->obj_var;
+  if(enable) {
+    coroutine_add(&flash_var->worker, &_flash_worker, (void *)flash);
+    return HDL_MODULE_ACTIVE;
+  }
+  coroutine_cancel(&flash_var->worker);
+  return HDL_MODULE_UNLOADED;
+}
 
-// uint8_t write_flash(uint32_t addr, uint8_t *data, uint8_t len) {
-//   return burn_flash(addr, data, len) && verify_flash(addr, data, len);
-// }
+static uint8_t _hdl_nvm_info_get(const void *desc, hdl_nvm_info_t *out_info) {
+  hdl_mcu_flash_t *flash = (hdl_mcu_flash_t *)desc;
+  if(out_info != NULL) {
+    out_info->page_size = flash->config->page_size;
+    out_info->volume = flash->config->page_size * flash->config->pages_amount;
+    return HDL_TRUE;
+  }
+  return HDL_FALSE;
+}
 
-// uint8_t erase_flash(uint32_t addr, uint32_t amount) {
-//   FMC_t *FLASH = (FMC_t *)FMC;
-// 	if (flash_unlock()) {
-//     FLASH->PEKEY = UNLOCK_PE_KEY;
-//     FLASH->PECFG |= FMC_PE_EN;
-//     FMC_PECFG = FMC_PE_EN | ((addr >> 12) << 12); /* 4K align */
-//     FLASH->CTL &= ~FMC_CTL_SN;
-//     FLASH->CTL |= FMC_CTL_SER;
-//     FLASH->CTL |= FMC_CTL_START;
-//     while ((FLASH->STAT & FMC_STAT_BUSY) != 0) {
+static uint8_t _hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
+  hdl_mcu_flash_t *flash = (hdl_mcu_flash_t *)desc;
+  hdl_mcu_flash_var_t *flash_var = (hdl_mcu_flash_var_t *)flash->obj_var;
+  if((hdl_state(flash) != HDL_MODULE_UNLOADED) && (flash_var->message == NULL)) {
+    message->status = HDL_NVM_STATE_BUSY;
+    flash_var->message = message;
+    flash_var->wrk_state = WRK_STATE_START;
+    return HDL_TRUE;
+  }
+  return HDL_FALSE;
+}
 
-//     }
-//     FLASH->PECFG &= ~FMC_PE_EN;
-//     FLASH->CTL &= ~FMC_CTL_SER;
-// 		FLASH->CTL |= FMC_CTL_LK;
-//     return HDL_TRUE;
-// 	}
-//   return HDL_FALSE;
-// }
-
-// uint8_t sector_erase_flash(uint32_t fmc_sector) {
-//   FMC_t *FLASH = (FMC_t *)FMC;
-// 	if (flash_unlock()) {
-//     /* start sector erase */
-//     FMC_CTL &= ~FMC_CTL_SN;
-//     FMC_CTL |= (FMC_CTL_SER | fmc_sector);
-//     FMC_CTL |= FMC_CTL_START;
-//     while ((FLASH->STAT & FMC_STAT_BUSY) != 0) {
-//     }
-//     FMC_CTL &= (~FMC_CTL_SER);
-//     FMC_CTL &= ~FMC_CTL_SN;
-// 		FLASH->CTL |= FMC_CTL_LK;
-//     return HDL_TRUE;
-// 	}
-//   return HDL_FALSE;
-// }
-
-// atb3500_flash_serial_proto_tx_t *atb3500_flash_serial_update(atb3500_flash_serial_t *desc, atb3500_flash_serial_proto_rx_t *data) {
-//   atb3500_flash_serial_private_t *serial = (atb3500_flash_serial_private_t *)desc;
-//   if(serial != NULL) {
-//     serial->tx_buf.status = (*(uint8_t *)(ATB3500_SERIAL_ADDRESS) == 0xff)? SERIAL_EMPTY: SERIAL_VALID;
-//     if((data->programm_key1 == ATB3500_SERIAL_PROGRAMM_KEY1) && (data->programm_key2 == ATB3500_SERIAL_PROGRAMM_KEY2)) {
-//       sector_erase_flash(CTL_SECTOR_NUMBER_11);
-//       if(!write_flash((uint32_t)ATB3500_SERIAL_ADDRESS, data->serial, ATB3500_SERIAL_SIZE)) {
-//         sector_erase_flash(CTL_SECTOR_NUMBER_11);
-//         serial->tx_buf.status = SERIAL_FLASH_FAULT;
-//       }
-//       else serial->tx_buf.status = SERIAL_VALID;
-//       data->programm_key1 = 0;
-//       data->programm_key2 = 0;
-//     }
-//     mem_cpy(serial->tx_buf.serial, (uint8_t*)ATB3500_SERIAL_ADDRESS, ATB3500_SERIAL_SIZE);
-//     return &serial->tx_buf;
-//   }
-//   return NULL;
-// }
+hdl_nvm_iface_t mcu_flash_iface = {
+  .init = &_hdl_nvm_init,
+  .info = &_hdl_nvm_info_get,
+  .transfer = &_hdl_nvm_transfer
+};

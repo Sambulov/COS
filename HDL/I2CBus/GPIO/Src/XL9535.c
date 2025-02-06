@@ -76,8 +76,10 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   else if(port_var->state & XL9535_STATE_AWAITE) {
     if(port_var->i2c_msg.status & HDL_I2C_MESSAGE_STATUS_COMPLETE) {
       port_var->state &= ~XL9535_STATE_AWAITE;
-      if(port_var->state & XL9535_STATE_FREE)
+      if(port_var->state & XL9535_STATE_FREE) {
         hdl_give(i2c, port);
+        port_var->state &= ~XL9535_STATE_FREE;
+      }
     }
   }
   else switch (port_var->state & XL9535_STATE_WORK) {

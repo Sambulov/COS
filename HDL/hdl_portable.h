@@ -24,10 +24,12 @@
 #include "hdl_transceiver.h"
 #include "hdl_buffer.h"
 #include "hdl_event.h"
+#include "hdl_heap.h"
 #include "hdl_module.h"
 #include "hdl_core.h"
 #include "hdl_clock.h"
-#include "hdl_nvm.h"
+#include "port_nvm.h"
+
 //#include "hdl_dma.h"
 //#include "hdl_adc.h"
 #include "hdl_tick_counter.h"

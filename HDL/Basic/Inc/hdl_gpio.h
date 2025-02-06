@@ -36,13 +36,6 @@ hdl_module_new_t(hdl_gpio_pin_t, 0, hdl_gpio_pin_config_t, hdl_gpio_pin_iface_t)
 
 extern const hdl_gpio_pin_iface_t hdl_gpio_pin_iface;
 
-#define hdl_gpio_set_inactive(gpio)            (hdl_gpio_write((gpio), (gpio)->config->inactive_default))
-#define hdl_gpio_set_active(gpio)              (hdl_gpio_write((gpio), !((gpio)->config->inactive_default)))
-#define hdl_gpio_is_inactive(gpio)             (hdl_gpio_read((gpio)) == (gpio)->config->inactive_default)
-#define hdl_gpio_is_active(gpio)               (!hdl_gpio_is_inactive(gpio))
-#define hdl_gpio_is_set_as_inactive(gpio)      (hdl_gpio_read_output(gpio) == gpio->config->inactive_default)
-#define hdl_gpio_is_set_as_active(gpio)        (!hdl_gpio_is_set_as_inactive(gpio))
-
 __STATIC_INLINE hdl_gpio_state hdl_gpio_read(const void *gpio) {
   return ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)gpio)->iface)->read(gpio);
 }
@@ -55,9 +48,32 @@ __STATIC_INLINE void hdl_gpio_write(const void *gpio, const hdl_gpio_state state
   ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)gpio)->iface)->write(gpio, state);
 }
 
-
 __STATIC_INLINE void hdl_gpio_toggle(const void *gpio) {
   ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)gpio)->iface)->toggle(gpio);
+}
+
+__STATIC_INLINE void hdl_gpio_set_inactive(const void *gpio) {
+  hdl_gpio_write((gpio), ((hdl_gpio_pin_t *)(gpio))->config->inactive_default);
+}
+
+__STATIC_INLINE void hdl_gpio_set_active(const void *gpio) {
+  hdl_gpio_write((gpio), !((hdl_gpio_pin_t *)(gpio))->config->inactive_default);
+}
+
+__STATIC_INLINE uint8_t hdl_gpio_is_inactive(const void *gpio) {
+  return (hdl_gpio_read(gpio) == ((hdl_gpio_pin_t *)(gpio))->config->inactive_default);
+}
+
+__STATIC_INLINE uint8_t hdl_gpio_is_active(const void *gpio) {               
+  return !hdl_gpio_is_inactive(gpio);
+}
+
+__STATIC_INLINE uint8_t hdl_gpio_is_set_as_inactive(const void *gpio) {
+  return (hdl_gpio_read_output(gpio) == ((hdl_gpio_pin_t *)(gpio))->config->inactive_default);
+}
+
+__STATIC_INLINE uint8_t hdl_gpio_is_set_as_active(const void *gpio) {
+  return (!hdl_gpio_is_set_as_inactive(gpio));
 }
 
 #endif // HDL_GPIO_H_

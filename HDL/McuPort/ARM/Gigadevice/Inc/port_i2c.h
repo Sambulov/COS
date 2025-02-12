@@ -13,7 +13,7 @@ typedef struct {
   hdl_interrupt_t *err_interrupt;
   hdl_interrupt_t *ev_interrupt;
   const rcu_periph_enum rcu;
-  void *reg;
+  uint32_t phy;
 } hdl_i2c_config_hw_t;
 
 #endif // PORT_I2C_H_

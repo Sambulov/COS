@@ -21,22 +21,23 @@
 #include <stddef.h>
 #include __MCU_HAL_HDR__
 
+#include "hdl_module.h"
 #include "hdl_transceiver.h"
 #include "hdl_buffer.h"
 #include "hdl_event.h"
 #include "hdl_heap.h"
-#include "hdl_module.h"
 #include "hdl_core.h"
 #include "hdl_clock.h"
-#include "port_nvm.h"
 
-//#include "hdl_dma.h"
-//#include "hdl_adc.h"
+#include "port_nvm.h"
+#include "port_dma.h"
+#include "port_adc.h"
+
 #include "hdl_tick_counter.h"
 #include "hdl_time_counter.h"
 #include "hdl_gpio.h"
-//#include "hdl_spi.h"
+#include "hdl_spi.h"
 #include "hdl_i2c.h"
-//#include "hdl_uart.h"
+#include "hdl_uart.h"
 
 #endif // HDL_PORTABLE_H_

@@ -1,7 +1,7 @@
 #ifndef MS5194T_H_
 #define MS5194T_H_
 
-#define HDL_ADC_MS5194T_PRV_SIZE        64
+#define HDL_ADC_MS5194T_VAR_SIZE        64
 
 #define HDL_ADC_MS5194T_INVALID_VALUE   0xFFFFFFFF
 
@@ -353,15 +353,8 @@ typedef struct {
     rdy_pin
     time_counter
  */
-typedef struct {
-  hdl_module_t module;
-  const hdl_adc_ms5194t_config_t *config;
-  PRIVATE(hdl, HDL_ADC_MS5194T_PRV_SIZE);
-} hdl_adc_ms5194t_t;
+hdl_module_new_t(hdl_adc_ms5194t_t, HDL_ADC_MS5194T_VAR_SIZE, hdl_adc_ms5194t_config_t, hdl_adc_iface_t);
 
-hdl_module_state_t hdl_adc_ms5194t(void *desc, uint8_t enable);
-
-uint32_t hdl_adc_ms5194t_get(hdl_adc_ms5194t_t *hdl_adc, uint32_t src);
-uint32_t hdl_adc_ms5194t_age(hdl_adc_ms5194t_t *hdl_adc);
+extern hdl_adc_iface_t hdl_adc_ms5194t_iface;
 
 #endif /* MS5194T_H_ */

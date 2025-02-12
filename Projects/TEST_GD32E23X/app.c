@@ -7,6 +7,7 @@ extern hdl_button_t button;
 extern hdl_gpio_pin_t mod_pin_12c0_scl;
 extern hdl_i2c_t mod_i2c0;
 extern hdl_i2c_t mod_i2c1;
+extern hdl_spi_client_ch_t mod_spi0_ch0;
 
 void btn_handler(uint32_t event_trigger, void *sender, void *context) {
   (void)event_trigger;(void)sender;(void)context;
@@ -18,9 +19,10 @@ void main() {
   hdl_enable(&mod_timer_ms);
   hdl_enable(&uspd20k_ai4_ntc_pu);
   hdl_enable(&button);
-  //hdl_enable(&mod_i2c0);
-  //hdl_enable(&mod_i2c1);
-
+  hdl_enable(&mod_i2c0);
+  hdl_enable(&mod_i2c1);
+  hdl_enable(&mod_spi0_ch0);
+  
   hdl_delegate_t btn_del = {
     .context = NULL,
     .handler = &btn_handler

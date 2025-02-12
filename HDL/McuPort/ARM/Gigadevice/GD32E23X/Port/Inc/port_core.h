@@ -132,14 +132,14 @@ typedef struct {
   hdl_interrupt_t **interrupts;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
   const void * const vector;
-  void *reg;
+  uint32_t phy;
 } hdl_interrupt_controller_config_t;
 
 #define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
 
 typedef struct{
   uint32_t flash_latency; /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
-  void *reg;
+  uint32_t phy;
 } hdl_core_config_t;
 
 extern const void *_estack;

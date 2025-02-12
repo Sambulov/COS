@@ -34,9 +34,10 @@ typedef enum {
 void hdl_spi_reset_status(uint32_t spi_module_reg);
 
 /**************** vvv  SPI slave vvv  ******************/
-#define HDL_SPI_SERVER_PRIVATE_SIZE            52
+#define HDL_SPI_SERVER_VAR_SIZE            52
 
 typedef struct {
+  uint32_t phy;
   rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
@@ -54,7 +55,7 @@ typedef struct {
  */
 
 /**************** vvv  SPI slave DMA vvv  ******************/
-#define HDL_SPI_SERVER_DMA_PRIVATE_SIZE        88
+#define HDL_SPI_SERVER_DMA_VAR_SIZE        84
 
 /* hdl_spi_server_dma_t depends on:
   gpio mosi
@@ -69,10 +70,11 @@ typedef struct {
 */
 
 /**************** vvv  SPI master vvv  ******************/
-#define HDL_SPI_CLIENT_PRIVATE_SIZE           32
-#define HDL_SPI_CLIENT_CH_PRIVATE_SIZE        24
+#define HDL_SPI_CLIENT_VAR_SIZE           32
+#define HDL_SPI_CLIENT_CH_VAR_SIZE        28
 
 typedef struct {
+  uint32_t phy;
   rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;

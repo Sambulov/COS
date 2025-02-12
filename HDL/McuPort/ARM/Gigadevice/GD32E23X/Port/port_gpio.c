@@ -12,7 +12,7 @@ static hdl_module_state_t _hdl_gpio_port(const void *desc, const uint8_t enable)
   return HDL_MODULE_ACTIVE;
 }
 
-hdl_module_state_t hdl_gpio_pin(const void *desc, const uint8_t enable) {
+hdl_module_state_t __hdl_gpio_pin(const void *desc, const uint8_t enable) {
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
   if (gpio->config->hwc == NULL || gpio->dependencies == NULL || gpio->dependencies[0] == NULL)
     return HDL_MODULE_FAULT;

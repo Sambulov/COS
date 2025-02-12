@@ -2,7 +2,6 @@
 #define HDL_SPI_H_
 
 #include "port_spi.h"
-#include "hdl_transceiver.h"
 
 /* Don`t change order */
 typedef enum {
@@ -32,42 +31,63 @@ typedef struct {
 } hdl_spi_message_t;
 
 /**************** vvv  SPI slave vvv  ******************/
-typedef struct {
-  hdl_module_t module;
-  const hdl_spi_server_config_t *config;
-  PRIVATE(hw, HDL_SPI_SERVER_PRIVATE_SIZE);
-} hdl_spi_server_t;
-
-hdl_module_state_t hdl_spi_server(void *desc, uint8_t enable);
-void hdl_spi_server_set_transceiver(hdl_spi_server_t *spi, hdl_transceiver_t *transceiver);
-
-/**************** vvv  SPI master vvv  ******************/
-typedef struct {
-  hdl_module_t module;
-  const hdl_spi_client_ch_config_t *config;
-  PRIVATE(hw, HDL_SPI_CLIENT_CH_PRIVATE_SIZE);
-} hdl_spi_client_ch_t;
 
 typedef struct {
-  hdl_module_t module;
-  const hdl_spi_client_config_t *config;
-  PRIVATE(hw, HDL_SPI_CLIENT_PRIVATE_SIZE);
-} hdl_spi_client_t;
+  hdl_module_initializer_t init;
+  hdl_set_transceiver_t transceiver_set;
+} hdl_spi_server_iface_t;
 
-hdl_module_state_t hdl_spi_client(void *desc, uint8_t enable);
-hdl_module_state_t hdl_spi_ch(void *desc, uint8_t enable);
-uint8_t hdl_spi_transfer_message(hdl_spi_client_ch_t *spi_ch, hdl_spi_message_t *message);
+hdl_module_new_t(hdl_spi_server_t, HDL_SPI_SERVER_VAR_SIZE, hdl_spi_server_config_t, hdl_spi_server_iface_t);
+
+extern const hdl_spi_server_iface_t hdl_spi_server_iface;
 
 /**************** vvv  SPI slave DMA vvv  ******************/
-typedef struct {
-  hdl_module_t module;
-  const hdl_spi_server_config_t *config;
-  PRIVATE(hw, HDL_SPI_SERVER_DMA_PRIVATE_SIZE);
-} hdl_spi_server_dma_t;
 
-hdl_module_state_t hdl_spi_server_dma(void *desc, uint8_t enable);
-void hdl_spi_server_dma_set_handler(hdl_spi_server_dma_t *desc, hdl_event_handler_t handler, void *context);
-uint8_t hdl_spi_server_dma_set_rx_buffer(hdl_spi_server_dma_t *desc, hdl_basic_buffer_t *buffer);
-uint8_t hdl_spi_server_dma_set_tx_data(hdl_spi_server_dma_t *desc, hdl_basic_buffer_t *buffer);
+typedef void (*hdl_spi_server_dma_set_handler_t)(const void *desc, hdl_delegate_t *delegate);
+typedef uint8_t (*hdl_spi_server_dma_set_buffer_t)(const void *desc, hdl_basic_buffer_t *buffer);
+
+typedef struct {
+  hdl_module_initializer_t init;
+  hdl_spi_server_dma_set_handler_t subscribe;
+  hdl_spi_server_dma_set_buffer_t set_rx_buf;
+  hdl_spi_server_dma_set_buffer_t set_tx_buf;
+} hdl_spi_server_dma_iface_t;
+
+hdl_module_new_t(hdl_spi_server_dma_t, HDL_SPI_SERVER_DMA_VAR_SIZE, hdl_spi_server_config_t, hdl_spi_server_dma_iface_t);
+
+extern const hdl_spi_server_dma_iface_t hdl_spi_server_dma_iface;
+
+__STATIC_INLINE void hdl_spi_server_dma_subscribe(const void *desc, hdl_delegate_t *delegate) {
+  ((hdl_spi_server_dma_t *)desc)->iface->subscribe(desc, delegate);
+}
+
+__STATIC_INLINE uint8_t hdl_spi_server_dma_set_rx_buffer(const void *desc, hdl_basic_buffer_t *buffer) {
+  return ((hdl_spi_server_dma_t *)desc)->iface->set_rx_buf(desc, buffer);
+}
+
+__STATIC_INLINE uint8_t hdl_spi_server_dma_set_tx_data(const void *desc, hdl_basic_buffer_t *buffer) {
+  return ((hdl_spi_server_dma_t *)desc)->iface->set_tx_buf(desc, buffer);
+}
+
+/**************** vvv  SPI master vvv  ******************/
+
+hdl_module_new_t(hdl_spi_client_t, HDL_SPI_CLIENT_VAR_SIZE, hdl_spi_client_config_t, hdl_module_base_iface_t);
+
+extern const hdl_module_base_iface_t hdl_spi_client_iface;
+
+typedef uint8_t (* hdl_spi_transfer_message_t)(const void *desc, hdl_spi_message_t *message);
+
+typedef struct {
+  hdl_module_initializer_t init;
+  hdl_spi_transfer_message_t transfer;
+} hdl_spi_client_ch_iface_t;
+
+hdl_module_new_t(hdl_spi_client_ch_t, HDL_SPI_CLIENT_CH_VAR_SIZE, hdl_spi_client_ch_config_t, hdl_spi_client_ch_iface_t);
+
+extern const hdl_spi_client_ch_iface_t hdl_spi_client_ch_iface;
+
+__STATIC_INLINE uint8_t hdl_spi_transfer_message(const void *desc, hdl_spi_message_t *message) {
+  return ((hdl_spi_client_ch_t *)desc)->iface->transfer(desc, message);
+}
 
 #endif /* HDL_SPI_H_ */

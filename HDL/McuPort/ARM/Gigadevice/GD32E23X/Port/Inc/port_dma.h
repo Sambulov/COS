@@ -1,14 +1,17 @@
 #ifndef PORT_DMA_H_
 #define PORT_DMA_H_
 
+#include "hdl_dma.h"
+
 /* for driver compability */
-#define dma_flag_get(dma, ch, flag)       dma_flag_get(ch, flag)
-#define dma_transfer_number_get(dma, ch)  dma_transfer_number_get(ch)
-#define dma_deinit(dma, ch)               dma_deinit(ch)
-#define dma_channel_disable(dma, ch)      dma_channel_disable(ch)
+#define dma_flag_get(dma, ch, flag)       ((void)dma, dma_flag_get(ch, flag))
+#define dma_transfer_number_get(dma, ch)  ((void)dma, dma_transfer_number_get(ch))
+#define dma_deinit(dma, ch)               ((void)dma, dma_deinit(ch))
+#define dma_channel_disable(dma, ch)      ((void)dma, dma_channel_disable(ch))
 
 typedef struct {
   rcu_periph_enum rcu;
+  uint32_t phy;
 } hdl_dma_config_t;
 
 typedef struct {
@@ -20,6 +23,12 @@ typedef struct {
           memory_inc    : 1,
           m2m_direction : 1,
           circular      : 1;
+  dma_channel_enum ch_no;
 } hdl_dma_channel_config_t;
+
+extern const hdl_module_base_iface_t dma_iface;
+
+/* Depends on dma module */
+extern const hdl_dma_channel_iface_t dma_channel_iface;
 
 #endif

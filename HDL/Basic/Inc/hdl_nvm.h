@@ -18,6 +18,7 @@ typedef enum {
   HDL_NVM_ERROR_OUT_OF_RANGE     = 0x20,
   HDL_NVM_ERROR_LOCKED           = 0x30,
   HDL_NVM_ERROR_PAGE_UNALIGNED   = 0x40,
+  HDL_NVM_ERROR_BUS_FAULT        = 0xD0,
   HDL_NVM_ERROR_BAD_ARG          = 0xE0,
   HDL_NVM_ERROR_INTERNAL_FAULT   = 0xF0,
   HDL_NVM_ERROR                  = 0xF0,
@@ -46,7 +47,7 @@ typedef struct{
   hdl_nvm_transfer_t transfer;
 } hdl_nvm_iface_t;
 
-hdl_module_new_t(hdl_nvm_t, 0, void *, hdl_nvm_iface_t);
+hdl_module_new_t(hdl_nvm_t, 0, void, hdl_nvm_iface_t);
 
 __STATIC_INLINE uint8_t hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
   return ((hdl_nvm_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);

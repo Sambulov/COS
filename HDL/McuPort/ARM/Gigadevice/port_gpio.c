@@ -36,10 +36,10 @@ static void _hdl_gpio_toggle(const void *desc){
   gpio_bit_toggle(gpio_port, gpio_pin);
 }
 
-extern hdl_module_state_t hdl_gpio_pin(const void *desc, const uint8_t enable);
+extern hdl_module_state_t __hdl_gpio_pin(const void *desc, const uint8_t enable);
 
 const hdl_gpio_pin_iface_t hdl_gpio_pin_iface = {
-  .init = &hdl_gpio_pin,
+  .init = &__hdl_gpio_pin,
   .read = &_hdl_gpio_read,
   .read_ouput = &_hdl_gpio_read_output,
   .toggle = &_hdl_gpio_toggle,

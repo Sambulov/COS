@@ -13,19 +13,19 @@
                                         I2C_STAT0_BERR)   
 
 typedef struct {
-  __IO uint32_t CTL0;            /*!< I2C Control register 0,                Address offset: 0x00 */
-  __IO uint32_t CTL1;            /*!< I2C Control register 1,                Address offset: 0x04 */
-  __IO uint32_t SADDR0;          /*!< I2C Slave address register 0,          Address offset: 0x08 */
-  __IO uint32_t SADDR1;          /*!< I2C Slave address register 1,          Address offset: 0x0C */
-  __IO uint32_t DATA;            /*!< I2C Transfer buffer register,          Address offset: 0x10 */
-  __IO uint32_t STAT0;           /*!< I2C Transfer status register 0,        Address offset: 0x14 */
-  __IO uint32_t STAT1;           /*!< I2C Transfer status register 1,        Address offset: 0x18 */
-  __IO uint32_t CKCFG;           /*!< I2C Clock configure register,          Address offset: 0x1C */
-  __IO uint32_t RT;              /*!< I2C Rise time register,                Address offset: 0x20*/
+  __IO uint32_t CTL0;            /*!< I2C Control phyister 0,                Address offset: 0x00 */
+  __IO uint32_t CTL1;            /*!< I2C Control phyister 1,                Address offset: 0x04 */
+  __IO uint32_t SADDR0;          /*!< I2C Slave address phyister 0,          Address offset: 0x08 */
+  __IO uint32_t SADDR1;          /*!< I2C Slave address phyister 1,          Address offset: 0x0C */
+  __IO uint32_t DATA;            /*!< I2C Transfer buffer phyister,          Address offset: 0x10 */
+  __IO uint32_t STAT0;           /*!< I2C Transfer status phyister 0,        Address offset: 0x14 */
+  __IO uint32_t STAT1;           /*!< I2C Transfer status phyister 1,        Address offset: 0x18 */
+  __IO uint32_t CKCFG;           /*!< I2C Clock configure phyister,          Address offset: 0x1C */
+  __IO uint32_t RT;              /*!< I2C Rise time phyister,                Address offset: 0x20*/
   __IO uint32_t _dummy24_7C[23]; 
-  __IO uint32_t SAMCS;           /*!< I2C SAM control and status register,   Address offset: 0x80 */
+  __IO uint32_t SAMCS;           /*!< I2C SAM control and status phyister,   Address offset: 0x80 */
   __IO uint32_t _dummy84_8C[3];
-  __IO uint32_t FMPCFG;          /*!< I2C Fast mode plus configure register, Address offset: 0x90 */
+  __IO uint32_t FMPCFG;          /*!< I2C Fast mode plus configure phyister, Address offset: 0x90 */
 } i2c_periph_t;
 
 typedef struct {
@@ -35,7 +35,7 @@ typedef struct {
   hdl_i2c_message_t *message;
   uint32_t wc_timeout;
   uint32_t wc_ts;
-  __IO uint32_t *wc_reg;
+  __IO uint32_t *wc_phy;
   uint32_t wc_flags;
   uint8_t wc_flags_is_set;
   int8_t wc_state;
@@ -57,7 +57,7 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   hdl_i2c_t *i2c = (hdl_i2c_t *)context;
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->reg;
+  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
   uint32_t tmp = i2c_periph->STAT0;
   uint32_t tmp1 = 0;
   uint8_t data = 0;
@@ -109,7 +109,7 @@ static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
   hdl_i2c_t *i2c = (hdl_i2c_t *)context;
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->reg;
+  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
   hdl_transceiver_t *transceiver = i2c_var->transceiver;
   if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
     if((transceiver != NULL) && (transceiver->end_of_transmission != NULL))
@@ -123,28 +123,28 @@ static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
 #define WC_STATE_TIMEOUT    -1
 #define WC_STATE_HIT         1
 
-static void _i2c_reg_set_wait_condition(hdl_i2c_t *i2c, __IO uint32_t *reg, uint32_t flags, uint8_t is_set, uint32_t timeout) {
+static void _i2c_phy_set_wait_condition(hdl_i2c_t *i2c, __IO uint32_t *phy, uint32_t flags, uint8_t is_set, uint32_t timeout) {
   hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->dependencies[4];
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   i2c_var->wc_ts = hdl_time_counter_get(timer);
   i2c_var->wc_flags = flags;
   i2c_var->wc_flags_is_set = is_set;
   i2c_var->wc_timeout = timeout;
-  i2c_var->wc_reg = reg;
+  i2c_var->wc_phy = phy;
   i2c_var->wc_state = WC_STATE_AWAITING;
 }
 
-static void _i2c_reg_wait_condition(hdl_i2c_t *i2c) {
+static void _i2c_phy_wait_condition(hdl_i2c_t *i2c) {
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   if(i2c_var->wc_state == WC_STATE_AWAITING) {
     hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->dependencies[4];
     uint32_t now = hdl_time_counter_get(timer);
     if(i2c_var->wc_flags_is_set) {
-      if((*i2c_var->wc_reg & i2c_var->wc_flags) == i2c_var->wc_flags) i2c_var->wc_state = WC_STATE_HIT;
+      if((*i2c_var->wc_phy & i2c_var->wc_flags) == i2c_var->wc_flags) i2c_var->wc_state = WC_STATE_HIT;
     }
     else {
       uint32_t flags = ~i2c_var->wc_flags;
-      if((*i2c_var->wc_reg | flags) == flags) i2c_var->wc_state = WC_STATE_HIT;
+      if((*i2c_var->wc_phy | flags) == flags) i2c_var->wc_state = WC_STATE_HIT;
     }
     if(TIME_ELAPSED(i2c_var->wc_ts, i2c_var->wc_timeout, now)) i2c_var->wc_state = WC_STATE_TIMEOUT;
   }
@@ -162,7 +162,7 @@ static void _i2c_set_bus_to_default(i2c_periph_t *i2c_periph) {
 static uint8_t _i2c_msg_start_handler(hdl_i2c_t *i2c) {
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->reg;
+  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
   if(i2c_var->wrk_state_substate == 1) {
     if(i2c_var->wc_state == WC_STATE_TIMEOUT) {
       i2c_periph->CTL0 &= ~I2C_CTL0_START;
@@ -180,7 +180,7 @@ static uint8_t _i2c_msg_start_handler(hdl_i2c_t *i2c) {
     /* send a start condition to I2C bus */
     i2c_periph->CTL0 |= I2C_CTL0_START;
     /* wait until SBSEND bit is set */
-    _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_SBSEND, 1, 10);
+    _i2c_phy_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_SBSEND, 1, 10);
     i2c_var->wrk_state_substate = 1;
   }
   return HDL_FALSE;
@@ -189,7 +189,7 @@ static uint8_t _i2c_msg_start_handler(hdl_i2c_t *i2c) {
 static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_t *i2c) {
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->reg;
+  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
   if(i2c_var->wrk_state_substate == 1) {
     if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
       i2c_var->message->status |= HDL_I2C_MESSAGE_STATUS_NACK;
@@ -205,7 +205,7 @@ static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_t *i2c) {
     /* send slave address */
     i2c_periph->DATA = (i2c_var->message->address << 1) | ((i2c_var->message->options & HDL_I2C_MESSAGE_MRSW)? I2C_RECEIVER: 0);
     /* wait until ADDSEND bit is set */
-    _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_ADDSEND, 1, 10);
+    _i2c_phy_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_ADDSEND, 1, 10);
     i2c_var->wrk_state_substate = 1;
   }
   return HDL_FALSE;
@@ -214,7 +214,7 @@ static hdl_i2c_message_status_t _i2c_msg_addr_handler(hdl_i2c_t *i2c) {
 static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_t *i2c) {
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->reg;
+  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
   if(i2c_var->wrk_state_substate == 1) { /* Awaiting rx byte */
     if(i2c_var->wc_state == WC_STATE_TIMEOUT) {
       i2c_var->message->status |= HDL_I2C_MESSAGE_FAULT_BAD_STATE | HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
@@ -239,7 +239,7 @@ static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_t *i2c) {
         return HDL_TRUE;
       }
     }
-    _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
+    _i2c_phy_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
     i2c_var->wrk_state_substate = 1;
   }
   if(i2c_var->wrk_state_substate == 0) {
@@ -251,14 +251,14 @@ static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_t *i2c) {
         uint32_t tmp = i2c_periph->STAT0;
         tmp = i2c_periph->STAT1;
         (void)tmp;
-        _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
+        _i2c_phy_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
       }
       else { 
         i2c_var->message->status |= HDL_I2C_MESSAGE_STATUS_DATA;
         return HDL_TRUE;
       }
     }
-    _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
+    _i2c_phy_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_RBNE, 1, 10);
     i2c_var->wrk_state_substate = 1;
   }
   return HDL_FALSE;
@@ -267,7 +267,7 @@ static uint8_t _i2c_msg_data_receiver_handler(hdl_i2c_t *i2c) {
 static uint8_t _i2c_msg_data_transmitter_handler(hdl_i2c_t *i2c) {
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->reg;
+  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
   if(i2c_var->wrk_state_substate == 0) {
     i2c_var->message->transferred = 0;
     if(!(i2c_periph->STAT1 & I2C_STAT1_TR)) {
@@ -299,7 +299,7 @@ static uint8_t _i2c_msg_data_transmitter_handler(hdl_i2c_t *i2c) {
       return HDL_TRUE;
     }
     else {
-      _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_TBE, 1, 10);
+      _i2c_phy_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_TBE, 1, 10);
       i2c_var->wrk_state_substate = 1;
     }
   }
@@ -320,13 +320,13 @@ static uint8_t _i2c_msg_data_handler(hdl_i2c_t *i2c) {
 static uint8_t _i2c_msg_stop_handler(hdl_i2c_t *i2c) {
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->reg;
+  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
   if(i2c_var->wrk_state_substate == 1) {
     i2c_var->wrk_state_substate = 2;
   }
   if(i2c_var->wrk_state_substate == 0) {
     if(i2c_periph->STAT1 & I2C_STAT1_TR) {
-      _i2c_reg_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_BTC, 1, 10);
+      _i2c_phy_set_wait_condition(i2c, &i2c_periph->STAT0, I2C_STAT0_BTC, 1, 10);
       i2c_var->wrk_state_substate = 1;
     }
     else {
@@ -359,7 +359,7 @@ static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) 
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   if(i2c_var->message != NULL) {
     if(i2c_var->wc_state == WC_STATE_AWAITING) {
-      _i2c_reg_wait_condition(i2c);
+      _i2c_phy_wait_condition(i2c);
     } else {
       if(i2c_var->wrk_state == WRK_STATE_START)
         if(!(i2c_var->message->options & HDL_I2C_MESSAGE_START) || _i2c_msg_start_handler(i2c)) { i2c_var->wrk_state++; i2c_var->wrk_state_substate = 0; }
@@ -403,11 +403,11 @@ static hdl_module_state_t _hdl_i2c(const void *desc, uint8_t enable) {
   hdl_i2c_t *i2c = (hdl_i2c_t *)desc;
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->reg;
+  i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
   i2c_deinit((uint32_t)i2c_periph);
   if(enable) {
     rcu_periph_clock_enable(hwc->rcu);
-    //i2c_clock_config((uint32_t)_i2c->module.reg, _i2c->config->speed, _i2c->config->dtcy);
+    //i2c_clock_config((uint32_t)_i2c->module.phy, _i2c->config->speed, _i2c->config->dtcy);
     
     hdl_clock_t *clk = (hdl_clock_t *)i2c->dependencies[2];
     uint32_t freq_mhz;
@@ -489,7 +489,7 @@ static hdl_module_state_t _hdl_i2c(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-static uint8_t _hdl_i2c_transceiver_set(const void *desc, uint32_t channel, hdl_transceiver_t *transceiver) {
+static uint8_t _hdl_i2c_transceiver_set(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel) {
   hdl_i2c_t *i2c = (hdl_i2c_t *)desc;
   if(i2c->config->channels != NULL) {
     uint32_t ch = 0;
@@ -503,8 +503,6 @@ static uint8_t _hdl_i2c_transceiver_set(const void *desc, uint32_t channel, hdl_
   }
   return HDL_FALSE;
 }
-
-
 
 const hdl_i2c_iface_t hdl_i2c_iface = {
   .init = &_hdl_i2c,

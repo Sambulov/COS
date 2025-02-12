@@ -1,7 +1,7 @@
 #ifndef PORT_UART_H_
 #define PORT_UART_H_
 
-#define HDL_UART_PRV_SIZE           52
+#define HDL_UART_VAR_SIZE           52
 
 /* depends on:
   gpio rx
@@ -11,6 +11,7 @@
   hdl_timer_t
  */
 typedef struct {
+  uint32_t phy;
   rcu_periph_enum rcu;
   hdl_interrupt_t *interrupt;
   uint32_t baudrate;

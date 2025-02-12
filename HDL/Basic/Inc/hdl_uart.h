@@ -4,14 +4,12 @@
 #include "port_uart.h"
 
 typedef struct {
-  hdl_module_t module;
-  hdl_uart_config_t *config;
-  PRIVATE(hw, HDL_UART_PRV_SIZE);
-} hdl_uart_t;
+  hdl_module_initializer_t init;
+  hdl_set_transceiver_t transceiver_set;
+} hdl_uart_iface_t;
 
-/* Initialization */
-hdl_module_state_t hdl_uart(void *desc, uint8_t enable);
+hdl_module_new_t(hdl_uart_t, HDL_UART_VAR_SIZE, hdl_uart_config_t, hdl_uart_iface_t);
 
-void hdl_uart_set_transceiver(hdl_uart_t *uart, hdl_transceiver_t *transceiver);
+extern const hdl_uart_iface_t hdl_uart_iface;
 
 #endif /* HDL_UART_H_ */

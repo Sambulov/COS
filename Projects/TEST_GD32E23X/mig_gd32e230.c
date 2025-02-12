@@ -313,7 +313,7 @@ const hdl_time_counter_t mod_timer_ms = {
   .dependencies = hdl_module_dependencies(&mod_systick_counter, &mod_nvic),
   .config = hdl_module_config(hdl_time_counter_config_t, .reload_interrupt = &mod_irq_systick),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
-  .obj_var = static_malloc(HDL_TIME_COUNTER_PRV_SIZE),
+  .obj_var = static_malloc(HDL_TIME_COUNTER_VAR_SIZE),
 };
 
 /**************************************************************
@@ -784,16 +784,19 @@ const hdl_button_t button = {
  *************************************************************/
 
 const hdl_i2c_config_t mod_i2c0_cnf = {
-  .addr_10_bits = 0,
-  .dtcy = I2C_DTCY_2,
-  .dual_address = 0,
-  .err_interrupt = &mod_irq_i2c0_er,
-  .ev_interrupt = &mod_irq_i2c0_ev,
-  .general_call_enable = 0,
-  .speed = 400000,
-  .stretch_enable = 1,
-  .rcu = RCU_I2C0,
-  .reg = (void *)I2C0
+  .channels = NULL,
+  .hwc = hdl_module_config(hdl_i2c_config_hw_t,
+    .addr_10_bits = 0,
+    .dtcy = I2C_DTCY_2,
+    .dual_address = 0,
+    .err_interrupt = &mod_irq_i2c0_er,
+    .ev_interrupt = &mod_irq_i2c0_ev,
+    .general_call_enable = 0,
+    .speed = 400000,
+    .stretch_enable = 1,
+    .rcu = RCU_I2C0,
+    .reg = (void *)I2C0
+  )
 };
 
 const hdl_i2c_t mod_i2c0 = {
@@ -809,16 +812,18 @@ hdl_i2c_channel_t i2c1_ch0 = {.address = HDL_I2C_SLAVE_ADDR};
 
 const hdl_i2c_config_t mod_i2c1_cnf = {
   .channels = hdl_i2c_channels(&i2c1_ch0),
-  .addr_10_bits = 0,
-  .dtcy = I2C_DTCY_2,
-  .dual_address = 0,
-  .err_interrupt = &mod_irq_i2c1_er,
-  .ev_interrupt = &mod_irq_i2c1_ev,
-  .general_call_enable = 0,
-  .speed = 400000,
-  .stretch_enable = 1,
-  .rcu = RCU_I2C1,
-  .reg = (void *)I2C1
+  .hwc = hdl_module_config(hdl_i2c_config_hw_t,
+    .addr_10_bits = 0,
+    .dtcy = I2C_DTCY_2,
+    .dual_address = 0,
+    .err_interrupt = &mod_irq_i2c1_er,
+    .ev_interrupt = &mod_irq_i2c1_ev,
+    .general_call_enable = 0,
+    .speed = 400000,
+    .stretch_enable = 1,
+    .rcu = RCU_I2C1,
+    .reg = (void *)I2C1
+  )
 };
 
 const hdl_i2c_t mod_i2c1 = {
@@ -834,28 +839,26 @@ const hdl_i2c_t mod_i2c1 = {
  *  SPI
  *************************************************************/
 
-// const hdl_spi_client_config_t mod_spi0_cnf = {
-//   .rcu = RCU_SPI0,
-//   .endian = HDL_SPI_ENDIAN_MSB,
-//   .polarity = SPI_CK_PL_HIGH_PH_2EDGE,
-//   .prescale = HDL_SPI_PSC_2,
-//   .spi_interrupt = &mod_irq_spi_0
-// };
+hdl_spi_client_t mod_spi0 = {
+  .iface = &hdl_spi_client_iface,
+  .dependencies = hdl_module_dependencies(&mod_spi_0_mosi, &mod_spi_0_miso, &mod_spi_0_sck,
+                                          &mod_clock_apb1, &mod_nvic),
+  .config = hdl_module_config(hdl_spi_client_config_t,
+    .phy = SPI0,
+    .rcu = RCU_SPI0,
+    .endian = HDL_SPI_ENDIAN_MSB,
+    .polarity = SPI_CK_PL_HIGH_PH_2EDGE,
+    .prescale = HDL_SPI_PSC_2,
+    .spi_interrupt = &mod_irq_spi_0
+  ),
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .obj_var = static_malloc(HDL_SPI_CLIENT_VAR_SIZE)
+};
 
-// hdl_spi_client_t mod_spi0 = {
-//   .module.init = &hdl_spi_client,
-//   .module.dependencies = hdl_module_dependencies(&mod_spi_0_mosi.module, &mod_spi_0_miso.module, &mod_spi_0_sck.module,
-//                                                  &mod_clock_apb1.module, &mod_nvic.module),
-//   .module.reg = (void *)SPI0,
-//   .config = &mod_spi0_cnf
-// };
-
-// const hdl_spi_client_ch_config_t mod_spi0_ch0_cnf = {
-//   .cs_min_delay = 90
-// };
-
-// hdl_spi_client_ch_t mod_spi0_ch0 = {
-//   .module.init = &hdl_spi_ch,
-//   .module.dependencies = hdl_module_dependencies(&mod_spi0.module, &mod_spi_0_cs.module, &mod_systick_counter.module),
-//   .config = &mod_spi0_ch0_cnf
-// };
+hdl_spi_client_ch_t mod_spi0_ch0 = {
+  .iface = &hdl_spi_client_ch_iface,
+  .dependencies = hdl_module_dependencies(&mod_spi0, &mod_spi_0_cs, &mod_systick_counter),
+  .config = hdl_module_config(hdl_spi_client_ch_config_t, .cs_min_delay = 90),
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .obj_var = static_malloc(HDL_SPI_CLIENT_CH_VAR_SIZE)
+};

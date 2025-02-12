@@ -72,8 +72,8 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           do {
             if(src != esrc) ((uint8_t *)&data)[address & 0x07] = *src++;
           } while (++address & 0x07);
-          REG32(address - 8) = ((uint32_t *)&data)[0];
-          REG32(address - 4) = ((uint32_t *)&data)[1];
+          REG32(address - 8) = (uint32_t)data;
+          REG32(address - 4) = (uint32_t)(data >> 32);
           message->transferred = src - message->buffer;
           if(!(address & 0x07)) break;
         }

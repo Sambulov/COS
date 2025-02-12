@@ -1,5 +1,4 @@
-#include "hdl_portable.h"
-#include "CodeLib.h"
+#include "hdl_iface.h"
 
 #define WRK_STATE_START    0
 #define WRK_STATE_ADDR     1

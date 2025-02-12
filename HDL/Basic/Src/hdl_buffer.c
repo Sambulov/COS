@@ -1,5 +1,4 @@
-#include "hdl.h"
-#include "CodeLib.h"
+#include "hdl_base.h"
 
 typedef struct {
   struct {

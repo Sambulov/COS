@@ -1,4 +1,4 @@
-#include "hdl.h"
+#include "hdl_base.h"
 
 #define OCCUPIED_BLOCK_FLAG   0x80000000
 

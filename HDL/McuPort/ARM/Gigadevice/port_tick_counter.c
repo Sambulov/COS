@@ -1,4 +1,4 @@
-#include "hdl_portable.h"
+#include "hdl_iface.h"
 
 static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enable) {
   hdl_tick_counter_t *counter = (hdl_tick_counter_t *)desc;

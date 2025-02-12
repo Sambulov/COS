@@ -1,8 +1,6 @@
 #ifndef HDL_SPI_H_
 #define HDL_SPI_H_
 
-#include "port_spi.h"
-
 /* Don`t change order */
 typedef enum {
   HDL_SPI_MESSAGE_STATUS_INITIAL           = 0x00,
@@ -37,9 +35,9 @@ typedef struct {
   hdl_set_transceiver_t transceiver_set;
 } hdl_spi_server_iface_t;
 
-hdl_module_new_t(hdl_spi_server_t, HDL_SPI_SERVER_VAR_SIZE, hdl_spi_server_config_t, hdl_spi_server_iface_t);
-
-extern const hdl_spi_server_iface_t hdl_spi_server_iface;
+__STATIC_INLINE uint8_t hdl_spi_server_transceiver_set(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel_id) {
+  return ((hdl_spi_server_iface_t *)((hdl_module_base_t *)desc)->iface)->transceiver_set(desc, transceiver, channel_id);
+}
 
 /**************** vvv  SPI slave DMA vvv  ******************/
 
@@ -53,27 +51,19 @@ typedef struct {
   hdl_spi_server_dma_set_buffer_t set_tx_buf;
 } hdl_spi_server_dma_iface_t;
 
-hdl_module_new_t(hdl_spi_server_dma_t, HDL_SPI_SERVER_DMA_VAR_SIZE, hdl_spi_server_config_t, hdl_spi_server_dma_iface_t);
-
-extern const hdl_spi_server_dma_iface_t hdl_spi_server_dma_iface;
-
 __STATIC_INLINE void hdl_spi_server_dma_subscribe(const void *desc, hdl_delegate_t *delegate) {
-  ((hdl_spi_server_dma_t *)desc)->iface->subscribe(desc, delegate);
+  ((hdl_spi_server_dma_iface_t *)((hdl_module_base_t *)desc)->iface)->subscribe(desc, delegate);
 }
 
 __STATIC_INLINE uint8_t hdl_spi_server_dma_set_rx_buffer(const void *desc, hdl_basic_buffer_t *buffer) {
-  return ((hdl_spi_server_dma_t *)desc)->iface->set_rx_buf(desc, buffer);
+  return ((hdl_spi_server_dma_iface_t *)((hdl_module_base_t *)desc)->iface)->set_rx_buf(desc, buffer);
 }
 
 __STATIC_INLINE uint8_t hdl_spi_server_dma_set_tx_data(const void *desc, hdl_basic_buffer_t *buffer) {
-  return ((hdl_spi_server_dma_t *)desc)->iface->set_tx_buf(desc, buffer);
+  return ((hdl_spi_server_dma_iface_t *)((hdl_module_base_t *)desc)->iface)->set_tx_buf(desc, buffer);
 }
 
 /**************** vvv  SPI master vvv  ******************/
-
-hdl_module_new_t(hdl_spi_client_t, HDL_SPI_CLIENT_VAR_SIZE, hdl_spi_client_config_t, hdl_module_base_iface_t);
-
-extern const hdl_module_base_iface_t hdl_spi_client_iface;
 
 typedef uint8_t (* hdl_spi_transfer_message_t)(const void *desc, hdl_spi_message_t *message);
 
@@ -82,12 +72,8 @@ typedef struct {
   hdl_spi_transfer_message_t transfer;
 } hdl_spi_client_ch_iface_t;
 
-hdl_module_new_t(hdl_spi_client_ch_t, HDL_SPI_CLIENT_CH_VAR_SIZE, hdl_spi_client_ch_config_t, hdl_spi_client_ch_iface_t);
-
-extern const hdl_spi_client_ch_iface_t hdl_spi_client_ch_iface;
-
 __STATIC_INLINE uint8_t hdl_spi_transfer_message(const void *desc, hdl_spi_message_t *message) {
-  return ((hdl_spi_client_ch_t *)desc)->iface->transfer(desc, message);
+  return ((hdl_spi_client_ch_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);
 }
 
 #endif /* HDL_SPI_H_ */

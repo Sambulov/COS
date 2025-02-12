@@ -1,4 +1,4 @@
-#include "hdl.h"
+#include "hdl_iface.h"
 
 uint8_t __hdl_dma_run(const void *desc, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount) {
   hdl_dma_channel_t *channel = ((hdl_dma_channel_t *)desc);

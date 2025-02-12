@@ -1,6 +1,8 @@
 #ifndef PORT_I2C_H_
 #define PORT_I2C_H_
 
+#include "hdl_i2c.h"
+
 #define HDL_I2C_VAR_SIZE                    104
 
 typedef struct {
@@ -15,5 +17,9 @@ typedef struct {
   const rcu_periph_enum rcu;
   uint32_t phy;
 } hdl_i2c_config_hw_t;
+
+hdl_module_new_t(hdl_i2c_t, HDL_I2C_VAR_SIZE, hdl_i2c_config_t, hdl_i2c_iface_t);
+
+extern const hdl_i2c_iface_t hdl_i2c_iface;
 
 #endif // PORT_I2C_H_

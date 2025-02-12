@@ -1,6 +1,8 @@
 #ifndef PORT_CLOCK_H_
 #define PORT_CLOCK_H_
 
+#include "hdl_clock.h"
+
 #define MAX_SYS_CLOCK                72000000UL
 #define MAX_AHB_CLOCK                72000000UL
 #define MAX_APB1_CLOCK               72000000UL
@@ -39,6 +41,10 @@ typedef struct {
   hdl_clock_property_t property;
   void *reg;
 } hdl_clock_config_t;
+
+hdl_module_new_t(hdl_clock_t, HDL_CLOCK_PRV_SIZE, hdl_clock_config_t, hdl_clock_iface_t);
+
+extern const hdl_clock_iface_t hdl_clock_iface;
 
 #endif // PORT_CLOCK_H_
 

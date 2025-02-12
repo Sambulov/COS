@@ -1,4 +1,4 @@
-#include "hdl_portable.h"
+#include "hdl_iface.h"
 
 static hdl_gpio_state _hdl_gpio_read(const void *desc){
   hdl_module_base_t *gpio = (hdl_module_base_t *)desc;

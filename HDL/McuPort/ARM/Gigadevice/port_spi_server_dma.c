@@ -1,5 +1,4 @@
-#include "hdl_portable.h"
-#include "CodeLib.h"
+#include "hdl_iface.h"
 
 #define SPI_MEM_FLAGS_RX_BUFFER_READY    (uint32_t)(1)
 #define SPI_MEM_FLAGS_SWITCH_TX_REQUEST  (uint32_t)(2)

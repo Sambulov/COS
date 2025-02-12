@@ -1,5 +1,4 @@
-#include "hdl.h"
-#include "CodeLib.h"
+#include "hdl_iface.h"
 
 #define MS5194T_RX_MESSAGE_SIZE    3
 #define MS5194T_TX_MESSAGE_SIZE    4

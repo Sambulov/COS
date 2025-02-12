@@ -1,4 +1,4 @@
-#include "hdl.h"
+#include "hdl_iface.h"
 
 typedef struct {
   hdl_delegate_t reload_isr;

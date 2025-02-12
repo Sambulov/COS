@@ -19,9 +19,11 @@ hdl_module_state_t __hdl_gpio_pin(const void *desc, const uint8_t enable) {
   uint32_t gpio_port = ((hdl_gpio_port_t *)gpio->dependencies[0])->config->reg;
   gpio_bit_write(gpio_port, (uint32_t)gpio->config->pin, (gpio->config->inactive_default == HDL_GPIO_LOW) ? RESET : SET);
   if(enable) {
-    gpio_af_set(gpio_port, gpio->config->hwc->af, gpio->config->pin);
-    gpio_mode_set(gpio_port, gpio->config->hwc->type, gpio->config->hwc->pull, gpio->config->pin);
-    gpio_output_options_set(gpio_port, gpio->config->hwc->otype, gpio->config->hwc->ospeed, gpio->config->pin);
+    hdl_gpio_pin_config_t *gpio_cnf = (hdl_gpio_pin_config_t *)gpio->config;
+    hdl_gpio_pin_hw_config_t *gpio_cnf_hw = (hdl_gpio_pin_hw_config_t *)gpio->config->hwc;
+    gpio_af_set(gpio_port, gpio_cnf_hw->af, gpio_cnf->pin);
+    gpio_mode_set(gpio_port, gpio_cnf_hw->type, gpio_cnf_hw->pull, gpio_cnf->pin);
+    gpio_output_options_set(gpio_port, gpio_cnf_hw->otype, gpio_cnf_hw->ospeed, gpio_cnf->pin);
   }
   else {
      gpio_af_set(gpio_port, 0, (uint32_t)gpio->config->pin);

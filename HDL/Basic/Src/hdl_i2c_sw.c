@@ -1,4 +1,4 @@
-#include "hdl.h"
+#include "hdl_iface.h"
 #include "CodeLib.h"
 
 typedef struct {

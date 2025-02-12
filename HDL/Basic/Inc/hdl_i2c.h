@@ -1,8 +1,6 @@
 #ifndef HDL_I2C_H_
 #define HDL_I2C_H_
 
-#include "port_i2c.h"
-
 typedef enum {
   HDL_I2C_MESSAGE_START          = 0x01, /* Generate start condition */
   HDL_I2C_MESSAGE_ADDR           = 0x02, /* Send addr */
@@ -49,16 +47,11 @@ typedef struct {
 
 typedef uint8_t (* hdl_i2c_transfer_message_t)(const void *desc, hdl_i2c_message_t *message);
 
-
 typedef struct {
   hdl_module_initializer_t init;
   hdl_i2c_transfer_message_t transfer;
   hdl_set_transceiver_t transceiver_set;
 } hdl_i2c_iface_t;
-
-hdl_module_new_t(hdl_i2c_t, HDL_I2C_VAR_SIZE, hdl_i2c_config_t, hdl_i2c_iface_t);
-
-extern const hdl_i2c_iface_t hdl_i2c_iface;
 
 __STATIC_INLINE uint8_t hdl_i2c_transfer(const void *desc, hdl_i2c_message_t *message) {
   return ((hdl_i2c_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);

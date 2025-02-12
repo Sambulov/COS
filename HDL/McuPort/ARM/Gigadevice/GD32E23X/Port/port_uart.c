@@ -1,5 +1,4 @@
-#include "hdl_portable.h"
-#include "CodeLib.h"
+#include "hdl_iface.h"
 
 typedef struct {
   hdl_delegate_t uart_isr;

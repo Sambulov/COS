@@ -1,5 +1,4 @@
-#include "hdl_portable.h"
-#include "Macros.h"
+#include "hdl_iface.h"
 
 typedef struct {
   hdl_clock_freq_t freq;

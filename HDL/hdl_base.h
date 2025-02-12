@@ -1,10 +1,22 @@
-/* 
-    HAL dependent methods
-
+/*
+    Harware Driver Layer
+    
 */
 
-#ifndef HDL_PORTABLE_H_
-#define HDL_PORTABLE_H_
+#ifndef HDL_BASE_H_
+#define HDL_BASE_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define HDL_REG32(addr) ((volatile uint32_t *)(uint32_t)(addr))
+#define HDL_REG16(addr) ((volatile uint16_t *)(uint32_t)(addr))
+
+#define BITS_COUNT_U16(x)               ((x >> 0 ) & 1) + ((x >> 1 ) & 1) + ((x >> 2 ) & 1) + ((x >> 3 ) & 1) + \
+                                        ((x >> 4 ) & 1) + ((x >> 5 ) & 1) + ((x >> 6 ) & 1) + ((x >> 7 ) & 1) + \
+                                        ((x >> 8 ) & 1) + ((x >> 9 ) & 1) + ((x >> 10) & 1) + ((x >> 11) & 1) + \
+                                        ((x >> 12) & 1) + ((x >> 13) & 1) + ((x >> 14) & 1) + ((x >> 15) & 1)
 
 #define HDL_FALSE         0
 #define HDL_TRUE          !HDL_FALSE
@@ -21,23 +33,17 @@
 #include <stddef.h>
 #include __MCU_HAL_HDR__
 
+#include "CodeLib.h"
+
 #include "hdl_module.h"
 #include "hdl_transceiver.h"
 #include "hdl_buffer.h"
 #include "hdl_event.h"
 #include "hdl_heap.h"
-#include "hdl_core.h"
-#include "hdl_clock.h"
 
-#include "port_nvm.h"
-#include "port_dma.h"
-#include "port_adc.h"
 
-#include "hdl_tick_counter.h"
-#include "hdl_time_counter.h"
-#include "hdl_gpio.h"
-#include "hdl_spi.h"
-#include "hdl_i2c.h"
-#include "hdl_uart.h"
+#ifdef __cplusplus
+}
+#endif
 
-#endif // HDL_PORTABLE_H_
+#endif // HDL_BASE_H_

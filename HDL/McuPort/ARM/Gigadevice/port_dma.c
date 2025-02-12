@@ -1,4 +1,4 @@
-#include "hdl.h"
+#include "hdl_iface.h"
 
 static hdl_module_state_t _hdl_dma(const void *desc, uint8_t enable) {
   hdl_dma_t *dma = (hdl_dma_t *)desc;

@@ -1,5 +1,4 @@
-#include "hdl_portable.h"
-#include "Macros.h"
+#include "hdl_iface.h"
 
 typedef enum {
   GD_ADC_STATE_MACHINE_INITIAL,

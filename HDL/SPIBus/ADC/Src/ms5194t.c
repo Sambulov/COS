@@ -355,7 +355,7 @@ static uint32_t _hdl_adc_ms5194t_age(const void *desc) {
   return 0;
 }
 
-hdl_adc_iface_t hdl_adc_ms5194t_iface = {
+const hdl_adc_iface_t hdl_adc_ms5194t_iface = {
   .init = &_hdl_adc_ms5194t,
   .get = &_hdl_adc_ms5194t_get,
   .age = &_hdl_adc_ms5194t_age

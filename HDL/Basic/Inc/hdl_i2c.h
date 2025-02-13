@@ -35,7 +35,7 @@ typedef struct {
 
 typedef struct {
   uint16_t address;
-  hdl_transceiver_t *transceiver;
+  const hdl_transceiver_t *transceiver;
 } hdl_i2c_channel_t;
 
 typedef struct {
@@ -43,7 +43,7 @@ typedef struct {
   const void *hwc;
 } hdl_i2c_config_t;
 
-#define hdl_i2c_channels(...) (( hdl_i2c_channel_t * const []){__VA_ARGS__, NULL})
+#define hdl_i2c_channels(...) ((hdl_i2c_channel_t * const []){__VA_ARGS__, NULL})
 
 typedef uint8_t (* hdl_i2c_transfer_message_t)(const void *desc, hdl_i2c_message_t *message);
 
@@ -57,7 +57,7 @@ __STATIC_INLINE uint8_t hdl_i2c_transfer(const void *desc, hdl_i2c_message_t *me
   return ((hdl_i2c_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);
 }
 
-__STATIC_INLINE uint8_t hdl_i2c_transceiver_set(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel_id) {
+__STATIC_INLINE uint8_t hdl_i2c_transceiver_set(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
   return ((hdl_i2c_iface_t *)((hdl_module_base_t *)desc)->iface)->transceiver_set(desc, transceiver, channel_id);
 }
 

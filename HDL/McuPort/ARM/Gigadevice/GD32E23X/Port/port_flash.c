@@ -187,7 +187,7 @@ static uint8_t _hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
   return HDL_FALSE;
 }
 
-hdl_nvm_iface_t mcu_flash_iface = {
+const hdl_nvm_iface_t mcu_flash_iface = {
   .init = &_hdl_nvm_init,
   .info = &_hdl_nvm_info_get,
   .transfer = &_hdl_nvm_transfer

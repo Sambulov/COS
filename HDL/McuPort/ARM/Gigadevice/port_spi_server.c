@@ -3,7 +3,7 @@
 typedef struct {
   hdl_delegate_t spi_isr;
   hdl_delegate_t nss_isr;
-  hdl_transceiver_t *transceiver;
+  const hdl_transceiver_t *transceiver;
 } hdl_spi_server_var_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_server_var_t, *((hdl_spi_server_t *)0)->obj_var, HDL_SPI_SERVER_VAR_SIZE, port_spi.h);
@@ -81,7 +81,7 @@ static hdl_module_state_t _hdl_spi_server(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-static uint8_t _hdl_spi_server_set_transceiver(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel_id) {
+static uint8_t _hdl_spi_server_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
   (void)channel_id;
   hdl_spi_server_t *spi = (hdl_spi_server_t*)desc;
   if(spi != NULL) {

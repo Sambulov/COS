@@ -12,8 +12,6 @@ typedef struct {
   hdl_adc_age_t age;
 } hdl_adc_iface_t;
 
-hdl_module_state_t hdl_adc(void *desc, uint8_t enable);
-
 __STATIC_INLINE uint32_t hdl_adc_get(const void *desc, uint32_t src_id) {
   return ((hdl_adc_iface_t *)((hdl_module_base_t *)desc)->iface)->get(desc, src_id);
 }

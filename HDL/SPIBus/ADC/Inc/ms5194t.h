@@ -355,6 +355,6 @@ typedef struct {
  */
 hdl_module_new_t(hdl_adc_ms5194t_t, HDL_ADC_MS5194T_VAR_SIZE, hdl_adc_ms5194t_config_t, hdl_adc_iface_t);
 
-extern hdl_adc_iface_t hdl_adc_ms5194t_iface;
+extern const hdl_adc_iface_t hdl_adc_ms5194t_iface;
 
 #endif /* MS5194T_H_ */

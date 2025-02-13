@@ -42,7 +42,7 @@ typedef struct {
   uint8_t wrk_state_substate;
   uint8_t is_master;
   uint8_t ch_amount;
-  hdl_transceiver_t *transceiver;
+  const hdl_transceiver_t *transceiver;
 } hdl_i2c_var_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_var_t, *((hdl_i2c_t *)0)->obj_var, HDL_I2C_VAR_SIZE, hdl_i2c.h);
@@ -60,7 +60,7 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   uint32_t tmp = i2c_periph->STAT0;
   uint32_t tmp1 = 0;
   uint8_t data = 0;
-  hdl_transceiver_t *transceiver = i2c_var->transceiver;
+  const hdl_transceiver_t *transceiver = i2c_var->transceiver;
   /* START condition */
   if(tmp & I2C_STAT0_SBSEND) { 
     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
@@ -109,7 +109,7 @@ static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
   i2c_periph_t *i2c_periph = (i2c_periph_t *)hwc->phy;
-  hdl_transceiver_t *transceiver = i2c_var->transceiver;
+  const hdl_transceiver_t *transceiver = i2c_var->transceiver;
   if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
     if((transceiver != NULL) && (transceiver->end_of_transmission != NULL))
       transceiver->end_of_transmission(transceiver->proto_context);
@@ -488,7 +488,7 @@ static hdl_module_state_t _hdl_i2c(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-static uint8_t _hdl_i2c_transceiver_set(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel) {
+static uint8_t _hdl_i2c_transceiver_set(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel) {
   hdl_i2c_t *i2c = (hdl_i2c_t *)desc;
   if(i2c->config->channels != NULL) {
     uint32_t ch = 0;

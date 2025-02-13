@@ -7,7 +7,7 @@ typedef struct {
   __linked_list_object__
 } hdl_module_var_t;
 
-hdl_module_base_t hdl_null_module = {
+const hdl_module_base_t hdl_null_module = {
   .iface = NULL,
   .dependencies = NULL,
   .config = NULL,

@@ -2,7 +2,7 @@
 
 typedef struct {
   hdl_delegate_t uart_isr;
-  hdl_transceiver_t *transceiver;
+  const hdl_transceiver_t *transceiver;
   coroutine_t worker;
 } hdl_uart_var_t;
 
@@ -107,7 +107,7 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-static uint8_t _hdl_uart_set_transceiver(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel_id) {
+static uint8_t _hdl_uart_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
   (void)channel_id;
   if(desc != NULL) {
     hdl_uart_t *uart = (hdl_uart_t *) desc;

@@ -24,7 +24,7 @@ typedef struct {
   size_t (*mod_var)[((HDL_MODULE_VAR_SIZE + (sizeof(size_t) - 1)) >> 2)];
 } hdl_module_base_t;
 
-extern hdl_module_base_t hdl_null_module;
+extern const hdl_module_base_t hdl_null_module;
 
 #define HDL_IS_NULL_MODULE(mod)      ((void*)(mod) == (void*)&hdl_null_module)
 

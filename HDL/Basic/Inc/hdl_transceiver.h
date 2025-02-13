@@ -14,6 +14,6 @@ typedef struct {
   void *proto_context;
 } hdl_transceiver_t;
 
-typedef uint8_t (*hdl_set_transceiver_t)(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel_id);
+typedef uint8_t (*hdl_set_transceiver_t)(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id);
 
 #endif

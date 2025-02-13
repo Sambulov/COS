@@ -229,7 +229,7 @@ static uint8_t _hdl_i2c_transfer(const void *desc, hdl_i2c_message_t *message) {
   return HDL_FALSE;
 }
 
-static uint8_t _hdl_i2c_transceiver_set(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel_id) {
+static uint8_t _hdl_i2c_transceiver_set(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
   hdl_i2c_t *i2c = (hdl_i2c_t *)desc;
   if(i2c->config->channels != NULL) {
     uint32_t ch = 0;

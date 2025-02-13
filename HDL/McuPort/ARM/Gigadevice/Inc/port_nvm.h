@@ -13,6 +13,6 @@ typedef struct {
 
 hdl_module_new_t(hdl_mcu_flash_t, HDL_MCU_FLASH_VAR_SIZE, hdl_mcu_flash_config_t, hdl_nvm_iface_t);
 
-extern hdl_nvm_iface_t mcu_flash_iface;
+extern const hdl_nvm_iface_t mcu_flash_iface;
 
 #endif /* PORT_NVM_H_ */

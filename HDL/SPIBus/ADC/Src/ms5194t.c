@@ -321,7 +321,7 @@ static hdl_module_state_t _hdl_adc_ms5194t(const void *desc, uint8_t enable) {
     adc_var->src_calibrated = 0;
     adc_var->command_state = MS5194T_ADC_COMMAND_STATE_IDLE;
     if(adc->config->sources != NULL) {
-      hdl_adc_ms5194t_source_t **src = adc->config->sources;
+      hdl_adc_ms5194t_source_t * const *src = adc->config->sources;
       while (*src != NULL) {
         adc->config->values[adc_var->src_count] = HDL_ADC_MS5194T_INVALID_VALUE;
         adc_var->src_count++;

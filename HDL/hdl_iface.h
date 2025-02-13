@@ -11,29 +11,20 @@ extern "C" {
 #endif
 
 #include "hdl_base.h"
-
 #include "hdl_portable.h"
 
 #include "hdl_core.h"
-
 #include "hdl_clock.h"
-
 #include "hdl_tick_counter.h"
-
 #include "hdl_time_counter.h"
-
 #include "hdl_gpio.h"
-
 #include "hdl_nvm.h"
 #include "hdl_dma.h"
 #include "hdl_adc.h"
-
 #include "hdl_uart.h"
 #include "hdl_i2c.h"
 #include "hdl_spi.h"
-
 #include "hdl_i2c_sw.h"
-
 #include "hdl_button.h"
 #include "hdl_timer.h"
 #include "hdl_eeprom_i2c.h"

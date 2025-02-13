@@ -133,7 +133,7 @@ SECTIONS
 
   _heap_start = _ebss;
   _heap_size = _estack - _heap_start - _Min_Stack_Size;
-  ._user_heap_stack (NOLOAD):
+  /*._user_heap_stack (NOLOAD):
   {
     . = ALIGN(8);
     PROVIDE ( end = . );
@@ -141,7 +141,8 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
-  } >RAM
+  } >RAM 
+  */
 
   /* Remove information from the compiler libraries */
   /DISCARD/ :

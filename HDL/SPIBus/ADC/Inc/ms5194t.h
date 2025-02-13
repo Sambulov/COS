@@ -336,14 +336,14 @@ typedef struct {
   hdl_adc_ms5194t_channel_option_t options;
 } hdl_adc_ms5194t_source_t;
 
-#define _hdl_adc_ms5194t_src(...)        ((hdl_adc_ms5194t_source_t *[]){__VA_ARGS__, NULL})
+#define _hdl_adc_ms5194t_src(...)        ((hdl_adc_ms5194t_source_t * const []){__VA_ARGS__, NULL})
 #define hdl_adc_ms5194t_sources(...)     _hdl_adc_ms5194t_src(__VA_ARGS__),\
-                                         .values = (uint32_t [sizeof(_hdl_adc_ms5194t_src(__VA_ARGS__))/sizeof(hdl_adc_ms5194t_source_t *)]){}
+                                         .values = (uint32_t *)static_malloc(sizeof(_hdl_adc_ms5194t_src(__VA_ARGS__))/sizeof(hdl_adc_ms5194t_source_t *)*sizeof(uint32_t))
 
 typedef struct {
   uint8_t io_reg;
   uint16_t mode_reg;
-  hdl_adc_ms5194t_source_t **sources;
+  hdl_adc_ms5194t_source_t * const *sources;
   uint32_t *values;
 } hdl_adc_ms5194t_config_t;
 

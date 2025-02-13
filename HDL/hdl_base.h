@@ -26,8 +26,6 @@ extern "C" {
 #define sizeof_member(type, member)        (sizeof(  ((type *)0)->member ))
 #define sizeof_member_by_ptr(type, member) (sizeof( *((type *)0)->member ))
 
-#define static_malloc(size)             (&((size_t [(size + sizeof(size_t *) - 1) >> 2]){ 0 }))
-
 #define HDL_ASSERRT_STRUCTURE_CAST(private_type, public_type, prv_size_def, def_file)   _Static_assert(sizeof(private_type) == sizeof(public_type), "In "#def_file" data structure size of "#public_type" doesn't match, check "#prv_size_def)
 
 #include <stddef.h>

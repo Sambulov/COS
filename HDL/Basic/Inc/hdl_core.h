@@ -16,12 +16,14 @@ typedef struct {
   hdl_interrupt_sw_trigger_t trigger;
 } hdl_interrupt_controller_iface_t;
 
-__STATIC_INLINE uint8_t hdl_interrupt_request(const void *ic, const hdl_interrupt_t *isr) {
-  return ((hdl_interrupt_controller_iface_t *)((hdl_module_base_t *)ic)->iface)->request(ic, isr);
+__STATIC_INLINE uint8_t hdl_interrupt_request(const void *desc, const hdl_interrupt_t *isr) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_interrupt_controller_iface_t *)((hdl_module_base_t *)desc)->iface)->request(desc, isr);
 }
 
-__STATIC_INLINE void hdl_interrupt_sw_trigger(const void *ic, const hdl_interrupt_t *isr) {
-  ((hdl_interrupt_controller_iface_t *)((hdl_module_base_t *)ic)->iface)->trigger(ic, isr);
+__STATIC_INLINE void hdl_interrupt_sw_trigger(const void *desc, const hdl_interrupt_t *isr) {
+  MODULE_ASSERT(desc, );
+  ((hdl_interrupt_controller_iface_t *)((hdl_module_base_t *)desc)->iface)->trigger(desc, isr);
 }
 
 #endif // HDL_CORE_H_

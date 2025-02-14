@@ -44,24 +44,29 @@ hdl_module_new_t(hdl_button_t, HDL_BUTTON_VAR_SIZE, hdl_button_config_t, hdl_but
 
 extern const hdl_button_iface_t hdl_button_iface;
 
-__STATIC_INLINE hdl_btn_state_t hdl_button_state_get(const void *btn) {
-  return ((hdl_button_t *)btn)->iface->state_get(btn);
+__STATIC_INLINE hdl_btn_state_t hdl_button_state_get(const void *desc) {
+  MODULE_ASSERT(desc, HDL_BTN_UNKNOWN);
+  return ((hdl_button_t *)desc)->iface->state_get(desc);
 }
 
-__STATIC_INLINE uint8_t hdl_button_sw_press(const void *btn) {
-  return ((hdl_button_t *)btn)->iface->press(btn);
+__STATIC_INLINE uint8_t hdl_button_sw_press(const void *desc) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_button_t *)desc)->iface->press(desc);
 }
 
-__STATIC_INLINE uint8_t hdl_button_sw_click(const void *btn) {
-  return ((hdl_button_t *)btn)->iface->click(btn);
+__STATIC_INLINE uint8_t hdl_button_sw_click(const void *desc) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_button_t *)desc)->iface->click(desc);
 }
 
-__STATIC_INLINE uint8_t hdl_button_sw_release(const void *btn) {
-  return ((hdl_button_t *)btn)->iface->release(btn);
+__STATIC_INLINE uint8_t hdl_button_sw_release(const void *desc) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_button_t *)desc)->iface->release(desc);
 }
 
-__STATIC_INLINE void hdl_button_subscribe(const void *btn, hdl_delegate_t *delegate) {
-  ((hdl_button_t *)btn)->iface->subscribe(btn, delegate);
+__STATIC_INLINE void hdl_button_subscribe(const void *desc, hdl_delegate_t *delegate) {
+  MODULE_ASSERT(desc, );
+  ((hdl_button_t *)desc)->iface->subscribe(desc, delegate);
 }
 
 #endif /* HDL_BUTTON_H_ */

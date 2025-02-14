@@ -7,6 +7,7 @@ typedef struct {
 } hdl_uart_iface_t;
 
 __STATIC_INLINE uint8_t hdl_uart_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
+  MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_uart_iface_t *)((hdl_module_base_t *)desc)->iface)->transceiver_set(desc, transceiver, channel_id);
 }
 

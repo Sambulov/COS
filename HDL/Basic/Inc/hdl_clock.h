@@ -14,8 +14,9 @@ typedef struct {
 } hdl_clock_iface_t;
 
 
-__STATIC_INLINE void hdl_clock_get(const void *clk, hdl_clock_freq_t *out_frec) {
-  ((hdl_clock_iface_t *)((hdl_module_base_t *)clk)->iface)->get(clk, out_frec);
+__STATIC_INLINE void hdl_clock_get(const void *desc, hdl_clock_freq_t *out_frec) {
+  MODULE_ASSERT(desc, );
+  ((hdl_clock_iface_t *)((hdl_module_base_t *)desc)->iface)->get(desc, out_frec);
 }
 
 void hdl_clock_calc_mul(hdl_clock_freq_t *in, int32_t factor, hdl_clock_freq_t *out);

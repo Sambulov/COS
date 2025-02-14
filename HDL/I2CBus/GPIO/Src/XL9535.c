@@ -163,7 +163,7 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
          (port_var->polarity_port1 ^ port_var->user_polarity_port1))
         HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_SEL);
       hdl_gpio_pin_t *int_p = (hdl_gpio_pin_t *)port->dependencies[2];
-      if(!HDL_IS_NULL_MODULE(int_p) && hdl_gpio_is_active(int_p)) {
+      if(!hdl_is_null_module(int_p) && hdl_gpio_is_active(int_p)) {
         HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
       }
       break;

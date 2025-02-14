@@ -50,10 +50,12 @@ typedef struct{
 hdl_module_new_t(hdl_nvm_t, 0, void, hdl_nvm_iface_t);
 
 __STATIC_INLINE uint8_t hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
+  MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_nvm_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);
 }
 
 __STATIC_INLINE uint8_t hdl_nvm_info_get(const void *desc, hdl_nvm_info_t *out_info) {
+  MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_nvm_iface_t *)((hdl_module_base_t *)desc)->iface)->info(desc, out_info);
 }
 

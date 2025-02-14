@@ -7,13 +7,6 @@ typedef struct {
   __linked_list_object__
 } hdl_module_var_t;
 
-const hdl_module_base_t hdl_null_module = {
-  .iface = NULL,
-  .dependencies = NULL,
-  .config = NULL,
-  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
-};
-
 HDL_ASSERRT_STRUCTURE_CAST(hdl_module_var_t, *((hdl_module_base_t *)0)->mod_var, HDL_MODULE_VAR_SIZE, hdl_module.h);
 
 static linked_list_t _mod_load = NULL;
@@ -143,6 +136,7 @@ uint8_t hdl_init_complete() {
 }
 
 uint8_t hdl_take(const void *desc, const void *owner) {
+  MODULE_ASSERT(desc, HDL_FALSE);
   hdl_module_var_t *module_var = (hdl_module_var_t *)((hdl_module_base_t *)desc)->mod_var;
   if(module_var->owner == NULL) {
     module_var->owner = owner;
@@ -151,6 +145,7 @@ uint8_t hdl_take(const void *desc, const void *owner) {
 }
 
 uint8_t hdl_give(const void *desc, const void *owner) {
+  MODULE_ASSERT(desc, HDL_FALSE);
   hdl_module_var_t *module_var = (hdl_module_var_t *)((hdl_module_base_t *)desc)->mod_var;
   if(module_var->owner == owner) {
     module_var->owner = NULL;

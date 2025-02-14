@@ -13,14 +13,17 @@ typedef struct {
 } hdl_tick_counter_iface_t;
 
 __STATIC_INLINE uint32_t hdl_tick_counter_get(const void *desc) {
+  MODULE_ASSERT(desc, 0);
   return ((hdl_tick_counter_iface_t *)((hdl_module_base_t *)desc)->iface)->get(desc);
 }
 
 __STATIC_INLINE void hdl_tick_counter_set(const void *desc, uint32_t value, uint32_t period) {
+  MODULE_ASSERT(desc, );
   ((hdl_tick_counter_iface_t *)((hdl_module_base_t *)desc)->iface)->set(desc, value, period);
 }
 
 __STATIC_INLINE void hdl_tick_counter_stop(const void *desc) {
+  MODULE_ASSERT(desc, );
   ((hdl_tick_counter_iface_t *)((hdl_module_base_t *)desc)->iface)->stop(desc);
 }
 

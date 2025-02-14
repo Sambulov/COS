@@ -15,6 +15,7 @@ typedef struct {
 } hdl_time_counter_iface_t;
 
 __STATIC_INLINE uint32_t hdl_time_counter_get(const void *desc) {
+  MODULE_ASSERT(desc, 0);
   return ((hdl_time_counter_iface_t *)((hdl_module_base_t *)desc)->iface)->get(desc);
 }
 

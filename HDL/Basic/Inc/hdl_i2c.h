@@ -54,10 +54,12 @@ typedef struct {
 } hdl_i2c_iface_t;
 
 __STATIC_INLINE uint8_t hdl_i2c_transfer(const void *desc, hdl_i2c_message_t *message) {
+  MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_i2c_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);
 }
 
 __STATIC_INLINE uint8_t hdl_i2c_transceiver_set(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
+  MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_i2c_iface_t *)((hdl_module_base_t *)desc)->iface)->transceiver_set(desc, transceiver, channel_id);
 }
 

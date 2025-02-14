@@ -24,10 +24,6 @@ typedef struct {
   size_t (*mod_var)[((HDL_MODULE_VAR_SIZE + (sizeof(size_t) - 1)) >> 2)];
 } hdl_module_base_t;
 
-extern const hdl_module_base_t hdl_null_module;
-
-#define HDL_IS_NULL_MODULE(mod)      ((void*)(mod) == (void*)&hdl_null_module)
-
 #define hdl_module_dependencies(...) ((const void * const []){__VA_ARGS__, NULL})
 
 #define hdl_module_config(type, ...) (const type []){{__VA_ARGS__}}
@@ -40,6 +36,14 @@ extern const hdl_module_base_t hdl_null_module;
     size_t (*mod_var)[((HDL_MODULE_VAR_SIZE + (sizeof(size_t) - 1)) >> 2)];\
     size_t (*obj_var)[((var_size + (sizeof(size_t) - 1)) >> 2)];\
   } name;
+
+#define MODULE_ASSERT(desc, err_res)   if((hdl_is_null_module(desc)) || (hdl_state(desc) == HDL_MODULE_FAULT)) return err_res;
+
+
+__STATIC_INLINE uint8_t hdl_is_null_module(const void *desc) {
+  hdl_module_base_t *mod = (hdl_module_base_t *)desc;
+  return (mod->iface == NULL) && (mod->config == NULL) && (mod->dependencies == NULL);
+}
 
 uint8_t hdl_take(const void *desc, const void *owner);
 uint8_t hdl_give(const void *desc, const void *owner);

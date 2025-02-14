@@ -48,32 +48,40 @@ __STATIC_INLINE void hdl_gpio_toggle(const void *desc) {
 
 __STATIC_INLINE void hdl_gpio_set_inactive(const void *desc) {
   MODULE_ASSERT(desc, );
-  hdl_gpio_write((desc), ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
+  ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->write(
+    (desc), ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default
+  );
 }
 
 __STATIC_INLINE void hdl_gpio_set_active(const void *desc) {
   MODULE_ASSERT(desc, );
-  hdl_gpio_write((desc), !((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
+  ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->write(
+    (desc), !((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default
+  );
 }
 
 __STATIC_INLINE uint8_t hdl_gpio_is_inactive(const void *desc) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return (hdl_gpio_read(desc) == ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
+  return (((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read(desc) == 
+    ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
 }
 
 __STATIC_INLINE uint8_t hdl_gpio_is_active(const void *desc) {               
   MODULE_ASSERT(desc, HDL_FALSE);
-  return !hdl_gpio_is_inactive(desc);
+  return (((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read(desc) == 
+    !((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
 }
 
 __STATIC_INLINE uint8_t hdl_gpio_is_set_as_inactive(const void *desc) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return (hdl_gpio_read_output(desc) == ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
+  return (((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read_ouput(desc) == 
+    ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
 }
 
 __STATIC_INLINE uint8_t hdl_gpio_is_set_as_active(const void *desc) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return (!hdl_gpio_is_set_as_inactive(desc));
+  return (((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read_ouput(desc) == 
+    !((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
 }
 
 #endif // HDL_GPIO_H_

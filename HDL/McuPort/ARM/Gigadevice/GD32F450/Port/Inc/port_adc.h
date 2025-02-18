@@ -1,12 +1,9 @@
 #ifndef PORT_ADC_H_
 #define PORT_ADC_H_
 
-#define HDL_ADC_PRV_SIZE  (56)
+#include "hdl_adc.h"
 
-// typedef enum {
-//     ADC_OPERATION_MODE_SINGLE_SCAN,    /* Single SCAN, user must launched every conversion with some triger */
-//     ADC_OPERATION_MODE_CONTINUOS_SCAN, /* Continuous scan, each next conversion after first triger will be do automaticly */
-// } hdl_adc_operation_mode_e;
+#define HDL_ADC_VAR_SIZE  56
 
 typedef enum {
     HDL_ADC_CHANNEL_0 = ADC_CHANNEL_0,
@@ -22,7 +19,6 @@ typedef enum {
     HDL_ADC_CHANNEL_16 = ADC_CHANNEL_16,
     HDL_ADC_CHANNEL_17 = ADC_CHANNEL_17,
 } hdl_adc_channel_e;
-
 
 typedef enum{
     HDL_ADC_SAMPLETIME_3   = ADC_SAMPLETIME_3,
@@ -42,25 +38,6 @@ typedef enum {
     HDL_ADC_RESOLUTION_6BIT = ADC_RESOLUTION_6B,
 } hdl_adc_resolution_e;
 
-/* TODO: What will be if you chose a INSERTED channel? */
-// /* Triger for starting conversion */
-// typedef enum {
-//     /* This triger can launch only regular channel conversion */
-//     HDL_ADC_TRIGER_FOR_REGULAR_CHANNEL_TIMER0_CH0 = ADC_EXTTRIG_REGULAR_T0_CH0,
-//     HDL_ADC_TRIGER_FOR_REGULAR_CHANNEL_TIMER0_CH1 = ADC_EXTTRIG_REGULAR_T0_CH1,
-//     HDL_ADC_TRIGER_FOR_REGULAR_CHANNEL_TIMER0_CH2 = ADC_EXTTRIG_REGULAR_T0_CH2,
-//     HDL_ADC_TRIGER_FOR_REGULAR_CHANNEL_TIMER2_TRG0 = ADC_EXTTRIG_REGULAR_T2_TRGO,
-//     HDL_ADC_TRIGER_FOR_REGULAR_CHANNEL_TIMER14_CH0 = ADC_EXTTRIG_REGULAR_T14_CH0,
-//     HDL_ADC_TRIGER_FOR_REGULAR_CHANNEL_EXTI_11 = ADC_EXTTRIG_REGULAR_EXTI_11,
-//     /* This triger can launch only inserted channel conversion */
-//     HDL_ADC_TRIGER_FOR_INSERTED_CHANNEL_TIMER0_TRG0 = ADC_EXTTRIG_INSERTED_T0_TRGO,
-//     HDL_ADC_TRIGER_FOR_INSERTED_CHANNEL_TIMER0_CH3 = ADC_EXTTRIG_INSERTED_T0_CH3,
-//     HDL_ADC_TRIGER_FOR_INSERTED_CHANNEL_TIMER2_CH3 = ADC_EXTTRIG_INSERTED_T2_CH3,
-//     HDL_ADC_TRIGER_FOR_INSERTED_CHANNEL_TIMER14_TRG0 = ADC_EXTTRIG_INSERTED_T14_TRGO,
-//     HDL_ADC_TRIGER_FOR_INSERTED_CHANNEL_EXTI_15 = ADC_EXTTRIG_INSERTED_EXTI_15,
-//     /* This triger can launch regular and inserted channel conversion */
-//     HDL_ADC_TRIGER_SOFTWARE = ADC_EXTTRIG_REGULAR_NONE,
-// } hdl_adc_triger_e;
 
 typedef struct {
     hdl_adc_channel_e channel;
@@ -72,25 +49,29 @@ typedef enum {
   HDL_ADC_DATA_ALIGN_LEFT = ADC_DATAALIGN_LEFT
 } hdl_adc_data_alignment_t;
 
-/* TODO: Amend  uint16_t values to uint32_t values */
+typedef struct{
+  uint32_t phy;
+  hdl_interrupt_t *adc_interrupt;
+  hdl_adc_resolution_e resolution;
+  hdl_adc_data_alignment_t data_alignment;
+  uint32_t init_timeout;
+  hdl_adc_source_t **sources;               /* max amount 15 */
+  uint32_t *values;
+} hdl_adc_config_t;
+
+#define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
+
+#define hdl_adc_src(...)  hdl_adc_sources(__VA_ARGS__),\
+                          .values = (uint32_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
+
 /* depends on:
   hdl_clock_t
   hdl_time_counter_t
   hdl_dma_channel_t
   hdl_interrupt_controller_t
  */
-typedef struct{
-    hdl_interrupt_t *adc_interrupt;
-    hdl_adc_resolution_e resolution;
-    hdl_adc_data_alignment_t data_alignment;
-    uint32_t init_timeout;
-    hdl_adc_source_t **sources;               /* max amount 15 */
-    uint16_t *values;
-} hdl_adc_config_t;
+hdl_module_new_t(hdl_adc_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t, hdl_adc_iface_t);
 
-#define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
-
-#define hdl_adc_src(...)  hdl_adc_sources(__VA_ARGS__),\
-                          .values = (uint16_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
+extern const hdl_adc_iface_t hdl_adc_iface;
 
 #endif

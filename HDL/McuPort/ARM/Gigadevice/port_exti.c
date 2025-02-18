@@ -53,7 +53,7 @@ static void _hdl_exti_sw_trigger(const void *desc, hdl_exti_line_t line) {
   EXTI_SWIEV |= line;
 }
 
-const hdl_exti_controller_iface_t exti_controller_iface = {
+const hdl_exti_controller_iface_t hdl_exti_controller_iface = {
   .init = &_hdl_exti,
   .trigger = &_hdl_exti_sw_trigger
 };

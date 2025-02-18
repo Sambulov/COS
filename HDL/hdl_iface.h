@@ -31,8 +31,8 @@ extern "C" {
 #include "xl9535.h"
 #include "ms5194t.h"
 
+#include "smarc_carrier.h"
 
-//#include "smarc_carrier.h"
 //#include "smarc_module.h"
 
 #ifdef __cplusplus

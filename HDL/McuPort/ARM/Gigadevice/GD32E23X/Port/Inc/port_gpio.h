@@ -5,7 +5,7 @@
 
 typedef struct {
   const rcu_periph_enum rcu;
-  uint32_t reg;
+  uint32_t phy;
 } hdl_gpio_port_config_t;
 
 typedef struct {

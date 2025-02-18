@@ -33,6 +33,7 @@ typedef struct {
 } hdl_exti_t;
 
 typedef struct {
+  uint32_t phy;
   hdl_exti_t **extis;
 } hdl_exti_controller_config_t;
 
@@ -51,7 +52,7 @@ typedef struct {
 */
 hdl_module_new_t(hdl_exti_controller_t, 0, hdl_exti_controller_config_t, hdl_exti_controller_iface_t);
 
-extern const hdl_exti_controller_iface_t exti_controller_iface;
+extern const hdl_exti_controller_iface_t hdl_exti_controller_iface;
 
 __STATIC_INLINE void hdl_exti_sw_trigger(const void *exti, hdl_exti_line_t line) {
   ((hdl_exti_controller_iface_t *)((hdl_module_base_t *)exti)->iface)->trigger(exti, line);

@@ -32,7 +32,7 @@
        App notifies module about power fault state.
 */
 
-#define HDL_SMARC_CARRIER_PRV_SIZE    (36)
+#define HDL_SMARC_CARRIER_VAR_SIZE    (36)
 
 typedef enum {
     HDL_SMARC_CARRIER_BOOT0 = 0x01,
@@ -79,6 +79,22 @@ typedef struct {
   //uint32_t sw_power_btn_trig_delay;
 } hdl_smarc_carrier_config_t;
 
+typedef uint8_t (*hdl_smarc_carrier_event_subscribe_t)(const void *desc, hdl_event_handler_t handler, void *context);
+typedef void (*hdl_smarc_carrier_boot_select_set_t)(const void *desc, hdl_smarc_carrier_boot_select_t select);
+typedef void (*hdl_smarc_carrier_set_target_state_t)(const void *desc, hdl_smarc_carrier_sate_t state);
+typedef void (*hdl_smarc_carrier_force_state_t)(const void *desc, hdl_smarc_carrier_sate_t state, uint8_t active);
+typedef hdl_smarc_carrier_sate_t (*hdl_smarc_carrier_get_state_t)(const void *desc);
+
+typedef struct {
+  hdl_module_initializer_t init;
+  hdl_smarc_carrier_event_subscribe_t event_subscribe;
+  hdl_smarc_carrier_boot_select_set_t boot_select;
+  hdl_smarc_carrier_set_target_state_t set_target_state;
+  hdl_smarc_carrier_force_state_t force_state;
+  hdl_smarc_carrier_get_state_t get_target_state;
+  hdl_smarc_carrier_get_state_t get_current_state;
+} hdl_smarc_carrier_iface_t;
+
 /* depends on:
   gpio power bad (O)
   gpio carrier_power_on (I)
@@ -90,28 +106,45 @@ typedef struct {
   gpio boot 2 (O)
   timer
 */
-typedef struct {
-    hdl_module_t module;
-    const hdl_smarc_carrier_config_t *config;
-    PRIVATE(hdl, HDL_SMARC_CARRIER_PRV_SIZE);
-} hdl_smarc_carrier_t;
+hdl_module_new_t(hdl_smarc_carrier_t, HDL_SMARC_CARRIER_VAR_SIZE, hdl_smarc_carrier_config_t, hdl_smarc_carrier_iface_t);
 
-hdl_module_state_t hdl_smarc_carrier(void *desc, uint8_t enable);
+extern const hdl_smarc_carrier_iface_t hdl_smarc_carrier_iface;
 
-uint8_t hdl_smarc_carrier_event_subscribe(hdl_smarc_carrier_t *desc, hdl_event_handler_t handler, void *context);
-void hdl_smarc_carrier_boot_select(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_boot_select_t select);
+__STATIC_INLINE uint8_t hdl_smarc_carrier_event_subscribe(const void *desc, hdl_event_handler_t handler, void *context) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_smarc_carrier_t *)desc)->iface->event_subscribe(desc, handler, context);
+}
 
+__STATIC_INLINE void hdl_smarc_carrier_boot_select(const void *desc, hdl_smarc_carrier_boot_select_t select) {
+  MODULE_ASSERT(desc, );
+  return ((hdl_smarc_carrier_t *)desc)->iface->boot_select(desc, select);
+}
 
-void hdl_smarc_carrier_set_target_state(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_sate_t state);
-hdl_smarc_carrier_sate_t hdl_smarc_carrier_get_target_state(hdl_smarc_carrier_t *desc);
-hdl_smarc_carrier_sate_t hdl_smarc_carrier_get_current_state(hdl_smarc_carrier_t *desc);
-void hdl_smarc_carrier_force_state(hdl_smarc_carrier_t *desc, hdl_smarc_carrier_sate_t state, uint8_t active);
+__STATIC_INLINE void hdl_smarc_carrier_set_target_state(const void *desc, hdl_smarc_carrier_sate_t state) {
+  MODULE_ASSERT(desc, );
+  return ((hdl_smarc_carrier_t *)desc)->iface->set_target_state(desc, state);
+}
 
-static inline void hdl_smarc_carrier_boot(hdl_smarc_carrier_t *desc) {
+__STATIC_INLINE void hdl_smarc_carrier_force_state(const void *desc, hdl_smarc_carrier_sate_t state, uint8_t active) {
+  MODULE_ASSERT(desc, );
+  return ((hdl_smarc_carrier_t *)desc)->iface->force_state(desc, state, active);
+}
+
+__STATIC_INLINE hdl_smarc_carrier_sate_t hdl_smarc_carrier_get_target_state(const void *desc) {
+  MODULE_ASSERT(desc, HDL_SMARC_CARRIER_STATE_INITIAL);
+  return ((hdl_smarc_carrier_t *)desc)->iface->get_target_state(desc);
+}
+
+__STATIC_INLINE hdl_smarc_carrier_sate_t hdl_smarc_carrier_get_current_state(const void *desc) {
+  MODULE_ASSERT(desc, HDL_SMARC_CARRIER_STATE_INITIAL);
+  return ((hdl_smarc_carrier_t *)desc)->iface->get_current_state(desc);
+}
+
+__STATIC_INLINE void hdl_smarc_carrier_boot(const hdl_smarc_carrier_t *desc) {
     hdl_smarc_carrier_set_target_state(desc, HDL_SMARC_CARRIER_STATE_RUNTIME);
 }
 
-static inline void smarc_carrier_shutdown(hdl_smarc_carrier_t *desc) {
+__STATIC_INLINE void smarc_carrier_shutdown(const hdl_smarc_carrier_t *desc) {
     hdl_smarc_carrier_set_target_state(desc, HDL_SMARC_CARRIER_STATE_POWER_GOOD);
 }
 

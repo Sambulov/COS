@@ -19,7 +19,7 @@ typedef struct {
 } hdl_tick_counter_systick_config_t;
 
 typedef struct {
-  void *reg;
+  uint32_t phy;
   union {
       const hdl_tick_counter_timer_config_t *timer;
       const hdl_tick_counter_systick_config_t *systick;

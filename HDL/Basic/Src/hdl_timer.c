@@ -51,33 +51,26 @@ hdl_module_state_t hdl_timer(const void *desc, uint8_t enable) {
 
 static uint8_t _hdl_timer_reset(const void *desc, uint32_t delay, hdl_timer_mode_t mode) {
   hdl_timer_t *timer = (hdl_timer_t *)desc;
-  if((hdl_state(timer) != HDL_MODULE_UNLOADED)) {
-    hdl_time_counter_t *time = (hdl_time_counter_t *)timer->dependencies[0];
-    hdl_timer_var_t *timer_var = (hdl_timer_var_t *)timer->obj_var;
-    timer_var->time_stamp = hdl_time_counter_get(time);
-    timer_var->mode = mode;
-    timer_var->delay = delay;
-    return HDL_TRUE;
-  }
-  return HDL_FALSE;
+  hdl_time_counter_t *time = (hdl_time_counter_t *)timer->dependencies[0];
+  hdl_timer_var_t *timer_var = (hdl_timer_var_t *)timer->obj_var;
+  timer_var->time_stamp = hdl_time_counter_get(time);
+  timer_var->mode = mode;
+  timer_var->delay = delay;
+  return HDL_TRUE;
 }
 
-// hdl_timer_mode_t hdl_timer_mode(hdl_timer_t *timer) {
-//   hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
-//   if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_ACTIVE)) {
-//     return timer_event->private.mode;
-//   }
-//   return HDL_TIMER_EVENT_IDLE;
-// }
+static hdl_timer_mode_t _hdl_timer_mode(const void *desc) {
+  hdl_timer_t *timer = (hdl_timer_t *)desc;
+  hdl_timer_var_t *timer_var = (hdl_timer_var_t *)timer->obj_var;
+  return timer_var->mode;
+}
 
-// uint32_t hdl_timer_left(hdl_timer_t *timer) {
-//   hdl_timer_private_t *timer_event = (hdl_timer_private_t *)timer;
-//   if((timer_event != NULL) && (hdl_state(&timer_event->module) == HDL_MODULE_ACTIVE)) {
-//     hdl_time_counter_t *timer = (hdl_time_counter_t *)timer_event->module.dependencies[0];
-//     return timer_event->private.delay - (timer_event->private.mode != HDL_TIMER_EVENT_IDLE)? (hdl_time_counter_get(timer) - timer_event->private.time_stamp): 0;
-//   }
-//   return 0;
-// }
+static uint32_t _hdl_timer_left(const void *desc) {
+  hdl_timer_t *timer = (hdl_timer_t *)desc;
+  hdl_time_counter_t *counter = (hdl_time_counter_t *)timer->dependencies[0];
+  hdl_timer_var_t *timer_var = (hdl_timer_var_t *)timer->obj_var;
+  return timer_var->delay - (timer_var->mode != HDL_TIMER_MODE_IDLE)? (hdl_time_counter_get(counter) - timer_var->time_stamp): (uint32_t)-1;
+}
 
 static void _hdl_timer_subscribe(const void *timer, hdl_delegate_t *delegate) {
   hdl_event_subscribe(&((hdl_timer_var_t *)((hdl_timer_t *)timer)->obj_var)->event, delegate);  
@@ -86,5 +79,7 @@ static void _hdl_timer_subscribe(const void *timer, hdl_delegate_t *delegate) {
 const hdl_timer_iface_t hdl_timer_iface = {
   .init = &hdl_timer,
   .subscribe = &_hdl_timer_subscribe,
-  .reset = &_hdl_timer_reset
+  .reset = &_hdl_timer_reset,
+  .mode = &_hdl_timer_mode,
+  .left = &_hdl_timer_left
 };

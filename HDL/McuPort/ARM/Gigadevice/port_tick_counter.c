@@ -2,7 +2,7 @@
 
 static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enable) {
   hdl_tick_counter_t *counter = (hdl_tick_counter_t *)desc;
-  uint32_t periph = (uint32_t)counter->config->reg;
+  uint32_t periph = counter->config->phy;
   const hdl_tick_counter_timer_config_t *config = counter->config->type.timer;
   if(enable) {
     if(periph == (uint32_t)SysTick) {
@@ -44,7 +44,7 @@ static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enab
 static uint32_t _hdl_tick_counter_get(const void *counter) {
   if(hdl_state(counter) != HDL_MODULE_FAULT) {
     hdl_tick_counter_t *tick_cnt = (hdl_tick_counter_t *)counter;
-    uint32_t periph = (uint32_t)tick_cnt->config->reg;
+    uint32_t periph = tick_cnt->config->phy;
     const hdl_tick_counter_timer_config_t *config = tick_cnt->config->type.timer;
     if(periph == (uint32_t)SysTick) {
       return (SysTick->LOAD - SysTick->VAL);
@@ -59,7 +59,7 @@ static uint32_t _hdl_tick_counter_get(const void *counter) {
 void _hdl_tick_counter_set(const void *counter, uint32_t value, uint32_t period) {
   if(hdl_state(counter) != HDL_MODULE_FAULT) {
     hdl_tick_counter_t *tick_cnt = (hdl_tick_counter_t *)counter;
-    uint32_t periph = (uint32_t)tick_cnt->config->reg;
+    uint32_t periph = tick_cnt->config->phy;
     const hdl_tick_counter_timer_config_t *config = tick_cnt->config->type.timer;
     if(periph == (uint32_t)SysTick) {
       SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
@@ -85,7 +85,7 @@ void _hdl_tick_counter_set(const void *counter, uint32_t value, uint32_t period)
 void _hdl_tick_counter_stop(const void *counter) {
   if(hdl_state(counter) != HDL_MODULE_FAULT) {
     hdl_tick_counter_t *tick_cnt = (hdl_tick_counter_t *)counter;
-    uint32_t periph = (uint32_t)tick_cnt->config->reg;
+    uint32_t periph = tick_cnt->config->phy;
     if(periph == (uint32_t)SysTick) {
        SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
     }

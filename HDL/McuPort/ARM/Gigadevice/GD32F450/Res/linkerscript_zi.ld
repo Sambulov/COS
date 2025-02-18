@@ -114,7 +114,10 @@ SECTIONS
     __bss_end__ = _ebss;
   } >SRAM
 
-  /* User_heap_stack section, used to check that there is enough RAM left */
+  _heap_start = _ebss;
+  _heap_size = _estack - _heap_start - _Min_Stack_Size;
+
+  /* User_heap_stack section, used to check that there is enough RAM left 
   ._user_heap_stack :
   {
     . = ALIGN(8);
@@ -124,14 +127,7 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >SRAM
-
- /* start of RAM */
-    .stack : {
-        __stack_start__ = .; /* start of the stack section */
-        . = . + _Min_Stack_Size;
-        . = ALIGN(4);
-        __stack_end__ = .;   /* end of the stack section */
-    } >SRAM   /* stack at the start of RAM */
+*/
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

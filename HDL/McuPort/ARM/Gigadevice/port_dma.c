@@ -43,13 +43,13 @@ static uint8_t _hdl_dma_stop(const void *desc) {
   return HDL_TRUE;
 }
 
-const hdl_module_base_iface_t dma_iface = {
+const hdl_module_base_iface_t hdl_dma_iface = {
   .init = &_hdl_dma
 };
 
 extern uint8_t __hdl_dma_run(const void *desc, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount);
 
-const hdl_dma_channel_iface_t dma_channel_iface = {
+const hdl_dma_channel_iface_t hdl_dma_channel_iface = {
   .init = &_hdl_dma_ch,
   .get_counter = &_hdl_dma_get_counter,
   .run = &__hdl_dma_run,

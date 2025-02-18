@@ -12,7 +12,7 @@ void usage_fault_handler()              { call_isr(HDL_NVIC_EXCEPTION_UsageFault
 void debug_mon_handler()                { call_isr(HDL_NVIC_EXCEPTION_DebugMonitor, 0); }
 
 __STATIC_INLINE void _hdl_isr_prio_set(hdl_nvic_irq_n_t irq, uint8_t priority_group, uint8_t priority, uint8_t prio_bits) {
-  uint8_t prio = ((priority_group << (8U - prio_bits)) | (priority & (0xFF >> prio_bits)) & 0xFFUL);
+  uint8_t prio = (((priority_group << (8U - prio_bits)) | (priority & (0xFF >> prio_bits))) & 0xFFUL);
   volatile uint8_t *ipr = (irq < 0)? &(SCB->SHP[(irq & 0xFUL) - 4UL]): &(NVIC->IP[irq]);
   *ipr = prio;
 }
@@ -39,6 +39,7 @@ __STATIC_INLINE uint8_t hdl_exception_irq_enable(hdl_nvic_irq_n_t irq) {
 }
 
 static uint8_t _hdl_interrupt_controller_spec(const hdl_interrupt_controller_t *desc, uint8_t enable) {
+  (void)desc; (void)enable;
   return HDL_TRUE;
 }
 
@@ -76,6 +77,7 @@ __STATIC_INLINE uint8_t hdl_exception_irq_enable(hdl_nvic_irq_n_t irq) {
   }
   #else
   static uint8_t _hdl_interrupt_controller_spec(const hdl_interrupt_controller_t *desc, uint8_t enable) {
+    (void)desc; (void)enable;
     return HDL_TRUE;
   }
   #endif

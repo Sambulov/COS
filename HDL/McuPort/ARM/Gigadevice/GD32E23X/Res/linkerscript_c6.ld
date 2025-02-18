@@ -4,6 +4,9 @@ ENTRY(reset_handler)
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM); /* end of "RAM" Ram type memory */
 
+_Min_Heap_Size = 0x000;
+_Min_Stack_Size = 0x000;
+
 /* Memories definition */
 MEMORY
 {
@@ -127,9 +130,10 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
+  _heap_start = _ebss;
+  _heap_size = _estack - _heap_start - _Min_Stack_Size;
+
   /* User_heap_stack section, used to check that there is enough "RAM" Ram  type memory left 
-  _Min_Heap_Size = 0x000;
-  _Min_Stack_Size = 0x000;
   ._user_heap_stack :
   {
     . = ALIGN(8);

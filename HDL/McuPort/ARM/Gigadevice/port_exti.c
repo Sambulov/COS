@@ -1,5 +1,4 @@
 #include "hdl_portable.h"
-#include "CodeLib.h"
 
 #define hdl_exti_clear_pending(exti_line)       (EXTI_PD |= exti_line)
 

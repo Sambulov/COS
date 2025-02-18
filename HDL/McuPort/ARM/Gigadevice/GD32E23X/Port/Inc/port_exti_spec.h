@@ -1,5 +1,5 @@
-#ifndef PORT_EXTI_H_
-#define PORT_EXTI_H_
+#ifndef PORT_EXTI_SPEC_H_
+#define PORT_EXTI_SPEC_H_
 
 #define EXTI_LINES_4_15           EXTI_4  | EXTI_5  | EXTI_6  |  EXTI_7 | \
                                   EXTI_8  | EXTI_9  | EXTI_10 | EXTI_11 | \
@@ -10,23 +10,6 @@
                                   EXTI_8  | EXTI_9  | EXTI_10 | EXTI_11 | \
                                   EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15 | \
                                   EXTI_16 | EXTI_17 | EXTI_19 | EXTI_21
-
-typedef enum {
-  HDL_EXTI_TRIGGER_FALLING        = 0x01,
-  HDL_EXTI_TRIGGER_RISING         = 0x02,
-  HDL_EXTI_TRIGGER_RISING_FALLING = HDL_EXTI_TRIGGER_RISING | HDL_EXTI_TRIGGER_FALLING,
-  HDL_EXTI_TRIGGER_NONE           = !(HDL_EXTI_TRIGGER_RISING | HDL_EXTI_TRIGGER_FALLING)
-} hdl_exti_trigger_t;
-
-typedef enum {
-  HDL_EXTI_SOURCE_PA = 0b0000,
-  HDL_EXTI_SOURCE_PB = 0b0001,
-  HDL_EXTI_SOURCE_PC = 0b0010,
-  HDL_EXTI_SOURCE_PD = 0b0011,
-  HDL_EXTI_SOURCE_PE = 0b0100,
-  HDL_EXTI_SOURCE_PF = 0b0101,
-  HDL_EXTI_SOURCE_PG = 0b0110,
-} hdl_exti_source_t;
 
 typedef enum {
   HDL_EXTI_LINE_0 = EXTI_0,   /*!< EXTI line 0 PA0, PB0, PF0 */
@@ -59,41 +42,4 @@ typedef enum {
   HDL_EXTI_LINE_27 = EXTI_27, /*!< EXTI line 27 Reserved */
 } hdl_exti_line_t;
 
-typedef enum {
-  HDL_EXTI_MODE_INTERRUPT = EXTI_INTERRUPT,
-  HDL_EXTI_MODE_EVENT = EXTI_EVENT
-} hdl_exti_mode_t;
-
-typedef struct {
-  hdl_exti_line_t line;
-  hdl_exti_source_t source;
-  hdl_exti_mode_t mode;
-  hdl_exti_trigger_t trigger;
-} hdl_exti_t;
-
-typedef struct {
-  hdl_exti_t **extis;
-} hdl_exti_controller_config_t;
-
-#define hdl_extis(...) ((hdl_exti_t *[]){__VA_ARGS__, NULL})
-
-typedef void (*hdl_exti_sw_trigger_t)(const void *, hdl_exti_line_t);
-
-typedef struct {
-  hdl_module_initializer_t init;
-  hdl_exti_sw_trigger_t trigger;
-} hdl_exti_controller_iface_t;
-
-/* 
-  depends on:
-  nvic
-*/
-hdl_module_new_t(hdl_exti_controller_t, 0, hdl_exti_controller_config_t, hdl_exti_controller_iface_t);
-
-extern const hdl_exti_controller_iface_t exti_controller_iface;
-
-__STATIC_INLINE void hdl_exti_sw_trigger(const void *exti, hdl_exti_line_t line) {
-  ((hdl_exti_controller_iface_t *)((hdl_module_base_t *)exti)->iface)->trigger(exti, line);
-}
-
-#endif // PORT_EXTI_H_
+#endif // PORT_EXTI_SPEC_H_

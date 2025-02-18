@@ -1,8 +1,6 @@
 
-#ifndef PORT_CORE_H_
-#define PORT_CORE_H_
-
-#include "port_exti.h"
+#ifndef PORT_CORE_SPEC_H_
+#define PORT_CORE_SPEC_H_
 
 #define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
 
@@ -260,47 +258,13 @@ typedef enum {
   HDL_NVIC_IRQ79                             = 79,
 } hdl_nvic_irq_n_t;
 
-
-
-typedef struct {
-  hdl_nvic_irq_n_t irq_type;
-  uint8_t priority_group;
-  uint8_t priority;
-  hdl_event_t event;
-} hdl_interrupt_t;
-
-
-typedef struct {
-  uint32_t prio_bits;
-  uint32_t prio_group;
-  hdl_interrupt_t **interrupts;
-  uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
-  const void * const vector;
-} hdl_interrupt_controller_config_t;
-
-#define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
-
-typedef struct{
-  uint32_t flash_latency;
-} hdl_core_config_t;
-
-extern const void *_estack;
-extern const void *_sidata, *_sdata, *_edata;
-extern const void *_sbss, *_ebss;
-extern const void *_eflash; 
-
-void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
-
 void irq_n_handler();
-
 void reset_handler();
-
 void svc_handler();
 void nmi_handler();
 void hard_fault_handler();
 void pend_sv_handler();
 void systick_handler();
-
 void mem_manage_handler();
 void bus_fault_handler();
 void usage_fault_handler();
@@ -487,5 +451,32 @@ void CAN1_RX1_IRQHandler();
 void CAN1_EWMC_IRQHandler();
 void USBFS_IRQHandler();
 #endif /* GD32F10X_CL */
+
+__STATIC_INLINE void _hdl_isr_prio_set(hdl_nvic_irq_n_t irq, uint8_t priority_group, uint8_t priority, uint8_t prio_bits) {
+  uint8_t prio = ((priority_group << (8U - prio_bits)) | (priority & (0xFF >> prio_bits)) & 0xFFUL);
+  volatile uint8_t *ipr = (irq < 0)? &(SCB->SHP[(irq & 0xFUL) - 4UL]): &(NVIC->IP[irq]);
+  *ipr = prio;
+}
+
+__STATIC_INLINE uint8_t hdl_exception_irq_enable(hdl_nvic_irq_n_t irq) {
+  switch (irq) {
+    case HDL_NVIC_EXCEPTION_SysTick:
+      SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk; /* Enable SysTick IRQ */
+      break;
+    case HDL_NVIC_EXCEPTION_PendSV:
+    case HDL_NVIC_EXCEPTION_SVCall:
+    case HDL_NVIC_EXCEPTION_HardFault:
+    case HDL_NVIC_EXCEPTION_NonMaskableInt:
+    case HDL_NVIC_EXCEPTION_MemoryManagement:
+    case HDL_NVIC_EXCEPTION_BusFault:
+    case HDL_NVIC_EXCEPTION_DebugMonitor:
+    case HDL_NVIC_EXCEPTION_UsageFault:
+      // TODO: enable if possible;
+      break;
+    default:
+      return HDL_FALSE;
+  }
+  return HDL_TRUE;
+}
 
 #endif // PORT_CORE_H_

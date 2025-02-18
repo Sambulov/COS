@@ -1,9 +1,8 @@
 
-#ifndef PORT_CORE_H_
-#define PORT_CORE_H_
+#ifndef PORT_CORE_SPEC_H_
+#define PORT_CORE_SPEC_H_
 
 #include "hdl_core.h"
-#include "port_exti.h"
 #include "gd32e23x.h"
 
 #define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
@@ -66,89 +65,6 @@ typedef enum {
   HDL_NVIC_IRQ48                       = 48,
 } hdl_nvic_irq_n_t;
 
-typedef struct {
-  hdl_nvic_irq_n_t irq_type;
-  uint8_t priority_group;
-  uint8_t priority;
-} hdl_interrupt_config_t;
-
-/* GD32E230 interrupt vector
-  .vector = {
-    &_estack,
-    &reset_handler,
-    &nmi_handler,
-    &hard_fault_handler,
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    ((void *)0),
-    &svc_handler,
-    ((void *)0),
-    ((void *)0),
-    &pend_sv_handler,
-    &systick_handler,
-    &wwdgt_handler, 
-    &lvd_handler,
-    &rtc_handler,
-    &fmc_handler,
-    &rcu_handler,
-    &exti0_1_handler,
-    &exti2_3_IRQHandler,
-    &exti4_15_handler,
-    &irq_n_handler,
-    &dma_channel0_handler,
-    &dma_channel1_2_handler,
-    &dma_channel3_4_handler,
-    &adc_cmp_handler,
-    &timer0_brk_up_trg_com_handler,
-    &timer0_channel_handler,
-    &irq_n_handler,
-    &timer2_handler,
-    &timer5_handler,
-    &irq_n_handler,
-    &timer13_handler,
-    &timer14_handler,
-    &timer15_handler,
-    &timer16_handler,
-    &i2c0_ev_handler,
-    &i2c1_ev_handler,
-    &spi0_handler,
-    &spi1_handler,
-    &usart0_handler,
-    &usart1_handler,
-    &irq_n_handler,
-    &irq_n_handler,
-    &irq_n_handler,
-    &i2c0_er_handler,
-    &irq_n_handler,
-    &i2c1_er_handler,
-  }
- */
-typedef struct {
-  uint32_t prio_bits;
-  hdl_interrupt_t * const *interrupts;
-  uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
-  const void * const vector;
-  uint32_t phy;
-} hdl_interrupt_controller_config_t;
-
-#define hdl_interrupts(...) ((hdl_interrupt_t * const []){__VA_ARGS__, NULL})
-
-typedef struct{
-  uint32_t flash_latency; /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
-  uint32_t phy;
-} hdl_core_config_t;
-
-extern const void *_estack;
-extern const void *_sidata, *_sdata, *_edata;
-extern const void *_sbss, *_ebss;
-extern const void *_eflash;
-
-void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
-
 void reset_handler();
 void irq_n_handler();
 void nmi_handler();
@@ -186,10 +102,28 @@ void usart1_handler();
 void i2c0_er_handler();
 void i2c1_er_handler();
 
-hdl_module_new_t(hdl_core_t, 0, hdl_core_config_t, hdl_module_base_iface_t);
-hdl_module_new_t(hdl_interrupt_controller_t, 0, hdl_interrupt_controller_config_t, hdl_interrupt_controller_iface_t);
+__STATIC_INLINE void _hdl_isr_prio_set(hdl_nvic_irq_n_t irq, uint8_t priority_group, uint8_t priority, uint8_t prio_bits) {
+  uint32_t prio = ((priority_group << (8U - prio_bits)) | ((priority & (0xFF >> prio_bits)) & 0xFFUL));
+  uint32_t shift = _BIT_SHIFT(irq);
+  volatile uint32_t *ipr = (irq < 0)? &(SCB->SHPR[_SHP_IDX(irq)]): &(NVIC->IPR[_IP_IDX(irq)]);
+  *ipr = (*ipr & ~(0xFFUL << shift)) | (prio << shift);
+}
 
-extern const hdl_module_base_iface_t hdl_core_iface;
-extern const hdl_interrupt_controller_iface_t hdl_interrupt_controller_iface;
+__STATIC_INLINE uint8_t hdl_exception_irq_enable(hdl_nvic_irq_n_t irq) {
+  switch (irq) {
+    case HDL_NVIC_EXCEPTION_SysTick:
+      SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk; /* Enable SysTick IRQ */
+      break;
+    case HDL_NVIC_EXCEPTION_PendSV:
+    case HDL_NVIC_EXCEPTION_SVCall:
+    case HDL_NVIC_EXCEPTION_HardFault:
+    case HDL_NVIC_EXCEPTION_NonMaskableInt:
+      // TODO: enable if possible;
+      break;
+    default:
+      return HDL_FALSE;
+  }
+  return HDL_TRUE;
+}
 
-#endif /* PORT_CORE_H_ */ 
+#endif /* PORT_CORE_SPEC_H_ */ 

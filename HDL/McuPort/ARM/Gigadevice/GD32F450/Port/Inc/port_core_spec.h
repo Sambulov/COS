@@ -4,6 +4,11 @@
 
 #define HDL_VTOR_TAB_ALIGN         1024  //(2 << SCB_VTOR_TBLOFF_Pos)
 
+typedef struct{
+  uint32_t flash_latency; /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
+  uint32_t phy;
+} hdl_core_config_t;
+
 typedef enum
 {
   /* Cortex-M4 processor exceptions numbers */
@@ -377,32 +382,5 @@ void DCI_IRQHandler();
 void TRNG_IRQHandler();
 void FPU_IRQHandler();
 #endif /* GD32F407_427 */
-
-__STATIC_INLINE void _hdl_isr_prio_set(hdl_nvic_irq_n_t irq, uint8_t priority_group, uint8_t priority, uint8_t prio_bits) {
-  uint8_t prio = ((priority_group << (8U - prio_bits)) | (priority & (0xFF >> prio_bits)) & 0xFFUL);
-  volatile uint8_t *ipr = (irq < 0)? &(SCB->SHP[(irq & 0xFUL) - 4UL]): &(NVIC->IP[irq]);
-  *ipr = prio;
-}
-
-__STATIC_INLINE uint8_t hdl_exception_irq_enable(hdl_nvic_irq_n_t irq) {
-  switch (irq) {
-    case HDL_NVIC_EXCEPTION_SysTick:
-      SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk; /* Enable SysTick IRQ */
-      break;
-    case HDL_NVIC_EXCEPTION_PendSV:
-    case HDL_NVIC_EXCEPTION_SVCall:
-    case HDL_NVIC_EXCEPTION_HardFault:
-    case HDL_NVIC_EXCEPTION_NonMaskableInt:
-    case HDL_NVIC_EXCEPTION_MemoryManagement:
-    case HDL_NVIC_EXCEPTION_BusFault:
-    case HDL_NVIC_EXCEPTION_DebugMonitor:
-    case HDL_NVIC_EXCEPTION_UsageFault:
-      // TODO: enable if possible;
-      break;
-    default:
-      return HDL_FALSE;
-  }
-  return HDL_TRUE;
-}
 
 #endif // PORT_CORE_SPEC_H_

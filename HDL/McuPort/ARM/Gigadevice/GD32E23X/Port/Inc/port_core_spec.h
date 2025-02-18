@@ -7,6 +7,11 @@
 
 #define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
 
+typedef struct{
+  uint32_t flash_latency; /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
+  uint32_t phy;
+} hdl_core_config_t;
+
 typedef enum {
   HDL_NVIC_EXCEPTION_NonMaskableInt    = NonMaskableInt_IRQn,   /*!< Non maskable interrupt                                 */
   HDL_NVIC_EXCEPTION_HardFault         = HardFault_IRQn,        /*!< Hardfault interrupt                                      */
@@ -101,29 +106,5 @@ void usart0_handler();
 void usart1_handler();
 void i2c0_er_handler();
 void i2c1_er_handler();
-
-__STATIC_INLINE void _hdl_isr_prio_set(hdl_nvic_irq_n_t irq, uint8_t priority_group, uint8_t priority, uint8_t prio_bits) {
-  uint32_t prio = ((priority_group << (8U - prio_bits)) | ((priority & (0xFF >> prio_bits)) & 0xFFUL));
-  uint32_t shift = _BIT_SHIFT(irq);
-  volatile uint32_t *ipr = (irq < 0)? &(SCB->SHPR[_SHP_IDX(irq)]): &(NVIC->IPR[_IP_IDX(irq)]);
-  *ipr = (*ipr & ~(0xFFUL << shift)) | (prio << shift);
-}
-
-__STATIC_INLINE uint8_t hdl_exception_irq_enable(hdl_nvic_irq_n_t irq) {
-  switch (irq) {
-    case HDL_NVIC_EXCEPTION_SysTick:
-      SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk; /* Enable SysTick IRQ */
-      break;
-    case HDL_NVIC_EXCEPTION_PendSV:
-    case HDL_NVIC_EXCEPTION_SVCall:
-    case HDL_NVIC_EXCEPTION_HardFault:
-    case HDL_NVIC_EXCEPTION_NonMaskableInt:
-      // TODO: enable if possible;
-      break;
-    default:
-      return HDL_FALSE;
-  }
-  return HDL_TRUE;
-}
 
 #endif /* PORT_CORE_SPEC_H_ */ 

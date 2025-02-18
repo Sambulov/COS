@@ -46,32 +46,9 @@ typedef enum {
   HDL_NVIC_IRQ31                     = 31,       /*!<                                                               */
 } hdl_nvic_irq_n_t;
 
-typedef struct {
-  hdl_nvic_irq_n_t irq_type;
-  uint8_t priority_group;
-  uint8_t priority;
-  hdl_event_t event;
-} hdl_interrupt_t;
-
-typedef struct {
-  uint32_t prio_bits;
-  hdl_interrupt_t **interrupts;
-  uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
-  const void * const vector;
-} hdl_interrupt_controller_config_t;
-
-#define hdl_interrupts(...) ((hdl_interrupt_t *[]){__VA_ARGS__, NULL})
-
 typedef struct{
   uint32_t flash_latency;
 } hdl_core_config_t;
-
-extern const void *_estack;
-extern const void *_sidata, *_sdata, *_edata;
-extern const void *_sbss, *_ebss;
-extern const void *_eflash;
-
-void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
 
 void reset_handler();
 void irq_n_handler();

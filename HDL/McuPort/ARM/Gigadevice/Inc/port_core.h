@@ -22,11 +22,6 @@ typedef struct {
 
 #define hdl_interrupts(...) ((hdl_interrupt_t * const []){__VA_ARGS__, NULL})
 
-typedef struct{
-  uint32_t flash_latency; /* WS_WSCNT_0: sys_clock <= 24MHz, WS_WSCNT_1: sys_clock <= 48MHz, WS_WSCNT_2: sys_clock <= 72MHz */
-  uint32_t phy;
-} hdl_core_config_t;
-
 extern const void *_estack;
 extern const void *_sidata, *_sdata, *_edata;
 extern const void *_sbss, *_ebss;

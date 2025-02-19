@@ -55,11 +55,11 @@ typedef struct{
   hdl_adc_resolution_e resolution;
   hdl_adc_data_alignment_t data_alignment;
   uint32_t init_timeout;
-  hdl_adc_source_t **sources;               /* max amount 15 */
+  const hdl_adc_source_t * const *sources;               /* max amount 15 */
   uint32_t *values;
 } hdl_adc_config_t;
 
-#define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
+#define hdl_adc_sources(...) ((const hdl_adc_source_t const *[]){__VA_ARGS__, NULL})
 
 #define hdl_adc_src(...)  hdl_adc_sources(__VA_ARGS__),\
                           .values = (uint32_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}

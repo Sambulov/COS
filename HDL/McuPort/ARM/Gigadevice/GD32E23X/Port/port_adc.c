@@ -45,7 +45,7 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
         rcu_periph_clock_enable(RCU_ADC);
         adc_special_function_config(ADC_SCAN_MODE, ENABLE);
         adc_special_function_config(ADC_CONTINUOUS_MODE, DISABLE);
-        hdl_adc_source_t **adc_source = hdl_adc->config->sources;
+        const hdl_adc_source_t * const *adc_source = hdl_adc->config->sources;
         adc_var->channels_count = 0;
         if(adc_source != NULL) {
           while (*adc_source != NULL) {

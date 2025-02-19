@@ -63,7 +63,7 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
         adc_sync_mode_config(ADC_SYNC_MODE_INDEPENDENT);
         adc_special_function_config(adc->config->phy, ADC_SCAN_MODE, ENABLE);
         adc_special_function_config(adc->config->phy, ADC_CONTINUOUS_MODE, DISABLE);
-        hdl_adc_source_t **adc_source = adc->config->sources;
+        const hdl_adc_source_t * const *adc_source = adc->config->sources;
         adc_var->channels_count = 0;
         if(adc_source != NULL) {
           while (*adc_source != NULL) {

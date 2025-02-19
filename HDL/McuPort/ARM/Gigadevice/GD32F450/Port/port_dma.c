@@ -1,6 +1,7 @@
 #include "hdl_iface.h"
 
-uint8_t __hdl_dma_run(hdl_dma_channel_mcu_t *channel, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount) {
+uint8_t __hdl_dma_run(const void *desc, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount) {
+  hdl_dma_channel_mcu_t *channel = ((hdl_dma_channel_mcu_t *)desc);
   hdl_dma_mcu_t *dma = (hdl_dma_mcu_t *)channel->dependencies[0];
   if(dma != NULL) {
     dma_deinit(dma->config->phy, channel->config->ch_no);

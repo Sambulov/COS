@@ -33,7 +33,7 @@ hdl_module_new_t(hdl_dma_mcu_t, 0, hdl_dma_config_t, hdl_module_base_iface_t);
 */
 hdl_module_new_t(hdl_dma_channel_mcu_t, 0, hdl_dma_channel_config_t, hdl_dma_channel_iface_t);
 
-extern const hdl_module_base_iface_t dma_iface;
-extern const hdl_dma_channel_iface_t dma_channel_iface;
+extern const hdl_module_base_iface_t hdl_dma_iface;
+extern const hdl_dma_channel_iface_t hdl_dma_channel_iface;
 
 #endif

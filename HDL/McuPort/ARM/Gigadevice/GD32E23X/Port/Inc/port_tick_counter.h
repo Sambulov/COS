@@ -29,7 +29,7 @@ typedef struct {
 /* depends on:
    hdl_clock_t
  */
-hdl_module_new_t(hdl_tick_counter_t, 0, hdl_tick_counter_config_t, hdl_tick_counter_iface_t);
+hdl_module_new_t(hdl_tick_counter_mcu_t, 0, hdl_tick_counter_config_t, hdl_tick_counter_iface_t);
 
 extern const hdl_tick_counter_iface_t hdl_tick_counter_iface;
 

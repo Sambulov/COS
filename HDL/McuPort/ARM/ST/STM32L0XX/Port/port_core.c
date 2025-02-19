@@ -29,10 +29,10 @@ void USART1_IRQHandler()               { call_isr(HDL_NVIC_IRQ27_USART1, 0); }
 void USART2_IRQHandler()               { call_isr(HDL_NVIC_IRQ28_USART2, 0); }
 void LPUART1_IRQHandler()              { call_isr(HDL_NVIC_IRQ29_LPUART1, 0); }
 
-
-hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
+static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
+  (void)desc;
   if(enable) {
-    hdl_core_t *core = (hdl_core_t *)desc;
+    //hdl_core_t *core = (hdl_core_t *)desc;
     //FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
     //rcu_periph_clock_enable(RCU_CFGCMP);
     return HDL_MODULE_ACTIVE;
@@ -41,3 +41,7 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   //FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
   return HDL_MODULE_UNLOADED;
 }
+
+const hdl_module_base_iface_t hdl_core_iface = {
+  .init = _hdl_core
+};

@@ -2,7 +2,7 @@
 
 typedef struct {
   hdl_delegate_t spi_isr;
-  hdl_spi_client_ch_t *curent_spi_ch;
+  hdl_spi_client_ch_mcu_t *curent_spi_ch;
   uint16_t rx_cursor;
   uint16_t tx_cursor;
 } hdl_spi_client_var_t;
@@ -12,12 +12,12 @@ typedef struct {
   hdl_spi_message_t *curent_msg;
 } hdl_spi_client_ch_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_var_t, *((hdl_spi_client_t *)0)->obj_var, HDL_SPI_CLIENT_VAR_SIZE, port_spi.h);
-HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_var_t, *((hdl_spi_client_ch_t *)0)->obj_var, HDL_SPI_CLIENT_CH_VAR_SIZE, port_spi.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_var_t, *((hdl_spi_client_mcu_t *)0)->obj_var, HDL_SPI_CLIENT_VAR_SIZE, port_spi.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_var_t, *((hdl_spi_client_ch_mcu_t *)0)->obj_var, HDL_SPI_CLIENT_CH_VAR_SIZE, port_spi.h);
 
 static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   (void)event; (void)sender;
-  hdl_spi_client_t *spi = (hdl_spi_client_t *)context;
+  hdl_spi_client_mcu_t *spi = (hdl_spi_client_mcu_t *)context;
   hdl_spi_client_var_t *spi_var = (hdl_spi_client_var_t *)spi->obj_var;
   hdl_spi_client_ch_var_t *ch_var = (hdl_spi_client_ch_var_t *)spi_var->curent_spi_ch->obj_var;
   hdl_spi_message_t *msg = ch_var->curent_msg;
@@ -67,9 +67,9 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
 
 static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
-  hdl_spi_client_ch_t *ch = (hdl_spi_client_ch_t*)arg;
+  hdl_spi_client_ch_mcu_t *ch = (hdl_spi_client_ch_mcu_t*)arg;
   hdl_spi_client_ch_var_t *spi_ch_var = (hdl_spi_client_ch_var_t *)ch->obj_var;
-  hdl_spi_client_t *spi = (hdl_spi_client_t *)ch->dependencies[0];
+  hdl_spi_client_mcu_t *spi = (hdl_spi_client_mcu_t *)ch->dependencies[0];
   hdl_spi_client_var_t *spi_var = (hdl_spi_client_var_t *)spi->obj_var;
   if((spi_var->curent_spi_ch == NULL) && (spi_ch_var->curent_msg != NULL)) {
     spi_var->curent_spi_ch = ch;
@@ -112,7 +112,7 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
 }
 
 static hdl_module_state_t _hdl_spi_client(const void *desc, uint8_t enable) {
-  hdl_spi_client_t *spi = (hdl_spi_client_t*)desc;
+  hdl_spi_client_mcu_t *spi = (hdl_spi_client_mcu_t*)desc;
   hdl_spi_client_var_t *spi_var = (hdl_spi_client_var_t *)spi->obj_var;
   spi_i2s_deinit(spi->config->phy);
   if(enable) {
@@ -142,7 +142,7 @@ static hdl_module_state_t _hdl_spi_client(const void *desc, uint8_t enable) {
 }
 
 static hdl_module_state_t _hdl_spi_ch(const void *desc, uint8_t enable) {
-  hdl_spi_client_ch_t *spi_ch = (hdl_spi_client_ch_t*)desc;
+  hdl_spi_client_ch_mcu_t *spi_ch = (hdl_spi_client_ch_mcu_t*)desc;
   hdl_spi_client_ch_var_t *spi_ch_var = (hdl_spi_client_ch_var_t *)spi_ch->obj_var;
   if(enable) {
     coroutine_add(&spi_ch_var->ch_worker, &_spi_ch_worker, spi_ch);
@@ -154,7 +154,7 @@ static hdl_module_state_t _hdl_spi_ch(const void *desc, uint8_t enable) {
 }
 
 static uint8_t _hdl_spi_transfer_message(const void *desc, hdl_spi_message_t *message) {
-  hdl_spi_client_ch_t *spi_ch = (hdl_spi_client_ch_t*)desc;
+  hdl_spi_client_ch_mcu_t *spi_ch = (hdl_spi_client_ch_mcu_t*)desc;
   hdl_spi_client_ch_var_t *spi_ch_var = (hdl_spi_client_ch_var_t *)spi_ch->obj_var;
 
   if((spi_ch != NULL) && (hdl_state(spi_ch) != HDL_MODULE_FAULT) && (message != NULL)) {

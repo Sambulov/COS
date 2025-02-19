@@ -26,6 +26,8 @@ typedef struct {
   hdl_gpio_toggle_t toggle;
 } hdl_gpio_pin_iface_t;
 
+hdl_module_new_t(hdl_gpio_pin_t, 0, hdl_gpio_pin_config_t, hdl_gpio_pin_iface_t);
+
 __STATIC_INLINE hdl_gpio_state hdl_gpio_read(const void *desc) {
   MODULE_ASSERT(desc, HDL_GPIO_LOW);
   return ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read(desc);

@@ -12,6 +12,8 @@ typedef struct {
   hdl_tick_counter_stop_t stop;
 } hdl_tick_counter_iface_t;
 
+hdl_module_new_t(hdl_tick_counter_t, 0, void, hdl_tick_counter_iface_t);
+
 __STATIC_INLINE uint32_t hdl_tick_counter_get(const void *desc) {
   MODULE_ASSERT(desc, 0);
   return ((hdl_tick_counter_iface_t *)((hdl_module_base_t *)desc)->iface)->get(desc);

@@ -15,11 +15,11 @@ typedef struct{
   uint8_t channels_count;    
 } hdl_adc_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_var_t, *((hdl_adc_t *)0)->obj_var, HDL_ADC_VAR_SIZE, port_adc.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_var_t, *((hdl_adc_mcu_t *)0)->obj_var, HDL_ADC_VAR_SIZE, port_adc.h);
 
 static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
   (void)event; (void)sender;
-  hdl_adc_t *hdl_adc = (hdl_adc_t *)context;
+  hdl_adc_mcu_t *hdl_adc = (hdl_adc_mcu_t *)context;
   hdl_adc_var_t *adc_var = (hdl_adc_var_t *)hdl_adc->obj_var;
   adc_var->age++;
 }
@@ -30,14 +30,14 @@ static void event_adc_start_conversion(uint32_t event, void *sender, void *conte
 }
 
 static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
-  hdl_adc_t *hdl_adc = (hdl_adc_t *)desc;
+  hdl_adc_mcu_t *hdl_adc = (hdl_adc_mcu_t *)desc;
   hdl_adc_var_t *adc_var = (hdl_adc_var_t *)hdl_adc->obj_var;
   if(!hdl_adc->config->phy || (hdl_adc->dependencies == NULL) || (hdl_adc->dependencies[0] == NULL) ||
     (hdl_adc->dependencies[1] == NULL) || (hdl_adc->dependencies[2] == NULL))
     return HDL_MODULE_FAULT;
   //hdl_clock_t *clock = (hdl_clock_t *)hdl_adc->dependencies[0];
   hdl_time_counter_t *timer = (hdl_time_counter_t *)hdl_adc->dependencies[1];
-  hdl_dma_channel_t *dma = (hdl_dma_channel_t *)hdl_adc->dependencies[2];
+  hdl_dma_channel_mcu_t *dma = (hdl_dma_channel_mcu_t *)hdl_adc->dependencies[2];
   /* TODO: SEE ADC_REGULAR_INSERTED_CHANNEL */
   if(enable) {
     switch (adc_var->state_machine){
@@ -110,7 +110,7 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
 }
 
 static uint32_t _hdl_adc_get(const void *desc, uint32_t src) {
-  hdl_adc_t *hdl_adc = (hdl_adc_t *)desc;
+  hdl_adc_mcu_t *hdl_adc = (hdl_adc_mcu_t *)desc;
   hdl_adc_var_t *adc_var = (hdl_adc_var_t *)hdl_adc->obj_var;
   if((hdl_state(hdl_adc) == HDL_MODULE_ACTIVE) && (adc_var->channels_count > src))
     return hdl_adc->config->values[src];
@@ -118,7 +118,7 @@ static uint32_t _hdl_adc_get(const void *desc, uint32_t src) {
 }
 
 static uint32_t _hdl_adc_age(const void *desc) {
-  hdl_adc_t *hdl_adc = (hdl_adc_t *)desc;
+  hdl_adc_mcu_t *hdl_adc = (hdl_adc_mcu_t *)desc;
   hdl_adc_var_t *adc_var = (hdl_adc_var_t *)hdl_adc->obj_var;
   if(hdl_state(hdl_adc) == HDL_MODULE_ACTIVE) return adc_var->age;
   return 0;

@@ -1,8 +1,8 @@
 #include "hdl_portable.h"
 
 static hdl_module_state_t _hdl_gpio_port(const void *desc, const uint8_t enable) {
-  /* Casting desc to hdl_gpio_port_t* type */
-  hdl_gpio_port_t *port = (hdl_gpio_port_t *)desc;
+  /* Casting desc to hdl_gpio_port_mcu_t* type */
+  hdl_gpio_port_mcu_t *port = (hdl_gpio_port_mcu_t *)desc;
   if(enable)
     rcu_periph_clock_enable(port->config->rcu);
   else{
@@ -16,7 +16,7 @@ hdl_module_state_t __hdl_gpio_pin(const void *desc, const uint8_t enable) {
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
   if (gpio->config->hwc == NULL || gpio->dependencies == NULL || gpio->dependencies[0] == NULL)
     return HDL_MODULE_FAULT;
-  uint32_t gpio_port = ((hdl_gpio_port_t *)gpio->dependencies[0])->config->phy;
+  uint32_t gpio_port = ((hdl_gpio_port_mcu_t *)gpio->dependencies[0])->config->phy;
   gpio_bit_write(gpio_port, (uint32_t)gpio->config->pin, (gpio->config->inactive_default == HDL_GPIO_LOW) ? RESET : SET);
   if(enable) {
     hdl_gpio_pin_config_t *gpio_cnf = (hdl_gpio_pin_config_t *)gpio->config;

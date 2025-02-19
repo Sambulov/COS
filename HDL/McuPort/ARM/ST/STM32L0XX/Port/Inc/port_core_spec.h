@@ -1,6 +1,6 @@
 
-#ifndef PORT_CORE_H_
-#define PORT_CORE_H_
+#ifndef PORT_CORE_SPEC_H_
+#define PORT_CORE_SPEC_H_
 
 #define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
 
@@ -87,4 +87,4 @@ void USART1_IRQHandler();
 void USART2_IRQHandler();
 void LPUART1_IRQHandler();
 
-#endif // PORT_CORE_H_
+#endif // PORT_CORE_SPEC_H_

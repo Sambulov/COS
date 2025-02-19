@@ -13,6 +13,7 @@ typedef struct {
   hdl_clock_get_t get;
 } hdl_clock_iface_t;
 
+hdl_module_new_t(hdl_clock_t, 0, void, hdl_clock_iface_t);
 
 __STATIC_INLINE void hdl_clock_get(const void *desc, hdl_clock_freq_t *out_frec) {
   MODULE_ASSERT(desc, );

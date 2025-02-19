@@ -89,7 +89,7 @@ typedef struct{
 #define hdl_adc_src(...)  hdl_adc_sources(__VA_ARGS__),\
                           .values = (uint32_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
 
-hdl_module_new_t(hdl_adc_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t, hdl_adc_iface_t);
+hdl_module_new_t(hdl_adc_mcu_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t, hdl_adc_iface_t);
 
 extern const hdl_adc_iface_t hdl_adc_iface;
 

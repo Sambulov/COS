@@ -12,9 +12,9 @@ typedef struct {
   hdl_event_t event;
 } hdl_spi_server_dma_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_server_dma_var_t, *((hdl_spi_server_dma_t *)0)->obj_var, HDL_SPI_SERVER_DMA_VAR_SIZE, port_spi.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_server_dma_var_t, *((hdl_spi_server_dma_mcu_t *)0)->obj_var, HDL_SPI_SERVER_DMA_VAR_SIZE, port_spi.h);
 
-static void _hdl_spi_mem_full_reset(hdl_spi_server_dma_t *spi) {
+static void _hdl_spi_mem_full_reset(hdl_spi_server_dma_mcu_t *spi) {
   hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->dependencies[6];
   hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->dependencies[7];
   spi_i2s_deinit(spi->config->phy);
@@ -35,7 +35,7 @@ static void _hdl_spi_mem_full_reset(hdl_spi_server_dma_t *spi) {
 
 static void event_spi_nss(uint32_t event, void *sender, void *context) {
   (void)sender;
-  hdl_spi_server_dma_t *spi = (hdl_spi_server_dma_t*)context;
+  hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t*)context;
   hdl_spi_server_dma_var_t *spi_var = (hdl_spi_server_dma_var_t *)spi->obj_var;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->dependencies[3];
   if((event & (uint32_t)nss->config->pin) && hdl_gpio_is_inactive(nss)) {
@@ -49,7 +49,7 @@ static void event_spi_nss(uint32_t event, void *sender, void *context) {
 
 static void event_spi_isr(uint32_t event, void *sender, void *context) {
   (void)event; (void)sender;
-  hdl_spi_server_dma_t *spi = (hdl_spi_server_dma_t *)context;
+  hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t *)context;
   uint32_t state = SPI_STAT(spi->config->phy);
   uint32_t cr1 = SPI_CTL1(spi->config->phy);
   (void)cr1;
@@ -59,14 +59,14 @@ static void event_spi_isr(uint32_t event, void *sender, void *context) {
 }
 
 static void _hdl_spi_server_dma_subscribe(const void *desc, hdl_delegate_t *delegate) {
-  hdl_spi_server_dma_t *spi = (hdl_spi_server_dma_t*)desc;
+  hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t*)desc;
   hdl_spi_server_dma_var_t *spi_var = (hdl_spi_server_dma_var_t *)spi->obj_var;
   if(desc != NULL) 
     hdl_event_subscribe(&spi_var->event, delegate);
 }
 
 static uint8_t _hdl_spi_server_dma_set_rx_buffer(const void *desc, hdl_basic_buffer_t *buffer) {
-  hdl_spi_server_dma_t *spi = (hdl_spi_server_dma_t*)desc;
+  hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t*)desc;
   hdl_spi_server_dma_var_t *spi_var = (hdl_spi_server_dma_var_t *)spi->obj_var;
   if((desc != NULL) && (hdl_state(desc) == HDL_MODULE_ACTIVE)) {
     hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->dependencies[6];
@@ -83,7 +83,7 @@ static uint8_t _hdl_spi_server_dma_set_rx_buffer(const void *desc, hdl_basic_buf
 }
 
 static uint8_t _hdl_spi_server_dma_set_tx_data(const void *desc, hdl_basic_buffer_t *buffer) {
-  hdl_spi_server_dma_t *spi = (hdl_spi_server_dma_t*)desc;
+  hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t*)desc;
   if((desc != NULL) && (hdl_state(desc) == HDL_MODULE_ACTIVE)) {
     hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->dependencies[7];
     if(buffer != NULL) {
@@ -99,7 +99,7 @@ static uint8_t _hdl_spi_server_dma_set_tx_data(const void *desc, hdl_basic_buffe
 
 static uint8_t _spi_server_dma_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
-  hdl_spi_server_dma_t *spi = (hdl_spi_server_dma_t *) arg;
+  hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t *) arg;
   hdl_spi_server_dma_var_t *spi_var = (hdl_spi_server_dma_var_t *)spi->obj_var;
   if(spi_var->received != 0) {
     _hdl_spi_mem_full_reset(spi);
@@ -115,7 +115,7 @@ static uint8_t _spi_server_dma_worker(coroutine_t *this, uint8_t cancel, void *a
 }
 
 static hdl_module_state_t _hdl_spi_server_dma(const void *desc, uint8_t enable) {
-  hdl_spi_server_dma_t *spi = (hdl_spi_server_dma_t*)desc;
+  hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t*)desc;
   hdl_spi_server_dma_var_t *spi_var = (hdl_spi_server_dma_var_t *)spi->obj_var;
   spi_i2s_deinit(spi->config->phy);
   if(enable) {

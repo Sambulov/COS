@@ -6,15 +6,15 @@ typedef struct {
   coroutine_t worker;
 } hdl_uart_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_uart_var_t, *((hdl_uart_t *)0)->obj_var, HDL_UART_VAR_SIZE, port_uart.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_uart_var_t, *((hdl_uart_mcu_t *)0)->obj_var, HDL_UART_VAR_SIZE, port_uart.h);
 
-__STATIC_INLINE uint8_t _hdl_uart_word_len(hdl_uart_t *uart) {
+__STATIC_INLINE uint8_t _hdl_uart_word_len(hdl_uart_mcu_t *uart) {
   return ((uart->config->word_len == USART_WL_9BIT) && (uart->config->parity==USART_PM_NONE))? 2: 1;
 }
 
 static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
-  hdl_uart_t *uart = (hdl_uart_t *) arg;
+  hdl_uart_mcu_t *uart = (hdl_uart_mcu_t *) arg;
   hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;
   if((uart_var->transceiver != NULL) && !(USART_CTL0((uint32_t)uart->config->phy) & USART_CTL0_TBEIE)) {
     if((uart_var->transceiver->tx_available != NULL) && (uart_var->transceiver->tx_empty != NULL) && 
@@ -25,7 +25,7 @@ static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   return cancel;
 }
 
-static void _rst_uart_status(hdl_uart_t *uart) {
+static void _rst_uart_status(hdl_uart_mcu_t *uart) {
   USART_INTC((uint32_t)uart->config->phy) |= USART_INTC_PEC | USART_INTC_FEC | USART_INTC_NEC | USART_INTC_OREC;
 	__IO uint32_t tmpreg;
 	tmpreg = USART_RDATA((uint32_t)uart->config->phy);
@@ -34,7 +34,7 @@ static void _rst_uart_status(hdl_uart_t *uart) {
 
 static void event_uart_isr(uint32_t event, void *sender, void *context) {
   (void)event; (void)sender;
-  hdl_uart_t *uart = (hdl_uart_t *)context;
+  hdl_uart_mcu_t *uart = (hdl_uart_mcu_t *)context;
   hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;
   uint32_t periph = (uint32_t)uart->config->phy;
 	if (usart_interrupt_flag_get(periph, USART_INT_FLAG_IDLE)) {
@@ -75,7 +75,7 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
 }
 
 static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
-  hdl_uart_t *uart = (hdl_uart_t*)desc;
+  hdl_uart_mcu_t *uart = (hdl_uart_mcu_t*)desc;
   hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;
   uint32_t periph = (uint32_t)uart->config->phy;
   usart_deinit(periph);
@@ -110,7 +110,7 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
 static uint8_t _hdl_uart_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
   (void)channel_id;
   if(desc != NULL) {
-    hdl_uart_t *uart = (hdl_uart_t *) desc;
+    hdl_uart_mcu_t *uart = (hdl_uart_mcu_t *) desc;
     hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;  
     uart_var->transceiver = transceiver;
     return HDL_TRUE;

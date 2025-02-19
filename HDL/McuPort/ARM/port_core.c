@@ -49,7 +49,11 @@ static uint8_t _hdl_interrupt_controller_spec(const hdl_interrupt_controller_t *
 __STATIC_INLINE void _hdl_isr_prio_set(hdl_nvic_irq_n_t irq, uint8_t priority_group, uint8_t priority, uint8_t prio_bits) {
   uint32_t prio = ((priority_group << (8U - prio_bits)) | ((priority & (0xFF >> prio_bits)) & 0xFFUL));
   uint32_t shift = _BIT_SHIFT(irq);
-  volatile uint32_t *ipr = (irq < 0)? &(SCB->SHPR[_SHP_IDX(irq)]): &(NVIC->IPR[_IP_IDX(irq)]);
+  #if defined(__CORE_CM23_H_DEPENDANT)
+    volatile uint32_t *ipr = (irq < 0)? &(SCB->SHPR[_SHP_IDX(irq)]): &(NVIC->IPR[_IP_IDX(irq)]);
+  #else
+    volatile uint32_t *ipr = (irq < 0)? &(SCB->SHP[_SHP_IDX(irq)]): &(NVIC->IP[_IP_IDX(irq)]);
+  #endif
   *ipr = (*ipr & ~(0xFFUL << shift)) | (prio << shift);
 }
 
@@ -157,6 +161,7 @@ __attribute__((naked, noreturn)) void reset_handler() {
 }
 
 void svc_handler() {
+  #if !defined(__CORE_CM0PLUS_H_DEPENDANT)
   register uint32_t result;
   //__ASM volatile ("MRS %0, msp" : "=r" (result) );
   asm ("MRS            R1, MSP");
@@ -173,9 +178,11 @@ void svc_handler() {
   result = *(uint32_t*)result;
   result = (uint8_t)(*(uint16_t*)(result - 2));
   call_isr(HDL_NVIC_EXCEPTION_SVCall, result);
+  #endif
 }
 
 void irq_n_handler() {
+  #if !defined(__CORE_CM0PLUS_H_DEPENDANT)
   uint32_t prio = -1;
   hdl_nvic_irq_n_t irq = 0;
   for(uint32_t i = 0; i < sizeof(NVIC->IABR)/sizeof(NVIC->IABR[0]); i++) {
@@ -192,6 +199,7 @@ void irq_n_handler() {
     }
   }
   call_isr(irq, 0);
+  #endif
 }
 
 static hdl_module_state_t _hdl_interrupt_controller(const void *desc, uint8_t enable) {

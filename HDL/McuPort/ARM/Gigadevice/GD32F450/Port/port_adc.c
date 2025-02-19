@@ -15,23 +15,23 @@ typedef struct{
   uint8_t channels_count;
 } hdl_adc_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_t, hdl_adc_t, HDL_ADC_PRV_SIZE, port_adc.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_adc_mcu_t, hdl_adc_mcu_t, HDL_ADC_PRV_SIZE, port_adc.h);
 
 static void event_adc_end_of_conversion(uint32_t event, void *sender, void *context) {
   (void)event; (void)sender;
-  hdl_adc_t *adc = (hdl_adc_t *)context;
+  hdl_adc_mcu_t *adc = (hdl_adc_mcu_t *)context;
   hdl_adc_var_t *adc_var = (hdl_adc_var_t *)adc->obj_var;
   adc_var->age++;
 }
 
 static void event_adc_start_conversion(uint32_t event, void *sender, void *context) {
   (void)event; (void)sender;
-  hdl_adc_t *adc = (hdl_adc_t *)context;
+  hdl_adc_mcu_t *adc = (hdl_adc_mcu_t *)context;
   adc_software_trigger_enable(adc->config->phy, ADC_ROUTINE_CHANNEL);
 }
 
 static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
-  hdl_adc_t *adc = (hdl_adc_t *)desc;
+  hdl_adc_mcu_t *adc = (hdl_adc_mcu_t *)desc;
   if(!adc->config->phy || (adc->dependencies == NULL) || (adc->dependencies[0] == NULL) ||
     (adc->dependencies[1] == NULL) || (adc->dependencies[2] == NULL) || (adc->dependencies[3] == NULL))
       return HDL_MODULE_FAULT;
@@ -136,13 +136,13 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
 }
 
 static uint32_t _hdl_adc_age(const void *desc) {
-  hdl_adc_t *adc = (hdl_adc_t *)desc;
+  hdl_adc_mcu_t *adc = (hdl_adc_mcu_t *)desc;
   hdl_adc_var_t *adc_var = (hdl_adc_var_t *)adc->obj_var;
   return adc_var->age;
 }
 
 static uint32_t _hdl_adc_get(const void *desc, uint32_t src) {
-  hdl_adc_t *adc = (hdl_adc_t *)desc;
+  hdl_adc_mcu_t *adc = (hdl_adc_mcu_t *)desc;
   hdl_adc_var_t *adc_var = (hdl_adc_var_t *)adc->obj_var;
   if(adc_var->channels_count > src) {
     return adc->config->values[src];

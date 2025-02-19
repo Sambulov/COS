@@ -6,11 +6,11 @@ typedef struct {
   const hdl_transceiver_t *transceiver;
 } hdl_spi_server_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_server_var_t, *((hdl_spi_server_t *)0)->obj_var, HDL_SPI_SERVER_VAR_SIZE, port_spi.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_server_var_t, *((hdl_spi_server_mcu_t *)0)->obj_var, HDL_SPI_SERVER_VAR_SIZE, port_spi.h);
 
 static void event_spi_nss(uint32_t event, void *sender, void *context) {
   (void)sender;
-  hdl_spi_server_t *spi = (hdl_spi_server_t*)context;
+  hdl_spi_server_mcu_t *spi = (hdl_spi_server_mcu_t*)context;
   hdl_spi_server_var_t *spi_var = (hdl_spi_server_var_t*)spi->obj_var;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->dependencies[3];
   if(event & (uint32_t)nss->config->pin){
@@ -21,7 +21,7 @@ static void event_spi_nss(uint32_t event, void *sender, void *context) {
 
 static void event_spi_isr_server(uint32_t event, void *sender, void *context) {
   (void)event; (void)sender;
-  hdl_spi_server_t *spi = (hdl_spi_server_t *)context;
+  hdl_spi_server_mcu_t *spi = (hdl_spi_server_mcu_t *)context;
   hdl_spi_server_var_t *spi_var = (hdl_spi_server_var_t*)spi->obj_var;
   uint32_t state = SPI_STAT(spi->config->phy);
   uint32_t cr1 = SPI_CTL1(spi->config->phy);
@@ -48,7 +48,7 @@ static void event_spi_isr_server(uint32_t event, void *sender, void *context) {
 }
 
 static hdl_module_state_t _hdl_spi_server(const void *desc, uint8_t enable) {
-  hdl_spi_server_t *spi = (hdl_spi_server_t*)desc;
+  hdl_spi_server_mcu_t *spi = (hdl_spi_server_mcu_t*)desc;
   hdl_spi_server_var_t *spi_var = (hdl_spi_server_var_t*)spi->obj_var;
   spi_i2s_deinit(spi->config->phy);
   if(enable) {
@@ -83,9 +83,9 @@ static hdl_module_state_t _hdl_spi_server(const void *desc, uint8_t enable) {
 
 static uint8_t _hdl_spi_server_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
   (void)channel_id;
-  hdl_spi_server_t *spi = (hdl_spi_server_t*)desc;
+  hdl_spi_server_mcu_t *spi = (hdl_spi_server_mcu_t*)desc;
   if(spi != NULL) {
-    ((hdl_spi_server_var_t *)((hdl_spi_server_t*)spi)->obj_var)->transceiver = transceiver;
+    ((hdl_spi_server_var_t *)spi->obj_var)->transceiver = transceiver;
     return HDL_TRUE;
   }
   return HDL_FALSE;

@@ -12,6 +12,6 @@
 #include "port_adc.h"
 #include "port_spi.h"
 #include "port_i2c.h"
-#include "port_uart.h"
+//#include "port_uart.h"
 
 #endif // HDL_PORTABLE_H_

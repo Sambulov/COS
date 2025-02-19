@@ -35,6 +35,8 @@ typedef struct {
   hdl_set_transceiver_t transceiver_set;
 } hdl_spi_server_iface_t;
 
+hdl_module_new_t(hdl_spi_server_t, 0, void, hdl_spi_server_iface_t);
+
 __STATIC_INLINE uint8_t hdl_spi_server_transceiver_set(const void *desc, hdl_transceiver_t *transceiver, uint32_t channel_id) {
   MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_spi_server_iface_t *)((hdl_module_base_t *)desc)->iface)->transceiver_set(desc, transceiver, channel_id);
@@ -51,6 +53,8 @@ typedef struct {
   hdl_spi_server_dma_set_buffer_t set_rx_buf;
   hdl_spi_server_dma_set_buffer_t set_tx_buf;
 } hdl_spi_server_dma_iface_t;
+
+hdl_module_new_t(hdl_spi_server_dma_t, 0, void, hdl_spi_server_dma_iface_t);
 
 __STATIC_INLINE void hdl_spi_server_dma_subscribe(const void *desc, hdl_delegate_t *delegate) {
   MODULE_ASSERT(desc, );
@@ -75,6 +79,8 @@ typedef struct {
   hdl_module_initializer_t init;
   hdl_spi_transfer_message_t transfer;
 } hdl_spi_client_ch_iface_t;
+
+hdl_module_new_t(hdl_spi_client_ch_t, 0, void, hdl_spi_client_ch_iface_t);
 
 __STATIC_INLINE uint8_t hdl_spi_transfer_message(const void *desc, hdl_spi_message_t *message) {
   MODULE_ASSERT(desc, HDL_FALSE);

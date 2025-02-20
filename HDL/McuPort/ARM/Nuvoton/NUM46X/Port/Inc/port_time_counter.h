@@ -1,6 +1,0 @@
-#ifndef PORT_TIME_COUNTER_H_
-#define PORT_TIME_COUNTER_H_
-
-
-
-#endif // PORT_TIME_COUNTER_H_

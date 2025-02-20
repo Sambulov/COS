@@ -4,7 +4,9 @@ typedef struct {
   coroutine_t worker;
   hdl_nvm_message_t *message;
   uint8_t wrk_state;
-} hdl_mcu_flash_var_t;
+} hdl_flash_mcu_var_t;
+
+HDL_ASSERRT_STRUCTURE_CAST(hdl_flash_mcu_var_t, *((hdl_flash_mcu_t *)0)->obj_var, HDL_MCU_FLASH_VAR_SIZE, port_flash.h);
 
 #define WRK_STATE_START            0
 #define WRK_STATE_READ             1
@@ -17,8 +19,8 @@ typedef struct {
 
 static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
-  hdl_mcu_flash_t *flash = (hdl_mcu_flash_t *)arg;
-  hdl_mcu_flash_var_t *flash_var = (hdl_mcu_flash_var_t *)flash->obj_var;
+  hdl_flash_mcu_t *flash = (hdl_flash_mcu_t *)arg;
+  hdl_flash_mcu_var_t *flash_var = (hdl_flash_mcu_var_t *)flash->obj_var;
   if(flash_var->message != NULL) {
     hdl_nvm_message_t *message = flash_var->message;
     switch (flash_var->wrk_state) {
@@ -155,8 +157,8 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
 }
 
 static hdl_module_state_t _hdl_nvm_init(const void *desc, uint8_t enable) {
-  hdl_mcu_flash_t *flash = (hdl_mcu_flash_t *)desc;
-  hdl_mcu_flash_var_t *flash_var = (hdl_mcu_flash_var_t *)flash->obj_var;
+  hdl_flash_mcu_t *flash = (hdl_flash_mcu_t *)desc;
+  hdl_flash_mcu_var_t *flash_var = (hdl_flash_mcu_var_t *)flash->obj_var;
   if(enable) {
     coroutine_add(&flash_var->worker, &_flash_worker, (void *)flash);
     return HDL_MODULE_ACTIVE;
@@ -166,7 +168,7 @@ static hdl_module_state_t _hdl_nvm_init(const void *desc, uint8_t enable) {
 }
 
 static uint8_t _hdl_nvm_info_get(const void *desc, hdl_nvm_info_t *out_info) {
-  hdl_mcu_flash_t *flash = (hdl_mcu_flash_t *)desc;
+  hdl_flash_mcu_t *flash = (hdl_flash_mcu_t *)desc;
   if(out_info != NULL) {
     out_info->page_size = flash->config->page_size;
     out_info->volume = flash->config->page_size * flash->config->pages_amount;
@@ -176,8 +178,8 @@ static uint8_t _hdl_nvm_info_get(const void *desc, hdl_nvm_info_t *out_info) {
 }
 
 static uint8_t _hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
-  hdl_mcu_flash_t *flash = (hdl_mcu_flash_t *)desc;
-  hdl_mcu_flash_var_t *flash_var = (hdl_mcu_flash_var_t *)flash->obj_var;
+  hdl_flash_mcu_t *flash = (hdl_flash_mcu_t *)desc;
+  hdl_flash_mcu_var_t *flash_var = (hdl_flash_mcu_var_t *)flash->obj_var;
   if((hdl_state(flash) != HDL_MODULE_UNLOADED) && (flash_var->message == NULL)) {
     message->status = HDL_NVM_STATE_BUSY;
     flash_var->message = message;
@@ -187,7 +189,7 @@ static uint8_t _hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
   return HDL_FALSE;
 }
 
-const hdl_nvm_iface_t mcu_flash_iface = {
+const hdl_nvm_iface_t hdl_flash_mcu_iface = {
   .init = &_hdl_nvm_init,
   .info = &_hdl_nvm_info_get,
   .transfer = &_hdl_nvm_transfer

@@ -4,7 +4,6 @@
 
 #include "hdl_core.h"
 #include "port_core_spec.h"
-#include "port_exti.h"
 
 typedef struct {
   hdl_nvic_irq_n_t irq_type;
@@ -17,7 +16,7 @@ typedef struct {
   uint8_t prio_bits;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
   const void * const vector;
-  uint32_t phy;
+  void *phy;
 } hdl_interrupt_controller_config_t;
 
 #define hdl_interrupts(...) ((hdl_interrupt_t * const []){__VA_ARGS__, NULL})

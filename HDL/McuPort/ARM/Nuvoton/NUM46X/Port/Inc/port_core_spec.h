@@ -1,6 +1,6 @@
 
-#ifndef PORT_CORE_H_
-#define PORT_CORE_H_
+#ifndef PORT_CORE_SPEC_H_
+#define PORT_CORE_SPEC_H_
 
 #define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
 
@@ -162,6 +162,7 @@ typedef struct{
                < 25MHz : 1
   */
   uint32_t flash_latency;
+  uint32_t phy;
 } hdl_core_config_t;
 
 void irq_n_handler();
@@ -306,4 +307,4 @@ void EADC21_IRQHandler();
 void EADC22_IRQHandler();
 void EADC23_IRQHandler();
 
-#endif // PORT_CORE_H_
+#endif // PORT_CORE_SPEC_H_

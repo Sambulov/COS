@@ -243,3 +243,5 @@ __WEAK void _close(void) { }
 __WEAK void _lseek(void) { }
 __WEAK void _isatty(void) { }
 __WEAK void _fstat(void) { }
+__WEAK void _getpid(void) { }
+__WEAK void _kill(void) { }

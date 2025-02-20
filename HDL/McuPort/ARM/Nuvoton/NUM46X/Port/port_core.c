@@ -1,5 +1,4 @@
-#include "hdl_portable.h"
-#include "Macros.h"
+#include "hdl_iface.h"
 
 void BOD_IRQHandler()        { call_isr(HDL_NVIC_IRQ0_BOD_IRQn, 0); }
 void IRC_IRQHandler()        { call_isr(HDL_NVIC_IRQ1_IRC_IRQn, 0); }
@@ -132,7 +131,7 @@ void EADC23_IRQHandler()     { call_isr(HDL_NVIC_IRQ127_EADC23_IRQn, 0); }
 #define CPU_POWER_LEVEL_VALID(pl)   ((pl == SYS_PLCTL_PLSEL_PL0) || (pl == SYS_PLCTL_PLSEL_PL1))
 #define CPU_FLASH_LATENCY_VALID(fl)   ((fl > 0) || (fl <= 8))
 
-hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
+static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   while(enable) {
     hdl_core_t *core = (hdl_core_t *)desc;
     // /*  Unlock Register */
@@ -171,3 +170,7 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   }
   return HDL_MODULE_UNLOADED;
 }
+
+const hdl_module_base_iface_t hdl_core_iface = {
+  .init = _hdl_core
+};

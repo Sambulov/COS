@@ -12,7 +12,7 @@
 #define IRC28M_CLOCK                 28000000UL
 #define IRC40K_CLOCK                 40000UL
 
-#define HDL_CLOCK_PRV_SIZE 8
+#define HDL_CLOCK_VAR_SIZE 8
 
 typedef enum {
   HDL_CLOCK_TYPE_HXTAL,          /* property: freq (can be 4 ~ 32MHz)*/
@@ -42,7 +42,7 @@ typedef struct {
   uint32_t phy;
 } hdl_clock_config_t;
 
-hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_PRV_SIZE, hdl_clock_config_t, hdl_clock_iface_t);
+hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_VAR_SIZE, hdl_clock_config_t, hdl_clock_iface_t);
 
 extern const hdl_clock_iface_t hdl_clock_iface;
 

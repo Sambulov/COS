@@ -360,11 +360,10 @@ static hdl_module_state_t _hdl_clock(const void *desc, uint8_t enable) {
 }
 
 static void _hdl_get_clock(const void *desc, hdl_clock_freq_t *freq) {
-  hdl_clock_mcu_t *clock = (hdl_clock_mcu_t *)desc;
   if(freq != NULL) {
     freq->num = 0;
     freq->denom = 1;
-    hdl_clock_mcu_t *clk = (hdl_clock_mcu_t *)clock;
+    hdl_clock_mcu_t *clk = (hdl_clock_mcu_t *)desc;
     hdl_clock_var_t *clk_var = (hdl_clock_var_t *)clk->obj_var;
     if((clk != NULL) && (hdl_state(clk) != HDL_MODULE_FAULT)) {
       freq->num = clk_var->freq.num;

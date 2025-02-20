@@ -1,13 +1,10 @@
-#include "hdl_portable.h"
-#include "Macros.h"
+#include "hdl_iface.h"
 
 typedef struct {
-  hdl_module_t module;
-  const hdl_clock_config_t *config;
   hdl_clock_freq_t freq;
-} hdl_clock_private_t;
+} hdl_clock_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_private_t, hdl_clock_t, HDL_CLOCK_PRV_SIZE, port_clock.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_var_t, *((hdl_clock_mcu_t *)0)->obj_var, HDL_CLOCK_VAR_SIZE, port_clock.h);
 
 #define PLL_STARTUP_TIMEOUT    ((uint32_t)0xFFFFFFFF)
 #define IRC48M_STARTUP_TIMEOUT    ((uint32_t)0xFFFFFFFF)
@@ -31,13 +28,15 @@ static hdl_module_state_t _hdl_clock_osc_en(uint32_t osc, uint32_t stat, uint32_
 
 #define CHECK_PLL_REF_PSC_VALID(val)   ((val > 0) && (val <= 32))
 
-static hdl_module_state_t _hdl_clock_pll_ref(hdl_clock_private_t *clk, uint8_t enable) {
+static hdl_module_state_t _hdl_clock_pll_ref(hdl_clock_mcu_t *clk, uint8_t enable) {
   while (enable) {
-    if (clk->module.dependencies == NULL || clk->module.dependencies[0] == NULL) break;
-    hdl_clock_private_t *clock_src = (hdl_clock_private_t *)clk->module.dependencies[0];
+    if (clk->dependencies == NULL || clk->dependencies[0] == NULL) break;
+    hdl_clock_mcu_t *clock_src = (hdl_clock_mcu_t *)clk->dependencies[0];
+    hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
+    hdl_clock_var_t *clock_src_var = (hdl_clock_var_t *)clk->obj_var;
     if(!CHECK_PLL_REF_PSC_VALID(clk->config->property.div)) break;
-    hdl_clock_calc_div(&clock_src->freq, clk->config->property.div, &clk->freq);
-    uint32_t val = clk->freq.num / clk->freq.denom;
+    hdl_clock_calc_div(&clock_src_var->freq, clk->config->property.div, &clock_var->freq);
+    uint32_t val = clock_var->freq.num / clock_var->freq.denom;
     if((val < 4000000) || (val > 8000000)) break;
     SYS_UnlockReg();
     HDL_REG_SET(CLK->PLLCTL, CLK_PLLCTL_OE_Msk | CLK_PLLCTL_STBSEL_Msk);
@@ -55,14 +54,16 @@ static hdl_module_state_t _hdl_clock_pll_ref(hdl_clock_private_t *clk, uint8_t e
 
 #define CHECK_PLL_VCO_PSC_VALID(val)   (!(val & 1) && (val >= 4) && (val <= 1028))
 
-static hdl_module_state_t _hdl_clock_pll_vco(hdl_clock_private_t *clk, uint8_t enable) {
+static hdl_module_state_t _hdl_clock_pll_vco(hdl_clock_mcu_t *clk, uint8_t enable) {
   while (enable) {
-    if (clk->module.dependencies == NULL || clk->module.dependencies[0] == NULL) break;
-    hdl_clock_private_t *clock_src = (hdl_clock_private_t *)clk->module.dependencies[0];
+    if (clk->dependencies == NULL || clk->dependencies[0] == NULL) break;
+    hdl_clock_mcu_t *clock_src = (hdl_clock_mcu_t *)clk->dependencies[0];
+    hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
+    hdl_clock_var_t *clock_src_var = (hdl_clock_var_t *)clk->obj_var;
     if(clock_src->config->type != HDL_CLOCK_TYPE_PLL_REF) break;
     if(!CHECK_PLL_VCO_PSC_VALID(clk->config->property.mul)) break;
-    hdl_clock_calc_mul(&clock_src->freq, clk->config->property.mul, &clk->freq);
-    uint32_t val = clk->freq.num / clk->freq.denom;
+    hdl_clock_calc_mul(&clock_src_var->freq, clk->config->property.mul, &clock_var->freq);
+    uint32_t val = clock_var->freq.num / clock_var->freq.denom;
     if((val < 200000000) || (val > 500000000)) break;
     SYS_UnlockReg();
     val = (((clk->config->property.mul >> 1) - 2) & 0x1ff) << CLK_PLLCTL_FBDIV_Pos;
@@ -75,14 +76,16 @@ static hdl_module_state_t _hdl_clock_pll_vco(hdl_clock_private_t *clk, uint8_t e
 
 #define CHECK_PLL_PSC_VALID(val)   ((val == 1) || (val == 2) || (val == 4))
 
-static hdl_module_state_t _hdl_clock_pll(hdl_clock_private_t *clk, uint8_t enable, uint32_t timeout) {
+static hdl_module_state_t _hdl_clock_pll(hdl_clock_mcu_t *clk, uint8_t enable, uint32_t timeout) {
   while (enable) {
-    if (clk->module.dependencies == NULL || clk->module.dependencies[0] == NULL) break;
-    hdl_clock_private_t *clock_src = (hdl_clock_private_t *)clk->module.dependencies[0];
+    if (clk->dependencies == NULL || clk->dependencies[0] == NULL) break;
+    hdl_clock_mcu_t *clock_src = (hdl_clock_mcu_t *)clk->dependencies[0];
+    hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
+    hdl_clock_var_t *clock_src_var = (hdl_clock_var_t *)clk->obj_var;
     if(clock_src->config->type != HDL_CLOCK_TYPE_PLL_VCO) break;
     if(!CHECK_PLL_PSC_VALID(clk->config->property.div)) break;
-    hdl_clock_calc_div(&clock_src->freq, clk->config->property.div, &clk->freq);
-    uint32_t val = clk->freq.num / clk->freq.denom;
+    hdl_clock_calc_div(&clock_src_var->freq, clk->config->property.div, &clock_var->freq);
+    uint32_t val = clock_var->freq.num / clock_var->freq.denom;
     if((val < 50000000) || (val > 500000000)) break;
     SYS_UnlockReg();
     val = ((clk->config->property.div - 1) & 0x3) << CLK_PLLCTL_OUTDIV_Pos;
@@ -100,13 +103,15 @@ static hdl_module_state_t _hdl_clock_pll(hdl_clock_private_t *clk, uint8_t enabl
 
 #define CHECK_SYS_PSC_VALID(val)   ((val == 1) || (val == 2) || (val == 4))
 
-static hdl_module_state_t _hdl_clock_sys(hdl_clock_private_t *clk, uint8_t enable) {
+static hdl_module_state_t _hdl_clock_sys(hdl_clock_mcu_t *clk, uint8_t enable) {
   while (enable) {
-    if (clk->module.dependencies == NULL || clk->module.dependencies[0] == NULL) break;
-    hdl_clock_private_t *clock_src = (hdl_clock_private_t *)clk->module.dependencies[0];
+    if (clk->dependencies == NULL || clk->dependencies[0] == NULL) break;
+    hdl_clock_mcu_t *clock_src = (hdl_clock_mcu_t *)clk->dependencies[0];
+    hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
+    hdl_clock_var_t *clock_src_var = (hdl_clock_var_t *)clk->obj_var;
     if(!CHECK_SYS_PSC_VALID(clk->config->property.div)) break;
-    hdl_clock_calc_div(&clock_src->freq, clk->config->property.div, &clk->freq);
-    uint32_t val = clk->freq.num / clk->freq.denom;
+    hdl_clock_calc_div(&clock_src_var->freq, clk->config->property.div, &clock_var->freq);
+    uint32_t val = clock_var->freq.num / clock_var->freq.denom;
     if(val > 200000000) break;
     SYS_UnlockReg();
     val = ((clk->config->property.div - 1) & 0xf) << CLK_CLKDIV0_HCLKDIV_Pos;
@@ -129,14 +134,16 @@ static hdl_module_state_t _hdl_clock_sys(hdl_clock_private_t *clk, uint8_t enabl
 
 #define CHECK_APB_PSC_VALID(val)   ((val == 1) || (val == 2) || (val == 4) || (val == 8) || (val == 16))
 
-static hdl_module_state_t _hdl_clock_apb(hdl_clock_private_t *clk, uint8_t enable, uint8_t bus_no) {
+static hdl_module_state_t _hdl_clock_apb(hdl_clock_mcu_t *clk, uint8_t enable, uint8_t bus_no) {
   while (enable) {
-    if (clk->module.dependencies == NULL || clk->module.dependencies[0] == NULL) break;
-    hdl_clock_private_t *clock_src = (hdl_clock_private_t *)clk->module.dependencies[0];
+    if (clk->dependencies == NULL || clk->dependencies[0] == NULL) break;
+    hdl_clock_mcu_t *clock_src = (hdl_clock_mcu_t *)clk->dependencies[0];
+    hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
+    hdl_clock_var_t *clock_src_var = (hdl_clock_var_t *)clk->obj_var;
     if(clock_src->config->type != HDL_CLOCK_TYPE_SYS) break;
     if(!CHECK_APB_PSC_VALID(clk->config->property.div)) break;
-    hdl_clock_calc_div(&clock_src->freq, clk->config->property.div, &clk->freq);
-    // uint32_t val = clk->freq.num / clk->freq.denom;
+    hdl_clock_calc_div(&clock_src_var->freq, clk->config->property.div, &clock_var->freq);
+    // uint32_t val = clock_var->freq.num / clock_var->freq.denom;
     // if((val < 4000000) || (val > 8000000)) break; ????
     SYS_UnlockReg();
     uint32_t val = (31 - __CLZ(clk->config->property.div));
@@ -151,33 +158,34 @@ static hdl_module_state_t _hdl_clock_apb(hdl_clock_private_t *clk, uint8_t enabl
   return HDL_MODULE_UNLOADED;
 }
 
-hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
-  hdl_clock_private_t *clk = (hdl_clock_private_t *)desc;
-  clk->freq.denom = 1;
+static hdl_module_state_t _hdl_clock(const void *desc, uint8_t enable) {
+  hdl_clock_mcu_t *clk = (hdl_clock_mcu_t *)desc;
+  hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
+  clock_var->freq.denom = 1;
   switch (clk->config->type) {
     case HDL_CLOCK_TYPE_HXTAL:
       
-      clk->freq.num = clk->config->property.freq;
+      clock_var->freq.num = clk->config->property.freq;
       if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_HXTEN_Msk, CLK_STATUS_HXTSTB_Msk, HXTAL_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
     
     case HDL_CLOCK_TYPE_LXTAL:
-      clk->freq.num = clk->config->property.freq;
+      clock_var->freq.num = clk->config->property.freq;
       if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_LXTEN_Msk, CLK_STATUS_LXTSTB_Msk, LXTAL_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_IRC12M:
-      clk->freq.num = 12000000;
+      clock_var->freq.num = 12000000;
       if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_HIRCEN_Msk, CLK_STATUS_HIRCSTB_Msk, IRC12M_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
     
     case HDL_CLOCK_TYPE_IRC48M:
-      clk->freq.num = 48000000;
+      clock_var->freq.num = 48000000;
       if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_HIRC48MEN_Msk, CLK_STATUS_HIRC48MSTB_Msk, IRC48M_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_IRC10K:
-      clk->freq.num = 10000;
+      clock_var->freq.num = 10000;
       if (enable) return _hdl_clock_osc_en(CLK_PWRCTL_LIRCEN_Msk, CLK_STATUS_LIRCSTB_Msk, IRC10K_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
 
@@ -206,14 +214,20 @@ hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
   return HDL_MODULE_FAULT;
 }
 
-void hdl_get_clock(hdl_clock_t *clock, hdl_clock_freq_t *freq) {
+ static void _hdl_get_clock(const void *desc, hdl_clock_freq_t *freq) {
   if(freq != NULL) {
     freq->num = 0;
     freq->denom = 1;
-    hdl_clock_private_t *clk = (hdl_clock_private_t *)clock;
-    if((clk != NULL) && (hdl_state(&clk->module) != HDL_MODULE_FAULT)) {
-      freq->num = clk->freq.num;
-      freq->denom = clk->freq.denom;
+    hdl_clock_mcu_t *clk = (hdl_clock_mcu_t *)desc;
+    hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
+    if((clk != NULL) && (hdl_state(clk) != HDL_MODULE_FAULT)) {
+      freq->num = clock_var->freq.num;
+      freq->denom = clock_var->freq.denom;
     }
   }
 }
+
+const hdl_clock_iface_t hdl_clock_iface = {
+  .init = &_hdl_clock,
+  .get = &_hdl_get_clock
+};

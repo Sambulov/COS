@@ -161,6 +161,45 @@ static hdl_module_state_t hdl_clock_selector_rtc(hdl_clock_mcu_t *clk, uint8_t e
   }
 }
 
+static hdl_module_state_t _hdl_clock_adc(hdl_clock_mcu_t *clk, uint8_t enable) {
+  if (enable) {
+    if (clk->dependencies == NULL || clk->dependencies[0] == NULL)
+      return HDL_MODULE_FAULT;
+    hdl_clock_mcu_t *clock_src = (hdl_clock_mcu_t *)clk->dependencies[0];
+    hdl_clock_var_t *clock_src_var = (hdl_clock_var_t *)clock_src->obj_var;
+    hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
+    uint32_t rcu_cnf0 = RCU_CFG0;
+    uint32_t rcu_cnf2 = RCU_CFG2;
+
+    if(clock_src->config->type == HDL_CLOCK_TYPE_IRC28M) {
+      if((clk->config->property.div != 1) && (clk->config->property.div != 2)) return HDL_MODULE_FAULT;
+      rcu_cnf2 &= ~RCU_CFG2_ADCSEL;
+      if(clk->config->property.div == 2) rcu_cnf2 &= ~RCU_CFG2_IRC28MDIV;
+      else rcu_cnf2 |= RCU_CFG2_IRC28MDIV;
+    }
+    else if(clock_src->config->type == HDL_CLOCK_TYPE_AHB) {
+      if((clk->config->property.div != 3) && (clk->config->property.mul != 5) && 
+         (clk->config->property.div != 7) && (clk->config->property.mul != 9)) return HDL_MODULE_FAULT;
+      HDL_REG_MODIFY(rcu_cnf0, RCU_CFG0_ADCPSC,((clk->config->property.div == 3)? 0: ((clk->config->property.div * 2) / 6)) << 14);
+      rcu_cnf2 |= RCU_CFG2_ADCPSC2 | RCU_CFG2_ADCSEL;
+    }
+    else if(clock_src->config->type == HDL_CLOCK_TYPE_APB2) {
+      if((clk->config->property.div != 2) && (clk->config->property.mul != 4) && 
+         (clk->config->property.div != 6) && (clk->config->property.mul != 8)) return HDL_MODULE_FAULT;
+      HDL_REG_MODIFY(rcu_cnf0, RCU_CFG0_ADCPSC,((clk->config->property.div == 2)? 0: ((clk->config->property.div + 1) / 3)) << 14);
+      rcu_cnf2 |= RCU_CFG2_ADCSEL;
+      rcu_cnf2 &= ~RCU_CFG2_ADCPSC2;
+    }
+    else return HDL_MODULE_FAULT;
+    hdl_clock_calc_div(&clock_src_var->freq, clk->config->property.div, &clock_var->freq);
+    if((clock_var->freq.num / clock_var->freq.denom)> 28000000) return HDL_MODULE_FAULT;
+    RCU_CFG0 = rcu_cnf0;
+    RCU_CFG2 = rcu_cnf2;
+    return HDL_MODULE_ACTIVE;
+  }
+  return HDL_MODULE_UNLOADED;
+}
+
 static hdl_module_state_t _hdl_clock(const void *desc, const uint8_t enable) {
   hdl_clock_mcu_t *clk = (hdl_clock_mcu_t *)desc;
   hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
@@ -219,6 +258,9 @@ static hdl_module_state_t _hdl_clock(const void *desc, const uint8_t enable) {
       clock_var->freq.num = 40000;
       if (enable) return _hdl_clock_osc_en(RCU_IRC40K, RCU_FLAG_IRC40KSTB, IRC40K_STARTUP_TIMEOUT);
       return HDL_MODULE_UNLOADED;
+
+    case HDL_CLOCK_TYPE_ADC:
+      return _hdl_clock_adc(clk, enable);
 
     default:
       break;

@@ -92,6 +92,7 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
         hdl_event_subscribe(&timer->config->reload_interrupt->event, &adc_var->start_conversion);
         //adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
         adc_var->state_machine = GD_ADC_STATE_MACHINE_WORKING;
+        ADC_CTL0 |= ADC_CTL0_EOCIE;
         return HDL_MODULE_ACTIVE;
       case GD_ADC_STATE_MACHINE_WORKING:
         return HDL_MODULE_ACTIVE;

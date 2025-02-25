@@ -30,6 +30,7 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     case EE_STATE_SET_MEM_ADDR_MSG: {
       eeprom_var->i2c_msg.address = eeprom->config->chip_address;
       eeprom_var->mem_addr = eeprom_var->nvm_msg->address + eeprom_var->nvm_msg->transferred;
+      eeprom_var->mem_addr = (eeprom_var->mem_addr << 8) | (eeprom_var->mem_addr >> 8);
       eeprom_var->i2c_msg.buffer = (uint8_t *)&(eeprom_var->mem_addr);
       eeprom_var->i2c_msg.length = 2;
       eeprom_var->i2c_msg.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR;

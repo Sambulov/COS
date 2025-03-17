@@ -142,11 +142,6 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
 //   asm("BX LR");
 // }
 
-const void * const main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
-  &_estack,
-  &reset_handler,
-};
-
 __attribute__((naked, noreturn)) void reset_handler() {
 	asm ("ldr r0, =_estack");
 	asm ("mov r13, r0");
@@ -159,6 +154,11 @@ __attribute__((naked, noreturn)) void reset_handler() {
   main();
   for (;;) ;
 }
+
+const void * const main_isr_vector[] __attribute__ ((section (".isr_vector"), used)) = {
+  &_estack,
+  &reset_handler,
+};
 
 void svc_handler() {
   #if !defined(__CORE_CM0PLUS_H_DEPENDANT)
@@ -236,12 +236,3 @@ const hdl_interrupt_controller_iface_t hdl_interrupt_controller_iface = {
   .request = &_hdl_interrupt_request,
   .trigger = &_hdl_interrupt_sw_trigger
 };
-
-__WEAK void _read(void) { }
-__WEAK void _write(void) { }
-__WEAK void _close(void) { }
-__WEAK void _lseek(void) { }
-__WEAK void _isatty(void) { }
-__WEAK void _fstat(void) { }
-__WEAK void _getpid(void) { }
-__WEAK void _kill(void) { }

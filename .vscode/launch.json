@@ -49,6 +49,50 @@
                 "continue"
             ]
         },
+        {
+            "name": "Debug OpenOCD",
+            "type": "cortex-debug",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "executable": "./build/firmware.elf",
+            //"showDevDebugOutput": "parsed",
+            "windows": {
+                // "searchDir": [ 
+                //     "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res"
+                // ],
+                "serverpath": "openocd.exe",
+                "serverArgs": [],
+                "armToolchainPath": "",
+                "toolchainPrefix": ""
+            },
+            "linux": {
+                "serverpath": "/usr/bin/openocd",
+                "gdbPath": "/usr/bin/gdb-multiarch"
+            },
+            "serialNumber": "", // add programmer serial number if having multiple attached the same time.
+            "servertype": "openocd",
+            //"gdbTarget": "127.0.0.1:50000", // For externally controlled GDB
+            "interface": "swd",
+            "debuggerArgs": [],
+            "rtos": "auto",
+            "runToEntryPoint": "main",
+			"device": "${config:MCU}",
+            "svdFile": "./build/mcu.svd",
+            "configFiles": [
+                "./build/oocd_tool.cfg",
+                "./build/oocd_mcu.cfg"
+            ],
+            "preRestartCommands": [
+                "set remotetimeout 200",
+                "file ./build/firmware.elf",
+                "load",
+                "enable breakpoint",
+                "set breakpoint pending on",
+                "monitor reset init",
+                "tbreak main",
+                "continue"
+            ]
+        },
 		{
 			"name": "Debug JLink",
 			"type": "cortex-debug",
@@ -63,7 +107,7 @@
 				"gdbPath": "/usr/bin/gdb-multiarch"
 			},
 			"runToEntryPoint": "main",
-			"showDevDebugOutput": "raw",
+			"showDevDebugOutput": true,
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "${config:MCU}",

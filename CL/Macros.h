@@ -14,6 +14,8 @@
 #define MIN(A, B)                               ((A < B)? (A): (B))
 #define MAX(A, B)                               ((A > B)? (A): (B))
 
+#define ABS(A)                                  (((A) >= 0)? (A) : -(A))
+
 #define TIME_ELAPSED(timestamp, delay, now) ((uint32_t)(now - timestamp) >= (uint32_t)(delay))
 
 #endif //CODE_LIB_MACROS_H_INCLUDED

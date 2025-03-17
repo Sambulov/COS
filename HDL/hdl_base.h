@@ -21,7 +21,7 @@ extern "C" {
 #define HDL_FALSE         0
 #define HDL_TRUE          !HDL_FALSE
 
-#define PRIVATE(prefix, size)                          uint32_t __##prefix##_private[(size + sizeof(void *) - 1) >> 2]
+#define PRIVATE(prefix, size)                          struct{uint32_t dummy[(size + sizeof(void *) - 1) >> 2];} __##prefix##_private
 
 #define sizeof_member(type, member)        (sizeof(  ((type *)0)->member ))
 #define sizeof_member_by_ptr(type, member) (sizeof( *((type *)0)->member ))

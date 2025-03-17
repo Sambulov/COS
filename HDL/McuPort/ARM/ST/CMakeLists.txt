@@ -16,5 +16,6 @@ set_property(GLOBAL APPEND PROPERTY HDL_HEADERS
 
 #Add all mcu dirs
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/STM32L0XX")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/STM32F407")
 
 #=================

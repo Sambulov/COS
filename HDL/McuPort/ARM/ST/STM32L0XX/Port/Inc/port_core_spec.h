@@ -50,14 +50,6 @@ typedef struct{
   uint32_t flash_latency;
 } hdl_core_config_t;
 
-void reset_handler();
-void irq_n_handler();
-void nmi_handler();
-void hard_fault_handler();
-void svc_handler();
-void pend_sv_handler();
-void systick_handler();
-
 void WWDG_IRQHandler();
 void PVD_IRQHandler();
 void RTC_IRQHandler();

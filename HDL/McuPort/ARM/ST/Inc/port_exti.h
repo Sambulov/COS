@@ -21,8 +21,9 @@ typedef enum {
 } hdl_exti_source_t;
 
 typedef enum {
-  HDL_EXTI_MODE_INTERRUPT = EXTI_MODE_INTERRUPT,
-  HDL_EXTI_MODE_EVENT = EXTI_MODE_EVENT
+  HDL_EXTI_MODE_NONE      = 0x00000000u,
+  HDL_EXTI_MODE_INTERRUPT = 0x00000001u,
+  HDL_EXTI_MODE_EVENT     = 0x00000002u
 } hdl_exti_mode_t;
 
 typedef struct {

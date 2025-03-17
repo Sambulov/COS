@@ -34,4 +34,17 @@ hdl_module_new_t(hdl_interrupt_controller_t, 0, hdl_interrupt_controller_config_
 extern const hdl_module_base_iface_t hdl_core_iface;
 extern const hdl_interrupt_controller_iface_t hdl_interrupt_controller_iface;
 
+void irq_n_handler();
+void reset_handler();
+
+void nmi_handler();
+void hard_fault_handler();
+void pend_sv_handler();
+void systick_handler();
+void mem_manage_handler();
+void bus_fault_handler();
+void usage_fault_handler();
+void debug_mon_handler();
+void svc_handler();
+
 #endif /* PORT_CORE_H_ */ 

@@ -6,10 +6,11 @@
 
 
 #define HDL_REG_MODIFY(reg, mask, bits)         (reg = (((reg) & ~(mask)) | ((bits) & (mask))))
-#define HDL_REG_CLEAR(reg, bits)                (reg = ((reg) & ~(bits)))
-#define HDL_REG_SET(reg, bits)                  (reg = ((reg) | (bits)))
-#define HDL_REG_CHECK(reg, bits)                (bits == ((reg) & (bits)))
+#define HDL_REG_CLEAR(reg, mask)                (reg = ((reg) & ~(mask)))
+#define HDL_REG_SET(reg, mask)                  (reg |= (mask))
+#define HDL_REG_GET(reg, mask)                  ((reg) & (mask))
 #define HDL_REG_DIF(reg, mask, val)             (((reg) ^ (val)) & (mask))
+#define HDL_REG_CHECK(reg, mask, bits)          (HDL_REG_DIF(reg, mask, bits) == 0)
 
 #define MIN(A, B)                               ((A < B)? (A): (B))
 #define MAX(A, B)                               ((A > B)? (A): (B))

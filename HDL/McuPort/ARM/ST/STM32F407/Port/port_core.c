@@ -85,13 +85,14 @@ void FPU_IRQHandler()                { call_isr(HDL_NVIC_IRQ81_FPU, 0); }
 static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   (void)desc;
   if(enable) {
-    //hdl_core_t *core = (hdl_core_t *)desc;
-    //FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
-    //rcu_periph_clock_enable(RCU_CFGCMP);
+    hdl_core_t *core = (hdl_core_t *)desc;
+    FLASH->ACR |= FLASH_ACR_ICEN;
+    FLASH->ACR |= FLASH_ACR_DCEN;
+    FLASH->ACR |= FLASH_ACR_PRFTEN;
+    HDL_REG_MODIFY(FLASH->ACR, FLASH_ACR_LATENCY, core->config->flash_latency);
     return HDL_MODULE_ACTIVE;
   }
-  //rcu_periph_clock_disable(RCU_CFGCMP);
-  //FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
+  HDL_REG_MODIFY(FLASH->ACR, FLASH_ACR_LATENCY, FLASH_ACR_LATENCY_0WS);
   return HDL_MODULE_UNLOADED;
 }
 

@@ -5,5 +5,8 @@
 
 #include "port_core.h"
 #include "port_exti.h"
+#include "port_clock.h"
+#include "port_tick_counter.h"
+#include "port_gpio.h"
 
 #endif // HDL_PORTABLE_H_

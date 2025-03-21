@@ -59,20 +59,22 @@ static hdl_module_state_t _hdl_clock_system(hdl_clock_mcu_t *clk, uint8_t enable
   return HDL_MODULE_UNLOADED;
 }
 
-static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_mcu_t *clk, uint8_t is_ahb, uint32_t mask, uint32_t offset) {
+static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_mcu_t *clk, uint32_t mask, uint32_t offset) {
   hdl_clock_var_t *clk_var = (hdl_clock_var_t *)clk->obj_var;
   hdl_clock_mcu_t *src = (hdl_clock_mcu_t *)clk->dependencies[0];
   hdl_clock_var_t *src_var = (hdl_clock_var_t *)src->obj_var;
   uint32_t factor = clk->config->property.div;
+  uint8_t is_ahb = clk->config->type == HDL_CLOCK_TYPE_AHB;
   uint32_t reg = 0;
-  while (factor & 1) { 
+  while (factor) {
     factor >>= 1;
     reg++;
   }
-  if(is_ahb) { if((reg == 0) || (reg == 5) || (reg > 9)) return HDL_MODULE_FAULT; }
-  else if((reg == 0) || (reg > 4)) return HDL_MODULE_FAULT;
   reg--;
+  if(is_ahb) { if((reg == 5) || (reg > 9)) return HDL_MODULE_FAULT; }
+  else if((reg > 5)) return HDL_MODULE_FAULT;
   if(reg > 0) {
+    reg--;
     if(is_ahb) {
       if(reg > 7) reg--;
       reg |= 0x08;
@@ -198,15 +200,15 @@ static hdl_module_state_t _hdl_clock(const void *desc, uint8_t enable) {
       return _hdl_clock_system(clk, enable);
 
     case HDL_CLOCK_TYPE_AHB:
-      if (enable) return _hdl_bus_clock_cnf(clk, 1, RCC_CFGR_HPRE, 8);
+      if (enable) return _hdl_bus_clock_cnf(clk, RCC_CFGR_HPRE, 8);
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_APB1:
-      if (enable) return _hdl_bus_clock_cnf(clk, 1, RCC_CFGR_PPRE1, RCC_CFGR_PPRE1_Pos);
+      if (enable) return _hdl_bus_clock_cnf(clk, RCC_CFGR_PPRE1, RCC_CFGR_PPRE1_Pos);
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_APB2:
-      if (enable) return _hdl_bus_clock_cnf(clk, 1, RCC_CFGR_PPRE2, RCC_CFGR_PPRE2_Pos);
+      if (enable) return _hdl_bus_clock_cnf(clk, RCC_CFGR_PPRE2, RCC_CFGR_PPRE2_Pos);
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_PLL_I2S_N:

@@ -2,7 +2,7 @@
 #ifndef PORT_CORE_SPEC_H_
 #define PORT_CORE_SPEC_H_
 
-#define HDL_VTOR_TAB_ALIGN         256  //(2 << SCB_VTOR_TBLOFF_Pos)
+#define HDL_VTOR_TAB_ALIGN         1024  //(2 << SCB_VTOR_TBLOFF_Pos)
 
 
 typedef enum {
@@ -148,8 +148,14 @@ typedef enum {
 } hdl_nvic_irq_n_t;
 
 typedef struct {
-  uint32_t flash_latency;
   uint32_t phy;
+  /* FLASH_ACR_LATENCY_0WS, FLASH_ACR_LATENCY_1WS ... */
+  uint32_t flash_latency; 
+  /* By default the I/O compensation cell is not used. However when the I/O output buffer speed
+  is configured in 50 MHz or 100 MHz mode, it is recommended to use the compensation cell
+  for slew rate control on I/O tf(IO)out)/tr(IO)out commutation to reduce the I/O noise on power
+  supply */
+  uint8_t compensation_cell :1; 
 } hdl_core_config_t;
 
 void NMI_Handler();

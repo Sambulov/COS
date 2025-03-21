@@ -38,7 +38,7 @@ __STATIC_INLINE uint8_t hdl_exception_irq_enable(hdl_nvic_irq_n_t irq) {
   return HDL_TRUE;
 }
 
-static uint8_t _hdl_interrupt_controller_spec(const hdl_interrupt_controller_t *desc, uint8_t enable) {
+static uint8_t _hdl_interrupt_controller_spec(const hdl_nvic_t *desc, uint8_t enable) {
   (void)desc; (void)enable;
   return HDL_TRUE;
 }
@@ -98,7 +98,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_LR(void)  {
 } 
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
-  hdl_interrupt_controller_config_t *ic = (hdl_interrupt_controller_config_t *)((uint32_t *)SCB->VTOR)[0];
+  hdl_nvic_config_t *ic = (hdl_nvic_config_t *)((uint32_t *)SCB->VTOR)[0];
   hdl_interrupt_t * const *isrs = ic->interrupts;
   // if(irq == -14) {
   //   NVIC_DisableIRQ(irq);
@@ -202,8 +202,15 @@ void irq_n_handler() {
   #endif
 }
 
+uint8_t hdl_core_is_in_isr() {
+	uint32_t interrupt;
+	/* Obtain the number of the currently executing interrupt. */
+	asm ("mrs %0, ipsr" : "=r"(interrupt));
+	return (interrupt != 0)? HDL_TRUE: HDL_FALSE;
+}
+
 static hdl_module_state_t _hdl_interrupt_controller(const void *desc, uint8_t enable) {
-  hdl_interrupt_controller_t *nvic = (hdl_interrupt_controller_t *)desc;
+  hdl_nvic_t *nvic = (hdl_nvic_t *)desc;
   if(enable) {
     _hdl_interrupt_controller_spec(nvic, enable);
     if(nvic->config->vector != NULL) SCB->VTOR = (uint32_t)nvic->config->vector;
@@ -216,7 +223,7 @@ static hdl_module_state_t _hdl_interrupt_controller(const void *desc, uint8_t en
 }
 
 static uint8_t _hdl_interrupt_request(const void *desc, const hdl_interrupt_t *isr) {
-  hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)desc;
+  hdl_nvic_t *ic = (hdl_nvic_t *)desc;
   if((hdl_state(desc) == HDL_MODULE_FAULT) || (ic->config->interrupts == NULL) || (isr == NULL)) return HDL_FALSE;
   hdl_interrupt_config_t *isr_cnf = (hdl_interrupt_config_t *)isr->irq_cnf;
   _hdl_isr_prio_set(isr_cnf->irq_type, isr_cnf->priority_group, isr_cnf->priority, ic->config->prio_bits);
@@ -231,7 +238,7 @@ static void _hdl_interrupt_sw_trigger(const void *int_ctr, const hdl_interrupt_t
   NVIC_SetPendingIRQ((IRQn_Type)isr_cnf->irq_type);
 }
 
-const hdl_interrupt_controller_iface_t hdl_interrupt_controller_iface = {
+const hdl_interrupt_controller_iface_t hdl_nvic_iface = {
   .init = &_hdl_interrupt_controller,
   .request = &_hdl_interrupt_request,
   .trigger = &_hdl_interrupt_sw_trigger

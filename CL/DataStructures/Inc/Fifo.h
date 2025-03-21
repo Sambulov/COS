@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#define FIFIO_DESCRIPTOR_SIZE    16
+#define FIFIO_DESCRIPTOR_SIZE    12
 
 typedef enum {
 	UNSIGNED_INT  = 0,
@@ -39,6 +39,13 @@ typedef void *(*BufferInit_t)(uint8_t *pucBuffer, uint16_t uBufferSize);
 	@return Depends on function
 */
 typedef int32_t (*BufferBase_t)(void *pxDescriptor);
+
+/*!
+	@brief Used for basic buffer operations
+	@param[in] pxDescriptor			Buffer descriptor
+	@return Depends on function
+*/
+typedef uint8_t (*BufferBaseBool_t)(void *pxDescriptor);
 
 /*!
 	@brief Moves data to user buffer
@@ -74,9 +81,9 @@ typedef struct {
 } FifoIface_t;
 
 typedef struct {
-	BufferBase_t pfBufferBackup; /* backup buffer state; return: !0 if ok*/
-	BufferBase_t pfBufferCommit; /* apply all changes after backup; return: !0 if ok */
-	BufferBase_t pfBufferRestore; /* cancel all changes after backup; return: !0 if ok */
+	BufferBaseBool_t pfBufferBackup; /* backup buffer state; return: !0 if ok*/
+	BufferBaseBool_t pfBufferCommit; /* apply all changes after backup; return: !0 if ok */
+	BufferBaseBool_t pfBufferRestore; /* cancel all changes after backup; return: !0 if ok */
 } FifoIfaceEx_t;
 
 typedef struct {
@@ -227,10 +234,9 @@ int32_t lFifoPrintInteger(Fifo_t *pxFifo, uint64_t ullValue, FifoPrintIntegerFla
 	@param[in] pxFifo           FIFO descriptor
 	@param[in] pcFormat         "{[{char}]{[%[flags][width][.precision][length]specifier]}[{char}]}"
 	@param[in] xArgs            Parameters
-	@param[out] pulFormatOffset Offset in format string to next symbol to process if stream has not place all data
 	@return Writed bytes count, <0 if error
 */
-int32_t lFifoVPrintf(Fifo_t *xFifo, const uint8_t* pcFormat, va_list xArgs, uint32_t *pulFormatOffset);
+int32_t lFifoVPrintf(Fifo_t *xFifo, const uint8_t* pcFormat, va_list xArgs);
 
 /*!
 	@brief Write formated string to stream buffer
@@ -241,7 +247,7 @@ int32_t lFifoVPrintf(Fifo_t *xFifo, const uint8_t* pcFormat, va_list xArgs, uint
 static inline int32_t lFifoPrintf(Fifo_t *pxFifo, const uint8_t* pcFormat, ...) {
 	va_list args;
 	va_start(args, pcFormat);
-	int32_t streamed = lFifoVPrintf(pxFifo, pcFormat, args, libNULL);
+	int32_t streamed = lFifoVPrintf(pxFifo, pcFormat, args);
 	va_end(args);
 	return streamed;
 }
@@ -259,14 +265,6 @@ void vFifoFlush(Fifo_t *xpFifo);
 	@return True if ok
 */
 uint8_t bFifoReadByte(Fifo_t *xpFifo, uint8_t* pucOutData);
-
-/*!
-	@brief Enable redirection data from one FIFO to another
-	@param[in] pxFrom			FIFO descriptor from which data will be redirected
-	@param[in] pxTo 			FIFO descriptor to which data will be redirected. Set NULL to cancel.
-	@return True if ok
-*/
-uint8_t bFifoRedirect(Fifo_t *pxFrom, Fifo_t *pxTo);
 
 /*!
 	@brief Begin transaction, followed operations will could be canceled
@@ -293,6 +291,15 @@ uint8_t bFifoTransactionRollback(Fifo_t *xpFifo);
   Snake notation
 */
 
+typedef BufferInit_t buffer_init_t;
+typedef BufferBase_t buffer_base_t;
+typedef BufferBaseBool_t buffer_base_bool_t;
+typedef BufferRead_t buffer_read_t;
+typedef BufferWrite_t buffer_write_t;
+
+typedef FifoPrintIntegerFlags_t fifo_print_integer_flags_t;
+typedef FifoIface_t fifo_iface_t;
+typedef FifoIfaceEx_t fifo_iface_ex_t;
 typedef Fifo_t fifo_t;
 
 /*!
@@ -303,7 +310,7 @@ typedef Fifo_t fifo_t;
 	@param[in] double_bufferization Use double bufferization for usage fifo with in interrupts
 	@return !0 if init ok
 */
-uint8_t fifo_init(Fifo_t *fifo, uint8_t *buffer, uint16_t size, uint8_t double_bufferization);
+uint8_t fifo_init(fifo_t *fifo, uint8_t *buffer, uint16_t size, uint8_t double_bufferization);
 
 /*!
 	@brief Validate fifo descriptor
@@ -412,17 +419,16 @@ int32_t fifo_print_float(Fifo_t *fifo, float value);
 	@param[in] flags         Converter options
 	@return Writed bytes count, <0 if error
 */
-int32_t fifo_print_integer(Fifo_t *fifo, uint64_t value, FifoPrintIntegerFlags_t flags);
+int32_t fifo_print_integer(fifo_t *fifo, uint64_t value, fifo_print_integer_flags_t flags);
 
 /*!
 	@brief Write formated string
 	@param[in] fifo           FIFO descriptor
 	@param[in] format         "{[{char}]{[%[flags][width][.precision][length]specifier]}[{char}]}"
 	@param[in] args           Parameters
-	@param[out] format_offset Offset in format string to next symbol to process if fifo has not put all data
 	@return Writed bytes count, <0 if error
 */
-int32_t fifo_vprintf(Fifo_t *fifo, const uint8_t* format, va_list args, uint32_t *format_offset);
+int32_t fifo_vprintf(fifo_t *fifo, const uint8_t* format, va_list args);
 
 /*!
 	@brief Write formated string to stream buffer
@@ -430,7 +436,7 @@ int32_t fifo_vprintf(Fifo_t *fifo, const uint8_t* format, va_list args, uint32_t
 	@param[in] format  "{[{char}]{[%[flags][width][.precision][length]specifier]}[{char}]}"
 	\return Writed bytes count, <0 if error
 */
-static inline int32_t fifo_printf(Fifo_t *fifo, const uint8_t* format, ...)  __attribute__ ((alias ("lFifoPrintf")));
+static inline int32_t fifo_printf(fifo_t *fifo, const uint8_t* format, ...)  __attribute__ ((alias ("lFifoPrintf")));
 
 /*!
 	@brief Read data from fifo buffer without shift
@@ -462,14 +468,6 @@ void fifo_flush(fifo_t *fifo);
 	@return True if ok
 */
 uint8_t fifo_read_byte(fifo_t *fifo, uint8_t* out_data);
-
-/*!
-	@brief Enable redirection data from one FIFO to another
-	@param[in] from			FIFO descriptor from which data will be redirected
-	@param[in] to 			FIFO descriptor to which data will be redirected. Set NULL to cancel.
-	@return True if ok
-*/
-uint8_t fifo_redirect(fifo_t *from, fifo_t *to);
 
 /*!
 	@brief Begin transaction, followed operations will could be canceled

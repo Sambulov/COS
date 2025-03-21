@@ -189,7 +189,7 @@ static int32_t _lFifoPrintfParsePrecision(const uint8_t* pcFormat, uint32_t *pul
 	@param[in/out]pulCursor		Current offset in format string
 	@param[in/out]pulOptions	Format options
 */
-static void _vlFifoPrintfParseLength(const uint8_t* pcFormat, uint32_t *pulCursor, uint32_t *pulOptions) {
+static void _vFifoPrintfParseLength(const uint8_t* pcFormat, uint32_t *pulCursor, uint32_t *pulOptions) {
 	/* Length */
 	uint8_t symbol = pcFormat[*pulCursor];
 	/* The length sub-specifier modifies the length of the data type. */
@@ -223,7 +223,7 @@ static void _vlFifoPrintfParseLength(const uint8_t* pcFormat, uint32_t *pulCurso
 	@param[in/out]pulCursor		Current offset in format string
 	@param[in/out]pulOptions	Format options
 */
-static void _vlFifoPrintfParseSpecifier(const uint8_t* pcFormat, uint32_t *pulCursor, uint32_t *pulOptions) {
+static void _vFifoPrintfParseSpecifier(const uint8_t* pcFormat, uint32_t *pulCursor, uint32_t *pulOptions) {
 	/* Specifier */
 	uint8_t symbol = pcFormat[*pulCursor];
 
@@ -738,18 +738,14 @@ static int32_t _lFifoPrintInteger(Fifo_t *xFifo, uint64_t ullValue, uint32_t ulO
 	return streamed;
 }
 
-int32_t lFifoVPrintf(Fifo_t *xFifo, const uint8_t* pcFormat, va_list xArgs, uint32_t *pulFormatOffset) {
-    if(xFifo != libNULL) return FIFO_FAIL;
-	if (!bFifoTransactionBegin(xFifo)) return 0;
+int32_t lFifoVPrintf(Fifo_t *xFifo, const uint8_t* pcFormat, va_list xArgs) {
+    if(xFifo == libNULL) return FIFO_FAIL;
     int32_t streamed = 0;
     int32_t result;
     uint32_t cursor = 0;
     uint8_t symbol;
     int32_t width, precision;
     uint32_t options;
-    if (pulFormatOffset != libNULL) {
-        cursor = *pulFormatOffset;
-    }
     while (pcFormat[cursor] != '\0') {
         result = 0;
         symbol = pcFormat[cursor++];
@@ -770,9 +766,9 @@ int32_t lFifoVPrintf(Fifo_t *xFifo, const uint8_t* pcFormat, va_list xArgs, uint
                 /* Precision */
                 precision = _lFifoPrintfParsePrecision(pcFormat, &cursor, &options, &xArgs);
                 /* Length */
-                _vlFifoPrintfParseLength(pcFormat, &cursor, &options);
+                _vFifoPrintfParseLength(pcFormat, &cursor, &options);
                 /* Specifier */
-                _vlFifoPrintfParseSpecifier(pcFormat, &cursor, &options);
+                _vFifoPrintfParseSpecifier(pcFormat, &cursor, &options);
                 if (!(options & PRINTF_TYPE_UNKNOWN)) {/* Format recognized, print parameter. Else unknown type, pass-through */
                     if (options & PRINTF_TYPE_CHARACTER) {
                         int32_t symb = (uint8_t)va_arg(xArgs, int32_t);
@@ -826,17 +822,7 @@ int32_t lFifoVPrintf(Fifo_t *xFifo, const uint8_t* pcFormat, va_list xArgs, uint
         if (result <= 0) {
             break;
         }
-        /* Sync stream */
-        if(pulFormatOffset != libNULL) {
-            *pulFormatOffset = cursor;
-        }
         streamed += result;
-    }
-    if (streamed >= 0) {
-        bFifoTransactionCommit(xFifo);
-    }
-    else {
-        bFifoTransactionRollback(xFifo);
     }
     return streamed;
 }
@@ -870,3 +856,7 @@ int32_t lFifoPrintFloat(Fifo_t *pxFifo, float fpValue) {
 	int32_t options = PRINTF_TYPE_DOUBLE_SCIENTIFIC | PRINTF_TYPE_DOUBLE | PRINTF_FLOAT_ZERO_TRUNC | PRINTF_PRECISION_PRESENT;
 	return _lFifoPrintFloat(pxFifo, fpValue, options, 0, 10);
 }
+
+int32_t fifo_print_float(Fifo_t *, float)  __attribute__ ((alias ("lFifoPrintFloat")));
+int32_t fifo_print_integer(fifo_t *, uint64_t, fifo_print_integer_flags_t)  __attribute__ ((alias ("lFifoPrintInteger")));
+int32_t fifo_vprintf(fifo_t *, const uint8_t*, va_list)   __attribute__ ((alias ("lFifoVPrintf")));

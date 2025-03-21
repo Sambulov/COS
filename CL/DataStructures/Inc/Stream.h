@@ -27,12 +27,11 @@ typedef struct {
 	@param[in] pxStream         Pinter to stream descriptor
 	@param[in] pcFormat         "{[{char}]{[%[flags][width][.precision][length]specifier]}[{char}]}"
 	@param[in] xArgs            Parameters
-	@param[out] pulFormatOffset Offset in format string to next symbol to process if stream has not place all data
 	@return Streamed bytes count, <0 if error
 */
-static inline int32_t lStreamVPrintf(Stream_t *pxStream, const uint8_t* pcFormat, va_list xArgs, uint32_t *pulFormatOffset) {
+static inline int32_t lStreamVPrintf(Stream_t *pxStream, const uint8_t* pcFormat, va_list xArgs) {
     if(pxStream == libNULL) return STREAM_FAIL;
-	return lFifoVPrintf(pxStream->pxOFifo, pcFormat, xArgs, pulFormatOffset);
+	return lFifoVPrintf(pxStream->pxOFifo, pcFormat, xArgs);
 }
 
 /*!
@@ -44,7 +43,7 @@ static inline int32_t lStreamVPrintf(Stream_t *pxStream, const uint8_t* pcFormat
 static inline int32_t lStreamPrintf(Stream_t *pxStream, const uint8_t* pcFormat, ...) {
 	va_list args;
 	va_start(args, pcFormat);
-	int32_t streamed = lStreamVPrintf(pxStream, pcFormat, args, libNULL);
+	int32_t streamed = lStreamVPrintf(pxStream, pcFormat, args);
 	va_end(args);
 	return streamed;
 }
@@ -165,6 +164,26 @@ static inline void vStreamFlushI(Stream_t *pxStream) {
 static inline void vStreamFlushO(Stream_t *pxStream) {
 	if (pxStream != libNULL) vFifoFlush(pxStream->pxOFifo);
 }
+
+/*!
+  Snake notation
+*/
+
+typedef Stream_t stream_t;
+
+static inline int32_t stream_vprintf(stream_t *, const uint8_t*, va_list) __attribute__ ((alias ("lStreamVPrintf")));
+static inline int32_t stream_printf(stream_t *, const uint8_t*, ...) __attribute__ ((alias ("lStreamPrintf")));
+static inline int32_t stream_write(stream_t *, const uint8_t *, uint32_t) __attribute__ ((alias ("lStreamWrite")));
+static inline int32_t stream_write_all(stream_t *, const uint8_t *, uint32_t) __attribute__ ((alias ("lStreamWriteAll")));
+static inline int32_t stream_write_string(stream_t *, const uint8_t *) __attribute__ ((alias ("lStreamWriteString")));
+static inline int32_t stream_write_available(stream_t *) __attribute__ ((alias ("lStreamWriteAvailable")));
+static inline int32_t stream_read_available(stream_t *) __attribute__ ((alias ("lStreamReadAvailable")));
+static inline int32_t stream_read(stream_t *, uint8_t *, uint32_t) __attribute__ ((alias ("lStreamRead")));
+static inline int32_t stream_shift(stream_t *, uint32_t) __attribute__ ((alias ("lStreamShift")));
+static inline int32_t stream_peek(stream_t *, uint8_t *, uint32_t) __attribute__ ((alias ("lStreamPeek")));
+static inline void stream_flush_io(stream_t *) __attribute__ ((alias ("vStreamFlushIO")));
+static inline void stream_flush_i(stream_t *) __attribute__ ((alias ("vStreamFlushI")));
+static inline void stream_flush_o(stream_t *) __attribute__ ((alias ("vStreamFlushO")));
 
 #ifdef __cplusplus
 }

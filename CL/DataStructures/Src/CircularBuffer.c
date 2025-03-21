@@ -24,7 +24,9 @@ typedef struct {
 _Static_assert(sizeof(_CircularBuffer_t) == (sizeof(CircularBuffer_t) + 4), "In ""\"CircularBuffer.h\""" data structure size of ""CircularBuffer_t"" doesn't match, check ""CIRCULAR_BUFFER_DESCRIPTOR_SIZE");
 
 static _CircularBuffer_t *_pxCircularBufferCastDescriptor(CircularBuffer_t *pxDescriptor) {
-	_CircularBuffer_t *desc = (_CircularBuffer_t*)pxDescriptor;
+	uint32_t ptr_align = (uint32_t)pxDescriptor;
+	ptr_align = (((ptr_align + 3) >> 2) << 2);
+	_CircularBuffer_t *desc = (_CircularBuffer_t *)ptr_align;
 	return ((desc == libNULL) || (desc->validation != CB_VALIDATION_NUMBER))? libNULL: desc;
 }
 
@@ -44,15 +46,16 @@ static void _vCircularBufferGetWrPtrs(_CircularBuffer_t *pxDescriptor, uint16_t 
 }
 
 CircularBuffer_t *pxCircularBufferInit(uint8_t *pucBuffer, uint16_t uBufferSize) {
-	if ((uBufferSize > (sizeof(CircularBuffer_t))) && (pucBuffer != libNULL)) {
-		_CircularBuffer_t *desc = (_CircularBuffer_t *)pucBuffer;
-		desc->head = desc->tail = 0;
-		desc->headBackup = desc->tailBackup = 0xFFFF;
-		desc->size = uBufferSize - sizeof(CircularBuffer_t);
-		desc->validation = CB_VALIDATION_NUMBER;
-		return (CircularBuffer_t *)desc;
-	}
-	return libNULL;
+	if ((uBufferSize < (sizeof(CircularBuffer_t) + 3)) || (pucBuffer == libNULL)) return libNULL;
+	uint32_t ptr_align = (uint32_t)pucBuffer;
+	ptr_align = (((ptr_align + 3) >> 2) << 2);
+	_CircularBuffer_t *desc = (_CircularBuffer_t *)ptr_align;
+	uBufferSize -= ptr_align - (uint32_t)pucBuffer;
+	desc->head = desc->tail = 0;
+	desc->headBackup = desc->tailBackup = 0xFFFF;
+	desc->size = uBufferSize - sizeof(CircularBuffer_t);
+	desc->validation = CB_VALIDATION_NUMBER;
+	return (CircularBuffer_t *)desc;
 }
 
 int32_t lCircularBufferAvailable(CircularBuffer_t *pxDescriptor) {

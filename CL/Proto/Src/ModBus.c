@@ -16,26 +16,43 @@
 #define MODBUS_STATE_COMPLETE_NO_RESPONSE       0x06
 #define MODBUS_STATE_COMPLETE                   0x07
 
+/* eRxPacketType/eTxPacketType definitions. */
+typedef enum {
+    eModbusPacketNone        = 0,    /* Undefined */
+    eModbusPacketBase        = 1,    /* [ADDR][FUNC][MSB_REG_ADDR][LSB_REG_ADDR][MSB_COUNT][LSB_COUNT][MSB_CRC][LSB_CRC] */
+    eModbusPacketVariableLen = 2,    /* [ADDR][FUNC][LENGTH][DATA...][MSB_CRC][LSB_CRC] */
+    eModbusPacketFull        = 3,    /* [ADDR][FUNC][MSB_REG_ADDR][LSB_REG_ADDR][MSB_COUNT][LSB_COUNT][LENGTH][DATA...][MSB_CRC][LSB_CRC] */
+    eModbusPacketError       = 4,    /* [ADDR|0x80][FUNC][ERR][MSB_CRC][LSB_CRC] */
+    eModbusPacketTypesAmount
+} ModbusPacketType_t;
+
 typedef struct {
-    ModbusIface_t *pxIface;
+    const ModbusIface_t *pxIface;
 	ModbusFrame_t xFrame;
 	uint16_t usTimer;
+    uint16_t rx_timeout;
+	uint16_t tx_timeout;
+    ModbusPacketType_t eTxType;
+    ModbusPacketType_t eRxType;
 	uint8_t ucTransferCounter;
 	int8_t ucXferState;
     uint8_t ucState    :7,
             bAsciiMode :1;
+	uint8_t ucPayLoadBufferSize;
+	uint8_t *pucPayLoadBuffer;
 	ModbusRequest_t xRequest;
-    ModbusEndpoint_t *pxEndpoints;
+    const ModbusEndpoint_t *pxEndpoints;
 } _prModbus_t;
 
-//_Static_assert(sizeof(_prModbus_t) == (MODBUS_DESCRIPTOR_SIZE), "In Modbus.h data structure size doesn't match allocation MODBUS_SERVER_DESCRIPTOR_SIZE");
+LIB_ASSERRT_STRUCTURE_CAST(_prModbus_t, Modbus_t, MODBUS_DESCRIPTOR_SIZE, "ModBus.h");
 
 static ModbusResult_t _eModbusDummyHandler(ModbusRequest_t *pxRreq, ModbusFrame_t *pxResp) {
     (void)pxRreq;(void)pxResp;
 	return ModbusIllegalFunction;
 }
 
-ModbusPacketType_t eModbusFuncToPacketType(uint8_t ucFunc, uint8_t bIsRequest) {
+static ModbusPacketType_t _eModbusFuncToPacketType(uint8_t ucFunc, uint8_t bIsRequest) {
+    if(ucFunc & MODBUS_ERROR_FLAG) return eModbusPacketError;
 	switch (ucFunc) {
 	case 0x01 /* Read coil */:
 		return bIsRequest? eModbusPacketBase: eModbusPacketVariableLen;
@@ -43,7 +60,7 @@ ModbusPacketType_t eModbusFuncToPacketType(uint8_t ucFunc, uint8_t bIsRequest) {
 		return bIsRequest? eModbusPacketBase: eModbusPacketVariableLen;
 	case 0x03 /* Read holding registers */:
 		return bIsRequest? eModbusPacketBase: eModbusPacketVariableLen;
-	case 0x04 /* Read input iegisters */:
+	case 0x04 /* Read input registers */:
 		return bIsRequest? eModbusPacketBase: eModbusPacketVariableLen;
 	case 0x05 /* Write single coil */:
 		return eModbusPacketBase;
@@ -61,18 +78,18 @@ ModbusPacketType_t eModbusFuncToPacketType(uint8_t ucFunc, uint8_t bIsRequest) {
 		return bIsRequest? eModbusPacketFull: eModbusPacketBase;
 	case 0x10 /* Write multiple registers */:
 		return bIsRequest? eModbusPacketFull: eModbusPacketBase;
-		//	case 0x11 /* Report Slave ID */:
-		//		return ;
-		//	case 0x14 /* Read File Record */:
-		//		return ;
-		//	case 0x15 /* Write File Record */:
-		//		return ;
-		//	case 0x16 /* Mask Write Register */:
-		//		return ;
-		//	case 0x18 /* Read FIFO Queue */:
-		//		return ;
-		//	case 0x2B /* Encapsulated Interface Transport */:
-		//		return ;
+    //	case 0x11 /* Report Slave ID */:
+    //		return ;
+    //	case 0x14 /* Read File Record */:
+    //		return ;
+    //	case 0x15 /* Write File Record */:
+    //		return ;
+    //	case 0x16 /* Mask Write Register */:
+    //		return ;
+    //	case 0x18 /* Read FIFO Queue */:
+    //		return ;
+    //	case 0x2B /* Encapsulated Interface Transport */:
+    //		return ;
 	default:
 		return eModbusPacketNone;
 	}
@@ -80,40 +97,26 @@ ModbusPacketType_t eModbusFuncToPacketType(uint8_t ucFunc, uint8_t bIsRequest) {
 
 static void _vModbusServerSetHandler(_prModbus_t *pxMb) {
 	pxMb->xRequest.pfOnComplete = &_eModbusDummyHandler;
-	if (pxMb->xFrame.ucFunc & MODBUS_RESPONSE_ERROR_FLAG_MASK) {
-		pxMb->xRequest.eRxType = eModbusPacketError;
-		pxMb->xRequest.eTxType = eModbusPacketNone;
-	}
-	else {
-        ModbusEndpoint_t *currentEP = pxMb->pxEndpoints;
-        while (currentEP != libNULL) {
-            if ((currentEP->ucAddress == pxMb->xFrame.ucAddr) || 
-                ((pxMb->xFrame.ucAddr == 0) && (currentEP->bBroadCast))) break;
+    pxMb->eRxType = _eModbusFuncToPacketType(pxMb->xRequest.xFrame.ucFunc, 1);
+    pxMb->eTxType = eModbusPacketNone;
+	if (!(pxMb->xRequest.xFrame.ucFunc & MODBUS_ERROR_FLAG)) {
+        const ModbusEndpoint_t *currentEP = pxMb->pxEndpoints;
+        while ((currentEP != libNULL) && (currentEP->ucAddress != pxMb->xRequest.xFrame.ucAddr))
             currentEP = currentEP->pxNext;
-        }                
-
-		if (currentEP == libNULL) {
-			pxMb->xRequest.eTxType = eModbusPacketNone;
-			pxMb->xRequest.eRxType = eModbusFuncToPacketType(pxMb->xFrame.ucFunc, 1);
-		}
-		else {
+		if (currentEP != libNULL) {
 			ModbusHandler_t *hdesc = libNULL;
-			for (int32_t i = 0; i < currentEP->ucHandlersCount; i++) {
-				if (currentEP->paxHandlers[i]->ucFunctionNo == pxMb->xFrame.ucFunc) {
+			for (int32_t i = 0; currentEP->paxHandlers[i] != libNULL; i++) {
+				if (currentEP->paxHandlers[i]->ucFunctionNo == pxMb->xRequest.xFrame.ucFunc) {
 					hdesc = currentEP->paxHandlers[i];
 					break;
 				}
 			}
-			if (hdesc == libNULL) {
-				pxMb->xRequest.eTxType = eModbusPacketError;
-				pxMb->xRequest.eRxType = eModbusFuncToPacketType(pxMb->xFrame.ucFunc, 1);
-			}
+			if (hdesc == libNULL) pxMb->eTxType = eModbusPacketError;
 			else {
-				pxMb->xRequest.pfOnComplete = hdesc->pfOnReceive;
-				pxMb->xRequest.eRxType = hdesc->eRxType;
-				pxMb->xRequest.eTxType = hdesc->eTxType;
+				pxMb->xRequest.pfOnComplete = hdesc->pfOnRequest;
+				pxMb->eTxType = _eModbusFuncToPacketType(pxMb->xRequest.xFrame.ucFunc, 0);
 			}
-            if (pxMb->xFrame.ucAddr == 0) pxMb->xRequest.eTxType = eModbusPacketNone;
+            if (pxMb->xRequest.xFrame.ucAddr == 0) pxMb->eTxType = eModbusPacketNone;
 		}
 	}	
 }
@@ -133,7 +136,7 @@ static int32_t _lWriteAscii(_prModbus_t *pxMb, uint8_t *pucData, int32_t lSize) 
   int32_t count = 0;
   while (lSize-- && aw--) {
     uint16_t asscii_encoded = usConvertByteToAsciiHex(*pucData++, true);
-    //asscii_encoded = swap_bytes(asscii_encoded); /* TODO: check it */
+    asscii_encoded = swap_bytes(asscii_encoded);
     if(pxMb->pxIface->lWrite(pxMb->pxIface->pxTxPhy, (uint8_t *)&asscii_encoded, 2) != 2) break;
     count++;
   }
@@ -150,7 +153,7 @@ static uint8_t _bWriteBlockAscii(_prModbus_t *pxMb, uint8_t *pucData, int32_t lS
   if(pxMb->pxIface->lAvailableToWrite(pxMb->pxIface->pxTxPhy) < (lSize * 2)) return false;
   while (lSize--) {
     uint16_t asscii_encoded = convert_byte_to_ascii_hex(*pucData++, true);
-    //asscii_encoded = swap_bytes(asscii_encoded); /* TODO: check it */
+    asscii_encoded = swap_bytes(asscii_encoded);
     int32_t res = pxMb->pxIface->lWrite(pxMb->pxIface->pxTxPhy, (uint8_t *)&asscii_encoded, 2);
     if (res <= 0) return false;
   }
@@ -159,7 +162,7 @@ static uint8_t _bWriteBlockAscii(_prModbus_t *pxMb, uint8_t *pucData, int32_t lS
 
 static int8_t _TxFrame(_prModbus_t *pxMb, uint8_t bRequest) {
 	if (pxMb->ucXferState < 0) pxMb->ucXferState = 0;
-	if (pxMb->xRequest.eTxType == eModbusPacketNone) return -1;
+	if (pxMb->eTxType == eModbusPacketNone) return -1;
     int32_t (*lDataWrite)(_prModbus_t *, uint8_t *, int32_t) = &_lWrite;
     if(pxMb->bAsciiMode) lDataWrite = &_lWriteAscii;
     uint8_t (*bBlockWrite)(_prModbus_t *, uint8_t *, int32_t) = &_bWriteBlock;
@@ -172,46 +175,45 @@ static int8_t _TxFrame(_prModbus_t *pxMb, uint8_t bRequest) {
     case 0:
     case 1 /* Tx frame start */:
         if ((pxMb->bAsciiMode) && (_lWrite(pxMb, (uint8_t *)":", 1) <= 0)) return 1;
+        pxMb->ucTransferCounter = 0;
         /* fall through */
     case 2 /* Tx addr */:
         if(lDataWrite(pxMb, &frame->ucAddr, 1) <= 0) return 2;
         frame->_usCrc = usCrcCalc(&frame->ucAddr, 1, libNULL);
         /* fall through */
     case 3 /* Tx func */: 
-        if (lDataWrite(pxMb, &frame->ucFunc, 1) <=0 ) return 3;
+        if (lDataWrite(pxMb, &frame->ucFunc, 1) <= 0 ) return 3;
         frame->_usCrc = usCrcCalc(&frame->ucFunc, 1, &frame->_usCrc);
         /* fall through */
     case 4 /* Tx Reg addr */:
-        if (!(frame->ucFunc & MODBUS_RESPONSE_ERROR_FLAG_MASK) && (pxMb->xRequest.eTxType & eModbusPacketBase)) {
+        if (!(frame->ucFunc & MODBUS_ERROR_FLAG) && (pxMb->eTxType & eModbusPacketBase)) {
             uint16_t regAddr = swap_bytes(frame->usRegAddr);
             if (!bBlockWrite(pxMb, (uint8_t *)&regAddr, 2)) return 4;
         frame->_usCrc = usCrcCalc((uint8_t *)&regAddr, 2, &frame->_usCrc);
         } /* fall through */
     case 5 /* Tx Reg count */:
-        if (!(frame->ucFunc & MODBUS_RESPONSE_ERROR_FLAG_MASK) && (pxMb->xRequest.eTxType & eModbusPacketBase)) {
+        if (!(frame->ucFunc & MODBUS_ERROR_FLAG) && (pxMb->eTxType & eModbusPacketBase)) {
             uint16_t regValCount = swap_bytes(frame->usRegValueCount);
             if (!bBlockWrite(pxMb, (uint8_t *)&regValCount, 2)) return 5;
             frame->_usCrc = usCrcCalc((uint8_t *)&regValCount, 2, &frame->_usCrc);
         } /* fall through */
     case 6 /* Tx length */:
-        if (pxMb->xRequest.eTxType & (eModbusPacketVariableLen | eModbusPacketError)) {
+        if (pxMb->eTxType & (eModbusPacketVariableLen | eModbusPacketError)) {
             if (lDataWrite(pxMb, &frame->ucLengthError, 1) <= 0) return 6;
             frame->_usCrc = usCrcCalc(&frame->ucLengthError, 1, &frame->_usCrc);
         } /* fall through */
     case 7 /* Tx data */:
-        if (pxMb->xRequest.eTxType & eModbusPacketVariableLen) {
-        uint8_t *data = frame->pucData + pxMb->ucTransferCounter;
-        uint32_t left = frame->ucDataLength - pxMb->ucTransferCounter;
-        int32_t count = lDataWrite(pxMb, data, left);
-        if(count <= 0) return 7;
-        pxMb->ucTransferCounter += count;
-            if (pxMb->ucTransferCounter < frame->ucLengthError) return 7;
-            frame->_usCrc = usCrcCalc(frame->pucData, frame->ucLengthError, &frame->_usCrc);
+        if (pxMb->eTxType & eModbusPacketVariableLen) {
+        int32_t res = lDataWrite(pxMb, frame->pucData + pxMb->ucTransferCounter, frame->ucLengthError - pxMb->ucTransferCounter);
+        if(res <= 0) return 7;
+            frame->_usCrc = usCrcCalc(frame->pucData + pxMb->ucTransferCounter, res, &frame->_usCrc);			
+            pxMb->ucTransferCounter += res;
+            if (frame->ucLengthError > pxMb->ucTransferCounter) return 7;
         } /* fall through */
     case 8 /* Tx crc */: 
         if (pxMb->bAsciiMode) {
             uint8_t crc = frame->_usCrc;
-            if (!lDataWrite(pxMb, &crc, 1)) return 8;
+            if (lDataWrite(pxMb, &crc, 1) <= 0) return 8;
         }
         else if(!bBlockWrite(pxMb, (uint8_t *)&frame->_usCrc, 2)) return 8;
         /* fall through */
@@ -235,13 +237,11 @@ static int32_t _lReadAscii(_prModbus_t *pxMb, uint8_t *pucData, int32_t lSize) {
   uint16_t asscii;
   uint32_t ar = pxMb->pxIface->lAvailableToRead(pxMb->pxIface->pxRxPhy);
   while (lSize-- && ar >= 2) {
-    //asscii = swap_bytes(asscii); /* TODO: check it */
     if((pxMb->pxIface->lRead(pxMb->pxIface->pxRxPhy, (uint8_t *)&asscii, 2) != 2) ||
-       !bConvertAsciiHexToByte(asscii, pucData++)) return -1;
+       !bConvertAsciiHexToByte(swap_bytes(asscii), pucData++)) return -1;
     ar -= 2;
     count++;
   }
-  count >>= 2;
   return count;
 }
 
@@ -254,9 +254,8 @@ static uint8_t _ReadBlockAscii(_prModbus_t *pxMb, uint8_t *pucData, int32_t lSiz
   if (pxMb->pxIface->lAvailableToRead(pxMb->pxIface->pxRxPhy) < (lSize * 2)) return false;
   uint16_t asscii;
   while (lSize--) {
-    //asscii = swap_bytes(asscii); /* TODO: check it */
     if((pxMb->pxIface->lRead(pxMb->pxIface->pxRxPhy, (uint8_t *)&asscii, 2) != 2) ||
-       !convert_ascii_hex_to_byte(asscii, pucData++)) return false;
+       !convert_ascii_hex_to_byte(swap_bytes(asscii), pucData++)) return false;
   }
   return true;
 }
@@ -278,57 +277,55 @@ static int8_t _RxFrame(_prModbus_t *pxMb, uint8_t bRequest) {
                 if ((_lRead(pxMb, &frame->ucAddr, 1) <= 0) || (frame->ucAddr != ':')) return 1;
             }
             else if (pxMb->pxIface->lAvailableToRead(pxMb->pxIface->pxRxPhy) <= 0) return 1;
+            pxMb->ucTransferCounter = 0;
             /* fall through */
         case 2 /* Rx addr & func */: {
             uint8_t buf[2];
-            int32_t res = lDataRead(pxMb, buf, 2);
-            if (res <= 0) return ((res < 0)? -1: 2);
-                frame->ucAddr = buf[0];
-                frame->ucFunc = buf[1];
-                frame->_usCrc = usCrcCalc(buf, 2, libNULL);
-                return MODBUS_RX_STATE_DEFINE_PACKET_TYPE;
-            } /* fall through */
+            if (!bBlockRead(pxMb, buf, 2)) return 2;
+            frame->ucAddr = buf[0];
+            frame->ucFunc = buf[1];
+            frame->_usCrc = usCrcCalc(buf, 2, libNULL);
+            return MODBUS_RX_STATE_DEFINE_PACKET_TYPE;
+        } /* fall through */
         case MODBUS_RX_STATE_DEFINE_PACKET_TYPE:
         case 4 /* Rx Reg addr & count */:
-            if (pxMb->xRequest.eRxType & eModbusPacketBase) {
+            if (pxMb->eRxType & eModbusPacketBase) {
                 uint8_t buf[4];
-                if (bBlockRead(pxMb, buf, 4)) return 4;
+                if (!bBlockRead(pxMb, buf, 4)) return 4;
                 frame->usRegAddr = (((uint16_t)buf[0]) << 8) | buf[1];
                 frame->usRegValueCount = (((uint16_t)buf[2]) << 8) | buf[3];
                 frame->_usCrc = usCrcCalc(buf, 4, &frame->_usCrc);
             } /* fall through */
         case 5 /* Rx length | err */:
-            if ((pxMb->xRequest.eRxType & eModbusPacketVariableLen) || (pxMb->xRequest.eRxType == eModbusPacketError)) {
-                int32_t res = lDataRead(pxMb, &frame->ucLengthError, 1);
-                if (res <= 0) return ((res < 0)? -1: 5);
-                pxMb->ucTransferCounter = 0;
+            if ((pxMb->eRxType & eModbusPacketVariableLen) || (pxMb->eRxType == eModbusPacketError)) {
+                if (lDataRead(pxMb, &frame->ucLengthError, 1) <= 0) return 5;
                 frame->_usCrc = usCrcCalc(&frame->ucLengthError, 1, &frame->_usCrc);
             } /* fall through */
         case 6:
-            if ((pxMb->xRequest.eRxType & eModbusPacketVariableLen) && (frame->ucLengthError > frame->ucDataLength)) {
+            if ((pxMb->eRxType & eModbusPacketVariableLen) && (frame->ucLengthError > pxMb->ucPayLoadBufferSize)) {
                 frame->ucLengthError = 0;
                 return ((pxMb->bAsciiMode)? -1: MODBUS_RX_STATE_SKIP_PACKET);
             } /* fall through */
         case 7 /* Rx data */:
-            if (pxMb->xRequest.eRxType & eModbusPacketVariableLen) {
+            if (pxMb->eRxType & eModbusPacketVariableLen) {
                 int32_t res = lDataRead(pxMb, frame->pucData + pxMb->ucTransferCounter, frame->ucLengthError - pxMb->ucTransferCounter);
-                if (res <= 0) return ((res < 0)? -1: 7);
+                if (res <= 0) return 7;
+                frame->_usCrc = usCrcCalc(frame->pucData + pxMb->ucTransferCounter, res, &frame->_usCrc);			
                 pxMb->ucTransferCounter += res;
-                frame->_usCrc = usCrcCalc(frame->pucData, res, &frame->_usCrc);			
                 if (frame->ucLengthError > pxMb->ucTransferCounter) return 7;
             } /* fall through */
         case 8 /* Rx unknown */:
-            if (pxMb->xRequest.eRxType == eModbusPacketNone) {
+            if (pxMb->eRxType == eModbusPacketNone) {
                 if (pxMb->bAsciiMode) return -1;
                 else {
-                frame->ucLengthError = 0;
-                return MODBUS_RX_STATE_SKIP_PACKET;
+                    frame->ucLengthError = 0;
+                    return MODBUS_RX_STATE_SKIP_PACKET;
                 }
             } /* fall through */
         case 9 /* Rx crc */: {
             uint8_t buf[2];
             uint8_t count = ((pxMb->bAsciiMode)? 1: 2);
-            if (bBlockRead(pxMb, buf, count) <= 0) return 9;
+            if (!bBlockRead(pxMb, buf, count)) return 9;
             if (pxMb->bAsciiMode) {
                 if (((uint8_t)frame->_usCrc) != buf[0]) return -1;
             }
@@ -360,28 +357,40 @@ static int8_t _RxFrame(_prModbus_t *pxMb, uint8_t bRequest) {
 static void _vModbusServerWork(_prModbus_t *pxMb) {
     if (pxMb->ucState & MODBUS_STATE_RECEIVING) {
         uint16_t now = pxMb->pxIface->ulTimerMs(pxMb->pxIface->pxTimerPhy);
-        if(pxMb->ucXferState <= 1) pxMb->usTimer = now;
-        if ((now - pxMb->usTimer) >= MODBUS_SERVER_RX_TIMEOUT) pxMb->ucXferState = 0;
-        _RxFrame(pxMb, true);
+        if(pxMb->ucXferState <= 1) {
+            pxMb->usTimer = now;
+            pxMb->xRequest.xFrame.pucData = pxMb->pucPayLoadBuffer;
+            pxMb->xRequest.xFrame.ucLengthError = pxMb->ucPayLoadBufferSize;
+        }
+        if ((uint16_t)(now - pxMb->usTimer) >= pxMb->rx_timeout) pxMb->ucXferState = 0;
+        pxMb->ucXferState = _RxFrame(pxMb, true);
         if (pxMb->ucXferState == MODBUS_RX_STATE_DEFINE_PACKET_TYPE) _vModbusServerSetHandler(pxMb);
         if (pxMb->ucXferState == 0) pxMb->ucState = MODBUS_STATE_RECEIVED;
     }
     if (pxMb->ucState & MODBUS_STATE_RECEIVED) {
+        pxMb->xFrame = pxMb->xRequest.xFrame;
+        pxMb->xFrame.pucData = pxMb->pucPayLoadBuffer;
+        pxMb->xFrame.ucLengthError = pxMb->ucPayLoadBufferSize;
         ModbusResult_t result = pxMb->xRequest.pfOnComplete(&pxMb->xRequest, &pxMb->xFrame);
-        if (pxMb->xRequest.eTxType != eModbusPacketNone) {
+        if (pxMb->eTxType != eModbusPacketNone) {
             if (result != ModbusOk) { /* tx error */
-                pxMb->xFrame.ucFunc |= MODBUS_RESPONSE_ERROR_FLAG_MASK;
+                pxMb->xFrame.ucFunc |= MODBUS_ERROR_FLAG;
                 pxMb->xFrame.ucLengthError = result;
-                pxMb->xRequest.eTxType = eModbusPacketError;
+                pxMb->eTxType = eModbusPacketError;
             }
+            pxMb->usTimer = pxMb->pxIface->ulTimerMs(pxMb->pxIface->pxTimerPhy);
             pxMb->ucState = MODBUS_STATE_TRANSMITTING;
         }
         else pxMb->ucState = MODBUS_STATE_RECEIVING;
     }
     if (pxMb->ucState & MODBUS_STATE_TRANSMITTING) {
-        _TxFrame(pxMb, false);
-        if (pxMb->ucXferState <= 0) pxMb->ucState = MODBUS_STATE_RECEIVING;
-        //TODO: check tx timeout
+        uint16_t now = pxMb->pxIface->ulTimerMs(pxMb->pxIface->pxTimerPhy);
+        pxMb->ucXferState = _TxFrame(pxMb, false);
+        if ((pxMb->ucXferState <= 0) || ((uint16_t)(now - pxMb->usTimer) >= pxMb->tx_timeout)) {
+            pxMb->ucXferState = 0;
+            pxMb->ucState = MODBUS_STATE_RECEIVING;
+            //TODO: cb tx timeout???
+        }
     }
 }
 
@@ -390,29 +399,30 @@ static void _vModbusClientWork(_prModbus_t *pxMb) {
     if (pxMb->ucState == MODBUS_STATE_TRANSMITTING) {
         uint16_t now = pxMb->pxIface->ulTimerMs(pxMb->pxIface->pxTimerPhy);
         if(pxMb->ucXferState <= 0) pxMb->usTimer = now;
-        _TxFrame(pxMb, true);
+        pxMb->ucXferState = _TxFrame(pxMb, true);
         if(pxMb->ucXferState == 0) {
             pxMb->ucState = MODBUS_STATE_RECEIVING;
+            pxMb->xFrame.pucData = pxMb->pucPayLoadBuffer;
             pxMb->usTimer = now;
         }
         if(pxMb->ucXferState < 0) pxMb->ucState = MODBUS_STATE_TX_ERR;
-        if((now - pxMb->usTimer) >= MODBUS_CLIENT_TX_TIMEOUT) pxMb->ucState = MODBUS_STATE_TX_TIMEOUT;
+        if((uint16_t)(now - pxMb->usTimer) >= pxMb->tx_timeout) pxMb->ucState = MODBUS_STATE_TX_TIMEOUT;
     }
     if (pxMb->ucState == MODBUS_STATE_RECEIVING) {
-        if(pxMb->xRequest.eRxType != eModbusPacketNone) {
+        if(pxMb->eRxType != eModbusPacketNone) {
             uint16_t now = pxMb->pxIface->ulTimerMs(pxMb->pxIface->pxTimerPhy);
-            _RxFrame(pxMb, false);
+            pxMb->ucXferState = _RxFrame(pxMb, false);
             if (pxMb->ucXferState == MODBUS_RX_STATE_DEFINE_PACKET_TYPE) {
-                if (pxMb->xFrame.ucFunc & MODBUS_RESPONSE_ERROR_FLAG_MASK) pxMb->xRequest.eRxType = eModbusPacketError;
+                if (pxMb->xFrame.ucFunc & MODBUS_ERROR_FLAG) pxMb->eRxType = eModbusPacketError;
                 else if((pxMb->xFrame.ucAddr != pxMb->xRequest.xFrame.ucAddr) ||
                         (pxMb->xFrame.ucFunc != pxMb->xRequest.xFrame.ucFunc))
-                    pxMb->xRequest.eRxType = eModbusFuncToPacketType(pxMb->xFrame.ucFunc, 0);
+                    pxMb->eRxType = _eModbusFuncToPacketType(pxMb->xFrame.ucFunc, 0);
             }
             else if (pxMb->ucXferState <= 0) {
                 pxMb->ucState = MODBUS_STATE_RX_ERR;
                 if (pxMb->ucXferState == 0) {
                     if((pxMb->xFrame.ucAddr == pxMb->xRequest.xFrame.ucAddr) &&
-                        ((pxMb->xFrame.ucFunc & ~MODBUS_RESPONSE_ERROR_FLAG_MASK) == pxMb->xRequest.xFrame.ucFunc)) {
+                        ((pxMb->xFrame.ucFunc & ~MODBUS_ERROR_FLAG) == pxMb->xRequest.xFrame.ucFunc)) {
                         pxMb->ucState = MODBUS_STATE_COMPLETE;
                     }
                     else {
@@ -421,14 +431,12 @@ static void _vModbusClientWork(_prModbus_t *pxMb) {
                     }
                 }
             }
-            else if ((now - pxMb->usTimer) >= MODBUS_CLIENT_RX_TIMEOUT) pxMb->ucState = MODBUS_STATE_RX_TIMEOUT;
+            else if ((uint16_t)(now - pxMb->usTimer) >= pxMb->rx_timeout) pxMb->ucState = MODBUS_STATE_RX_TIMEOUT;
         }
         else pxMb->ucState = MODBUS_STATE_COMPLETE_NO_RESPONSE;
     }
     if(pxMb->ucState & MODBUS_STATE_COMPLETE) {
         if (pxMb->xRequest.pfOnComplete != libNULL) {
-            uint8_t *buf = pxMb->xFrame.pucData;
-            uint8_t bufSz = pxMb->xFrame.ucDataLength;
             ModbusResult_t err = 0;
             if((pxMb->ucState == MODBUS_STATE_COMPLETE_NO_RESPONSE) ||
                 (pxMb->ucState == MODBUS_STATE_TX_TIMEOUT) ||
@@ -442,8 +450,6 @@ static void _vModbusClientWork(_prModbus_t *pxMb) {
                 pxMb->xFrame.ucLengthError = err;
             }
             pxMb->xRequest.pfOnComplete(&pxMb->xRequest, &pxMb->xFrame);
-            pxMb->xFrame.pucData = buf;
-            pxMb->xFrame.ucDataLength = bufSz;
             pxMb->ucXferState = -1;
         }
         pxMb->ucState = MODBUS_STATE_IDLE;
@@ -457,62 +463,55 @@ void vModbusWork(Modbus_t *pxMb) {
     else _vModbusClientWork(mb);
 }
 
-static uint8_t _bModbusServerLinkEndpoints(_prModbus_t *pxMb, ModbusEndpoint_t *pxMbEp) {
+uint8_t bModbusServerLinkEndpoints(Modbus_t *pxMb, const ModbusEndpoint_t *pxMbEp) {
     _prModbus_t *mb = (_prModbus_t*)pxMb;
-    uint8_t check = (pxMbEp->ucAddress != 0) && (pxMbEp->ucHandlersCount > 0);
-    ModbusEndpoint_t *current = pxMbEp;
-    while (current !=libNULL) {
-        for (uint8_t i = 0; i < current->ucHandlersCount; i++) {
-            check = check && 
-                (pxMbEp->paxHandlers[i]->eRxType < eModbusPacketTypesAmount) &&
-                (pxMbEp->paxHandlers[i]->eRxType != eModbusPacketNone) &&
-                (pxMbEp->paxHandlers[i]->eTxType < eModbusPacketTypesAmount) &&
-                (pxMbEp->paxHandlers[i]->pfOnReceive != libNULL);
-        }
+    uint8_t check = 1;
+    const ModbusEndpoint_t *current = pxMbEp;
+    while (current != libNULL) {
+        for (uint8_t i = 0; pxMbEp->paxHandlers[i] != libNULL; i++)
+            check = check && (pxMbEp->paxHandlers[i]->pfOnRequest != libNULL);
         current = current->pxNext;
     }
     if (check) {
         mb->pxEndpoints = pxMbEp;
-        mb->ucState = MODBUS_STATE_RECEIVING;
+        if(pxMbEp != libNULL) mb->ucState = MODBUS_STATE_RECEIVING;
+        else mb->ucState = MODBUS_STATE_IDLE;
     }
     return check;
 }
 
-uint8_t bModbusInit(Modbus_t *pxMb, ModbusConfig_t *pxConfig) {
+uint8_t bModbusInit(Modbus_t *pxMb, const ModbusConfig_t *pxConfig) {
 	if ((pxMb == libNULL) || 
         (pxConfig == libNULL) || 
         (pxConfig->pucPayLoadBuffer == libNULL) || 
-        (pxConfig->ucPayLoadBufferSize == 0) ||
-        (pxConfig->bIsServer && (pxConfig->pxMbEp == libNULL))) return false;
+        (pxConfig->ucPayLoadBufferSize == 0)) return false;
     _prModbus_t *mb = (_prModbus_t*)pxMb;
     mb->pxIface = pxConfig->pxIface;
-    if(pxConfig->bIsServer) {
-        if(!_bModbusServerLinkEndpoints(mb, pxConfig->pxMbEp)) return false;
-        mb->ucState = MODBUS_STATE_RECEIVING;
-    }
-    else {
-        mb->pxEndpoints = libNULL;
-        mb->ucState = MODBUS_STATE_IDLE;
-    }
-    mb->xFrame.pucData = pxConfig->pucPayLoadBuffer;
-    mb->xFrame.ucDataLength = pxConfig->ucPayLoadBufferSize;
+    mb->ucState = MODBUS_STATE_IDLE;
+    mb->ucPayLoadBufferSize = pxConfig->ucPayLoadBufferSize;
+    mb->pucPayLoadBuffer = pxConfig->pucPayLoadBuffer;
     mb->ucXferState = 0;
+    mb->rx_timeout = pxConfig->rx_timeout;
+    mb->tx_timeout = pxConfig->tx_timeout;
     mb->bAsciiMode = pxConfig->bAsciiMode;
     return true;
 }
 
-uint8_t bModbusClientRequest(Modbus_t *pxMb, ModbusRequest_t *pxRequest) {
+uint8_t bModbusRequest(Modbus_t *pxMb, ModbusRequest_t *pxRequest) {
     _prModbus_t *mb = (_prModbus_t *)pxMb;
 	if ((pxMb == libNULL) || 
         (mb->pxEndpoints != libNULL) || /* server mode */
         (mb->ucState != MODBUS_STATE_IDLE) ||
-        (pxRequest == libNULL) ||
-        (pxRequest->eRxType >= eModbusPacketTypesAmount) ||
-        (pxRequest->eTxType == eModbusPacketNone) ||
-        ((pxRequest->eTxType & eModbusPacketVariableLen) && ((pxRequest->xFrame.ucDataLength == 0) || (pxRequest->xFrame.pucData == libNULL))))
+        (pxRequest == libNULL))
+        return false;
+    mb->eTxType = _eModbusFuncToPacketType(pxRequest->xFrame.ucFunc, 1);
+    mb->eRxType = _eModbusFuncToPacketType(pxRequest->xFrame.ucFunc, 0);
+    if((mb->eTxType == eModbusPacketNone) ||
+       ((mb->eTxType & eModbusPacketVariableLen) && 
+         ((pxRequest->xFrame.ucLengthError == 0) || (pxRequest->xFrame.pucData == libNULL)))) 
         return false;
     mb->xRequest = *pxRequest;
-    mb->pxIface->vFifoFlush(mb->pxIface->pxRxPhy);
+    mb->pxIface->vFlush(mb->pxIface->pxRxPhy);
     mb->ucState = MODBUS_STATE_TRANSMITTING;
     return true;
 }

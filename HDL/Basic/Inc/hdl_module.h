@@ -37,8 +37,8 @@ typedef struct {
     size_t (*obj_var)[((var_size + (sizeof(size_t) - 1)) >> 2)];\
   } name;
 
-#define MODULE_ASSERT(desc, err_res)   if((hdl_is_null_module(desc)) || (hdl_state(desc) == HDL_MODULE_FAULT)) return err_res;
-
+#define MODULE_ASSERT(desc, err_res)        if(!(desc) || hdl_is_null_module(desc) || (hdl_state(desc) == HDL_MODULE_FAULT)) return err_res;
+#define MODULE_ASSERT_FAST(desc, err_res)   if(!(desc) || hdl_is_null_module(desc)) return err_res;
 
 __STATIC_INLINE uint8_t hdl_is_null_module(const void *desc) {
   hdl_module_base_t *mod = (hdl_module_base_t *)desc;

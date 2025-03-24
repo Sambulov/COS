@@ -31,6 +31,8 @@ extern "C" {
 #include "xl9535.h"
 #include "ms5194t.h"
 
+#include "hdl_stream_buffer.h"
+
 #include "smarc_carrier.h"
 
 //#include "smarc_module.h"

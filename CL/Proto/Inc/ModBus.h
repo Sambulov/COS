@@ -13,13 +13,9 @@
 extern "C" {
 #endif
 
-#define MODBUS_SERVER_RX_TIMEOUT            1000
-#define MODBUS_CLIENT_RX_TIMEOUT            200
-#define MODBUS_CLIENT_TX_TIMEOUT            200
+#define MODBUS_DESCRIPTOR_SIZE              64
 
-#define MODBUS_DESCRIPTOR_SIZE              52
-
-#define MODBUS_RESPONSE_ERROR_FLAG_MASK     0x80
+#define MODBUS_ERROR_FLAG                   0x80
 
 typedef uint8_t (*ReadDiscreteHandler_t)(uint16_t usAddr);
 typedef uint16_t (*ReadRegisterHandler_t)(uint16_t usAddr);
@@ -91,55 +87,49 @@ typedef enum {
 	ModbusGatewayTargetDeviceFailedtoRespond = 0x0B,
 } ModbusResult_t;
 
+typedef enum {
+	MB_FUNC_READ_OUTPUTS         = 0x01, /* Read discrete outputs, modbus coils */
+	MB_FUNC_READ_INPUTS          = 0x02, /* Read discrete inputs */
+	MB_FUNC_READ_HOLDINGS        = 0x03, /* Read analog outputs, modbus holding registers */
+	MB_FUNC_READ_INPUT_REGISTERS = 0x04, /* Read analog input, modbus input registers */
+	MB_FUNC_WRITE_OUTPUT         = 0x05, /* Write single discrete output, modbus coil */
+	MB_FUNC_WRITE_HOLDING        = 0x06, /* Write single analog output, modbus holding register */
+	MB_FUNC_WRITE_COILS          = 0x0f, /* Write multiple discrete outputs, modbus coils */
+	MB_FUNC_WRITE_HOLDINGS       = 0x10  /* Write multiple analog outputs, modbus holding registers */
+} ModbusFunctionCode_t;
+
 typedef struct {
 	uint8_t ucAddr;
 	uint8_t ucFunc;
 	uint16_t usRegAddr;
 	uint16_t usRegValueCount;
 	uint8_t ucLengthError;
-	uint8_t ucDataLength;
 	uint8_t *pucData;
 	uint16_t _usCrc;
 } ModbusFrame_t;
-
-/* eRxPacketType/eTxPacketType definitions. */
-typedef enum {
-    eModbusPacketNone        = 0,    /* Undefined */
-    eModbusPacketBase        = 1,    /* [ADDR][FUNC][MSB_REG_ADDR][LSB_REG_ADDR][MSB_COUNT][LSB_COUNT][MSB_CRC][LSB_CRC] */
-    eModbusPacketVariableLen = 2,    /* [ADDR][FUNC][LENGTH][DATA...][MSB_CRC][LSB_CRC] */
-    eModbusPacketFull        = 3,    /* [ADDR][FUNC][MSB_REG_ADDR][LSB_REG_ADDR][MSB_COUNT][LSB_COUNT][LENGTH][DATA...][MSB_CRC][LSB_CRC] */
-    eModbusPacketError       = 4,    /* [ADDR|0x80][FUNC][ERR][MSB_CRC][LSB_CRC] */
-    eModbusPacketTypesAmount
-} ModbusPacketType_t;
 
 typedef struct MBRH_t ModbusRequest_t;
 
 typedef ModbusResult_t (*ModbusCb_t)(ModbusRequest_t *pxRreq, ModbusFrame_t *pxResp);
 
 struct MBRH_t {
-	ModbusPacketType_t eRxType;
-	ModbusPacketType_t eTxType;
 	void *pxContext;
 	ModbusCb_t pfOnComplete;
 	ModbusFrame_t xFrame;
 };
 
 typedef struct {
-	ModbusPacketType_t eRxType;
-	ModbusPacketType_t eTxType;
-	void *pxContext;
-    ModbusCb_t pfOnReceive;
 	uint8_t ucFunctionNo;
+    ModbusCb_t pfOnRequest;
+	void *pxContext;
 } ModbusHandler_t;
 
-typedef struct MBSEP_t ModbusEndpoint_t;
+typedef struct MBEP_t ModbusEndpoint_t;
 
-struct MBSEP_t {
-	ModbusHandler_t **paxHandlers;
-	uint8_t ucHandlersCount;
-	uint8_t ucAddress;
-	uint8_t bBroadCast :1;
-	ModbusEndpoint_t *pxNext;
+struct MBEP_t {
+	uint8_t ucAddress;              /* 0 - broadcast */
+	const ModbusHandler_t *const *paxHandlers;
+	const ModbusEndpoint_t *pxNext;
 };
 
 typedef struct {
@@ -151,31 +141,32 @@ typedef struct {
 	int32_t (*lAvailableToRead)(void *pxPhy);
 	int32_t (*lRead)(void *pxPhy, uint8_t *pucBuf, uint32_t ulSize);
 	int32_t (*lWrite)(void *pxPhy, uint8_t *pucBuf, uint32_t ulSize);
-	void (*vFifoFlush)(void *pxPhy);
-	uint32_t (*ulTimerMs)(void *pxTimerPhy);
+	void (*vFlush)(void *pxPhy);
+	uint32_t (*ulTimerMs)(const void *pxTimerPhy);
 	void *pxTxPhy;
 	void *pxRxPhy;
 	void *pxTimerPhy;
 } ModbusIface_t;
 
 typedef struct {
-	ModbusIface_t *pxIface;
-	ModbusEndpoint_t *pxMbEp;
+	const ModbusIface_t *pxIface;
 	uint8_t *pucPayLoadBuffer;
 	uint8_t ucPayLoadBufferSize;
-	uint8_t bAsciiMode :1,
-	        bIsServer  :1;
+	uint16_t rx_timeout;
+	uint16_t tx_timeout;
+	uint8_t bAsciiMode :1;
 } ModbusConfig_t;
 
-uint8_t bModbusInit(Modbus_t *pxMb, ModbusConfig_t *pxConfig);
+uint8_t bModbusInit(Modbus_t *pxMb, const ModbusConfig_t *pxConfig);
 void vModbusWork(Modbus_t *pxMb);
+
+uint8_t bModbusServerLinkEndpoints(Modbus_t *pxMb, const ModbusEndpoint_t *pxMbEp);
 
 uint8_t bModbusRequest(Modbus_t *pxMb, ModbusRequest_t *pxRequest);
 
-static inline uint8_t bModbusErrorFrame(ModbusFrame_t *pxFrame) {
-    return ((pxFrame == libNULL) || ((pxFrame->ucFunc & MODBUS_RESPONSE_ERROR_FLAG_MASK) != 0));
+static inline uint8_t bModbusIsErrorFrame(ModbusFrame_t *pxFrame) {
+    return ((pxFrame == libNULL) || ((pxFrame->ucFunc & MODBUS_ERROR_FLAG) != 0));
 }
-ModbusPacketType_t eModbusFuncToPacketType(uint8_t ucFunc, uint8_t bIsRequest);
 
 #ifdef __cplusplus
 }

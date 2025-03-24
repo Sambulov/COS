@@ -10,8 +10,8 @@ uint16_t usConvertByteToAsciiHex(uint8_t ucVal, uint8_t bToUpperCase) {
 }
 
 uint8_t bConvertAsciiHexToByte(uint16_t usTwoAscii, uint8_t *ucOutByte) {
-	uint8_t ucHigh = usTwoAscii;
-	uint8_t ucLow = usTwoAscii >> 8;
+	uint8_t ucHigh = usTwoAscii >> 8;
+	uint8_t ucLow = usTwoAscii ;
 	if (!IS_HEX(ucHigh) || !IS_HEX(ucLow)) return 0;
   if (ucOutByte != libNULL) {
     ucLow = CHAR_TO_HEX(ucLow);

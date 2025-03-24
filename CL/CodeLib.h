@@ -63,6 +63,7 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #include "Stream.h"
 
 #include "ModBus.h"
+#include "ModBusHelpers.h"
 
 #ifdef __cplusplus
 }

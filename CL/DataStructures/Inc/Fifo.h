@@ -87,8 +87,8 @@ typedef struct {
 } FifoIfaceEx_t;
 
 typedef struct {
-	const FifoIface_t *const pxIface; /* provide buffer methods */
-	const FifoIfaceEx_t *const pxIfaceEx; /* optionally provide extended buffer methods */
+	const FifoIface_t *pxIface; /* provide buffer methods */
+	const FifoIfaceEx_t *pxIfaceEx; /* optionally provide extended buffer methods */
 	uint8_t dummy[FIFIO_DESCRIPTOR_SIZE];
 } Fifo_t;
 

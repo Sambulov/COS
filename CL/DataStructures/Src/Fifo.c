@@ -33,11 +33,10 @@ static int32_t _lFifoAvailableTo(_Fifo_t *pxDesc, uint8_t bReadData) {
 	int32_t av = -1;
 	if (bFifoIsValid((Fifo_t *)pxDesc)) {
 		if (bReadData) {
+			_bSwitchBuffer(pxDesc);
 			av = pxDesc->pxIface->pfBufferAvailable(pxDesc->buffer[pxDesc->rdBufIndex]);
-			if ((pxDesc->isDouble) && (!pxDesc->pxIface->pfIsInIsr())) {
-				if(!av) _bSwitchBuffer(pxDesc);
+			if ((pxDesc->isDouble) && (!pxDesc->pxIface->pfIsInIsr()))
 				av += pxDesc->pxIface->pfBufferAvailable(pxDesc->buffer[!pxDesc->rdBufIndex]);
-			}
 		}
 		else {
 			if (pxDesc->isDouble) av = pxDesc->pxIface->pfBufferFree(pxDesc->buffer[!pxDesc->rdBufIndex]);

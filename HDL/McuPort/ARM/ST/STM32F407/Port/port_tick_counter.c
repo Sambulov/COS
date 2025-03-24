@@ -42,54 +42,48 @@ static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enab
 }
 
 static uint32_t _hdl_tick_counter_get(const void *counter) {
-  if(hdl_state(counter) != HDL_MODULE_FAULT) {
-    hdl_tick_counter_mcu_t *tick_cnt = (hdl_tick_counter_mcu_t *)counter;
-    uint32_t periph = tick_cnt->config->phy;
-    //const hdl_tick_counter_timer_config_t *config = tick_cnt->config->type.timer;
-    if(periph == (uint32_t)SysTick) return (SysTick->LOAD - SysTick->VAL);
-    // if(config->counterdirection == TIMER_COUNTER_UP)
-    //   return TIMER_CNT(periph);
-    // return (TIMER_CAR(periph) - TIMER_CNT(periph));
-  }
+  hdl_tick_counter_mcu_t *tick_cnt = (hdl_tick_counter_mcu_t *)counter;
+  uint32_t periph = tick_cnt->config->phy;
+  //const hdl_tick_counter_timer_config_t *config = tick_cnt->config->type.timer;
+  if(periph == (uint32_t)SysTick) return (SysTick->LOAD - SysTick->VAL);
+  // if(config->counterdirection == TIMER_COUNTER_UP)
+  //   return TIMER_CNT(periph);
+  // return (TIMER_CAR(periph) - TIMER_CNT(periph));
   return 0;
 }
 
 void _hdl_tick_counter_set(const void *counter, uint32_t value, uint32_t period) {
-  if(hdl_state(counter) != HDL_MODULE_FAULT) {
-    hdl_tick_counter_mcu_t *tick_cnt = (hdl_tick_counter_mcu_t *)counter;
-    uint32_t periph = tick_cnt->config->phy;
-    //const hdl_tick_counter_timer_config_t *config = tick_cnt->config->type.timer;
-    if(periph == (uint32_t)SysTick) {
-      SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-      SysTick->VAL = (SysTick->LOAD - value);
-      SysTick->LOAD = period & SysTick_LOAD_RELOAD_Msk;
-      SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
-    }
-    // else {
-    //   timer_disable(periph);
-    //   timer_interrupt_flag_clear(periph, TIMER_INT_FLAG_UP);
-    //   if(config->counterdirection == TIMER_COUNTER_UP) {
-    //     TIMER_CNT(periph) = value;
-    //   }
-    //   else {
-    //     TIMER_CNT(periph) = (TIMER_CAR(periph) - value);
-    //   }
-    //   TIMER_CAR(periph) = period;
-    //   timer_enable(periph);
-    // }
-  }  
+  hdl_tick_counter_mcu_t *tick_cnt = (hdl_tick_counter_mcu_t *)counter;
+  uint32_t periph = tick_cnt->config->phy;
+  //const hdl_tick_counter_timer_config_t *config = tick_cnt->config->type.timer;
+  if(periph == (uint32_t)SysTick) {
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+    SysTick->VAL = (SysTick->LOAD - value);
+    SysTick->LOAD = period & SysTick_LOAD_RELOAD_Msk;
+    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+  }
+  // else {
+  //   timer_disable(periph);
+  //   timer_interrupt_flag_clear(periph, TIMER_INT_FLAG_UP);
+  //   if(config->counterdirection == TIMER_COUNTER_UP) {
+  //     TIMER_CNT(periph) = value;
+  //   }
+  //   else {
+  //     TIMER_CNT(periph) = (TIMER_CAR(periph) - value);
+  //   }
+  //   TIMER_CAR(periph) = period;
+  //   timer_enable(periph);
+  // }
 }
 
 void _hdl_tick_counter_stop(const void *counter) {
-  if(hdl_state(counter) != HDL_MODULE_FAULT) {
-    hdl_tick_counter_mcu_t *tick_cnt = (hdl_tick_counter_mcu_t *)counter;
-    uint32_t periph = tick_cnt->config->phy;
-    if(periph == (uint32_t)SysTick) SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-    // else {
-    //   timer_disable(periph);
-    //   timer_interrupt_flag_clear(periph, TIMER_INT_FLAG_UP);
-    // }
-  }  
+  hdl_tick_counter_mcu_t *tick_cnt = (hdl_tick_counter_mcu_t *)counter;
+  uint32_t periph = tick_cnt->config->phy;
+  if(periph == (uint32_t)SysTick) SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+  // else {
+  //   timer_disable(periph);
+  //   timer_interrupt_flag_clear(periph, TIMER_INT_FLAG_UP);
+  // }
 }
 
 const hdl_tick_counter_iface_t hdl_tick_counter_iface = {

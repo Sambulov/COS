@@ -71,14 +71,12 @@ static void _vFifoPrintfParseFlags(const uint8_t* pcFormat, uint32_t *pulCursor,
 		symbol = pcFormat[*pulCursor];
 		/* Left-pads the number with zeroes (0) instead of spaces when padding is specified.
 		   If both 0 and - appear, the 0 is ignored. */
-		if ((symbol == '0') && !(*pulOptions & PRINTF_FLAG_ALIGNMENT_LEFT)) {
+		if ((symbol == '0') && !(*pulOptions & PRINTF_FLAG_ALIGNMENT_LEFT))
 			*pulOptions |= PRINTF_FLAG_ZERO_PADDING;
-		}
 		/* If no sign is going to be written, a blank space is inserted before the value.
 		   The blank is ignored if both the blank and + flags appear. */
-		else if((symbol == ' ') && !(*pulOptions & PRINTF_FLAG_FORCE_SIGN)) {
+		else if((symbol == ' ') && !(*pulOptions & PRINTF_FLAG_FORCE_SIGN))
 			*pulOptions |= PRINTF_FLAG_SPACE_FOR_SIGN;
-		}
 		else if(symbol == '-') { /* Left-justify within the given field width; Right justification is the default */
 			*pulOptions |= PRINTF_FLAG_ALIGNMENT_LEFT;
 			*pulOptions &= ~PRINTF_FLAG_ZERO_PADDING;
@@ -88,15 +86,12 @@ static void _vFifoPrintfParseFlags(const uint8_t* pcFormat, uint32_t *pulCursor,
 			*pulOptions |= PRINTF_FLAG_FORCE_SIGN;
 			*pulOptions &= ~PRINTF_FLAG_SPACE_FOR_SIGN;
 		}
-		else if(symbol == '#') { /* Used with o, x or X specifiers the value is preceeded with 0, 0x or 0X respectively for values
-							        different than zero.
-							        Used with a, A, e, E, f, F, g or G it forces the written output to contain a decimal point
-							        even if no more digits follow. By default, if no digits follow, no decimal point is written. */
+		else if(symbol == '#')  /* Used with o, x or X specifiers the value is preceeded with 0, 0x or 0X respectively for values
+							       different than zero.
+							       Used with a, A, e, E, f, F, g or G it forces the written output to contain a decimal point
+							       even if no more digits follow. By default, if no digits follow, no decimal point is written. */
 			*pulOptions |= PRINTF_FLAG_VALUE_PRECEDED;
-		}
-		else {
-			break;
-		}
+		else break;
 		(*pulCursor)++;
 	} while (1);
 }
@@ -200,9 +195,7 @@ static void _vFifoPrintfParseLength(const uint8_t* pcFormat, uint32_t *pulCursor
 			*pulOptions |= PRINTF_LENGTH_LONG_LONG;
 			(*pulCursor)++;
 		}
-		else {
-			*pulOptions |= PRINTF_LENGTH_LONG;
-		}
+		else *pulOptions |= PRINTF_LENGTH_LONG;
 	}
 	else if(symbol == 'h') { /* Size is short */
 		(*pulCursor)++;
@@ -211,9 +204,7 @@ static void _vFifoPrintfParseLength(const uint8_t* pcFormat, uint32_t *pulCursor
 			*pulOptions |= PRINTF_LENGTH_CHAR;
 			(*pulCursor)++;
 		}
-		else {
-			*pulOptions |= PRINTF_LENGTH_SHORT;
-		}
+		else *pulOptions |= PRINTF_LENGTH_SHORT;
 	}
 }
 
@@ -226,57 +217,39 @@ static void _vFifoPrintfParseLength(const uint8_t* pcFormat, uint32_t *pulCursor
 static void _vFifoPrintfParseSpecifier(const uint8_t* pcFormat, uint32_t *pulCursor, uint32_t *pulOptions) {
 	/* Specifier */
 	uint8_t symbol = pcFormat[*pulCursor];
-
-	if (IS_UPALPHA(symbol)) {
-		*pulOptions |= PRINTF_SPECIFIER_UPPER_CASE;
-	}
-	else {
-		symbol = TO_UPPER(symbol);
-	}
+	if (IS_UPALPHA(symbol)) *pulOptions |= PRINTF_SPECIFIER_UPPER_CASE;
+	else symbol = TO_UPPER(symbol);
 	switch (symbol) { /* Type is... */
-	case 'S' :					/* String */
-		*pulOptions |= PRINTF_TYPE_STRING;
-		break;
-	case 'C' :					/* Character */
-		*pulOptions |= PRINTF_TYPE_CHARACTER;
-		break;
-	case 'T' :					/* Time */
-		*pulOptions |= PRINTF_TYPE_TIME;
-		break;
-	case 'P' :					/* Pointer address */
-		*pulOptions |= PRINTF_TYPE_POINTER;
-		break;
-	case 'B' :					/* Binary */
-		*pulOptions |= PRINTF_TYPE_UNSIGNED_BIN;
-		*pulOptions &= ~PRINTF_FLAG_FORCE_SIGN & ~PRINTF_FLAG_SPACE_FOR_SIGN;
-		break;
-	case 'O' :					/* Octal */
-		*pulOptions |= PRINTF_TYPE_UNSIGNED_OCT;
-		*pulOptions &= ~PRINTF_FLAG_FORCE_SIGN & ~PRINTF_FLAG_SPACE_FOR_SIGN;
-		break;
-	case 'I' :					/* Signed decimal */
-	case 'D' :					/* Signed decimal */
-		*pulOptions |= PRINTF_TYPE_SIGNED;
-		/* fall through */
-	case 'U' :					/* Unsigned decimal */
-		*pulOptions &= ~PRINTF_FLAG_VALUE_PRECEDED;
-		break;
-	case 'X' :					/* Hexdecimal */
-		*pulOptions |= PRINTF_TYPE_UNSIGNED_HEX;
-		*pulOptions &= ~PRINTF_FLAG_FORCE_SIGN & ~PRINTF_FLAG_SPACE_FOR_SIGN;
-		break;
-	case 'F' :					/* Float */
-		*pulOptions |= PRINTF_TYPE_DOUBLE;
-		break;
-	case 'E' :
-		*pulOptions |= PRINTF_TYPE_DOUBLE_SCIENTIFIC;
-		break;
-	case 'G' :
-		*pulOptions |= PRINTF_TYPE_DOUBLE | PRINTF_TYPE_DOUBLE_SCIENTIFIC | PRINTF_FLOAT_ZERO_TRUNC;
-		break;
-	default:
-		*pulOptions |= PRINTF_TYPE_UNKNOWN;
-		return;
+		case 'S': *pulOptions |= PRINTF_TYPE_STRING; break;
+		case 'C': *pulOptions |= PRINTF_TYPE_CHARACTER; break;
+		case 'T': *pulOptions |= PRINTF_TYPE_TIME; break;
+		case 'P': *pulOptions |= PRINTF_TYPE_POINTER; break;
+		case 'B':					/* Binary */
+			*pulOptions |= PRINTF_TYPE_UNSIGNED_BIN;
+			*pulOptions &= ~PRINTF_FLAG_FORCE_SIGN & ~PRINTF_FLAG_SPACE_FOR_SIGN;
+			break;
+		case 'O' :					/* Octal */
+			*pulOptions |= PRINTF_TYPE_UNSIGNED_OCT;
+			*pulOptions &= ~PRINTF_FLAG_FORCE_SIGN & ~PRINTF_FLAG_SPACE_FOR_SIGN;
+			break;
+		case 'I' :					/* Signed decimal */
+		case 'D' :					/* Signed decimal */
+			*pulOptions |= PRINTF_TYPE_SIGNED;
+			/* fall through */
+		case 'U' :					/* Unsigned decimal */
+			*pulOptions &= ~PRINTF_FLAG_VALUE_PRECEDED;
+			break;
+		case 'X' :					/* Hexdecimal */
+			*pulOptions |= PRINTF_TYPE_UNSIGNED_HEX;
+			*pulOptions &= ~PRINTF_FLAG_FORCE_SIGN & ~PRINTF_FLAG_SPACE_FOR_SIGN;
+			break;
+		case 'F': *pulOptions |= PRINTF_TYPE_DOUBLE;
+			break;
+		case 'E': *pulOptions |= PRINTF_TYPE_DOUBLE_SCIENTIFIC;
+			break;
+		case 'G': *pulOptions |= PRINTF_TYPE_DOUBLE | PRINTF_TYPE_DOUBLE_SCIENTIFIC | PRINTF_FLOAT_ZERO_TRUNC;
+			break;
+		default: *pulOptions |= PRINTF_TYPE_UNKNOWN; return;
 	}
 	(*pulCursor)++;
 }
@@ -296,36 +269,22 @@ static int32_t _lFifoPrintfPrintString(Fifo_t *xFifo, uint8_t *pcString, uint32_
 	int32_t strLength = lStrLen(pcString);
 	int32_t streamed = 0;
 	int32_t result;
-	if (ulOptions & PRINTF_PRECISION_PRESENT) {
+	if (ulOptions & PRINTF_PRECISION_PRESENT)
 		strLength = (strLength > (int32_t)ulCount) ? (int32_t)ulCount : strLength;
-	}
 	lWidth -= strLength;
 	int32_t stage = 0;
-	if (ulOptions & PRINTF_FLAG_ALIGNMENT_LEFT) {
-		stage = 2;
-	}
-	if (lWidth <= 0) {
-		stage = 1;
-	}
+	if (ulOptions & PRINTF_FLAG_ALIGNMENT_LEFT) stage = 2;
+	if (lWidth <= 0) stage = 1;
 	while (stage < 4) {
 		switch (stage) {
-		case 0:
-		case 3:
-			result = lFifoFillAll(xFifo, ' ', lWidth);
-			break;
-		case 1:
-			stage = 3;
-			/* fall through */
-		case 2:
-			result = lFifoWriteStringAll(xFifo, pcString);
-			break;
-		default:
-			result = 0;
-			break;
+			case 0:
+			case 3: result = lFifoFillAll(xFifo, ' ', lWidth); break;
+			case 1: stage = 3;
+				/* fall through */
+			case 2: result = lFifoWriteStringAll(xFifo, pcString); break;
+			default: result = 0; break;
 		}
-		if (result < 0) {
-			return result;
-		}
+		if (result < 0) return result;
 		stage++;
 		streamed += result;
 	}
@@ -343,16 +302,10 @@ static int32_t _lFloatToStrPreapare(float fpValue, int32_t *plOut10Exponent, uin
 	uint32_t uvalue = *(uint32_t *)(&fpValue);
 	uint8_t exponent = (uint8_t)(uvalue >> 23);
 	uint32_t fraction = (uvalue & 0x00ffffff) | 0x00800000;
-	if (exponent == 0) { // don't care about a subnormals
-			return 0xfc; // subnormal
-	}
+	if (exponent == 0) return 0xfc; // subnormal, don't care about a subnormals
 	if (exponent == 0xff) {
-		if (fraction & 0x007fffff) {
-			return 0xfd; // NaN
-		}
-		if (uvalue & 0x80000000UL) {
-			return 0xfe; // -Infinity
-		}
+		if (fraction & 0x007fffff) return 0xfd; // NaN
+		if (uvalue & 0x80000000UL) return 0xfe; // -Infinity
 		return 0xff; // +Infinity
 	}
 	*plOut10Exponent = ((((exponent >> 3)) * 77 + 63) >> 5) - 38;  // convert exponent of 2 to exponent of 10
@@ -363,9 +316,7 @@ static int32_t _lFloatToStrPreapare(float fpValue, int32_t *plOut10Exponent, uin
 		*pulOutValue = *pulOutValue * 10;
 		(*plOut10Exponent)--;
 	}
-	if (uvalue & 0x80000000UL) {
-		return 1;
-	}
+	if (uvalue & 0x80000000UL) return 1;
 	return 0;
 }
 
@@ -392,42 +343,33 @@ static int32_t _lFifoPrintFloat(Fifo_t *pxFifo, float fpValue, uint32_t ulOption
 	int32_t stage = 0;
 	int32_t extructCount = 0;
 	switch (_lFloatToStrPreapare(fpValue, &exp10, &significantDigits)) {
-	case 1:
-		*sign = '-';
-		break;
-	case 0:
-		if (ulOptions & PRINTF_FLAG_FORCE_SIGN) {
-			*sign = '+';
-		}
-		else if (ulOptions & PRINTF_FLAG_SPACE_FOR_SIGN) {
-			*sign = ' ';
-		}
-		break;
-	case 0xfc:
-		value[0] = '0';
-		if (!(ulOptions & PRINTF_TYPE_DOUBLE)) {
-			value[1] = '.';
-			value[2] = '0';
-			value[4] = '\0';
-		}
-		else {
-			value[1] = '\0';
-		}
-		break;
-	case 0xfd:
-		value = (uint8_t *)"NaN";
-		width -= 3;
-		break;
-	case 0xfe:
-		value = (uint8_t *)"-Infinity";
-		width -= 9;
-		break;
-	case 0xff:
-		value = (uint8_t *)"+Infinity";
-		width -= 9;
-		break;
-	default:
-		break;
+		case 1: *sign = '-'; break;
+		case 0:
+			if (ulOptions & PRINTF_FLAG_FORCE_SIGN) *sign = '+';
+			else if (ulOptions & PRINTF_FLAG_SPACE_FOR_SIGN) *sign = ' ';
+			break;
+		case 0xfc:
+			value[0] = '0';
+			if (!(ulOptions & PRINTF_TYPE_DOUBLE)) {
+				value[1] = '.';
+				value[2] = '0';
+				value[4] = '\0';
+			}
+			else value[1] = '\0';
+			break;
+		case 0xfd:
+			value = (uint8_t *)"NaN";
+			width -= 3;
+			break;
+		case 0xfe:
+			value = (uint8_t *)"-Infinity";
+			width -= 9;
+			break;
+		case 0xff:
+			value = (uint8_t *)"+Infinity";
+			width -= 9;
+			break;
+		default: break;
 	}
 	if (*value != '\0') {
 		ulOptions &= ~PRINTF_TYPE_DOUBLE_SCIENTIFIC;
@@ -436,48 +378,35 @@ static int32_t _lFifoPrintFloat(Fifo_t *pxFifo, float fpValue, uint32_t ulOption
 		stage = 1;
 	}
 	else {
-		if (!(ulOptions & PRINTF_PRECISION_PRESENT)) { /* Set precision */
+		if (!(ulOptions & PRINTF_PRECISION_PRESENT)) /* Set precision */
 			precision = 6;
-		}
 		if ((ulOptions & PRINTF_TYPE_DOUBLE) && (ulOptions & PRINTF_TYPE_DOUBLE_SCIENTIFIC)) { /* Specifier G; Determine presentation form */
 			/*
 			Signed values are displayed in f or e format, whichever is more compact for the given value and precision. The e format is
 			used only when the exponent of the value is less than -4 or greater than or equal to the precision argument.
 			*/
-			if (exp10 >= precision || exp10 < -4) {
+			if (exp10 >= precision || exp10 < -4)
 				/* use scientific presentation */
 				ulOptions &= ~PRINTF_TYPE_DOUBLE;
-			}
 			else {
 				/* use decimal presentation */
 				ulOptions &= ~PRINTF_TYPE_DOUBLE_SCIENTIFIC;
-				if (exp10 > 0) {
-					precision -= exp10;
-				}
+				if (exp10 > 0) precision -= exp10;
 			}
 			precision--;
-			if (precision < 0) {
-				precision = 0;
-			}
+			if (precision < 0) precision = 0;
 		}
 
 		if (ulOptions & PRINTF_TYPE_DOUBLE_SCIENTIFIC) {
 			width -= 5;  /* reserv place for exponent: X[.{X}]EsXX */
-			if((ulOptions & PRINTF_FLOAT_ZERO_TRUNC) && (precision > 14)) {
+			if((ulOptions & PRINTF_FLOAT_ZERO_TRUNC) && (precision > 14))
 				precision = 14;
-			}
 		}
-		else {
-			width -= (exp10 < 0) ? 1 : exp10 + 1;
-		}
+		else width -= (exp10 < 0) ? 1 : exp10 + 1;
 		width -= ((precision > 0) ? precision + 1 : 0) + (*sign != '\0' ? 1 : 0);
-
-		if ((ulOptions & PRINTF_TYPE_DOUBLE) && (-precision < exp10 + 1)) {
+		if ((ulOptions & PRINTF_TYPE_DOUBLE) && (-precision < exp10 + 1))
 			extructCount = exp10 + precision + 2;  /* +1 to exponent and +1 to raund */
-		}
-		else if (ulOptions & PRINTF_TYPE_DOUBLE_SCIENTIFIC) {
-			extructCount = precision + 2;
-		}
+		else if (ulOptions & PRINTF_TYPE_DOUBLE_SCIENTIFIC) extructCount = precision + 2;
 		if (extructCount > 0) {
 			int32_t offset = 0;
 			while ((offset < extructCount) && (offset < FLOAT_BUFFER_SIZE)) { /* Extract significant digits to string buffer */
@@ -497,23 +426,15 @@ static int32_t _lFifoPrintFloat(Fifo_t *pxFifo, float fpValue, uint32_t ulOption
 					if (offset == -1) {
 						value = &(value[offset]);
 						exp10++;
-						if (ulOptions & PRINTF_TYPE_DOUBLE) {
-							width--;
-						}
+						if (ulOptions & PRINTF_TYPE_DOUBLE) width--;
 					}
 				}
-				else {
-					value[offset] = '\0';
-				}
+				else value[offset] = '\0';
 			}
-			else {
-				extructCount = extructCount > offset ? offset : extructCount;
-			}
+			else extructCount = extructCount > offset ? offset : extructCount;
 		}
 		stage = 0;
-		if (!(ulOptions & PRINTF_FLAG_ALIGNMENT_LEFT) && !(ulOptions & PRINTF_FLAG_ZERO_PADDING)) {
-			stage = 1;
-		}
+		if (!(ulOptions & PRINTF_FLAG_ALIGNMENT_LEFT) && !(ulOptions & PRINTF_FLAG_ZERO_PADDING)) stage = 1;
 	}
 	uint8_t filler = ' ';
 	do {
@@ -547,36 +468,27 @@ static int32_t _lFifoPrintFloat(Fifo_t *pxFifo, float fpValue, uint32_t ulOption
 				int32_t offset = 0;
 				uint8_t decimalPointIsSet = 0;
 				if (!(ulOptions & PRINTF_TYPE_DOUBLE_SCIENTIFIC)) {
-					if (exp10 > 0) {
-						curretExp = exp10;
-					}
+					if (exp10 > 0) curretExp = exp10;
 					offset += exp10;
 				}
 
 				while (curretExp >= -precision) {
-					if (memCount == 0) {
-						return FIFO_FAIL;
-					}
+					if (memCount == 0) return FIFO_FAIL;
 					if ((!decimalPointIsSet) && (curretExp == -1)) {
 						decimalPointIsSet = 1;
 						memCount = bFifoWriteByte(pxFifo, '.');
 						curretExp++;
 					}
 					else {
-						if (offset - curretExp < extructCount && offset - curretExp >= 0) {
+						if (offset - curretExp < extructCount && offset - curretExp >= 0)
 							memCount = bFifoWriteByte(pxFifo, value[offset - curretExp]);
-						}
-						else {
-							memCount = bFifoWriteByte(pxFifo, '0');
-						}
+						else memCount = bFifoWriteByte(pxFifo, '0');
 					}
 					curretExp--;
 					result++;
 				}
 			}
-			else {
-				result = lFifoWriteStringAll(pxFifo, value);
-			}
+			else result = lFifoWriteStringAll(pxFifo, value);
 			filler = ' ';
 			break;
 		case 4:	/* print exponent */
@@ -590,12 +502,9 @@ static int32_t _lFifoPrintFloat(Fifo_t *pxFifo, float fpValue, uint32_t ulOption
 				result = lFifoWriteAll(pxFifo, (uint8_t *)buffer, 4);
 			}
 			break;
-		default:
-			break;
+		default: break;
 		}
-		if (result == FIFO_FAIL) {
-			return result;
-		}
+		if (result == FIFO_FAIL) return result;
 		streamed += result;
 		stage++;
 	} while (result >= 0 && stage < 6);
@@ -620,41 +529,31 @@ static int32_t _lFifoPrintInteger(Fifo_t *xFifo, uint64_t ullValue, uint32_t ulO
 		prefix[0] = '-';
 	}
 	else {
-		if (ulOptions & PRINTF_FLAG_SPACE_FOR_SIGN) {
-			prefix[0] = ' ';
-		}
-		else if (ulOptions & PRINTF_FLAG_FORCE_SIGN) {
-			prefix[0] = '+';
-		}
+		if (ulOptions & PRINTF_FLAG_SPACE_FOR_SIGN) prefix[0] = ' ';
+		else if (ulOptions & PRINTF_FLAG_FORCE_SIGN) prefix[0] = '+';
 	}
 	prefix[1] = '\0';
 	int32_t notation = 10;
 	switch (ulOptions & PRINTF_TYPE_UNSIGNED_MASK) {
-	case PRINTF_TYPE_UNSIGNED_BIN:
-		notation = 2;
-		prefix[1] = 'b';
-		break;
-	case PRINTF_TYPE_UNSIGNED_OCT:
-		notation = 8;
-		prefix[1] = '\0';
-		break;
-	case PRINTF_TYPE_UNSIGNED_HEX:
-		notation = 16;
-		prefix[1] = 'x';
-		break;
-	default:
-		break;
+		case PRINTF_TYPE_UNSIGNED_BIN:
+			notation = 2;
+			prefix[1] = 'b';
+			break;
+		case PRINTF_TYPE_UNSIGNED_OCT:
+			notation = 8;
+			prefix[1] = '\0';
+			break;
+		case PRINTF_TYPE_UNSIGNED_HEX:
+			notation = 16;
+			prefix[1] = 'x';
+			break;
+		default: break;
 	}
-	if (prefix[0] != '\0') {
-		lWidth--;
-	}
+	if (prefix[0] != '\0') lWidth--;
 	else if (ulOptions & PRINTF_FLAG_VALUE_PRECEDED) {
-		if (ulOptions & PRINTF_SPECIFIER_UPPER_CASE) {
+		if (ulOptions & PRINTF_SPECIFIER_UPPER_CASE)
 			prefix[1] = TO_UPPER(prefix[1]);
-		}
-		if (prefix[1] != '\0') {
-			lWidth--;
-		}
+		if (prefix[1] != '\0') lWidth--;
 		prefix[0] = '0';
 		prefix[2] = '\0';
 		lWidth--;
@@ -668,9 +567,7 @@ static int32_t _lFifoPrintInteger(Fifo_t *xFifo, uint64_t ullValue, uint32_t ulO
 	lWidth -= intLen;
 	if (ulOptions & PRINTF_PRECISION_PRESENT) {
 		lPrecision -= intLen;
-		if (lPrecision > 0) {
-			lWidth -= lPrecision;
-		}
+		if (lPrecision > 0) lWidth -= lPrecision;
 	}
 	else if (ulOptions & PRINTF_FLAG_ZERO_PADDING) {
 		lPrecision = lWidth;
@@ -682,177 +579,130 @@ static int32_t _lFifoPrintInteger(Fifo_t *xFifo, uint64_t ullValue, uint32_t ulO
 	while (stage < 5) {
 		result = 0;
 		switch (stage) {
-		case 0:
-			if (!(ulOptions & PRINTF_FLAG_ALIGNMENT_LEFT) && lWidth > 0) {
-				result = lFifoFillAll(xFifo, ' ', lWidth);
-				lWidth = 0;
-			}
-			break;
-		case 1:
-			if (!(ulOptions & PRINTF_TYPE_UNSIGNED_NO_PREFIX) && prefix[0] != '\0') {
-				result = lFifoWriteStringAll(xFifo, prefix);
-			}
-			break;
-		case 2:
-			if (lPrecision > 0) {
-				result = lFifoFillAll(xFifo, '0', lPrecision);
-			}
-			break;
-		case 3: {
-				uint8_t integerStr[intLen];
-				uint8_t integerIndex = intLen;
-				uint8_t digit;
-				do {
-					digit = ullValue % notation;
-					if (digit > 9) {
-						if (ulOptions & PRINTF_SPECIFIER_UPPER_CASE) {
-							digit +=  'A' - 10;
+			case 0:
+				if (!(ulOptions & PRINTF_FLAG_ALIGNMENT_LEFT) && lWidth > 0) {
+					result = lFifoFillAll(xFifo, ' ', lWidth);
+					lWidth = 0;
+				}
+				break;
+			case 1:
+				if (!(ulOptions & PRINTF_TYPE_UNSIGNED_NO_PREFIX) && prefix[0] != '\0') 
+					result = lFifoWriteStringAll(xFifo, prefix);
+				break;
+			case 2:
+				if (lPrecision > 0)	result = lFifoFillAll(xFifo, '0', lPrecision);
+				break;
+			case 3: {
+					uint8_t integerStr[intLen];
+					uint8_t integerIndex = intLen;
+					uint8_t digit;
+					do {
+						digit = ullValue % notation;
+						if (digit > 9) {
+							if (ulOptions & PRINTF_SPECIFIER_UPPER_CASE) digit +=  'A' - 10;
+							else digit +=  'a' - 10;
 						}
-						else {
-							digit +=  'a' - 10;
-						}
-					}
-					else {
-						digit += '0';
-					}
-					integerStr[--integerIndex] = digit;
-					result++;
-					ullValue /= notation;
-				} while (integerIndex);
-				result = lFifoWriteAll(xFifo, integerStr, intLen);
-			}
-			break;
-		case 4:
-			if (ulOptions & PRINTF_FLAG_ALIGNMENT_LEFT && lWidth > 0) {
-				result = lFifoFillAll(xFifo, ' ', lWidth);
-			}
-		default:
-			break;
+						else digit += '0';
+						integerStr[--integerIndex] = digit;
+						result++;
+						ullValue /= notation;
+					} while (integerIndex);
+					result = lFifoWriteAll(xFifo, integerStr, intLen);
+				}
+				break;
+			case 4:
+				if (ulOptions & PRINTF_FLAG_ALIGNMENT_LEFT && lWidth > 0) result = lFifoFillAll(xFifo, ' ', lWidth);
+			default: break;
 		}
-		if (result < 0) {
-			return FIFO_FAIL;
-		}
+		if (result < 0) return FIFO_FAIL;
 		streamed += result;
 		stage++;
 	}
 	return streamed;
 }
 
-int32_t lFifoVPrintf(Fifo_t *xFifo, const uint8_t* pcFormat, va_list xArgs) {
-    if(xFifo == libNULL) return FIFO_FAIL;
+int32_t lFifoVPrintf(Fifo_t *pxFifo, const uint8_t* pcFormat, va_list xArgs) {
+    if(!bFifoIsValid(pxFifo)) return FIFO_FAIL;
     int32_t streamed = 0;
     int32_t result;
     uint32_t cursor = 0;
     uint8_t symbol;
-    int32_t width, precision;
-    uint32_t options;
     while (pcFormat[cursor] != '\0') {
         result = 0;
-        symbol = pcFormat[cursor++];
-        if (symbol == '%') {
-            /* escape character */
-            if (pcFormat[cursor] == '%') {
-                /* double % */
+		uint32_t from = cursor;
+		while (pcFormat[cursor] != '\0' && pcFormat[cursor] != '%') cursor++;
+		if(from != cursor) result = lFifoWrite(pxFifo, &pcFormat[from], cursor - from);
+        else if (pcFormat[cursor] == '%') {
+            if (pcFormat[++cursor] == '%') /* %% */ {
+				result = bFifoWriteByte(pxFifo, pcFormat[cursor]); /* print escape character */
                 cursor++;
             }
             else {
-                /* Parsing */
-                symbol = '\0';
+				uint32_t options;
+				int32_t width, precision;
                 width = precision = options = 0;
-                /* Flags */
                 _vFifoPrintfParseFlags(pcFormat, &cursor, &options);
-                /* Width */
                 width = _lFifoPrintfParseWidth(pcFormat, &cursor, &options, &xArgs);
-                /* Precision */
                 precision = _lFifoPrintfParsePrecision(pcFormat, &cursor, &options, &xArgs);
-                /* Length */
                 _vFifoPrintfParseLength(pcFormat, &cursor, &options);
-                /* Specifier */
                 _vFifoPrintfParseSpecifier(pcFormat, &cursor, &options);
-                if (!(options & PRINTF_TYPE_UNKNOWN)) {/* Format recognized, print parameter. Else unknown type, pass-through */
+                if (!(options & PRINTF_TYPE_UNKNOWN)) { /* Format recognized, print parameter. Else unknown type, pass-through */
                     if (options & PRINTF_TYPE_CHARACTER) {
                         int32_t symb = (uint8_t)va_arg(xArgs, int32_t);
-                        result = _lFifoPrintfPrintString(xFifo, (uint8_t*)&symb, 1, width, options);
+                        result = _lFifoPrintfPrintString(pxFifo, (uint8_t*)&symb, 1, width, options);
                     }
-                    else if (options & PRINTF_TYPE_STRING) {
-                        result = _lFifoPrintfPrintString(xFifo, va_arg(xArgs, uint8_t*), precision, width, options);
-                    }
+                    else if (options & PRINTF_TYPE_STRING)
+                        result = _lFifoPrintfPrintString(pxFifo, va_arg(xArgs, uint8_t*), precision, width, options);
                     else if (options & PRINTF_TYPE_DOUBLE || options & PRINTF_TYPE_DOUBLE_SCIENTIFIC) {
                         float fValue = (float)va_arg(xArgs, double);
-                        result = _lFifoPrintFloat(xFifo, fValue, options, width, precision);
+                        result = _lFifoPrintFloat(pxFifo, fValue, options, width, precision);
                     }
                     else { /* Print decimal */
                         uint64_t value;
                         switch (options & PRINTF_LENGTH_MASK) {
                         case PRINTF_LENGTH_LONG_LONG:
-                            if (options&PRINTF_TYPE_SIGNED) {
-                                value = (uint64_t)va_arg(xArgs, int64_t);
-                            }
-                            else {
-                                value = va_arg(xArgs, uint64_t);
-                            }
+                            if (options & PRINTF_TYPE_SIGNED) value = (uint64_t)va_arg(xArgs, int64_t);
+                            else value = va_arg(xArgs, uint64_t);
                             break;
                         case PRINTF_LENGTH_LONG:
-                            if (options&PRINTF_TYPE_SIGNED) {
-                                value = (uint64_t)va_arg(xArgs, int32_t);
-                            }
-                            else {
-                                value = (uint64_t)va_arg(xArgs, uint32_t);
-                            }
+                            if (options & PRINTF_TYPE_SIGNED) value = (uint64_t)va_arg(xArgs, int32_t);
+                            else value = (uint64_t)va_arg(xArgs, uint32_t);
                             break;
                         case PRINTF_LENGTH_CHAR:
                         case PRINTF_LENGTH_SHORT:
                         default:
-                            if (options&PRINTF_TYPE_SIGNED) {
-                                value = (uint64_t)va_arg(xArgs, int32_t);
-                            }
-                            else {
-                                value = (uint64_t)va_arg(xArgs, uint32_t);
-                            }
+                            if (options & PRINTF_TYPE_SIGNED) value = (uint64_t)va_arg(xArgs, int32_t);
+                            else value = (uint64_t)va_arg(xArgs, uint32_t);
                             break;
                         }
-                        result = _lFifoPrintInteger(xFifo, value, options, width, precision);
+                        result = _lFifoPrintInteger(pxFifo, value, options, width, precision);
                     }
                 }
             }
         }
-        if (symbol != '\0') {
-            result = bFifoWriteByte(xFifo, symbol);
-        }
-        if (result <= 0) {
-            break;
-        }
+        if (result <= 0) break;
         streamed += result;
     }
     return streamed;
 }
 
 int32_t lFifoPrintInteger(Fifo_t *pxFifo, uint64_t ullValue, FifoPrintIntegerFlags_t eFlags) {
+	if(!bFifoIsValid(pxFifo)) return FIFO_FAIL;
 	uint32_t options = PRINTF_FLAG_ALIGNMENT_LEFT;
-	if (eFlags & NO_PREFIX) {
-		options = PRINTF_TYPE_UNSIGNED_NO_PREFIX;
-	}
+	if (eFlags & NO_PREFIX) options = PRINTF_TYPE_UNSIGNED_NO_PREFIX;
 	eFlags &= INT_FLAG_MASK;
 	switch (eFlags) {
-	case SIGNED_INT:
-		options |= PRINTF_TYPE_SIGNED;
-		break;
-	case BIN_INT:
-		options |= PRINTF_TYPE_UNSIGNED_BIN;
-		break;
-	case OCT_INT:
-		options |= PRINTF_TYPE_UNSIGNED_OCT;
-		break;
-	case HEX_INT:
-		options |= PRINTF_TYPE_UNSIGNED_HEX;
-		break;
-	default:
-		break;
+		case SIGNED_INT: options |= PRINTF_TYPE_SIGNED; break;
+		case BIN_INT: options |= PRINTF_TYPE_UNSIGNED_BIN; break;
+		case OCT_INT: options |= PRINTF_TYPE_UNSIGNED_OCT; break;
+		case HEX_INT: options |= PRINTF_TYPE_UNSIGNED_HEX; break;
+		default: break;
 	}
 	return _lFifoPrintInteger(pxFifo, ullValue, options, 0, 0);
 }
 
 int32_t lFifoPrintFloat(Fifo_t *pxFifo, float fpValue) {
+	if(!bFifoIsValid(pxFifo)) return FIFO_FAIL;
 	int32_t options = PRINTF_TYPE_DOUBLE_SCIENTIFIC | PRINTF_TYPE_DOUBLE | PRINTF_FLOAT_ZERO_TRUNC | PRINTF_PRECISION_PRESENT;
 	return _lFifoPrintFloat(pxFifo, fpValue, options, 0, 10);
 }

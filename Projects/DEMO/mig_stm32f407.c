@@ -652,6 +652,54 @@ const hdl_gpio_pin_hw_config_t mod_gpio_uart4_5_6_mode = {
   .pull = GPIO_PUPD_PULL_UP
 };
 
+const hdl_gpio_pin_hw_config_t mod_gpio_spi3_mode = {
+  .mode = GPIO_MODE_AF,
+  .af = GPIO_AF6_SPI3,
+  .ospeed = GPIO_SPEED_HIGH,
+  .otype = GPIO_OTYPE_PUSH_PULL,
+  .pull = GPIO_PUPD_PULL_UP
+};
+
+const hdl_gpio_pin_t mod_gpio_pb3_spi_sck = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_spi3_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_3)
+}; //(PB3)
+
+const hdl_gpio_pin_t mod_gpio_pb4_spi_miso = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_spi3_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_4)
+}; //(PB4)
+
+const hdl_gpio_pin_t mod_gpio_pb5_spi_mosi = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_b),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_spi3_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_5)
+}; //(PB5)
+
+const hdl_gpio_pin_t mod_gpio_pd7 = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_d),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_output_pp_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_7)
+}; //(PD7)
+
 const hdl_gpio_pin_t mod_gpio_pd12 = {
   .iface = &hdl_gpio_pin_iface,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
@@ -861,9 +909,41 @@ const hdl_uart_mcu_t mod_uart3 = {
   .obj_var = static_malloc(HDL_UART_VAR_SIZE)
 };
 
+/**************************************************************
+ *                        SPI
+ *************************************************************/
+
+const hdl_spi_client_config_t hdl_spi_client_config = {
+  .phy = SPI3,
+  .rcu = RCC_APB1ENR_SPI3EN,
+  .endian = HDL_SPI_ENDIAN_MSB,
+  .polarity = HDL_SPI_CK_PL_LOW_PH_1EDGE,
+  .prescale = HDL_SPI_PSC_32,
+  .interrupt = &mod_irq_spi_3,
+};
+
+const hdl_spi_client_mcu_t mod_spi3_client = {
+  .iface = &hdl_spi_client_iface,
+  .dependencies = hdl_module_dependencies(&mod_gpio_pb5_spi_mosi, &mod_gpio_pb4_spi_miso, &mod_gpio_pb3_spi_sck,
+                                          &mod_clock_apb1, &mod_nvic),
+  .config = &hdl_spi_client_config,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .obj_var = static_malloc(HDL_SPI_CLIENT_VAR_SIZE)
+};
+
+const hdl_spi_client_ch_mcu_t mod_spi3_ch1 = {
+  .iface = &hdl_spi_client_ch_iface,
+  .dependencies = hdl_module_dependencies(&mod_spi3_client, &mod_gpio_pd7, &mod_systick_counter),
+  .config = hdl_module_config(hdl_spi_client_ch_config_t, 
+    .cs_min_delay = 168
+  ),
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .obj_var = static_malloc(HDL_SPI_CLIENT_CH_VAR_SIZE)
+};
+
 /*================================================================*/
 
-extern const hdl_interrupt_controller_t mod_interrupt_controller  __attribute__ ((alias ("mod_nvic")));
+extern const hdl_interrupt_controller_t mod_ic                    __attribute__ ((alias ("mod_nvic")));
 
 extern const hdl_tick_counter_t mod_tick_counter                  __attribute__ ((alias ("mod_systick_counter")));
 
@@ -880,5 +960,7 @@ extern const hdl_gpio_pin_t mod_led4_pin                          __attribute__ 
 extern const hdl_gpio_pin_t mod_button_pin                        __attribute__ ((alias ("mod_gpio_pa0")));
 
 extern const hdl_uart_t mod_uart                                  __attribute__ ((alias ("mod_uart3")));
+
+extern const hdl_spi_client_ch_t mod_spi_client                   __attribute__ ((alias ("mod_spi3_ch1")));
 
 #endif

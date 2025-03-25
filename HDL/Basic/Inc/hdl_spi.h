@@ -84,7 +84,7 @@ hdl_module_new_t(hdl_spi_client_ch_t, 0, void, hdl_spi_client_ch_iface_t);
 
 __STATIC_INLINE uint8_t hdl_spi_transfer_message(const void *desc, hdl_spi_message_t *message) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return ((hdl_spi_client_ch_iface_t *)((hdl_module_base_t *)desc)->iface)->transfer(desc, message);
+  return ((hdl_spi_client_ch_t *)desc)->iface->transfer(desc, message);
 }
 
 #endif /* HDL_SPI_H_ */

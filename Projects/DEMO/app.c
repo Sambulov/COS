@@ -8,6 +8,8 @@ void main() {
     cooperative_scheduler(false);
   }
   gpio_test();
+  spi_client_test();
+
   //stream_test(uart_stream_init());
   //modbus_client_test(modbus_init(uart_stream_init()));
   modbus_server_test(modbus_init(uart_stream_init()));

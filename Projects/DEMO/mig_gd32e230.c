@@ -1262,6 +1262,6 @@ const hdl_adc_mcu_t mod_adc_mcu = {
 
 extern hdl_time_counter_t mod_timer_ms        __attribute__ ((alias ("mod_systick_timer_ms")));
 
-extern hdl_interrupt_controller_t mod_interrupt_controller  __attribute__ ((alias ("mod_nvic")));
+extern hdl_interrupt_controller_t mod_ic      __attribute__ ((alias ("mod_nvic")));
 
 #endif

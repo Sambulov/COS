@@ -1,10 +1,11 @@
 #include "hdl_iface.h"
 
 typedef struct {
-  hdl_delegate_t spi_isr;
+  hdl_delegate_t isr;
   hdl_spi_client_ch_mcu_t *curent_spi_ch;
   uint16_t rx_cursor;
   uint16_t tx_cursor;
+  uint32_t timer;
 } hdl_spi_client_var_t;
 
 typedef struct {
@@ -21,47 +22,44 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   hdl_spi_client_var_t *spi_var = (hdl_spi_client_var_t *)spi->obj_var;
   hdl_spi_client_ch_var_t *ch_var = (hdl_spi_client_ch_var_t *)spi_var->curent_spi_ch->obj_var;
   hdl_spi_message_t *msg = ch_var->curent_msg;
+  SPI_TypeDef *phy = (SPI_TypeDef *)spi->config->phy;
 
   uint32_t msg_len = msg->rx_skip + msg->rx_take;
   msg_len = MAX(msg->tx_len, msg_len);
 
-  uint32_t state = SPI_STAT(spi->config->phy);
-  if ((state & (SPI_ERROR_MASK)) == 0) {
+  
+
+  uint32_t state = phy->SR;
+  if ((state & SPI_ERROR_MASK) == 0) {
     /* RX ---------------------------------------------------*/
-    if (state & SPI_STAT_RBNE) {
-      uint16_t data = SPI_DATA(spi->config->phy);
+    if (state & SPI_SR_RXNE) {
+      uint16_t data = phy->DR;
       if(msg->rx_buffer != NULL) {
         int32_t data_offset = ((int32_t)spi_var->rx_cursor) - msg->rx_skip;
         if((data_offset >= 0) && (data_offset < msg->rx_take)) msg->rx_buffer[data_offset] = data;
       }
       spi_var->rx_cursor++;
       if(spi_var->rx_cursor >= msg_len) {
-        SPI_CTL1(spi->config->phy) &= ~SPI_CTL1_RBNEIE;
+        phy->CR2 &= ~SPI_CR2_RXNEIE;
         msg->state |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
       }
     }
 
     ///* TX ------------------------------------------------*/
-    if((state & SPI_STAT_TBE) && (spi_var->tx_cursor < msg_len)) {
+    if((state & SPI_SR_TXE) && (spi_var->tx_cursor < msg_len)) {
       uint16_t data = 0;
       if ((msg->tx_buffer != NULL) && (msg->tx_len > 0)) {
-        if (spi_var->tx_cursor < msg->tx_len) {
-          data = msg->tx_buffer[spi_var->tx_cursor];
-        }
-        else {
-          data = msg->tx_buffer[msg->tx_len - 1];
-        }
+        if (spi_var->tx_cursor < msg->tx_len) data = msg->tx_buffer[spi_var->tx_cursor];
+        else data = msg->tx_buffer[msg->tx_len - 1];
       }
-      SPI_DATA(spi->config->phy) = data;
+      phy->DR = data;
       spi_var->tx_cursor++;
-      if(spi_var->tx_cursor >= msg_len) {
-        SPI_CTL1(spi->config->phy) &= ~SPI_CTL1_TBEIE;
-      }
+      if(spi_var->tx_cursor >= msg_len) phy->CR2 &= ~SPI_CR2_TXEIE;
     }
     msg->transferred = MIN(spi_var->rx_cursor, spi_var->tx_cursor);
   }
   else {
-    hdl_spi_reset_status(spi->config->phy);
+    hdl_spi_reset_status(phy);
   }
 }
 
@@ -71,6 +69,8 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_spi_client_ch_var_t *spi_ch_var = (hdl_spi_client_ch_var_t *)ch->obj_var;
   hdl_spi_client_mcu_t *spi = (hdl_spi_client_mcu_t *)ch->dependencies[0];
   hdl_spi_client_var_t *spi_var = (hdl_spi_client_var_t *)spi->obj_var;
+  SPI_TypeDef *phy = (SPI_TypeDef *)spi->config->phy;
+
   if((spi_var->curent_spi_ch == NULL) && (spi_ch_var->curent_msg != NULL)) {
     spi_var->curent_spi_ch = ch;
   }
@@ -89,9 +89,10 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         if(msg_len > 0) {
           spi_var->rx_cursor = 0;
           spi_var->tx_cursor = 0;
-          hdl_spi_reset_status(spi->config->phy);
+          hdl_spi_reset_status(phy);
           msg->state |= HDL_SPI_MESSAGE_STATUS_XFER;
-          SPI_CTL1(spi->config->phy) |= (SPI_CTL1_TBEIE | SPI_CTL1_RBNEIE);
+          phy->CR2 |= SPI_CR2_TXEIE | SPI_CR2_RXNEIE;
+
         }
         else {
           msg->state |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
@@ -107,38 +108,58 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         }
         msg->state |= HDL_SPI_MESSAGE_STATUS_COMPLETE;
       }
+      else if()
     }
   }
   return cancel;
 }
 
+static volatile uint32_t *_hdl_spi_reset(hdl_spi_client_mcu_t *spi) {
+  volatile uint32_t *rcc_en = &RCC->APB1ENR;
+  volatile uint32_t *rcc_rst = &RCC->APB1RSTR;
+  SPI_TypeDef *periph = (SPI_TypeDef *)spi->config->phy;
+  switch ((uint32_t)periph) {
+    case (uint32_t)SPI1:
+      rcc_en = &RCC->APB2ENR;
+      rcc_rst = &RCC->APB2RSTR;
+      break;
+    case (uint32_t)SPI2:
+    case (uint32_t)SPI3:
+      break;
+    //case (uint32_t)SPI4:
+    //case (uint32_t)SPI5:
+    //case (uint32_t)SPI6:
+    default:
+      return NULL;
+  }
+  HDL_REG_SET(*rcc_rst, spi->config->rcu);
+  HDL_REG_CLEAR(*rcc_rst, spi->config->rcu);
+  return rcc_en;
+}
+
 static hdl_module_state_t _hdl_spi_client(const void *desc, uint8_t enable) {
   hdl_spi_client_mcu_t *spi = (hdl_spi_client_mcu_t*)desc;
   hdl_spi_client_var_t *spi_var = (hdl_spi_client_var_t *)spi->obj_var;
-  spi_i2s_deinit(spi->config->phy);
+  SPI_TypeDef *phy = (SPI_TypeDef *)spi->config->phy;
+  volatile uint32_t *rcc_en = _hdl_spi_reset(spi);
+  if(rcc_en == NULL) return HDL_MODULE_FAULT;
   if(enable) {
-    rcu_periph_clock_enable(spi->config->rcu);
-    spi_parameter_struct init;
-    init.device_mode = SPI_MASTER;
-    init.trans_mode = SPI_TRANSMODE_FULLDUPLEX;
-    init.frame_size = SPI_FRAMESIZE_8BIT;
-    init.endian = spi->config->endian;
-    init.clock_polarity_phase = spi->config->polarity;
-    init.nss = SPI_NSS_SOFT;
-    init.prescale = spi->config->prescale;
-    spi_init(spi->config->phy, &init);
-    //SPI_CTL1(spi->config->phy) |= SPI_CTL1_RBNEIE;
-    //SPI_CTL1(spi->config->phy) |= SPI_CTL1_RBNEIE | SPI_CTL1_TBEIE | SPI_CTL1_ERRIE;
-    //SPI_CTL0(spi->config->phy) |= SPI_CTL0_SWNSS; 
-    spi_var->spi_isr.context = spi;
-    spi_var->spi_isr.handler = &event_spi_isr_client;
+    HDL_REG_SET(*rcc_en, spi->config->rcu);
+    hdl_clock_t *clk = (hdl_clock_t *)spi->dependencies[3];
+    hdl_clock_freq_t freq;
+    hdl_clock_get(clk, &freq);
+    HDL_REG_SET(*rcc_en, spi->config->rcu);
+    phy->CR1 = SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI | 
+      spi->config->endian | spi->config->prescale | spi->config->polarity;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->dependencies[4];
-    hdl_event_subscribe(&spi->config->spi_interrupt->event, &spi_var->spi_isr);
-    hdl_interrupt_request(ic, spi->config->spi_interrupt);
-    spi_enable(spi->config->phy);
+    spi_var->isr.context = spi;
+    spi_var->isr.handler = &event_spi_isr_client;
+    hdl_event_subscribe(&spi->config->interrupt->event, &spi_var->isr);
+    hdl_interrupt_request(ic, spi->config->interrupt);
+    phy->CR1 |= SPI_CR1_SPE;
     return HDL_MODULE_ACTIVE;
   }
-  rcu_periph_clock_disable(spi->config->rcu);
+  HDL_REG_CLEAR(*rcc_en, spi->config->rcu);
   return HDL_MODULE_UNLOADED;
 }
 
@@ -157,7 +178,6 @@ static hdl_module_state_t _hdl_spi_ch(const void *desc, uint8_t enable) {
 static uint8_t _hdl_spi_transfer_message(const void *desc, hdl_spi_message_t *message) {
   hdl_spi_client_ch_mcu_t *spi_ch = (hdl_spi_client_ch_mcu_t*)desc;
   hdl_spi_client_ch_var_t *spi_ch_var = (hdl_spi_client_ch_var_t *)spi_ch->obj_var;
-
   if((spi_ch != NULL) && (hdl_state(spi_ch) != HDL_MODULE_FAULT) && (message != NULL)) {
     if(spi_ch_var->curent_msg == NULL) {
       spi_ch_var->curent_msg = message;

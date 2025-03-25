@@ -9,5 +9,6 @@
 #include "port_tick_counter.h"
 #include "port_gpio.h"
 #include "port_uart.h"
+#include "port_spi.h"
 
 #endif // HDL_PORTABLE_H_

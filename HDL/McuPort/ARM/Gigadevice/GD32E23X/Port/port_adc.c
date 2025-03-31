@@ -77,7 +77,7 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
       }
       case GD_ADC_STATE_MACHINE_CALIBRATION:
         if (ADC_CTL1 & ADC_CTL1_CLB) {
-          if (TIME_ELAPSED(adc_var->age, hdl_adc->config->init_timeout, hdl_time_counter_get(timer)))
+          if (CL_TIME_ELAPSED(adc_var->age, hdl_adc->config->init_timeout, hdl_time_counter_get(timer)))
             return HDL_MODULE_FAULT;
           break;
         }

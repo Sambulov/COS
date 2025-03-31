@@ -81,11 +81,11 @@ static hdl_module_state_t _hdl_gpio_pin(const void *desc, const uint8_t enable){
     __IO uint32_t *MFP = (__IO uint32_t *)&((&(SYS->GPA_MFP0))[port_no * 4 + (pin_no >> 2)]);
     if(hwc->func_alternate != 0) {
       __IO uint32_t *MFOS = (__IO uint32_t *)&((&SYS->GPA_MFOS)[port_no]);
-      if(hwc->func == GPIO_MODE_OPEN_DRAIN) HDL_REG_SET(*MFOS, (0x1UL << pin_no));
-      else HDL_REG_CLEAR(*MFOS, (0x1UL << pin_no));
+      if(hwc->func == GPIO_MODE_OPEN_DRAIN) CL_REG_SET(*MFOS, (0x1UL << pin_no));
+      else CL_REG_CLEAR(*MFOS, (0x1UL << pin_no));
     }
     uint32_t mfp_cnf_offset = 8 * (pin_no & 0x3);
-    HDL_REG_MODIFY(*MFP, 0x1f << mfp_cnf_offset, (hwc->func_alternate & 0x1f) << mfp_cnf_offset);
+    CL_REG_MODIFY(*MFP, 0x1f << mfp_cnf_offset, (hwc->func_alternate & 0x1f) << mfp_cnf_offset);
   }
   else {
     GPIO_SetMode(gpio_port, (1 << pin_no), GPIO_MODE_QUASI);

@@ -25,14 +25,14 @@ hdl_module_state_t hdl_gpio_pin(void *desc, const uint8_t enable) {
   if(enable) {
     volatile uint32_t *afio_pcf0 = (uint32_t *)(AFIO + 0x4U);
     if((gpio_port == GPIOB) && ((uint32_t)gpio->module.reg == GPIO_PIN_4)) {
-      HDL_REG_MODIFY(*afio_pcf0, 0b111 << 24, 0b001 << 24);
+      CL_REG_MODIFY(*afio_pcf0, 0b111 << 24, 0b001 << 24);
     }
     if(((gpio_port == GPIOA) && ((uint32_t)gpio->module.reg == GPIO_PIN_15)) || 
        ((gpio_port == GPIOB) && ((uint32_t)gpio->module.reg == GPIO_PIN_3))) {
-      HDL_REG_MODIFY(*afio_pcf0, 0b111 << 24, 0b010 << 24);
+      CL_REG_MODIFY(*afio_pcf0, 0b111 << 24, 0b010 << 24);
     }
     if((gpio_port == GPIOA) && (((uint32_t)gpio->module.reg == GPIO_PIN_13) || ((uint32_t)gpio->module.reg == GPIO_PIN_14))) {
-      HDL_REG_MODIFY(*afio_pcf0, 0b111 << 24, 0b100 << 24);
+      CL_REG_MODIFY(*afio_pcf0, 0b111 << 24, 0b100 << 24);
     }
     gpio_init(gpio_port, gpio->config->hwc->type, gpio->config->hwc->ospeed, (uint32_t)gpio->module.reg);
   }

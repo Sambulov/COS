@@ -20,7 +20,7 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_var_t, *((hdl_clock_mcu_t *)0)->obj_var, HD
 
 static hdl_module_state_t _hdl_clock_osc_en(volatile uint32_t *reg, uint32_t on, uint32_t rdy) {
   uint32_t timer = 1000000;
-  HDL_REG_SET(*reg, on);
+  CL_REG_SET(*reg, on);
   while (timer-- && !(*reg & rdy));
   if(*reg & rdy) return HDL_MODULE_ACTIVE;
   return HDL_MODULE_FAULT;
@@ -29,9 +29,9 @@ static hdl_module_state_t _hdl_clock_osc_en(volatile uint32_t *reg, uint32_t on,
 static hdl_module_state_t _hdl_clock_system_switch(uint32_t rdy, uint32_t sw, uint32_t swr) {
   uint32_t timer = 10000;
   if(RCC->CR & rdy) {
-    HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_SW, sw);
-    while (timer-- && !HDL_REG_CHECK(RCC->CFGR, RCC_CFGR_SWS, swr));
-    if(HDL_REG_CHECK(RCC->CFGR, RCC_CFGR_SWS, swr)) return HDL_MODULE_ACTIVE;
+    CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_SW, sw);
+    while (timer-- && !CL_REG_CHECK(RCC->CFGR, RCC_CFGR_SWS, swr));
+    if(CL_REG_CHECK(RCC->CFGR, RCC_CFGR_SWS, swr)) return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_FAULT;
 }
@@ -82,7 +82,7 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_mcu_t *clk, uint32_t mask
     else reg |= 0x04;
   }
   hdl_clock_calc_div(&src_var->freq, clk->config->property.div, &clk_var->freq);
-  HDL_REG_MODIFY(RCC->CFGR, mask, reg << offset);
+  CL_REG_MODIFY(RCC->CFGR, mask, reg << offset);
   return HDL_MODULE_ACTIVE;
 }
 
@@ -97,7 +97,7 @@ static hdl_module_state_t _hdl_clock_pll_init(hdl_clock_mcu_t *clk, uint32_t min
   else hdl_clock_calc_div(&src_var->freq, clk->config->property.div, &clk_var->freq);
   uint32_t freq = (clk_var->freq.num + (clk_var->freq.denom - 1)) / clk_var->freq.denom;
   if((freq < min_freq) || (freq > max_freq)) return HDL_MODULE_FAULT;
-  HDL_REG_MODIFY(*rcc_reg, mask, value);
+  CL_REG_MODIFY(*rcc_reg, mask, value);
   return HDL_MODULE_ACTIVE;
 }
 
@@ -110,22 +110,22 @@ static hdl_module_state_t _hdl_clock_mco_init(hdl_clock_mcu_t *clk, uint8_t enab
     if((div == 0) || (div > 5)) return HDL_MODULE_FAULT;
     if(div > 1) div = (div - 2) | 0x4;
     if(clk->config->type == HDL_CLOCK_TYPE_MCO1) {
-      HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1PRE, div << 24);
+      CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1PRE, div << 24);
       switch (src->config->type) {
-        case HDL_CLOCK_TYPE_IRC16M: HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1, 0 << 21); break;
-        case HDL_CLOCK_TYPE_LXTAL: HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1, 1 << 21); break;
-        case HDL_CLOCK_TYPE_HXTAL: HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1, 2 << 21); break;
-        case HDL_CLOCK_TYPE_PLL_P: HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1, 3 << 21); break;
+        case HDL_CLOCK_TYPE_IRC16M: CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1, 0 << 21); break;
+        case HDL_CLOCK_TYPE_LXTAL: CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1, 1 << 21); break;
+        case HDL_CLOCK_TYPE_HXTAL: CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1, 2 << 21); break;
+        case HDL_CLOCK_TYPE_PLL_P: CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO1, 3 << 21); break;
         default: return HDL_MODULE_FAULT;
       }
     }
     else {
-      HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2PRE, div << 27);
+      CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2PRE, div << 27);
       switch (src->config->type) {
-        case HDL_CLOCK_TYPE_SYS_SEL: HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2, 0 << 30); break;
-        case HDL_CLOCK_TYPE_PLL_I2S_R: HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2, 1 << 30); break;
-        case HDL_CLOCK_TYPE_HXTAL: HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2, 2 << 30); break;
-        case HDL_CLOCK_TYPE_PLL_P: HDL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2, 3 << 30); break;
+        case HDL_CLOCK_TYPE_SYS_SEL: CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2, 0 << 30); break;
+        case HDL_CLOCK_TYPE_PLL_I2S_R: CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2, 1 << 30); break;
+        case HDL_CLOCK_TYPE_HXTAL: CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2, 2 << 30); break;
+        case HDL_CLOCK_TYPE_PLL_P: CL_REG_MODIFY(RCC->CFGR, RCC_CFGR_MCO2, 3 << 30); break;
         default: return HDL_MODULE_FAULT;
       }
     }
@@ -163,8 +163,8 @@ static hdl_module_state_t _hdl_clock(const void *desc, uint8_t enable) {
     case HDL_CLOCK_TYPE_PLL_M:
       if (enable) {
         hdl_clock_mcu_t *src = (hdl_clock_mcu_t *)clk->dependencies[0];
-        if(src->config->type == HDL_CLOCK_TYPE_IRC16M) HDL_REG_CLEAR(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC);
-        else if (src->config->type == HDL_CLOCK_TYPE_HXTAL) HDL_REG_SET(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC);
+        if(src->config->type == HDL_CLOCK_TYPE_IRC16M) CL_REG_CLEAR(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC);
+        else if (src->config->type == HDL_CLOCK_TYPE_HXTAL) CL_REG_SET(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC);
         else return HDL_MODULE_FAULT;
         uint32_t factor = clk->config->property.div;
         if((factor < 2) || (factor > 63)) return HDL_MODULE_FAULT;

@@ -145,7 +145,7 @@ static void _i2c_phy_wait_condition(hdl_i2c_mcu_t *i2c) {
       uint32_t flags = ~i2c_var->wc_flags;
       if((*i2c_var->wc_phy | flags) == flags) i2c_var->wc_state = WC_STATE_HIT;
     }
-    if(TIME_ELAPSED(i2c_var->wc_ts, i2c_var->wc_timeout, now)) i2c_var->wc_state = WC_STATE_TIMEOUT;
+    if(CL_TIME_ELAPSED(i2c_var->wc_ts, i2c_var->wc_timeout, now)) i2c_var->wc_state = WC_STATE_TIMEOUT;
   }
 }
 
@@ -418,7 +418,7 @@ static hdl_module_state_t _hdl_i2c(const void *desc, uint8_t enable) {
       freq_mhz = freq_hz / 1000000;
     }
     if(freq_mhz > 36) freq_mhz = 36;
-    HDL_REG_MODIFY(i2c_periph->CTL1, I2C_CTL1_I2CCLK, freq_mhz);
+    CL_REG_MODIFY(i2c_periph->CTL1, I2C_CTL1_I2CCLK, freq_mhz);
 
     if(100000U >= hwc->speed) {
       /* the maximum SCL rise time is 1000ns in standard mode */
@@ -428,7 +428,7 @@ static hdl_module_state_t _hdl_i2c(const void *desc, uint8_t enable) {
       else i2c_periph->RT = risetime;
       uint32_t clkc = (uint32_t)(freq_hz/(hwc->speed * 2U)); 
       if(clkc < 4) clkc = 0x04U; /* the CLKC in standard mode minmum value is 4 */
-      HDL_REG_MODIFY(i2c_periph->CKCFG, I2C_CKCFG_CLKC, clkc);
+      CL_REG_MODIFY(i2c_periph->CKCFG, I2C_CKCFG_CLKC, clkc);
     }
     else if(400000U >= hwc->speed) {
       /* the maximum SCL rise time is 300ns in fast mode */

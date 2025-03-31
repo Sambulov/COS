@@ -39,13 +39,13 @@ static hdl_module_state_t _hdl_clock_selector_pll(hdl_clock_private_t *clk, uint
     hdl_clock_private_t *clock_src = (hdl_clock_private_t *)clk->module.dependencies[0];
     if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) {
       if (clk->config->property.div == 0 || clk->config->property.div > 2) return HDL_MODULE_FAULT;
-      HDL_REG_CLEAR(RCU_CFG0, RCU_CFG0_PREDV0);
-      if(clk->config->property.div - 1) HDL_REG_SET(RCU_CFG0, RCU_CFG0_PREDV0);
-      HDL_REG_SET(RCU_CFG0, RCU_PLLSRC_HXTAL);
+      CL_REG_CLEAR(RCU_CFG0, RCU_CFG0_PREDV0);
+      if(clk->config->property.div - 1) CL_REG_SET(RCU_CFG0, RCU_CFG0_PREDV0);
+      CL_REG_SET(RCU_CFG0, RCU_PLLSRC_HXTAL);
       hdl_clock_calc_div(&clock_src->freq, clk->config->property.div, &clk->freq);
     }
     else if(clock_src->config->type == HDL_CLOCK_TYPE_IRC8M) {
-      HDL_REG_SET(RCU_CFG0, RCU_PLLSRC_IRC8M_DIV2);
+      CL_REG_SET(RCU_CFG0, RCU_PLLSRC_IRC8M_DIV2);
       hdl_clock_calc_div(&clock_src->freq, 2, &clk->freq);
     }
     else {
@@ -54,8 +54,8 @@ static hdl_module_state_t _hdl_clock_selector_pll(hdl_clock_private_t *clk, uint
     return HDL_MODULE_ACTIVE;
   }
   else {
-    HDL_REG_CLEAR(RCU_CFG0, RCU_CFG0_PLLSEL);
-    HDL_REG_SET(RCU_CFG0, RCU_CFG0_PREDV0);
+    CL_REG_CLEAR(RCU_CFG0, RCU_CFG0_PLLSEL);
+    CL_REG_SET(RCU_CFG0, RCU_CFG0_PREDV0);
     return HDL_MODULE_UNLOADED;
   }
 }
@@ -68,7 +68,7 @@ static hdl_module_state_t _hdl_clock_pll(hdl_clock_private_t *clk, uint8_t enabl
     if((pll_cnf < 2) || (pll_cnf > 32)) break;
     pll_cnf -= (pll_cnf > 15)? 1: 2;
     pll_cnf = ((pll_cnf & 0x0F) << 18) | ((pll_cnf & 0x10) << (27 - 4));
-    HDL_REG_MODIFY(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4), pll_cnf);
+    CL_REG_MODIFY(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4), pll_cnf);
     if(_hdl_clock_osc_en(RCU_PLL_CK, RCU_FLAG_PLLSTB, PLL_STARTUP_TIMEOUT) != HDL_MODULE_ACTIVE) {
       rcu_osci_off(RCU_PLL_CK);
       break;
@@ -76,7 +76,7 @@ static hdl_module_state_t _hdl_clock_pll(hdl_clock_private_t *clk, uint8_t enabl
     hdl_clock_calc_mul(&clock_src->freq, clk->config->property.mul, &clk->freq);
     return HDL_MODULE_ACTIVE;
   }
-  HDL_REG_CLEAR(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4));
+  CL_REG_CLEAR(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4));
   return HDL_MODULE_UNLOADED;
 }
 
@@ -125,7 +125,7 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_private_t *clk, uint32_t 
   if((clk->freq.num / clk->freq.denom) > check_frec) return HDL_MODULE_FAULT;
   uint32_t div_cnf = 31 - __CLZ(factor);
   if (div_cnf) div_cnf = ((div_cnf - 1) << bit_from) | (1UL << bit_to);
-  HDL_REG_MODIFY(RCU_CFG0, BITS(bit_from, bit_to), div_cnf);
+  CL_REG_MODIFY(RCU_CFG0, BITS(bit_from, bit_to), div_cnf);
   return HDL_MODULE_ACTIVE;
 }
 
@@ -141,10 +141,10 @@ hdl_module_state_t hdl_clock_adc(hdl_clock_private_t *clk, uint8_t enable) {
     adc_cnf = (adc_cnf >> 1) - 1;
     if((adc_cnf > 8) || (adc_cnf == 5) || (adc_cnf == 7)) break;
     adc_cnf = ((adc_cnf & 0x03) << 14) | ((adc_cnf & 0x4) << (28 - 2));
-    HDL_REG_MODIFY(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4), adc_cnf);
+    CL_REG_MODIFY(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4), adc_cnf);
     return HDL_MODULE_ACTIVE;
   }
-  HDL_REG_CLEAR(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4));
+  CL_REG_CLEAR(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4));
   return HDL_MODULE_UNLOADED;
 }
 

@@ -4,10 +4,10 @@ static hdl_module_state_t _hdl_gpio_port(const void *desc, const uint8_t enable)
   hdl_gpio_port_mcu_t *port = (hdl_gpio_port_mcu_t *)desc;
   if(!port->config->phy) return HDL_MODULE_FAULT;
   if(enable) {
-    HDL_REG_SET(RCC->AHB1ENR, port->config->rcu);
+    CL_REG_SET(RCC->AHB1ENR, port->config->rcu);
     return HDL_MODULE_ACTIVE;
   }
-	else HDL_REG_CLEAR(RCC->AHB1ENR, port->config->rcu);
+	else CL_REG_CLEAR(RCC->AHB1ENR, port->config->rcu);
   return HDL_MODULE_UNLOADED;
 }
 
@@ -15,20 +15,20 @@ static hdl_gpio_state _hdl_gpio_read(const void *desc){
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
   GPIO_TypeDef *port = (GPIO_TypeDef *)((hdl_gpio_port_mcu_t *)gpio->dependencies[0])->config->phy;
 
-  return (HDL_REG_GET(port->IDR, gpio->config->pin)? HDL_GPIO_HIGH: HDL_GPIO_LOW);
+  return (CL_REG_GET(port->IDR, gpio->config->pin)? HDL_GPIO_HIGH: HDL_GPIO_LOW);
 }
 
 static void _hdl_gpio_write(const void *desc, const hdl_gpio_state state){
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
   GPIO_TypeDef *port = (GPIO_TypeDef *)((hdl_gpio_port_mcu_t *)gpio->dependencies[0])->config->phy;
-  if(state == HDL_GPIO_LOW) HDL_REG_SET(port->BSRR, (gpio->config->pin << 16));
-  else HDL_REG_SET(port->BSRR, gpio->config->pin);
+  if(state == HDL_GPIO_LOW) CL_REG_SET(port->BSRR, (gpio->config->pin << 16));
+  else CL_REG_SET(port->BSRR, gpio->config->pin);
 }
 
 static hdl_gpio_state _hdl_gpio_read_output(const void *desc) {
   hdl_gpio_pin_t *gpio = (hdl_gpio_pin_t *)desc;
   GPIO_TypeDef *port = (GPIO_TypeDef *)((hdl_gpio_port_mcu_t *)gpio->dependencies[0])->config->phy;
-  return (HDL_REG_GET(port->ODR, gpio->config->pin)? HDL_GPIO_HIGH: HDL_GPIO_LOW);
+  return (CL_REG_GET(port->ODR, gpio->config->pin)? HDL_GPIO_HIGH: HDL_GPIO_LOW);
 }
 
 static void _hdl_gpio_toggle(const void *desc){
@@ -47,7 +47,7 @@ static void _set_gpio_af(hdl_gpio_pin_t *gpio, uint32_t af) {
   }
   uint32_t afr_mask = 0xf * (afr * afr);
   afr = af * (afr * afr);
-  HDL_REG_MODIFY(*afr_reg, afr_mask, afr);
+  CL_REG_MODIFY(*afr_reg, afr_mask, afr);
 }
 
 static hdl_module_state_t _hdl_gpio_pin(const void *desc, const uint8_t enable){
@@ -57,19 +57,19 @@ static hdl_module_state_t _hdl_gpio_pin(const void *desc, const uint8_t enable){
   GPIO_TypeDef *port = (GPIO_TypeDef *)((hdl_gpio_port_mcu_t *)gpio->dependencies[0])->config->phy;
   hdl_gpio_pin_hw_config_t *hwc = (hdl_gpio_pin_hw_config_t *)gpio->config->hwc;
   if(enable) {
-    if(gpio->config->inactive_default == HDL_GPIO_HIGH) HDL_REG_SET(port->ODR, gpio->config->pin);
-    else HDL_REG_CLEAR(port->ODR, gpio->config->pin);
+    if(gpio->config->inactive_default == HDL_GPIO_HIGH) CL_REG_SET(port->ODR, gpio->config->pin);
+    else CL_REG_CLEAR(port->ODR, gpio->config->pin);
     uint32_t offset_2bits = (gpio->config->pin * gpio->config->pin);
     uint32_t mask_2bits = 0x3 * offset_2bits;
-    HDL_REG_MODIFY(port->OSPEEDR, mask_2bits, hwc->ospeed * offset_2bits);
-    HDL_REG_MODIFY(port->PUPDR, mask_2bits, hwc->pull * offset_2bits);
-    HDL_REG_MODIFY(port->OTYPER, gpio->config->pin, hwc->otype);
+    CL_REG_MODIFY(port->OSPEEDR, mask_2bits, hwc->ospeed * offset_2bits);
+    CL_REG_MODIFY(port->PUPDR, mask_2bits, hwc->pull * offset_2bits);
+    CL_REG_MODIFY(port->OTYPER, gpio->config->pin, hwc->otype);
     _set_gpio_af(gpio, hwc->af);
-    HDL_REG_MODIFY(port->MODER, mask_2bits, hwc->mode * offset_2bits);
+    CL_REG_MODIFY(port->MODER, mask_2bits, hwc->mode * offset_2bits);
   }
   else {
     _set_gpio_af(gpio, 0);
-    HDL_REG_CLEAR(port->MODER, 0x03 << (gpio->config->pin * gpio->config->pin));
+    CL_REG_CLEAR(port->MODER, 0x03 << (gpio->config->pin * gpio->config->pin));
     return HDL_MODULE_UNLOADED;
   }
 

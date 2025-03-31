@@ -138,14 +138,14 @@ static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
     SYS_UnlockReg();
     if(!CPU_POWER_LEVEL_VALID(core->config->power_level)) break;
     if(!CPU_FLASH_LATENCY_VALID(core->config->flash_latency)) break;
-    HDL_REG_MODIFY(SYS->PLCTL, SYS_PLCTL_PLSEL_Msk, core->config->power_level);
+    CL_REG_MODIFY(SYS->PLCTL, SYS_PLCTL_PLSEL_Msk, core->config->power_level);
     uint32_t u32TimeOutCount = 12000000; /* 1 second time-out */
     while(SYS->PLSTS & SYS_PLSTS_PLCBUSY_Msk) {
         if(u32TimeOutCount-- == 0) break;
     }
     if(SYS->PLSTS & SYS_PLSTS_PLCBUSY_Msk) break;
 
-    HDL_REG_MODIFY(FMC->CYCCTL, FMC_CYCCTL_CYCLE_Msk, core->config->flash_latency);
+    CL_REG_MODIFY(FMC->CYCCTL, FMC_CYCCTL_CYCLE_Msk, core->config->flash_latency);
 
     #ifdef ENABLE_SPIM_CACHE
       SystemEnableSpimCache();

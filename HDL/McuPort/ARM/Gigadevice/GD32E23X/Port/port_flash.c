@@ -147,7 +147,7 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       case WRK_STATE_COMPLETE:
         fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGERR | FMC_FLAG_PGAERR);
         fmc_lock();
-        HDL_REG_MODIFY(message->status, HDL_NVM_STATE, HDL_NVM_STATE_COMPLETE);
+        CL_REG_MODIFY(message->status, HDL_NVM_STATE, HDL_NVM_STATE_COMPLETE);
         flash_var->message = NULL;
       default:
         break;

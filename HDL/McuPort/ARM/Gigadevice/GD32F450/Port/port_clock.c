@@ -122,7 +122,7 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_mcu_t *clk, uint32_t bit_
   uint32_t div_cnf = 31 - __CLZ(factor);
   if (div_cnf)
     div_cnf = ((div_cnf - 1) << bit_from) | (1UL << bit_to);
-  HDL_REG_MODIFY(RCU_CFG0, BITS(bit_from, bit_to), div_cnf);
+  CL_REG_MODIFY(RCU_CFG0, BITS(bit_from, bit_to), div_cnf);
   return HDL_MODULE_ACTIVE;
 }
 
@@ -185,7 +185,7 @@ static hdl_module_state_t _hdl_clock_pll_init(hdl_clock_mcu_t *clk, uint32_t max
     else {
       hdl_clock_calc_div(&src_var->freq, clk->config->property.div, &clk_var->freq);
     }
-    HDL_REG_MODIFY(RCU_PLL, BITS(bits_from, bits_to), (clk->config->property.div) << bits_from);
+    CL_REG_MODIFY(RCU_PLL, BITS(bits_from, bits_to), (clk->config->property.div) << bits_from);
     return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_UNLOADED;
@@ -197,8 +197,8 @@ static hdl_module_state_t _hdl_clock_selector_pll(hdl_clock_mcu_t *clk, uint8_t 
     hdl_clock_mcu_t *clock_src = (hdl_clock_mcu_t *)clk->dependencies[0];
     hdl_clock_var_t *clk_var = (hdl_clock_var_t *)clk->obj_var;
     hdl_clock_var_t *src_var = (hdl_clock_var_t *)clock_src->obj_var;
-    if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) HDL_REG_SET(RCU_PLL, RCU_PLLSRC_HXTAL);
-    else if(clock_src->config->type == HDL_CLOCK_TYPE_IRC16M) HDL_REG_CLEAR(RCU_PLL, RCU_PLLSRC_HXTAL);
+    if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) CL_REG_SET(RCU_PLL, RCU_PLLSRC_HXTAL);
+    else if(clock_src->config->type == HDL_CLOCK_TYPE_IRC16M) CL_REG_CLEAR(RCU_PLL, RCU_PLLSRC_HXTAL);
     else return HDL_MODULE_FAULT;
     hdl_clock_calc_div(&src_var->freq, 1, &clk_var->freq);
     if(CHECK_PLL_PSC_VALID(clk->config->property.div))
@@ -206,7 +206,7 @@ static hdl_module_state_t _hdl_clock_selector_pll(hdl_clock_mcu_t *clk, uint8_t 
   }
   else {
     // todo: pll disable
-    HDL_REG_MODIFY(RCU_PLL, RCU_PLL_PLLPSC, RCU_PLLPSC_DIV_MAX);
+    CL_REG_MODIFY(RCU_PLL, RCU_PLL_PLLPSC, RCU_PLLPSC_DIV_MAX);
   }
   return HDL_MODULE_UNLOADED;
 }
@@ -227,7 +227,7 @@ static hdl_module_state_t _hdl_clock_pll_vco(hdl_clock_mcu_t *clk, uint8_t enabl
       if(_hdl_clock_pll_init(clk, -1, (clk->config->property.mul << 6), 6, 14, HDL_CLOCK_TYPE_PLL_SEL) == HDL_MODULE_ACTIVE)
         return _hdl_clock_osc_en(RCU_PLL_CK, RCU_FLAG_PLLSTB, PLL_STARTUP_TIMEOUT);
   }
-  HDL_REG_MODIFY(RCU_PLL, RCU_PLL_PLLN, RCU_PLLN_MUL_MIN << 6);
+  CL_REG_MODIFY(RCU_PLL, RCU_PLL_PLLN, RCU_PLLN_MUL_MIN << 6);
   return HDL_MODULE_UNLOADED;
 }
 
@@ -273,7 +273,7 @@ static hdl_module_state_t _hdl_adc_clock_cnf(hdl_clock_mcu_t *clk, uint8_t enabl
     hdl_clock_calc_div(&src_var->freq, clk->config->property.div, &clk_var->freq);
     if((clk_var->freq.num / clk_var->freq.denom)> 40000000) return HDL_MODULE_FAULT;
     rcu_periph_clock_enable(RCU_ADC0);
-    HDL_REG_MODIFY(ADC_SYNCCTL, ADC_SYNCCTL_ADCCK, reg << 16);
+    CL_REG_MODIFY(ADC_SYNCCTL, ADC_SYNCCTL_ADCCK, reg << 16);
     rcu_periph_clock_disable(RCU_ADC0);
     return HDL_MODULE_ACTIVE;
   }

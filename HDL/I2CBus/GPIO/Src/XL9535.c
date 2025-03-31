@@ -57,11 +57,11 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     port_var->state |= XL9535_STATE_SEND;
     if(port_var->state & XL9535_STATE_RESET_W) {
       port_var->write_reg_addr = 2;
-      HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_SEL);
+      CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_SEL);
     }
     else if (port_var->state & XL9535_STATE_RESET_R) {
       port_var->read_reg_addr = 0;
-      HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
+      CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
     }
     port_var->state &= ~XL9535_STATE_RESET;
     port_var->state |= XL9535_STATE_FREE;
@@ -87,7 +87,7 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       port_var->i2c_msg.length = 1;
       port_var->i2c_msg.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR;
       port_var->state |= XL9535_STATE_SEND;
-      HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_RECEIVE);
+      CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_RECEIVE);
       break;
     }
 
@@ -98,7 +98,7 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         port_var->i2c_msg.length = 2;
         port_var->i2c_msg.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP;
         port_var->state |= XL9535_STATE_SEND | XL9535_STATE_FREE;
-        HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_COMPLETE);
+        CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_COMPLETE);
       }
       break;
     }
@@ -108,11 +108,11 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       else {
         port_var->read_reg_addr += 2;
         if(port_var->read_reg_addr >= 8) {
-          HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_IDLE);
+          CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_IDLE);
           port_var->read_reg_addr = 0;
         }
         else
-          HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
+          CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
       }
       break;
     }
@@ -122,7 +122,7 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       port_var->i2c_msg.length = 1;
       port_var->i2c_msg.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR; 
       port_var->state |= XL9535_STATE_SEND;
-      HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_DATA);
+      CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_DATA);
       break;
     }
 
@@ -133,7 +133,7 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         port_var->i2c_msg.length = 2;
         port_var->i2c_msg.options = HDL_I2C_MESSAGE_STOP;
         port_var->state |= XL9535_STATE_SEND | XL9535_STATE_FREE;
-        HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_COMPLETE);
+        CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_COMPLETE);
       }
       break;
     }
@@ -143,11 +143,11 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       else {
         port_var->write_reg_addr += 2;
         if(port_var->write_reg_addr >= 8) {
-          HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
+          CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
           port_var->write_reg_addr = 2;
         }
         else {
-          HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_SEL);
+          CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_SEL);
         }
       }
       break;
@@ -161,10 +161,10 @@ static uint8_t _xl9535_worker(coroutine_t *this, uint8_t cancel, void *arg) {
          (port_var->config_port1 ^ port_var->user_config_port1) ||
          (port_var->polarity_port0 ^ port_var->user_polarity_port0) ||
          (port_var->polarity_port1 ^ port_var->user_polarity_port1))
-        HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_SEL);
+        CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_WRITE_SEL);
       hdl_gpio_pin_t *int_p = (hdl_gpio_pin_t *)port->dependencies[2];
       if(!hdl_is_null_module(int_p) && hdl_gpio_is_active(int_p)) {
-        HDL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
+        CL_REG_MODIFY(port_var->state, XL9535_STATE_WORK, XL9535_STATE_READ_SEL);
       }
       break;
     }
@@ -213,9 +213,9 @@ static hdl_module_state_t _hdl_xl9535_pin(const void *desc, const uint8_t enable
       pin_no -= 8;
     }
     uint8_t mask = 1 << pin_no;
-    HDL_REG_MODIFY(*mode, mask, (pin->config->hwc->mode << pin_no));
-    HDL_REG_MODIFY(*output, mask, (pin->config->hwc->output << pin_no));
-    HDL_REG_MODIFY(*pol, mask, (pin->config->hwc->polarity << pin_no));
+    CL_REG_MODIFY(*mode, mask, (pin->config->hwc->mode << pin_no));
+    CL_REG_MODIFY(*output, mask, (pin->config->hwc->output << pin_no));
+    CL_REG_MODIFY(*pol, mask, (pin->config->hwc->polarity << pin_no));
     return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_UNLOADED;
@@ -260,7 +260,7 @@ static void _hdl_xl9535_write_io(const void *desc, const hdl_gpio_state state, u
   uint8_t val;
   if(toggle) val = *reg ^ mask;
   else val = (state == HDL_GPIO_HIGH)? mask: 0;
-  HDL_REG_MODIFY(*reg, mask, val);
+  CL_REG_MODIFY(*reg, mask, val);
 }
 
 static void _hdl_xl9535_write(const void *desc, const hdl_gpio_state state) {

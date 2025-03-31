@@ -91,11 +91,11 @@ static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
     FLASH->ACR |= FLASH_ACR_PRFTEN;
     if(core->config->compensation_cell) SYSCFG->CMPCR |= SYSCFG_CMPCR_CMP_PD;
     else SYSCFG->CMPCR &= ~SYSCFG_CMPCR_CMP_PD;
-    HDL_REG_MODIFY(FLASH->ACR, FLASH_ACR_LATENCY, core->config->flash_latency);
+    CL_REG_MODIFY(FLASH->ACR, FLASH_ACR_LATENCY, core->config->flash_latency);
     return HDL_MODULE_ACTIVE;
   }
   SYSCFG->CMPCR &= ~SYSCFG_CMPCR_CMP_PD;
-  HDL_REG_MODIFY(FLASH->ACR, FLASH_ACR_LATENCY, FLASH_ACR_LATENCY_0WS);
+  CL_REG_MODIFY(FLASH->ACR, FLASH_ACR_LATENCY, FLASH_ACR_LATENCY_0WS);
   return HDL_MODULE_UNLOADED;
 }
 

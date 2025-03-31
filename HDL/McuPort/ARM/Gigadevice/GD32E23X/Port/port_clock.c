@@ -33,12 +33,12 @@ static hdl_module_state_t _hdl_clock_selector_pll(hdl_clock_mcu_t *clk, uint8_t 
     hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
     if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) {
       if (clk->config->property.div == 0 || clk->config->property.div > 16) return HDL_MODULE_FAULT;
-      HDL_REG_MODIFY(RCU_CFG1, RCU_CFG1_PREDV, (clk->config->property.div - 1) << 0);
-      HDL_REG_SET(RCU_CFG0, RCU_PLLSRC_HXTAL);
+      CL_REG_MODIFY(RCU_CFG1, RCU_CFG1_PREDV, (clk->config->property.div - 1) << 0);
+      CL_REG_SET(RCU_CFG0, RCU_PLLSRC_HXTAL);
       hdl_clock_calc_div(&clock_src_var->freq, clk->config->property.div, &clock_var->freq);
     }
     else if(clock_src->config->type == HDL_CLOCK_TYPE_IRC8M) {
-      HDL_REG_SET(RCU_CFG0, RCU_PLLSRC_IRC8M_DIV2);
+      CL_REG_SET(RCU_CFG0, RCU_PLLSRC_IRC8M_DIV2);
       hdl_clock_calc_div(&clock_src_var->freq, 2, &clock_var->freq);
     }
     else {
@@ -47,8 +47,8 @@ static hdl_module_state_t _hdl_clock_selector_pll(hdl_clock_mcu_t *clk, uint8_t 
     return HDL_MODULE_ACTIVE;
   }
   else {
-    HDL_REG_CLEAR(RCU_CFG0, RCU_CFG0_PLLSEL);
-    HDL_REG_MODIFY(RCU_CFG1, RCU_CFG1_PREDV, RCU_PLL_PREDV16);
+    CL_REG_CLEAR(RCU_CFG0, RCU_CFG0_PLLSEL);
+    CL_REG_MODIFY(RCU_CFG1, RCU_CFG1_PREDV, RCU_PLL_PREDV16);
     return HDL_MODULE_UNLOADED;
   }
 }
@@ -63,7 +63,7 @@ static hdl_module_state_t _hdl_clock_pll(hdl_clock_mcu_t *clk, uint8_t enable) {
     if((pll_cnf < 2) || (pll_cnf > 32)) break;
     pll_cnf -= (pll_cnf > 15)? 1: 2;
     pll_cnf = ((pll_cnf & 0x0F) << 18) | ((pll_cnf & 0x10) << (27 - 4));
-    HDL_REG_MODIFY(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF4), pll_cnf);
+    CL_REG_MODIFY(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF4), pll_cnf);
     if(_hdl_clock_osc_en(RCU_PLL_CK, RCU_FLAG_PLLSTB, PLL_STARTUP_TIMEOUT) != HDL_MODULE_ACTIVE) {
       rcu_osci_off(RCU_PLL_CK);
       break;
@@ -71,7 +71,7 @@ static hdl_module_state_t _hdl_clock_pll(hdl_clock_mcu_t *clk, uint8_t enable) {
     hdl_clock_calc_mul(&clock_src_var->freq, clk->config->property.mul, &clock_var->freq);
     return HDL_MODULE_ACTIVE;
   }
-  HDL_REG_CLEAR(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF4));
+  CL_REG_CLEAR(RCU_CFG0, (RCU_CFG0_PLLMF | RCU_CFG0_PLLMF4));
   return HDL_MODULE_UNLOADED;
 }
 
@@ -126,7 +126,7 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_mcu_t *clk, uint32_t bit_
   if((clock_var->freq.num / clock_var->freq.denom) > check_frec) return HDL_MODULE_FAULT;
   uint32_t div_cnf = 31 - __CLZ(factor);
   if (div_cnf) div_cnf = ((div_cnf - 1) << bit_from) | (1UL << bit_to);
-  HDL_REG_MODIFY(RCU_CFG0, BITS(bit_from, bit_to), div_cnf);
+  CL_REG_MODIFY(RCU_CFG0, BITS(bit_from, bit_to), div_cnf);
   return HDL_MODULE_ACTIVE;
 }
 
@@ -180,13 +180,13 @@ static hdl_module_state_t _hdl_clock_adc(hdl_clock_mcu_t *clk, uint8_t enable) {
     else if(clock_src->config->type == HDL_CLOCK_TYPE_AHB) {
       if((clk->config->property.div != 3) && (clk->config->property.mul != 5) && 
          (clk->config->property.div != 7) && (clk->config->property.mul != 9)) return HDL_MODULE_FAULT;
-      HDL_REG_MODIFY(rcu_cnf0, RCU_CFG0_ADCPSC,((clk->config->property.div == 3)? 0: ((clk->config->property.div * 2) / 6)) << 14);
+      CL_REG_MODIFY(rcu_cnf0, RCU_CFG0_ADCPSC,((clk->config->property.div == 3)? 0: ((clk->config->property.div * 2) / 6)) << 14);
       rcu_cnf2 |= RCU_CFG2_ADCPSC2 | RCU_CFG2_ADCSEL;
     }
     else if(clock_src->config->type == HDL_CLOCK_TYPE_APB2) {
       if((clk->config->property.div != 2) && (clk->config->property.mul != 4) && 
          (clk->config->property.div != 6) && (clk->config->property.mul != 8)) return HDL_MODULE_FAULT;
-      HDL_REG_MODIFY(rcu_cnf0, RCU_CFG0_ADCPSC,((clk->config->property.div == 2)? 0: ((clk->config->property.div + 1) / 3)) << 14);
+      CL_REG_MODIFY(rcu_cnf0, RCU_CFG0_ADCPSC,((clk->config->property.div == 2)? 0: ((clk->config->property.div + 1) / 3)) << 14);
       rcu_cnf2 |= RCU_CFG2_ADCSEL;
       rcu_cnf2 &= ~RCU_CFG2_ADCPSC2;
     }

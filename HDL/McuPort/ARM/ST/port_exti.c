@@ -41,10 +41,10 @@ static hdl_module_state_t _hdl_exti(const void *desc, uint8_t enable) {
   else {
     
     //TODO: disable nvic
-    HDL_REG_CLEAR(EXTI->IMR, EXTI_LINES_ALL);
-    HDL_REG_CLEAR(EXTI->FTSR, EXTI_LINES_ALL);
-    HDL_REG_CLEAR(EXTI->RTSR, EXTI_LINES_ALL);
-    HDL_REG_CLEAR(EXTI->EMR, EXTI_LINES_ALL);
+    CL_REG_CLEAR(EXTI->IMR, EXTI_LINES_ALL);
+    CL_REG_CLEAR(EXTI->FTSR, EXTI_LINES_ALL);
+    CL_REG_CLEAR(EXTI->RTSR, EXTI_LINES_ALL);
+    CL_REG_CLEAR(EXTI->EMR, EXTI_LINES_ALL);
     hdl_exti_clear_pending(EXTI_LINES_ALL);
   }
   return HDL_MODULE_UNLOADED;

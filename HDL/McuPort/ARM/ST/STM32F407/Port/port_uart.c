@@ -97,10 +97,10 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
     default:
       return HDL_MODULE_FAULT;
   }
-  HDL_REG_SET(*rcc_rst, uart->config->rcu);
-  HDL_REG_CLEAR(*rcc_rst, uart->config->rcu);
+  CL_REG_SET(*rcc_rst, uart->config->rcu);
+  CL_REG_CLEAR(*rcc_rst, uart->config->rcu);
   if(enable) {
-    HDL_REG_SET(*rcc_en, uart->config->rcu);
+    CL_REG_SET(*rcc_en, uart->config->rcu);
     hdl_clock_t *clk = (hdl_clock_t *)uart->dependencies[2];
     hdl_clock_freq_t freq;
     hdl_clock_get(clk, &freq);
@@ -121,7 +121,7 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
     return HDL_MODULE_ACTIVE;
   }
   coroutine_cancel(&uart_var->worker);
-  HDL_REG_CLEAR(*rcc_en, uart->config->rcu);
+  CL_REG_CLEAR(*rcc_en, uart->config->rcu);
   return HDL_MODULE_UNLOADED;
 }
 

@@ -25,7 +25,7 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   SPI_TypeDef *phy = (SPI_TypeDef *)spi->config->phy;
 
   uint32_t msg_len = msg->rx_skip + msg->rx_take;
-  msg_len = MAX(msg->tx_len, msg_len);
+  msg_len = CL_MAX(msg->tx_len, msg_len);
 
   
 
@@ -56,7 +56,7 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
       spi_var->tx_cursor++;
       if(spi_var->tx_cursor >= msg_len) phy->CR2 &= ~SPI_CR2_TXEIE;
     }
-    msg->transferred = MIN(spi_var->rx_cursor, spi_var->tx_cursor);
+    msg->transferred = CL_MIN(spi_var->rx_cursor, spi_var->tx_cursor);
   }
   else {
     hdl_spi_reset_status(phy);
@@ -85,7 +85,7 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           msg->state |= HDL_SPI_MESSAGE_STATUS_BUS_HOLD;
         }
         uint32_t msg_len = msg->rx_skip + msg->rx_take;
-        msg_len = MAX(msg->tx_len, msg_len);
+        msg_len = CL_MAX(msg->tx_len, msg_len);
         if(msg_len > 0) {
           spi_var->rx_cursor = 0;
           spi_var->tx_cursor = 0;
@@ -132,8 +132,8 @@ static volatile uint32_t *_hdl_spi_reset(hdl_spi_client_mcu_t *spi) {
     default:
       return NULL;
   }
-  HDL_REG_SET(*rcc_rst, spi->config->rcu);
-  HDL_REG_CLEAR(*rcc_rst, spi->config->rcu);
+  CL_REG_SET(*rcc_rst, spi->config->rcu);
+  CL_REG_CLEAR(*rcc_rst, spi->config->rcu);
   return rcc_en;
 }
 
@@ -144,11 +144,11 @@ static hdl_module_state_t _hdl_spi_client(const void *desc, uint8_t enable) {
   volatile uint32_t *rcc_en = _hdl_spi_reset(spi);
   if(rcc_en == NULL) return HDL_MODULE_FAULT;
   if(enable) {
-    HDL_REG_SET(*rcc_en, spi->config->rcu);
+    CL_REG_SET(*rcc_en, spi->config->rcu);
     hdl_clock_t *clk = (hdl_clock_t *)spi->dependencies[3];
     hdl_clock_freq_t freq;
     hdl_clock_get(clk, &freq);
-    HDL_REG_SET(*rcc_en, spi->config->rcu);
+    CL_REG_SET(*rcc_en, spi->config->rcu);
     phy->CR1 = SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI | 
       spi->config->endian | spi->config->prescale | spi->config->polarity;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->dependencies[4];
@@ -159,7 +159,7 @@ static hdl_module_state_t _hdl_spi_client(const void *desc, uint8_t enable) {
     phy->CR1 |= SPI_CR1_SPE;
     return HDL_MODULE_ACTIVE;
   }
-  HDL_REG_CLEAR(*rcc_en, spi->config->rcu);
+  CL_REG_CLEAR(*rcc_en, spi->config->rcu);
   return HDL_MODULE_UNLOADED;
 }
 

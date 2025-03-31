@@ -26,7 +26,7 @@ int32_t hdl_isr_buffer_tx_cb_t (void *proto, uint8_t *data, uint16_t count) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)proto;
   if(buf->private.tx_buf.pucBuffer != NULL) {
     uint16_t av = scb_available(&buf->private.tx_buf);
-    count = MIN(count, av);
+    count = CL_MIN(count, av);
     uint16_t i = count;
     while (i--) {
       *data = scb_pop(&buf->private.tx_buf);
@@ -85,7 +85,7 @@ hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_i
 uint16_t hdl_isr_buffer_read(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t lenght) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)desc;
   uint16_t available = scb_available(&buf->private.rx_buf);
-  lenght = MIN(lenght, available);
+  lenght = CL_MIN(lenght, available);
   available = lenght;
   while (available--) {
     *data = scb_pop(&buf->private.rx_buf);
@@ -97,7 +97,7 @@ uint16_t hdl_isr_buffer_read(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t len
 uint16_t hdl_isr_buffer_write(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t lenght) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)desc;
   uint16_t available = scb_available_free(&buf->private.tx_buf);
-  lenght = MIN(lenght, available);
+  lenght = CL_MIN(lenght, available);
   available = lenght;
   while (available--) {
     scb_push(&buf->private.tx_buf, *data);

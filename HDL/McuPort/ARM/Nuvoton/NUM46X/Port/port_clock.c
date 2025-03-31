@@ -18,7 +18,7 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_var_t, *((hdl_clock_mcu_t *)0)->obj_var, HD
 
 static hdl_module_state_t _hdl_clock_osc_en(uint32_t osc, uint32_t stat, uint32_t timeout) {
   SYS_UnlockReg();
-  HDL_REG_SET(CLK->PWRCTL, osc);
+  CL_REG_SET(CLK->PWRCTL, osc);
   SYS_LockReg();
   while ((!HDL_REG_CHECK(CLK->STATUS, stat)) && (timeout--)); /* Wait until HXTAL will be stable */
   if (!HDL_REG_CHECK(CLK->STATUS, stat))
@@ -39,11 +39,11 @@ static hdl_module_state_t _hdl_clock_pll_ref(hdl_clock_mcu_t *clk, uint8_t enabl
     uint32_t val = clock_var->freq.num / clock_var->freq.denom;
     if((val < 4000000) || (val > 8000000)) break;
     SYS_UnlockReg();
-    HDL_REG_SET(CLK->PLLCTL, CLK_PLLCTL_OE_Msk | CLK_PLLCTL_STBSEL_Msk);
+    CL_REG_SET(CLK->PLLCTL, CLK_PLLCTL_OE_Msk | CLK_PLLCTL_STBSEL_Msk);
     val = ((clk->config->property.div - 1) & 0x1f) << CLK_PLLCTL_INDIV_Pos;
-    HDL_REG_MODIFY(CLK->PLLCTL, CLK_PLLCTL_INDIV_Msk, val);
-    if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) HDL_REG_CLEAR(CLK->PLLCTL, CLK_PLLCTL_PLLSRC_Msk);
-    else if(clock_src->config->type == HDL_CLOCK_TYPE_IRC12M) HDL_REG_SET(CLK->PLLCTL, CLK_PLLCTL_PLLSRC_Msk);
+    CL_REG_MODIFY(CLK->PLLCTL, CLK_PLLCTL_INDIV_Msk, val);
+    if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) CL_REG_CLEAR(CLK->PLLCTL, CLK_PLLCTL_PLLSRC_Msk);
+    else if(clock_src->config->type == HDL_CLOCK_TYPE_IRC12M) CL_REG_SET(CLK->PLLCTL, CLK_PLLCTL_PLLSRC_Msk);
     else break;
     SYS_LockReg();
     return HDL_MODULE_ACTIVE;
@@ -67,7 +67,7 @@ static hdl_module_state_t _hdl_clock_pll_vco(hdl_clock_mcu_t *clk, uint8_t enabl
     if((val < 200000000) || (val > 500000000)) break;
     SYS_UnlockReg();
     val = (((clk->config->property.mul >> 1) - 2) & 0x1ff) << CLK_PLLCTL_FBDIV_Pos;
-    HDL_REG_MODIFY(CLK->PLLCTL, CLK_PLLCTL_FBDIV_Msk, val);
+    CL_REG_MODIFY(CLK->PLLCTL, CLK_PLLCTL_FBDIV_Msk, val);
     SYS_LockReg();
     return HDL_MODULE_ACTIVE;
   }
@@ -89,14 +89,14 @@ static hdl_module_state_t _hdl_clock_pll(hdl_clock_mcu_t *clk, uint8_t enable, u
     if((val < 50000000) || (val > 500000000)) break;
     SYS_UnlockReg();
     val = ((clk->config->property.div - 1) & 0x3) << CLK_PLLCTL_OUTDIV_Pos;
-    HDL_REG_MODIFY(CLK->PLLCTL, CLK_PLLCTL_OUTDIV_Msk, val);
-    HDL_REG_CLEAR(CLK->PLLCTL, CLK_PLLCTL_PD_Msk | CLK_PLLCTL_OE_Msk);
+    CL_REG_MODIFY(CLK->PLLCTL, CLK_PLLCTL_OUTDIV_Msk, val);
+    CL_REG_CLEAR(CLK->PLLCTL, CLK_PLLCTL_PD_Msk | CLK_PLLCTL_OE_Msk);
     while ((!HDL_REG_CHECK(CLK->STATUS, CLK_STATUS_PLLSTB_Msk)) && (timeout--)); /* Wait until PLL will be stable */
     SYS_LockReg();
     return HDL_MODULE_ACTIVE;
   }
   SYS_UnlockReg();
-  HDL_REG_SET(CLK->PLLCTL, CLK_PLLCTL_OE_Msk);
+  CL_REG_SET(CLK->PLLCTL, CLK_PLLCTL_OE_Msk);
   SYS_LockReg();
   return HDL_MODULE_UNLOADED;
 }
@@ -115,19 +115,19 @@ static hdl_module_state_t _hdl_clock_sys(hdl_clock_mcu_t *clk, uint8_t enable) {
     if(val > 200000000) break;
     SYS_UnlockReg();
     val = ((clk->config->property.div - 1) & 0xf) << CLK_CLKDIV0_HCLKDIV_Pos;
-    HDL_REG_MODIFY(CLK->PLLCTL, CLK_CLKDIV0_HCLKDIV_Msk, val);
-    if(clock_src->config->type == HDL_CLOCK_TYPE_PLL) HDL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_PLL);
-    else if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) HDL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_HXT);
-    else if (clock_src->config->type == HDL_CLOCK_TYPE_LXTAL) HDL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_LXT);
-    else if (clock_src->config->type == HDL_CLOCK_TYPE_IRC10K) HDL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_LIRC);
-    else if (clock_src->config->type == HDL_CLOCK_TYPE_IRC12M) HDL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_HIRC);
+    CL_REG_MODIFY(CLK->PLLCTL, CLK_CLKDIV0_HCLKDIV_Msk, val);
+    if(clock_src->config->type == HDL_CLOCK_TYPE_PLL) CL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_PLL);
+    else if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL) CL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_HXT);
+    else if (clock_src->config->type == HDL_CLOCK_TYPE_LXTAL) CL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_LXT);
+    else if (clock_src->config->type == HDL_CLOCK_TYPE_IRC10K) CL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_LIRC);
+    else if (clock_src->config->type == HDL_CLOCK_TYPE_IRC12M) CL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_HIRC);
     else break;
     SYS_LockReg();
     if(HDL_REG_CHECK(CLK->STATUS, CLK_STATUS_CLKSFAIL_Msk)) break;
     return HDL_MODULE_ACTIVE;
   }
   SYS_UnlockReg();
-  HDL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_HIRC);
+  CL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_HIRC);
   SYS_LockReg();
   return HDL_MODULE_UNLOADED;
 }
@@ -148,9 +148,9 @@ static hdl_module_state_t _hdl_clock_apb(hdl_clock_mcu_t *clk, uint8_t enable, u
     SYS_UnlockReg();
     uint32_t val = (31 - __CLZ(clk->config->property.div));
     if(bus_no == 0)
-      HDL_REG_MODIFY(CLK->PCLKDIV, CLK_PCLKDIV_APB0DIV_Msk, val << CLK_PCLKDIV_APB0DIV_Pos);
+      CL_REG_MODIFY(CLK->PCLKDIV, CLK_PCLKDIV_APB0DIV_Msk, val << CLK_PCLKDIV_APB0DIV_Pos);
     else
-      HDL_REG_MODIFY(CLK->PCLKDIV, CLK_PCLKDIV_APB1DIV_Msk, val << CLK_PCLKDIV_APB1DIV_Pos);
+      CL_REG_MODIFY(CLK->PCLKDIV, CLK_PCLKDIV_APB1DIV_Msk, val << CLK_PCLKDIV_APB1DIV_Pos);
     SYS_LockReg();
     return HDL_MODULE_ACTIVE;
   }

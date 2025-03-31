@@ -267,7 +267,7 @@ static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) 
     if(hresult == HANDLER_CONTINUE) {
       hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->dependencies[4];
       uint32_t now = hdl_time_counter_get(timer);
-      if(TIME_ELAPSED(i2c_var->wc_timer, 1500, now)) {
+      if(CL_TIME_ELAPSED(i2c_var->wc_timer, 1500, now)) {
         i2c_var->message->status |= HDL_I2C_MESSAGE_FAULT_BUS_ERROR;
         hresult = HANDLER_FAULT;
       }
@@ -356,34 +356,34 @@ static void event_i2c_isr(uint32_t event, void *sender, void *context) {
 static uint8_t _i2c_clk_reset(I2C_T *i2c_periph, uint8_t en) {
   switch ((uint32_t)i2c_periph) {
     case I2C0_BASE:
-      HDL_REG_SET(CLK->APBCLK0, CLK_APBCLK0_I2C0CKEN_Msk);
-      HDL_REG_SET(SYS->IPRST1, SYS_IPRST1_I2C0RST_Msk);
-      HDL_REG_CLEAR(SYS->IPRST1, SYS_IPRST1_I2C0RST_Msk);      
-      if(!en) HDL_REG_CLEAR(CLK->APBCLK0, CLK_APBCLK0_I2C0CKEN_Msk);
+      CL_REG_SET(CLK->APBCLK0, CLK_APBCLK0_I2C0CKEN_Msk);
+      CL_REG_SET(SYS->IPRST1, SYS_IPRST1_I2C0RST_Msk);
+      CL_REG_CLEAR(SYS->IPRST1, SYS_IPRST1_I2C0RST_Msk);      
+      if(!en) CL_REG_CLEAR(CLK->APBCLK0, CLK_APBCLK0_I2C0CKEN_Msk);
       break;
     case I2C1_BASE:
-      HDL_REG_SET(CLK->APBCLK0, CLK_APBCLK0_I2C1CKEN_Msk);
-      HDL_REG_SET(SYS->IPRST1, SYS_IPRST1_I2C1RST_Msk);
-      HDL_REG_CLEAR(SYS->IPRST1, SYS_IPRST1_I2C1RST_Msk);
-      if(!en) HDL_REG_CLEAR(CLK->APBCLK0, CLK_APBCLK0_I2C1CKEN_Msk);
+      CL_REG_SET(CLK->APBCLK0, CLK_APBCLK0_I2C1CKEN_Msk);
+      CL_REG_SET(SYS->IPRST1, SYS_IPRST1_I2C1RST_Msk);
+      CL_REG_CLEAR(SYS->IPRST1, SYS_IPRST1_I2C1RST_Msk);
+      if(!en) CL_REG_CLEAR(CLK->APBCLK0, CLK_APBCLK0_I2C1CKEN_Msk);
       break;
     case I2C2_BASE:
-      HDL_REG_SET(CLK->APBCLK0, CLK_APBCLK0_I2C2CKEN_Msk);
-      HDL_REG_SET(SYS->IPRST1, SYS_IPRST1_I2C2RST_Msk);
-      HDL_REG_CLEAR(SYS->IPRST1, SYS_IPRST1_I2C2RST_Msk);
-      if(!en) HDL_REG_CLEAR(CLK->APBCLK0, CLK_APBCLK0_I2C2CKEN_Msk);
+      CL_REG_SET(CLK->APBCLK0, CLK_APBCLK0_I2C2CKEN_Msk);
+      CL_REG_SET(SYS->IPRST1, SYS_IPRST1_I2C2RST_Msk);
+      CL_REG_CLEAR(SYS->IPRST1, SYS_IPRST1_I2C2RST_Msk);
+      if(!en) CL_REG_CLEAR(CLK->APBCLK0, CLK_APBCLK0_I2C2CKEN_Msk);
       break;
     case I2C3_BASE:
-      HDL_REG_SET(CLK->APBCLK0, CLK_APBCLK0_I2C3CKEN_Msk);
-      HDL_REG_SET(SYS->IPRST1, SYS_IPRST1_I2C3RST_Msk);
-      HDL_REG_CLEAR(SYS->IPRST1, SYS_IPRST1_I2C3RST_Msk);
-      if(!en) HDL_REG_CLEAR(CLK->APBCLK0, CLK_APBCLK0_I2C3CKEN_Msk);
+      CL_REG_SET(CLK->APBCLK0, CLK_APBCLK0_I2C3CKEN_Msk);
+      CL_REG_SET(SYS->IPRST1, SYS_IPRST1_I2C3RST_Msk);
+      CL_REG_CLEAR(SYS->IPRST1, SYS_IPRST1_I2C3RST_Msk);
+      if(!en) CL_REG_CLEAR(CLK->APBCLK0, CLK_APBCLK0_I2C3CKEN_Msk);
       break;
     case I2C4_BASE:
-      HDL_REG_SET(CLK->APBCLK1, CLK_APBCLK1_I2C4CKEN_Msk);
-      HDL_REG_SET(SYS->IPRST2, SYS_IPRST2_I2C4RST_Msk);
-      HDL_REG_CLEAR(SYS->IPRST2, SYS_IPRST2_I2C4RST_Msk);
-      if(!en) HDL_REG_CLEAR(CLK->APBCLK1, CLK_APBCLK1_I2C4CKEN_Msk);
+      CL_REG_SET(CLK->APBCLK1, CLK_APBCLK1_I2C4CKEN_Msk);
+      CL_REG_SET(SYS->IPRST2, SYS_IPRST2_I2C4RST_Msk);
+      CL_REG_CLEAR(SYS->IPRST2, SYS_IPRST2_I2C4RST_Msk);
+      if(!en) CL_REG_CLEAR(CLK->APBCLK1, CLK_APBCLK1_I2C4CKEN_Msk);
       break;
     default:
       return HDL_FALSE;
@@ -412,17 +412,17 @@ static hdl_module_state_t _hdl_i2c(const void *desc, uint8_t enable) {
       I2C_SetSlaveAddr(i2c_periph, no, addr, I2C_GCMODE_DISABLE);
       i2c_var->ch_amount = ch;
     }
-    if(hwc->swap_scl_sda) HDL_REG_SET(i2c_periph->CTL1, I2C_CTL1_SWITCHEN_Msk); // swap scl <-X-> sda
-    HDL_REG_SET(i2c_periph->CTL0, I2C_CTL0_SRCINTEN_Msk | I2C_CTL0_INTEN_Msk);
-    HDL_REG_SET(i2c_periph->CTL1, I2C_CTL1_UDRIEN_Msk | I2C_CTL1_OVRIEN_Msk);
+    if(hwc->swap_scl_sda) CL_REG_SET(i2c_periph->CTL1, I2C_CTL1_SWITCHEN_Msk); // swap scl <-X-> sda
+    CL_REG_SET(i2c_periph->CTL0, I2C_CTL0_SRCINTEN_Msk | I2C_CTL0_INTEN_Msk);
+    CL_REG_SET(i2c_periph->CTL1, I2C_CTL1_UDRIEN_Msk | I2C_CTL1_OVRIEN_Msk);
     i2c_var->ev_isr.context = i2c;
     i2c_var->ev_isr.handler = &event_i2c_isr;
     hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)i2c->dependencies[3];
     hdl_event_subscribe(&hwc->interrupt->event, &i2c_var->ev_isr);
     hdl_interrupt_request(ic, hwc->interrupt);
-    HDL_REG_CLEAR(i2c_periph->CTL0, I2C_CTL0_SRCINTEN_Msk | I2C_CTL0_DPCINTEN_Msk);    
-    HDL_REG_SET(i2c_periph->CTL0, I2C_CTL0_I2CEN_Msk);
-    HDL_REG_SET(i2c_periph->CTL0, I2C_CTL0_AA_Msk);
+    CL_REG_CLEAR(i2c_periph->CTL0, I2C_CTL0_SRCINTEN_Msk | I2C_CTL0_DPCINTEN_Msk);    
+    CL_REG_SET(i2c_periph->CTL0, I2C_CTL0_I2CEN_Msk);
+    CL_REG_SET(i2c_periph->CTL0, I2C_CTL0_AA_Msk);
     coroutine_add(&i2c_var->i2c_worker, &_i2c_client_worker, (void*)i2c);
     i2c_var->message = NULL;
     return HDL_MODULE_ACTIVE;

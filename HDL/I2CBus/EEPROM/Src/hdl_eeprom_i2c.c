@@ -107,7 +107,7 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     case EE_STATE_AWAIT_BURNING: {
       hdl_time_counter_t *time_cnt = (hdl_time_counter_t *)eeprom->dependencies[1];
       uint32_t now = hdl_time_counter_get(time_cnt);
-      if(TIME_ELAPSED(eeprom_var->burn_time, eeprom->config->write_time, now)) {
+      if(CL_TIME_ELAPSED(eeprom_var->burn_time, eeprom->config->write_time, now)) {
         if(eeprom_var->nvm_msg->transferred < eeprom_var->nvm_msg->size) {
           eeprom_var->state = EE_STATE_SET_MEM_ADDR_MSG;
         }

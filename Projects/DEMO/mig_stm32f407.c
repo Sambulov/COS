@@ -608,56 +608,56 @@ const hdl_gpio_port_mcu_t hdl_gpio_port_i = {
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_output_od_mode = {
-  .mode = GPIO_MODE_OUTPUT,
-  .otype = GPIO_OTYPE_OPEN_DRAIN,
-  .ospeed = GPIO_SPEED_LOW,
-  .pull = GPIO_PUPD_PULL_UP
+  .mode = HDL_GPIO_MODE_OUTPUT,
+  .otype = HDL_GPIO_OTYPE_OPEN_DRAIN,
+  .ospeed = HDL_GPIO_SPEED_LOW,
+  .pull = HDL_GPIO_PUPD_PULL_UP
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_input_a_mode = {
-  .mode = GPIO_MODE_ANALOG,
-  .pull = GPIO_PUPD_NONE,
-  .ospeed = GPIO_SPEED_LOW,
+  .mode = HDL_GPIO_MODE_ANALOG,
+  .pull = HDL_GPIO_PUPD_NONE,
+  .ospeed = HDL_GPIO_SPEED_LOW,
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_output_pp_mode = {
-  .mode = GPIO_MODE_OUTPUT,
-  .otype = GPIO_OTYPE_PUSH_PULL,
-  .ospeed = GPIO_SPEED_VERY_HIGH,
+  .mode = HDL_GPIO_MODE_OUTPUT,
+  .otype = HDL_GPIO_OTYPE_PUSH_PULL,
+  .ospeed = HDL_GPIO_SPEED_VERY_HIGH,
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_input_pu_mode = {
-  .mode = GPIO_MODE_INPUT,
-  .pull = GPIO_PUPD_PULL_UP,
+  .mode = HDL_GPIO_MODE_INPUT,
+  .pull = HDL_GPIO_PUPD_PULL_UP,
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_input_pd_mode = {
-  .mode = GPIO_MODE_INPUT,
-  .pull = GPIO_PUPD_PULL_DOWN,
+  .mode = HDL_GPIO_MODE_INPUT,
+  .pull = HDL_GPIO_PUPD_PULL_DOWN,
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_uart1_2_3_mode = {
-  .mode = GPIO_MODE_AF,
+  .mode = HDL_GPIO_MODE_AF,
   .af = GPIO_AF7_USART1,
-  .ospeed = GPIO_SPEED_HIGH,
-  .otype = GPIO_OTYPE_PUSH_PULL,
-  .pull = GPIO_PUPD_PULL_UP
+  .ospeed = HDL_GPIO_SPEED_HIGH,
+  .otype = HDL_GPIO_OTYPE_PUSH_PULL,
+  .pull = HDL_GPIO_PUPD_PULL_UP
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_uart4_5_6_mode = {
-  .mode = GPIO_MODE_AF,
+  .mode = HDL_GPIO_MODE_AF,
   .af = GPIO_AF8_USART6,
-  .ospeed = GPIO_SPEED_HIGH,
-  .otype = GPIO_OTYPE_PUSH_PULL,
-  .pull = GPIO_PUPD_PULL_UP
+  .ospeed = HDL_GPIO_SPEED_HIGH,
+  .otype = HDL_GPIO_OTYPE_PUSH_PULL,
+  .pull = HDL_GPIO_PUPD_PULL_UP
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_spi3_mode = {
-  .mode = GPIO_MODE_AF,
+  .mode = HDL_GPIO_MODE_AF,
   .af = GPIO_AF6_SPI3,
-  .ospeed = GPIO_SPEED_HIGH,
-  .otype = GPIO_OTYPE_PUSH_PULL,
-  .pull = GPIO_PUPD_PULL_UP
+  .ospeed = HDL_GPIO_SPEED_HIGH,
+  .otype = HDL_GPIO_OTYPE_PUSH_PULL,
+  .pull = HDL_GPIO_PUPD_PULL_UP
 };
 
 const hdl_gpio_pin_t mod_gpio_pb3_spi_sck = {
@@ -875,13 +875,13 @@ const hdl_gpio_pin_t mod_gpio_pd9_uart_rx = {
     &mod_systick_timer 
   ),
   .config = hdl_module_config(hdl_uart_config_t,
-    .phy = USART6,
+    .phy = (uint32_t)USART6,
     .rcu = RCC_APB2ENR_USART6EN,
     .interrupt = &mod_irq_usart_6,
     .baudrate = 115200,
-    .word_len = UART_WORD_8BIT,
-    .parity = UART_PARITY_NONE,
-    .stop_bits = UART_STOP_BITS1
+    .word_len = HDL_UART_WORD_8BIT,
+    .parity = HDL_UART_PARITY_NONE,
+    .stop_bits = HDL_UART_STOP_BITS1
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .obj_var = static_malloc(HDL_UART_VAR_SIZE)
@@ -897,13 +897,13 @@ const hdl_uart_mcu_t mod_uart3 = {
     &mod_systick_timer 
   ),
   .config = hdl_module_config(hdl_uart_config_t,
-    .phy = USART3,
+    .phy = (uint32_t)USART3,
     .rcu = RCC_APB1ENR_USART3EN,
     .interrupt = &mod_irq_usart_3,
     .baudrate = 115200,
-    .word_len = UART_WORD_8BIT,
-    .parity = UART_PARITY_NONE,
-    .stop_bits = UART_STOP_BITS1
+    .word_len = HDL_UART_WORD_8BIT,
+    .parity = HDL_UART_PARITY_NONE,
+    .stop_bits = HDL_UART_STOP_BITS1
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .obj_var = static_malloc(HDL_UART_VAR_SIZE)
@@ -914,7 +914,7 @@ const hdl_uart_mcu_t mod_uart3 = {
  *************************************************************/
 
 const hdl_spi_client_config_t hdl_spi_client_config = {
-  .phy = SPI3,
+  .phy = (uint32_t)SPI3,
   .rcu = RCC_APB1ENR_SPI3EN,
   .endian = HDL_SPI_ENDIAN_MSB,
   .polarity = HDL_SPI_CK_PL_LOW_PH_1EDGE,

@@ -359,6 +359,7 @@ HAL_StatusTypeDef HAL_CAN_Init(CAN_HandleTypeDef* hcan)
   */
 HAL_StatusTypeDef HAL_CAN_ConfigFilter(CAN_HandleTypeDef* hcan, CAN_FilterConfTypeDef* sFilterConfig)
 {
+  (void)hcan;
   uint32_t filternbrbitpos = 0U;
   
   /* Check the parameters */

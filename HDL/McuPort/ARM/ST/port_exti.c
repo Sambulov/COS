@@ -3,7 +3,7 @@
 #define hdl_exti_clear_pending(exti_line)       (EXTI->PR |= exti_line)
 
 void _hdl_exti_set(hdl_exti_controller_t *ext_ctrl) {
-  hdl_exti_t **extis = ext_ctrl->config->extis;
+  const hdl_exti_t * const *extis = ext_ctrl->config->extis;
   if(extis != NULL) {
     while (*extis != NULL) {
       uint8_t exti_no = 31 - __CLZ((*extis)->line);

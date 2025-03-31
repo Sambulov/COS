@@ -13,7 +13,7 @@ void spi_cliet_sender(uint32_t event_trigger, void *sender, void *context) {
     tx_buffer[1] = 0xA0;
     tx_buffer[2] = 0x05;
     tx_buffer[3] = 0x50;
-    tx_buffer[4] = 0xFF; /* dummy byte, transferred while receiving data */
+    tx_buffer[4] = 0xFF; /* dummy byte, transfer while receiving data */
     spi_msg.tx_buffer = tx_buffer;
     spi_msg.tx_len = 5;
     spi_msg.rx_buffer = rx_buffer;

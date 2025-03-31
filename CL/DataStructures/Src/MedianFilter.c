@@ -1,4 +1,3 @@
-#include "app.h"
 #include "CodeLib.h"
 
 typedef struct {
@@ -11,15 +10,15 @@ typedef struct {
   } xPrivate;
 } MedianFilterPrv_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(MedianFilterPrv_t, MedianFilter_t, MEDIAN_FILTER_PRV, MedianFilter.h);
+LIB_ASSERRT_STRUCTURE_CAST(MedianFilterPrv_t, MedianFilter_t, MEDIAN_FILTER_PRV, MedianFilter.h);
 
 void vMedianFilterInit(MedianFilter_t *pxFilter, uint32_t ulDefaultValue, uint32_t *pulOutput) {
-  if(pxFilter == NULL) return;
+  if(pxFilter == libNULL) return;
   MedianFilterPrv_t *pxFlt = (MedianFilterPrv_t *)pxFilter;
   pxFlt->xPrivate.usIndex = 0;
   pxFlt->xPrivate.usAmount = 0;
   pxFlt->xPrivate.pulOutput = pulOutput;
-  if(pxFlt->xPrivate.pulOutput != NULL) *(pxFlt->xPrivate.pulOutput) = ulDefaultValue;
+  if(pxFlt->xPrivate.pulOutput != libNULL) *(pxFlt->xPrivate.pulOutput) = ulDefaultValue;
 }
 
 static uint32_t _bFilterFindMedian(MedianFilterPrv_t *pxFlt) {
@@ -57,11 +56,11 @@ static uint32_t _bFilterFindMedian(MedianFilterPrv_t *pxFlt) {
 }
 
 uint8_t bMedianFilterFeed(MedianFilter_t *pxFilter, uint32_t value) {
-  if(pxFilter == NULL) return 0;
+  if(pxFilter == libNULL) return 0;
   MedianFilterPrv_t *pxFlt = (MedianFilterPrv_t *)pxFilter;
   pxFlt->ulData[pxFlt->xPrivate.usIndex] = value;
   if(pxFlt->xPrivate.usAmount < pxFlt->usSize) pxFlt->xPrivate.usAmount++;
-  if(pxFlt->xPrivate.pulOutput != NULL) *(pxFlt->xPrivate.pulOutput) = _bFilterFindMedian(pxFlt);
+  if(pxFlt->xPrivate.pulOutput != libNULL) *(pxFlt->xPrivate.pulOutput) = _bFilterFindMedian(pxFlt);
   pxFlt->xPrivate.usIndex++;
   if(pxFlt->xPrivate.usIndex >= pxFlt->usSize) {
     pxFlt->xPrivate.usIndex = 0;

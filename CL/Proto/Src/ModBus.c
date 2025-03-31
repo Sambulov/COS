@@ -22,7 +22,8 @@ typedef enum {
     eModbusPacketBase        = 1,    /* [ADDR][FUNC][MSB_REG_ADDR][LSB_REG_ADDR][MSB_COUNT][LSB_COUNT][MSB_CRC][LSB_CRC] */
     eModbusPacketVariableLen = 2,    /* [ADDR][FUNC][LENGTH][DATA...][MSB_CRC][LSB_CRC] */
     eModbusPacketFull        = 3,    /* [ADDR][FUNC][MSB_REG_ADDR][LSB_REG_ADDR][MSB_COUNT][LSB_COUNT][LENGTH][DATA...][MSB_CRC][LSB_CRC] */
-    eModbusPacketError       = 4,    /* [ADDR|0x80][FUNC][ERR][MSB_CRC][LSB_CRC] */
+    eModbusPacketCode        = 4,    /* [ADDR][FUNC][CODE][MSB_CRC][LSB_CRC] */
+    eModbusPacketCall        = 8,    /* [ADDR][FUNC][MSB_CRC][LSB_CRC] */
     eModbusPacketTypesAmount
 } ModbusPacketType_t;
 
@@ -52,7 +53,7 @@ static ModbusResult_t _eModbusDummyHandler(ModbusRequest_t *pxRreq, ModbusFrame_
 }
 
 static ModbusPacketType_t _eModbusFuncToPacketType(uint8_t ucFunc, uint8_t bIsRequest) {
-    if(ucFunc & MODBUS_ERROR_FLAG) return eModbusPacketError;
+    if(ucFunc & MODBUS_ERROR_FLAG) return eModbusPacketCode;
 	switch (ucFunc) {
 	case 0x01 /* Read coil */:
 		return bIsRequest? eModbusPacketBase: eModbusPacketVariableLen;
@@ -66,24 +67,24 @@ static ModbusPacketType_t _eModbusFuncToPacketType(uint8_t ucFunc, uint8_t bIsRe
 		return eModbusPacketBase;
 	case 0x06 /* Write single register */:
 		return eModbusPacketBase;
-	//	case 0x07 /* Read Exception Status */:
-	//		return ;
+	case 0x07 /* Read Exception Status */:
+		return bIsRequest? eModbusPacketCall: eModbusPacketCode;
 	//	case 0x08 /* Diagnostic */:
 	//		return ;
-	//	case 0x0B /* Get Com Event Counter */:
-	//		return ;
-	//	case 0x0C /* Get Com Event Log */:
-	//		return ;
+	case 0x0B /* Get Com Event Counter */:
+        return bIsRequest? eModbusPacketCall: eModbusPacketBase;
+	case 0x0C /* Get Com Event Log */:
+        return bIsRequest? eModbusPacketCall: eModbusPacketVariableLen;
 	case 0x0F /* Write multiple coils */:
 		return bIsRequest? eModbusPacketFull: eModbusPacketBase;
 	case 0x10 /* Write multiple registers */:
 		return bIsRequest? eModbusPacketFull: eModbusPacketBase;
-    //	case 0x11 /* Report Slave ID */:
-    //		return ;
-    //	case 0x14 /* Read File Record */:
-    //		return ;
-    //	case 0x15 /* Write File Record */:
-    //		return ;
+    case 0x11 /* Report Slave ID */:
+        return bIsRequest? eModbusPacketCall: eModbusPacketVariableLen;
+    case 0x14 /* Read File Record */:
+        return bIsRequest? eModbusPacketVariableLen: eModbusPacketVariableLen;
+    case 0x15 /* Write File Record */:
+        return bIsRequest? eModbusPacketVariableLen: eModbusPacketVariableLen;
     //	case 0x16 /* Mask Write Register */:
     //		return ;
     //	case 0x18 /* Read FIFO Queue */:
@@ -104,14 +105,14 @@ static void _vModbusServerSetHandler(_prModbus_t *pxMb) {
         while ((currentEP != libNULL) && (currentEP->ucAddress != pxMb->xRequest.xFrame.ucAddr))
             currentEP = currentEP->pxNext;
 		if (currentEP != libNULL) {
-			ModbusHandler_t *hdesc = libNULL;
+			const ModbusHandler_t *hdesc = libNULL;
 			for (int32_t i = 0; currentEP->paxHandlers[i] != libNULL; i++) {
 				if (currentEP->paxHandlers[i]->ucFunctionNo == pxMb->xRequest.xFrame.ucFunc) {
 					hdesc = currentEP->paxHandlers[i];
 					break;
 				}
 			}
-			if (hdesc == libNULL) pxMb->eTxType = eModbusPacketError;
+			if (hdesc == libNULL) pxMb->eTxType = eModbusPacketCode;
 			else {
 				pxMb->xRequest.pfOnComplete = hdesc->pfOnRequest;
 				pxMb->eTxType = _eModbusFuncToPacketType(pxMb->xRequest.xFrame.ucFunc, 0);
@@ -198,17 +199,17 @@ static int8_t _TxFrame(_prModbus_t *pxMb, uint8_t bRequest) {
             frame->_usCrc = usCrcCalc((uint8_t *)&regValCount, 2, &frame->_usCrc);
         } /* fall through */
     case 6 /* Tx length */:
-        if (pxMb->eTxType & (eModbusPacketVariableLen | eModbusPacketError)) {
-            if (lDataWrite(pxMb, &frame->ucLengthError, 1) <= 0) return 6;
-            frame->_usCrc = usCrcCalc(&frame->ucLengthError, 1, &frame->_usCrc);
+        if (pxMb->eTxType & (eModbusPacketVariableLen | eModbusPacketCode)) {
+            if (lDataWrite(pxMb, &frame->ucLengthCode, 1) <= 0) return 6;
+            frame->_usCrc = usCrcCalc(&frame->ucLengthCode, 1, &frame->_usCrc);
         } /* fall through */
     case 7 /* Tx data */:
         if (pxMb->eTxType & eModbusPacketVariableLen) {
-        int32_t res = lDataWrite(pxMb, frame->pucData + pxMb->ucTransferCounter, frame->ucLengthError - pxMb->ucTransferCounter);
+        int32_t res = lDataWrite(pxMb, frame->pucData + pxMb->ucTransferCounter, frame->ucLengthCode - pxMb->ucTransferCounter);
         if(res <= 0) return 7;
             frame->_usCrc = usCrcCalc(frame->pucData + pxMb->ucTransferCounter, res, &frame->_usCrc);			
             pxMb->ucTransferCounter += res;
-            if (frame->ucLengthError > pxMb->ucTransferCounter) return 7;
+            if (frame->ucLengthCode > pxMb->ucTransferCounter) return 7;
         } /* fall through */
     case 8 /* Tx crc */: 
         if (pxMb->bAsciiMode) {
@@ -297,28 +298,28 @@ static int8_t _RxFrame(_prModbus_t *pxMb, uint8_t bRequest) {
                 frame->_usCrc = usCrcCalc(buf, 4, &frame->_usCrc);
             } /* fall through */
         case 5 /* Rx length | err */:
-            if ((pxMb->eRxType & eModbusPacketVariableLen) || (pxMb->eRxType == eModbusPacketError)) {
-                if (lDataRead(pxMb, &frame->ucLengthError, 1) <= 0) return 5;
-                frame->_usCrc = usCrcCalc(&frame->ucLengthError, 1, &frame->_usCrc);
+            if ((pxMb->eRxType & eModbusPacketVariableLen) || (pxMb->eRxType == eModbusPacketCode)) {
+                if (lDataRead(pxMb, &frame->ucLengthCode, 1) <= 0) return 5;
+                frame->_usCrc = usCrcCalc(&frame->ucLengthCode, 1, &frame->_usCrc);
             } /* fall through */
         case 6:
-            if ((pxMb->eRxType & eModbusPacketVariableLen) && (frame->ucLengthError > pxMb->ucPayLoadBufferSize)) {
-                frame->ucLengthError = 0;
+            if ((pxMb->eRxType & eModbusPacketVariableLen) && (frame->ucLengthCode > pxMb->ucPayLoadBufferSize)) {
+                frame->ucLengthCode = 0;
                 return ((pxMb->bAsciiMode)? -1: MODBUS_RX_STATE_SKIP_PACKET);
             } /* fall through */
         case 7 /* Rx data */:
             if (pxMb->eRxType & eModbusPacketVariableLen) {
-                int32_t res = lDataRead(pxMb, frame->pucData + pxMb->ucTransferCounter, frame->ucLengthError - pxMb->ucTransferCounter);
+                int32_t res = lDataRead(pxMb, frame->pucData + pxMb->ucTransferCounter, frame->ucLengthCode - pxMb->ucTransferCounter);
                 if (res <= 0) return 7;
                 frame->_usCrc = usCrcCalc(frame->pucData + pxMb->ucTransferCounter, res, &frame->_usCrc);			
                 pxMb->ucTransferCounter += res;
-                if (frame->ucLengthError > pxMb->ucTransferCounter) return 7;
+                if (frame->ucLengthCode > pxMb->ucTransferCounter) return 7;
             } /* fall through */
         case 8 /* Rx unknown */:
             if (pxMb->eRxType == eModbusPacketNone) {
                 if (pxMb->bAsciiMode) return -1;
                 else {
-                    frame->ucLengthError = 0;
+                    frame->ucLengthCode = 0;
                     return MODBUS_RX_STATE_SKIP_PACKET;
                 }
             } /* fall through */
@@ -341,12 +342,12 @@ static int8_t _RxFrame(_prModbus_t *pxMb, uint8_t bRequest) {
         case MODBUS_RX_STATE_SKIP_PACKET:
         default: /* Will try find end of frame. Break if crc match or too many data received, or timeout occurred */
             while (_lRead(pxMb, &frame->pucData[1], 1) > 0) {
-                if (frame->ucLengthError > 0) {
+                if (frame->ucLengthCode > 0) {
                     uint16_t crc = (((uint16_t)frame->pucData[0]) << 8) | (frame->pucData[1]);
-                    if ((crc == frame->_usCrc) || (frame->ucLengthError >= 251)) return -1;
+                    if ((crc == frame->_usCrc) || (frame->ucLengthCode >= 251)) return -1;
                     frame->_usCrc = usCrc16ModbusRtu(frame->pucData, 1, &frame->_usCrc);
                 }
-                frame->ucLengthError++;
+                frame->ucLengthCode++;
                 frame->pucData[0] = frame->pucData[1];
             }
         break;
@@ -360,7 +361,7 @@ static void _vModbusServerWork(_prModbus_t *pxMb) {
         if(pxMb->ucXferState <= 1) {
             pxMb->usTimer = now;
             pxMb->xRequest.xFrame.pucData = pxMb->pucPayLoadBuffer;
-            pxMb->xRequest.xFrame.ucLengthError = pxMb->ucPayLoadBufferSize;
+            pxMb->xRequest.xFrame.ucLengthCode = pxMb->ucPayLoadBufferSize;
         }
         if ((uint16_t)(now - pxMb->usTimer) >= pxMb->rx_timeout) pxMb->ucXferState = 0;
         pxMb->ucXferState = _RxFrame(pxMb, true);
@@ -370,13 +371,13 @@ static void _vModbusServerWork(_prModbus_t *pxMb) {
     if (pxMb->ucState & MODBUS_STATE_RECEIVED) {
         pxMb->xFrame = pxMb->xRequest.xFrame;
         pxMb->xFrame.pucData = pxMb->pucPayLoadBuffer;
-        pxMb->xFrame.ucLengthError = pxMb->ucPayLoadBufferSize;
+        pxMb->xFrame.ucLengthCode = pxMb->ucPayLoadBufferSize;
         ModbusResult_t result = pxMb->xRequest.pfOnComplete(&pxMb->xRequest, &pxMb->xFrame);
         if (pxMb->eTxType != eModbusPacketNone) {
             if (result != ModbusOk) { /* tx error */
                 pxMb->xFrame.ucFunc |= MODBUS_ERROR_FLAG;
-                pxMb->xFrame.ucLengthError = result;
-                pxMb->eTxType = eModbusPacketError;
+                pxMb->xFrame.ucLengthCode = result;
+                pxMb->eTxType = eModbusPacketCode;
             }
             pxMb->usTimer = pxMb->pxIface->ulTimerMs(pxMb->pxIface->pxTimerPhy);
             pxMb->ucState = MODBUS_STATE_TRANSMITTING;
@@ -413,7 +414,7 @@ static void _vModbusClientWork(_prModbus_t *pxMb) {
             uint16_t now = pxMb->pxIface->ulTimerMs(pxMb->pxIface->pxTimerPhy);
             pxMb->ucXferState = _RxFrame(pxMb, false);
             if (pxMb->ucXferState == MODBUS_RX_STATE_DEFINE_PACKET_TYPE) {
-                if (pxMb->xFrame.ucFunc & MODBUS_ERROR_FLAG) pxMb->eRxType = eModbusPacketError;
+                if (pxMb->xFrame.ucFunc & MODBUS_ERROR_FLAG) pxMb->eRxType = eModbusPacketCode;
                 else if((pxMb->xFrame.ucAddr != pxMb->xRequest.xFrame.ucAddr) ||
                         (pxMb->xFrame.ucFunc != pxMb->xRequest.xFrame.ucFunc))
                     pxMb->eRxType = _eModbusFuncToPacketType(pxMb->xFrame.ucFunc, 0);
@@ -447,7 +448,7 @@ static void _vModbusClientWork(_prModbus_t *pxMb) {
             if(err) {
                 pxMb->xFrame = pxMb->xRequest.xFrame;
                 pxMb->xFrame.ucFunc = (pxMb->xRequest.xFrame.ucFunc | 0x80);
-                pxMb->xFrame.ucLengthError = err;
+                pxMb->xFrame.ucLengthCode = err;
             }
             pxMb->xRequest.pfOnComplete(&pxMb->xRequest, &pxMb->xFrame);
             pxMb->ucXferState = -1;
@@ -508,7 +509,7 @@ uint8_t bModbusRequest(Modbus_t *pxMb, ModbusRequest_t *pxRequest) {
     mb->eRxType = _eModbusFuncToPacketType(pxRequest->xFrame.ucFunc, 0);
     if((mb->eTxType == eModbusPacketNone) ||
        ((mb->eTxType & eModbusPacketVariableLen) && 
-         ((pxRequest->xFrame.ucLengthError == 0) || (pxRequest->xFrame.pucData == libNULL)))) 
+         ((pxRequest->xFrame.ucLengthCode == 0) || (pxRequest->xFrame.pucData == libNULL)))) 
         return false;
     mb->xRequest = *pxRequest;
     mb->pxIface->vFlush(mb->pxIface->pxRxPhy);

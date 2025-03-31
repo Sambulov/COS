@@ -3,7 +3,7 @@
  * The file is provided under the BSD license.
  */
 
-ENTRY(Reset_Handler)
+ENTRY(reset_handler)
 
 MEMORY
 {

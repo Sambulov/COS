@@ -5,7 +5,7 @@ typedef struct {
   hdl_spi_client_ch_mcu_t *curent_spi_ch;
   uint16_t rx_cursor;
   uint16_t tx_cursor;
-  uint32_t timer;
+  //uint32_t timer;
 } hdl_spi_client_var_t;
 
 typedef struct {
@@ -108,7 +108,7 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         }
         msg->state |= HDL_SPI_MESSAGE_STATUS_COMPLETE;
       }
-      else if()
+      //else if() todo timeout
     }
   }
   return cancel;

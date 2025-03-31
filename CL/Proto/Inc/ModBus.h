@@ -103,7 +103,7 @@ typedef struct {
 	uint8_t ucFunc;
 	uint16_t usRegAddr;
 	uint16_t usRegValueCount;
-	uint8_t ucLengthError;
+	uint8_t ucLengthCode;
 	uint8_t *pucData;
 	uint16_t _usCrc;
 } ModbusFrame_t;

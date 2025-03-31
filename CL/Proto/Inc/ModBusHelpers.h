@@ -131,7 +131,7 @@ static inline void vModbusInitRequestWriteCoils(ModbusRequest_t *pxOutReq, void*
 	vModbusInitRequestReadOutputs(pxOutReq, pxContext, pfCb, ucDevAddr, usRegAddr, usAmount);
 	pxOutReq->xFrame.ucFunc = MB_FUNC_WRITE_COILS;
 	pxOutReq->xFrame.pucData = pucValues;
-	pxOutReq->xFrame.ucLengthError = (usAmount >> 3);
+	pxOutReq->xFrame.ucLengthCode = (usAmount >> 3);
 }
 
 /*!
@@ -150,7 +150,7 @@ static inline void vModbusInitRequestWriteHoldings(ModbusRequest_t *pxOutReq, vo
 	vModbusInitRequestReadOutputs(pxOutReq, pxContext, pfCb, ucDevAddr, usRegAddr, usAmount);
 	pxOutReq->xFrame.ucFunc = MB_FUNC_WRITE_HOLDINGS;
 	pxOutReq->xFrame.pucData = (uint8_t *)pusValues;
-	pxOutReq->xFrame.ucLengthError = (usAmount * 2);
+	pxOutReq->xFrame.ucLengthCode = (usAmount * 2);
 }
 
 

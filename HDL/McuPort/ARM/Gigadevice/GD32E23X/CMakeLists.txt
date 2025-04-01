@@ -1,4 +1,3 @@
-
 if (MCU STREQUAL "GD32E230K6")
   set(JS_FILE "flash_k6.jlink")
   set(LD_FILE "linkerscript_k6.ld")

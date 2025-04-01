@@ -133,7 +133,7 @@ void EADC23_IRQHandler()     { call_isr(HDL_NVIC_IRQ127_EADC23_IRQn, 0); }
 
 static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   while(enable) {
-    hdl_core_t *core = (hdl_core_t *)desc;
+    hdl_core_arm_t *core = (hdl_core_arm_t *)desc;
     // /*  Unlock Register */
     SYS_UnlockReg();
     if(!CPU_POWER_LEVEL_VALID(core->config->power_level)) break;
@@ -171,6 +171,6 @@ static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-const hdl_module_base_iface_t hdl_core_iface = {
+const hdl_module_base_iface_t hdl_core_arm_iface = {
   .init = _hdl_core
 };

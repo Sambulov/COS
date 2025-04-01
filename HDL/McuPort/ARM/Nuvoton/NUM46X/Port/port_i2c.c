@@ -306,7 +306,7 @@ static void event_i2c_isr(uint32_t event, void *sender, void *context) {
       if((transceiver != NULL) && 
          (transceiver->rx_available != NULL) &&
          (transceiver->rx_data != NULL) &&
-         (transceiver->rx_available(transceiver->proto_context))) {
+         (transceiver->rx_available(transceiver->receiver_context))) {
         ctrl_flags |= I2C_CTL0_AA_Msk;
       }
       break;
@@ -315,16 +315,16 @@ static void event_i2c_isr(uint32_t event, void *sender, void *context) {
       if((i2c_periph->STATUS0 == I2C_ST_ADDRESS_ACK ) && 
         ((transceiver == NULL) || (transceiver->tx_empty == NULL) || (transceiver->tx_available == NULL))) break;
       uint8_t data = 0xff;
-      transceiver->tx_empty(transceiver->proto_context, &data, 1);
+      transceiver->tx_empty(transceiver->transmitter_context, &data, 1);
       i2c_periph->DAT = data;
-      if(transceiver->tx_available(transceiver->proto_context))
+      if(transceiver->tx_available(transceiver->transmitter_context))
         ctrl_flags |= I2C_CTL0_AA_Msk;
       break;
     }
     case I2C_SR_DATA_ACK:
       uint8_t data = i2c_periph->DAT;
-      transceiver->rx_data(transceiver->proto_context, &data, 1);
-      if(transceiver->rx_available(transceiver->proto_context)) {
+      transceiver->rx_data(transceiver->receiver_context, &data, 1);
+      if(transceiver->rx_available(transceiver->receiver_context)) {
         ctrl_flags |= I2C_CTL0_AA_Msk;
       }
       break;
@@ -333,7 +333,7 @@ static void event_i2c_isr(uint32_t event, void *sender, void *context) {
     case I2C_ST_STOP_REPEAT_START:
     case I2C_ST_LAST_DATA_ACK:
       if((transceiver != NULL) && (transceiver->end_of_transmission != NULL)) {
-        transceiver->end_of_transmission(transceiver->proto_context);
+        transceiver->end_of_transmission(transceiver->receiver_context);
       }
       ctrl_flags |= I2C_CTL0_AA_Msk;
       break;

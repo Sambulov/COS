@@ -73,14 +73,14 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
     if(ch < i2c_var->ch_amount) transceiver = i2c->config->channels[ch]->transceiver;
     i2c_var->transceiver = transceiver;
     if((transceiver == NULL) || (transceiver->rx_data == NULL) || 
-      ((transceiver->rx_available != NULL) && (transceiver->rx_available(transceiver->proto_context) == 0))) {
+      ((transceiver->rx_available != NULL) && (transceiver->rx_available(transceiver->receiver_context) == 0))) {
       i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
     }
   }
   /* Read from slave */
   if(tmp & I2C_STAT0_TBE) {
     if((transceiver != NULL) && (transceiver->tx_empty != NULL)) {
-        transceiver->tx_empty(transceiver->proto_context, &data, 1);
+        transceiver->tx_empty(transceiver->transmitter_context, &data, 1);
         i2c_periph->DATA = data;
     }
   }
@@ -88,17 +88,17 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   if(tmp & I2C_STAT0_RBNE) {
     data = i2c_periph->DATA;
     if((transceiver == NULL) || (transceiver->rx_data == NULL) || 
-      ((transceiver->rx_available != NULL) && (transceiver->rx_available(transceiver->proto_context) == 0))) {
+      ((transceiver->rx_available != NULL) && (transceiver->rx_available(transceiver->receiver_context) == 0))) {
       i2c_periph->CTL0 &= ~(I2C_CTL0_ACKEN);
     }
     else {
-      transceiver->rx_data(transceiver->proto_context, &data, 1);
+      transceiver->rx_data(transceiver->receiver_context, &data, 1);
     }
   }
   /* STOP condition */
   if(tmp & I2C_STAT0_STPDET) { 
     if((transceiver != NULL) && (transceiver->end_of_transmission != NULL))
-      transceiver->end_of_transmission(transceiver->proto_context);
+      transceiver->end_of_transmission(transceiver->receiver_context);
     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
   }
 }
@@ -112,7 +112,7 @@ static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
   const hdl_transceiver_t *transceiver = i2c_var->transceiver;
   if(i2c_periph->STAT0 & I2C_STAT0_AERR) {
     if((transceiver != NULL) && (transceiver->end_of_transmission != NULL))
-      transceiver->end_of_transmission(transceiver->proto_context);
+      transceiver->end_of_transmission(transceiver->receiver_context);
     i2c_periph->CTL0 |= (I2C_CTL0_ACKEN);
   }
   _i2c_clear_error(i2c_periph);

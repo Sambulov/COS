@@ -184,6 +184,6 @@ static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-const hdl_module_base_iface_t hdl_core_iface = {
+const hdl_module_base_iface_t hdl_core_arm_iface = {
   .init = _hdl_core
 };

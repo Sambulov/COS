@@ -48,7 +48,7 @@ const hdl_core_config_t mod_sys_core_cnf = {
 };
 
 const hdl_core_t mod_sys_core = {
-  .iface = &hdl_core_iface,
+  .iface = &hdl_core_arm_iface,
   .dependencies = NULL,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .config = hdl_module_config(hdl_core_config_t, 
@@ -109,6 +109,14 @@ hdl_interrupt_t mod_irq_i2c1_er = {
   )
 };
 
+hdl_interrupt_t mod_irq_usart1 = {
+  .irq_cnf = hdl_module_config(hdl_interrupt_config_t,
+    .irq_type = HDL_NVIC_IRQ28_USART1,
+    .priority = 0,
+    .priority_group = 0
+  )
+};
+
 hdl_interrupt_t mod_irq_adc = {
   .irq_cnf = hdl_module_config(hdl_interrupt_config_t,
     .irq_type = HDL_NVIC_IRQ12_ADC_CMP,
@@ -117,7 +125,7 @@ hdl_interrupt_t mod_irq_adc = {
   )
 };
 
-extern const hdl_interrupt_controller_config_t mod_nvic_cnf;
+extern const hdl_nvic_config_t mod_nvic_cnf;
 
 const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   &mod_nvic_cnf,
@@ -173,18 +181,18 @@ const void* const irq_vector[] __attribute__((aligned(HDL_VTOR_TAB_ALIGN))) = {
   &i2c1_er_handler,                  /* IRQ35 */
 };
 
-const hdl_interrupt_controller_config_t mod_nvic_cnf = {
+const hdl_nvic_config_t mod_nvic_cnf = {
   .vector = &irq_vector,
   .prio_bits = HDL_INTERRUPT_PRIO_GROUP_BITS,
   .irq_latency = 0, /* TODO: define static assert */
-  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_spi_0,
+  .interrupts = hdl_interrupts(&mod_irq_systick, &mod_irq_spi_0, &mod_irq_usart1,
                                &mod_irq_i2c0_ev, &mod_irq_i2c0_er, &mod_irq_i2c1_ev, &mod_irq_i2c1_er,
                                &mod_irq_adc),
   .phy = NVIC,
 };
 
-const hdl_interrupt_controller_t mod_nvic = {
-  .iface = &hdl_interrupt_controller_iface,
+const hdl_nvic_t mod_nvic = {
+  .iface = &hdl_nvic_iface,
   .dependencies = hdl_module_dependencies(&mod_sys_core),
   .config = &mod_nvic_cnf,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
@@ -348,7 +356,7 @@ const hdl_tick_counter_t mod_systick_counter = {
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
-const hdl_time_counter_t mod_timer_ms = {
+const hdl_time_counter_t mod_systick_timer = {
   .iface = &hdl_time_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_systick_counter, &mod_nvic),
   .config = hdl_module_config(hdl_time_counter_config_t, .reload_interrupt = &mod_irq_systick),
@@ -420,6 +428,14 @@ const hdl_gpio_pin_hw_config_t mod_gpio_output_pp_mode = {
   .ospeed = GPIO_OSPEED_2MHZ,
 };
 
+const hdl_gpio_pin_hw_config_t mod_gpio_uart1_mode = {
+  .af = GPIO_AF_1,
+  .type = GPIO_MODE_AF,
+  .otype = GPIO_OTYPE_PP,
+  .ospeed = GPIO_OSPEED_2MHZ,
+  .pull = GPIO_PUPD_PULLUP
+};
+
 const hdl_gpio_pin_hw_config_t mod_gpio_input_pullup_mode = {
   .type = GPIO_MODE_INPUT,
   .pull = GPIO_PUPD_PULLUP,
@@ -436,14 +452,16 @@ const hdl_gpio_pin_hw_config_t mod_gpio_i2c1f_mode = {
   .af = GPIO_AF_0,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_OD,
-  .ospeed = GPIO_OSPEED_2MHZ
+  .ospeed = GPIO_OSPEED_2MHZ,
+  .pull = GPIO_PUPD_PULLUP
 };
 
 const hdl_gpio_pin_hw_config_t mod_gpio_i2c1b_mode = {
   .af = GPIO_AF_1,
   .type = GPIO_MODE_AF,
   .otype = GPIO_OTYPE_OD,
-  .ospeed = GPIO_OSPEED_2MHZ
+  .ospeed = GPIO_OSPEED_2MHZ,
+  .pull = GPIO_PUPD_PULLUP
 };
 
 const hdl_gpio_pin_hw_config_t hdl_gpio_spi_mode = {
@@ -454,6 +472,16 @@ const hdl_gpio_pin_hw_config_t hdl_gpio_spi_mode = {
   .otype = GPIO_OTYPE_PP,
 };
 /*============================================*/
+
+const hdl_gpio_pin_t mod_gpio_pa0 = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_input_pullup_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_0)
+}; //(PA0)
 
 const hdl_gpio_pin_t mod_gpio_pa1 = {
   .iface = &hdl_gpio_pin_iface,
@@ -481,6 +509,26 @@ const hdl_gpio_pin_t mod_gpio_pa3 = {
   .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_output_pp_mode, 
+    .inactive_default = HDL_GPIO_LOW,
+    .pin = GPIO_PIN_3)
+}; //(PA3)
+
+const hdl_gpio_pin_t mod_gpio_pa2_uart_tx = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_uart1_mode, 
+    .inactive_default = HDL_GPIO_LOW,
+    .pin = GPIO_PIN_2)
+}; //(PA2)
+
+const hdl_gpio_pin_t mod_gpio_pa3_uart_rx = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_a),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_uart1_mode, 
     .inactive_default = HDL_GPIO_LOW,
     .pin = GPIO_PIN_3)
 }; //(PA3)
@@ -861,8 +909,6 @@ const hdl_gpio_pin_t mod_gpio_pin_pf7_sda = {
     .pin = GPIO_PIN_7)
 }; //(PF7)
 
-
-
 /**************************************************************
  *  I2C
  *************************************************************/
@@ -888,7 +934,7 @@ const hdl_i2c_config_t mod_i2c0_cnf = {
 const hdl_i2c_mcu_t mod_i2c0 = {
   .iface = &hdl_i2c_iface,
   .dependencies = hdl_module_dependencies(&mod_gpio_pin_pf6_scl, &mod_gpio_pin_pf7_sda,
-                                          &mod_clock_apb1, &mod_nvic, &mod_timer_ms),
+                                          &mod_clock_apb1, &mod_nvic, &mod_systick_timer),
   .config = &mod_i2c0_cnf,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .obj_var = static_malloc(HDL_I2C_VAR_SIZE)
@@ -915,7 +961,7 @@ const hdl_i2c_config_t mod_i2c1_cnf = {
 const hdl_i2c_mcu_t mod_i2c1 = {
   .iface = &hdl_i2c_iface,
   .dependencies = hdl_module_dependencies(&mod_gpio_pin_pb10_scl, &mod_gpio_pin_pb11_sda,
-                                          &mod_clock_apb1, &mod_nvic, &mod_timer_ms),
+                                          &mod_clock_apb1, &mod_nvic, &mod_systick_timer),
   .config = &mod_i2c1_cnf,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .obj_var = static_malloc(HDL_I2C_VAR_SIZE)
@@ -968,7 +1014,7 @@ const hdl_spi_client_ch_mcu_t mod_spi0_ch0 = {
 const hdl_xl9535_port_t mod_gpio_exp_38 = {
   .iface = &hdl_xl9535_port_iface,
   .config = hdl_module_config(hdl_xl9535_port_config_t, .address = 38),
-  .dependencies = hdl_module_dependencies(&mod_i2c_sw, &mod_timer_ms, &hdl_null_module),
+  .dependencies = hdl_module_dependencies(&mod_i2c_sw, &mod_systick_timer, &hdl_null_module),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .obj_var = static_malloc(HDL_XL9535_PORT_VAR_SIZE),
 };
@@ -1154,7 +1200,7 @@ const hdl_eeprom_i2c_config_t mod_eeprom_i2c_cnf = {
 
 const hdl_eeprom_i2c_t mod_eeprom_i2c = {
   .iface = &hdl_eeprom_iface,
-  .dependencies = hdl_module_dependencies(&mod_i2c_sw, &mod_timer_ms, &mod_gpio_pc13),
+  .dependencies = hdl_module_dependencies(&mod_i2c_sw, &mod_systick_timer, &mod_gpio_pc13),
   .config = &mod_eeprom_i2c_cnf,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .obj_var = static_malloc(HDL_EEPROM_I2C_VAR_SIZE)
@@ -1248,7 +1294,7 @@ const hdl_adc_config_t mod_adc_mcu_cnf = {
 
 const hdl_adc_mcu_t mod_adc_mcu = {
   .iface = &hdl_adc_iface,
-  .dependencies = hdl_module_dependencies(&mod_clock_adc, &mod_timer_ms, &mod_dma_ch_adc, &mod_nvic,
+  .dependencies = hdl_module_dependencies(&mod_clock_adc, &mod_systick_timer, &mod_dma_ch_adc, &mod_nvic,
     &mod_gpio_pin_pa4_adc, &mod_gpio_pin_pa5_adc, &mod_gpio_pin_pa6_adc, &mod_gpio_pin_pa7_adc
   ),
   .config = &mod_adc_mcu_cnf,
@@ -1258,10 +1304,52 @@ const hdl_adc_mcu_t mod_adc_mcu = {
 
 #endif
 
+/**************************************************************
+ *  UART
+ *************************************************************/
+
+ const hdl_uart_mcu_t mod_uart1 = {
+  .iface = &hdl_uart_iface,
+  .dependencies = hdl_module_dependencies(
+    &mod_gpio_pa3_uart_rx, 
+    &mod_gpio_pa2_uart_tx, 
+    &mod_clock_apb1,
+    &mod_nvic, 
+    &mod_systick_timer 
+  ),
+  .config = hdl_module_config(hdl_uart_config_t,
+    .phy = (uint32_t)USART0, 
+    .rcu = RCU_USART1,
+    .interrupt = &mod_irq_usart1,
+    .baudrate = 115200,
+    .word_len = USART_WL_8BIT,
+    .parity = USART_PM_NONE,
+    .stop_bits = USART_STB_1BIT
+  ),
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .obj_var = static_malloc(HDL_UART_VAR_SIZE)
+};
+
 /*================================================================*/
 
-extern hdl_time_counter_t mod_timer_ms        __attribute__ ((alias ("mod_systick_timer_ms")));
+extern const hdl_interrupt_controller_t mod_ic                    __attribute__ ((alias ("mod_nvic")));
 
-extern hdl_interrupt_controller_t mod_ic      __attribute__ ((alias ("mod_nvic")));
+extern const hdl_tick_counter_t mod_tick_counter                  __attribute__ ((alias ("mod_systick_counter")));
+
+extern const hdl_time_counter_t mod_timer_ms                      __attribute__ ((alias ("mod_systick_timer")));
+
+extern const hdl_gpio_pin_t mod_output1_pin                       __attribute__ ((alias ("mod_gpio_pa8")));
+extern const hdl_gpio_pin_t mod_output2_pin                       __attribute__ ((alias ("mod_gpio_pa9")));
+
+extern const hdl_gpio_pin_t mod_led1_pin                          __attribute__ ((alias ("mod_gpio_pb12")));
+extern const hdl_gpio_pin_t mod_led2_pin                          __attribute__ ((alias ("mod_gpio_pb13")));
+extern const hdl_gpio_pin_t mod_led3_pin                          __attribute__ ((alias ("mod_gpio_pb14")));
+extern const hdl_gpio_pin_t mod_led4_pin                          __attribute__ ((alias ("mod_gpio_pb15")));
+extern const hdl_gpio_pin_t mod_button_pin                        __attribute__ ((alias ("mod_gpio_pa0")));
+
+extern const hdl_uart_t mod_uart                                  __attribute__ ((alias ("mod_uart1")));
+
+extern const hdl_spi_client_ch_t mod_spi_client                   __attribute__ ((alias ("mod_spi0_ch0")));
+
 
 #endif

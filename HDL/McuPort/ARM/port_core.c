@@ -75,12 +75,12 @@ __STATIC_INLINE uint8_t hdl_exception_irq_enable(hdl_nvic_irq_n_t irq) {
 }
 
   #if defined(__CORE_CM23_H_DEPENDANT)
-  static uint8_t _hdl_interrupt_controller_spec(const hdl_interrupt_controller_t *desc, uint8_t enable) {
+  static uint8_t _hdl_interrupt_controller_spec(const hdl_nvic_t *desc, uint8_t enable) {
     if(enable) SYSCFG_CPU_IRQ_LAT = desc->config->irq_latency;
     return HDL_TRUE;
   }
   #else
-  static uint8_t _hdl_interrupt_controller_spec(const hdl_interrupt_controller_t *desc, uint8_t enable) {
+  static uint8_t _hdl_interrupt_controller_spec(const hdl_nvic_t *desc, uint8_t enable) {
     (void)desc; (void)enable;
     return HDL_TRUE;
   }

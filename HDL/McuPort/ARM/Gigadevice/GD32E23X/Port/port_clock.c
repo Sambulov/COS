@@ -200,7 +200,7 @@ static hdl_module_state_t _hdl_clock_adc(hdl_clock_mcu_t *clk, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-static hdl_module_state_t _hdl_clock(const void *desc, const uint8_t enable) {
+hdl_module_state_t __hdl_clock(const void *desc, const uint8_t enable) {
   hdl_clock_mcu_t *clk = (hdl_clock_mcu_t *)desc;
   hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
   clock_var->freq.denom = 1;
@@ -267,21 +267,3 @@ static hdl_module_state_t _hdl_clock(const void *desc, const uint8_t enable) {
   }
   return HDL_MODULE_FAULT;
 }
-
-static void _hdl_get_clock(const void *desc, hdl_clock_freq_t *freq) {
-  if(freq != NULL) {
-    freq->num = 0;
-    freq->denom = 1;
-    if(hdl_state(desc) != HDL_MODULE_FAULT) {
-      hdl_clock_mcu_t *clk = (hdl_clock_mcu_t *)desc;
-      hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
-      freq->num = clock_var->freq.num;
-      freq->denom = clock_var->freq.denom;
-    }
-  }
-}
-
-const hdl_clock_iface_t hdl_clock_iface = {
-  .init = &_hdl_clock,
-  .get = &_hdl_get_clock
-};

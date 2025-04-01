@@ -1,6 +1,8 @@
 #ifndef PORT_CLOCK_H_
 #define PORT_CLOCK_H_
 
+#include "hdl_clock.h"
+
 #define IRC8M_CLOCK                  8000000UL
 #define IRC40K_CLOCK                 40000UL
 
@@ -41,5 +43,11 @@ typedef struct {
   hdl_clock_type_t type;
   hdl_clock_property_t property;
 } hdl_clock_config_t;
+
+#define HDL_CLOCK_VAR_SIZE 8
+
+hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_VAR_SIZE, hdl_clock_config_t, hdl_clock_iface_t);
+
+extern const hdl_clock_iface_t hdl_clock_iface;
 
 #endif /* PORT_CLOCK_H_ */

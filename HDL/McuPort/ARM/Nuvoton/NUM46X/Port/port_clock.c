@@ -20,8 +20,8 @@ static hdl_module_state_t _hdl_clock_osc_en(uint32_t osc, uint32_t stat, uint32_
   SYS_UnlockReg();
   CL_REG_SET(CLK->PWRCTL, osc);
   SYS_LockReg();
-  while ((!HDL_REG_CHECK(CLK->STATUS, stat)) && (timeout--)); /* Wait until HXTAL will be stable */
-  if (!HDL_REG_CHECK(CLK->STATUS, stat))
+  while ((!CL_REG_CHECK(CLK->STATUS, stat,stat)) && (timeout--)); /* Wait until HXTAL will be stable */
+  if (!CL_REG_CHECK(CLK->STATUS, stat, stat))
     return HDL_MODULE_FAULT;
   return HDL_MODULE_ACTIVE;
 }
@@ -91,7 +91,7 @@ static hdl_module_state_t _hdl_clock_pll(hdl_clock_mcu_t *clk, uint8_t enable, u
     val = ((clk->config->property.div - 1) & 0x3) << CLK_PLLCTL_OUTDIV_Pos;
     CL_REG_MODIFY(CLK->PLLCTL, CLK_PLLCTL_OUTDIV_Msk, val);
     CL_REG_CLEAR(CLK->PLLCTL, CLK_PLLCTL_PD_Msk | CLK_PLLCTL_OE_Msk);
-    while ((!HDL_REG_CHECK(CLK->STATUS, CLK_STATUS_PLLSTB_Msk)) && (timeout--)); /* Wait until PLL will be stable */
+    while ((!CL_REG_CHECK(CLK->STATUS, CLK_STATUS_PLLSTB_Msk, CLK_STATUS_PLLSTB_Msk)) && (timeout--)); /* Wait until PLL will be stable */
     SYS_LockReg();
     return HDL_MODULE_ACTIVE;
   }
@@ -123,7 +123,7 @@ static hdl_module_state_t _hdl_clock_sys(hdl_clock_mcu_t *clk, uint8_t enable) {
     else if (clock_src->config->type == HDL_CLOCK_TYPE_IRC12M) CL_REG_MODIFY(CLK->CLKSEL0, CLK_CLKSEL0_HCLKSEL_Msk, CLK_CLKSEL0_HCLKSEL_HIRC);
     else break;
     SYS_LockReg();
-    if(HDL_REG_CHECK(CLK->STATUS, CLK_STATUS_CLKSFAIL_Msk)) break;
+    if(CL_REG_CHECK(CLK->STATUS, CLK_STATUS_CLKSFAIL_Msk, CLK_STATUS_CLKSFAIL_Msk)) break;
     return HDL_MODULE_ACTIVE;
   }
   SYS_UnlockReg();
@@ -214,17 +214,14 @@ static hdl_module_state_t _hdl_clock(const void *desc, uint8_t enable) {
   return HDL_MODULE_FAULT;
 }
 
- static void _hdl_get_clock(const void *desc, hdl_clock_freq_t *freq) {
+static uint8_t _hdl_get_clock(const void *desc, hdl_clock_freq_t *freq) {
   if(freq != NULL) {
-    freq->num = 0;
-    freq->denom = 1;
-    hdl_clock_mcu_t *clk = (hdl_clock_mcu_t *)desc;
-    hdl_clock_var_t *clock_var = (hdl_clock_var_t *)clk->obj_var;
-    if((clk != NULL) && (hdl_state(clk) != HDL_MODULE_FAULT)) {
-      freq->num = clock_var->freq.num;
-      freq->denom = clock_var->freq.denom;
-    }
+    hdl_clock_var_t *clk_var = (hdl_clock_var_t *)((hdl_clock_t *)desc)->obj_var;
+    freq->num = clk_var->freq.num;
+    freq->denom = clk_var->freq.denom;
+    return HDL_TRUE;
   }
+  return HDL_FALSE;
 }
 
 const hdl_clock_iface_t hdl_clock_iface = {

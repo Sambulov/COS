@@ -31,7 +31,7 @@ void i2c1_er_handler()               { call_isr((hdl_nvic_irq_n_t)I2C1_ER_IRQn, 
 
 static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   if(enable) {
-    hdl_core_t *core = (hdl_core_t *)desc;
+    hdl_core_arm_t *core = (hdl_core_arm_t *)desc;
     FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
     rcu_periph_clock_enable(RCU_CFGCMP);
     return HDL_MODULE_ACTIVE;
@@ -41,6 +41,6 @@ static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-const hdl_module_base_iface_t hdl_core_iface = {
+const hdl_module_base_iface_t hdl_core_arm_iface = {
   .init = _hdl_core
 };

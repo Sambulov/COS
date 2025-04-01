@@ -18,7 +18,7 @@ static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;
   if((uart_var->transceiver != NULL) && !(USART_CTL0((uint32_t)uart->config->phy) & USART_CTL0_TBEIE)) {
     if((uart_var->transceiver->tx_available != NULL) && (uart_var->transceiver->tx_empty != NULL) && 
-       (uart_var->transceiver->tx_available(uart_var->transceiver->proto_context) >= _hdl_uart_word_len(uart))) {
+       (uart_var->transceiver->tx_available(uart_var->transceiver->transmitter_context) >= _hdl_uart_word_len(uart))) {
       usart_interrupt_enable((uint32_t)uart->config->phy, USART_INT_TBE);
     }
   }
@@ -40,7 +40,7 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
 	if (usart_interrupt_flag_get(periph, USART_INT_FLAG_IDLE)) {
     usart_interrupt_flag_clear(periph, USART_INT_FLAG_IDLE);
     if((uart_var->transceiver != NULL) && (uart_var->transceiver->end_of_transmission != NULL))
-      uart_var->transceiver->end_of_transmission(uart_var->transceiver->proto_context);
+      uart_var->transceiver->end_of_transmission(uart_var->transceiver->receiver_context);
 	}
 	if (usart_interrupt_flag_get(periph, USART_INT_FLAG_ERR_NERR) ||
       usart_interrupt_flag_get(periph, USART_INT_FLAG_ERR_FERR) ||
@@ -54,8 +54,8 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
     usart_interrupt_enable(periph, USART_INT_IDLE);
     uint8_t wl = _hdl_uart_word_len(uart);
     if((uart_var->transceiver != NULL) && (uart_var->transceiver->rx_available != NULL) && (uart_var->transceiver->rx_data != NULL)) {
-      if(uart_var->transceiver->rx_available(uart_var->transceiver->proto_context) >= wl) {          
-        uart_var->transceiver->rx_data(uart_var->transceiver->proto_context, (uint8_t *)&data, wl);
+      if(uart_var->transceiver->rx_available(uart_var->transceiver->receiver_context) >= wl) {          
+        uart_var->transceiver->rx_data(uart_var->transceiver->receiver_context, (uint8_t *)&data, wl);
       }
     }
   }
@@ -64,9 +64,9 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
     usart_interrupt_disable(periph, USART_INT_TBE);
     uint8_t wl = _hdl_uart_word_len(uart);
     if((uart_var->transceiver != NULL) && (uart_var->transceiver->tx_available != NULL) && (uart_var->transceiver->tx_empty != NULL)) {
-      if(uart_var->transceiver->tx_available(uart_var->transceiver->proto_context) >= wl) {
+      if(uart_var->transceiver->tx_available(uart_var->transceiver->transmitter_context) >= wl) {
         uint16_t data;
-        uart_var->transceiver->tx_empty(uart_var->transceiver->proto_context, (uint8_t *)&data, wl);
+        uart_var->transceiver->tx_empty(uart_var->transceiver->transmitter_context, (uint8_t *)&data, wl);
         usart_data_transmit(periph, data);
         USART_CTL0(periph) |= USART_CTL0_TBEIE;
       }

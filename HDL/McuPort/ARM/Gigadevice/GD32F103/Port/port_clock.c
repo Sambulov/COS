@@ -2,12 +2,10 @@
 #include "Macros.h"
 
 typedef struct {
-  hdl_module_t module;
-  const hdl_clock_config_t *config;
   hdl_clock_freq_t freq;
-} hdl_clock_private_t;
+} hdl_clock_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_private_t, hdl_clock_private_t, HDL_CLOCK_PRV_SIZE, port_clock.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_clock_var_t, *((hdl_clock_mcu_t *)0)->obj_var, HDL_CLOCK_VAR_SIZE, port_clock.h);
 
 #define IRC28M_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
 #define CK_SYS_STARTUP_TIMEOUT    ((uint32_t)0xFFFF)
@@ -129,7 +127,7 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_private_t *clk, uint32_t 
   return HDL_MODULE_ACTIVE;
 }
 
-hdl_module_state_t hdl_clock_adc(hdl_clock_private_t *clk, uint8_t enable) {
+static hdl_module_state_t hdl_clock_adc(hdl_clock_private_t *clk, uint8_t enable) {
   while (enable) {
     if (clk->module.dependencies == NULL || clk->module.dependencies[0] == NULL) break;
     hdl_clock_private_t *clock_src = (hdl_clock_private_t *)clk->module.dependencies[0];
@@ -177,7 +175,7 @@ static hdl_module_state_t hdl_clock_selector_rtc(hdl_clock_private_t *clk, uint8
   }
 }
 
-hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
+static hdl_module_state_t __hdl_clock(const void *desc, uint8_t enable) {
   hdl_clock_private_t *clk = (hdl_clock_private_t *)desc;
   clk->freq.denom = 1;
   switch (clk->config->type) {
@@ -236,16 +234,4 @@ hdl_module_state_t hdl_clock(void *desc, uint8_t enable) {
       break;
   }
   return HDL_MODULE_FAULT;
-}
-
-void hdl_get_clock(hdl_clock_t *clock, hdl_clock_freq_t *freq) {
-  if(freq != NULL) {
-    freq->num = 0;
-    freq->denom = 1;
-    hdl_clock_private_t *clk = (hdl_clock_private_t *)clock;
-    if((clk != NULL) && (hdl_state(&clk->module) != HDL_MODULE_FAULT)) {
-      freq->num = clk->freq.num;
-      freq->denom = clk->freq.denom;
-    }
-  }
 }

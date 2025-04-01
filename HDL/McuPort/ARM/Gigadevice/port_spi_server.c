@@ -15,7 +15,7 @@ static void event_spi_nss(uint32_t event, void *sender, void *context) {
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->dependencies[3];
   if(event & (uint32_t)nss->config->pin){
     if((spi_var->transceiver != NULL) && (spi_var->transceiver->end_of_transmission != NULL))
-      spi_var->transceiver->end_of_transmission(spi_var->transceiver->proto_context);
+      spi_var->transceiver->end_of_transmission(spi_var->transceiver->receiver_context);
   }
 }
 
@@ -30,14 +30,14 @@ static void event_spi_isr_server(uint32_t event, void *sender, void *context) {
 		if (state & SPI_STAT_RBNE) {
 			uint16_t data = SPI_DATA(spi->config->phy);
       if((spi_var->transceiver != NULL) && (spi_var->transceiver->rx_data != NULL)) {  
-          spi_var->transceiver->rx_data(spi_var->transceiver->proto_context, (uint8_t *)&data, 1);
+          spi_var->transceiver->rx_data(spi_var->transceiver->receiver_context, (uint8_t *)&data, 1);
       }
 		}
 		/* spi tx ---------------------------------------------------*/
 		if ((state & SPI_STAT_TBE) && (cr1 & SPI_CTL1_TBEIE)) {
       uint16_t data = 0;
       if((spi_var->transceiver != NULL) && (spi_var->transceiver->tx_empty != NULL)) {
-        spi_var->transceiver->tx_empty(spi_var->transceiver->proto_context, (uint8_t *)&data, 1);
+        spi_var->transceiver->tx_empty(spi_var->transceiver->transmitter_context, (uint8_t *)&data, 1);
       }
       SPI_DATA(spi->config->phy) = data;
 		}

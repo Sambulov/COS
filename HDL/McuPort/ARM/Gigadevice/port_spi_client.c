@@ -23,7 +23,7 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   hdl_spi_message_t *msg = ch_var->curent_msg;
 
   uint32_t msg_len = msg->rx_skip + msg->rx_take;
-  msg_len = MAX(msg->tx_len, msg_len);
+  msg_len = CL_MAX(msg->tx_len, msg_len);
 
   uint32_t state = SPI_STAT(spi->config->phy);
   if ((state & (SPI_ERROR_MASK)) == 0) {
@@ -58,7 +58,7 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
         SPI_CTL1(spi->config->phy) &= ~SPI_CTL1_TBEIE;
       }
     }
-    msg->transferred = MIN(spi_var->rx_cursor, spi_var->tx_cursor);
+    msg->transferred = CL_MIN(spi_var->rx_cursor, spi_var->tx_cursor);
   }
   else {
     hdl_spi_reset_status(spi->config->phy);
@@ -85,7 +85,7 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           msg->state |= HDL_SPI_MESSAGE_STATUS_BUS_HOLD;
         }
         uint32_t msg_len = msg->rx_skip + msg->rx_take;
-        msg_len = MAX(msg->tx_len, msg_len);
+        msg_len = CL_MAX(msg->tx_len, msg_len);
         if(msg_len > 0) {
           spi_var->rx_cursor = 0;
           spi_var->tx_cursor = 0;

@@ -1,5 +1,4 @@
-#include "hdl.h"
-#include "CodeLib.h"
+#include "hdl_iface.h"
 
 // typedef enum {
 //   /* input */

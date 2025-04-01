@@ -1,11 +1,6 @@
 #ifndef PORT_DMA_H_
 #define PORT_DMA_H_
 
-typedef struct {
-  rcu_periph_enum rcu;
-} hdl_dma_config_t;
-
-
 /*                            
                                                             DMA 0
               | Channel 0 | Channel 1 | Channel 2 | Channel 3 | Channel 4 | Channel 5 | Channel 6 | Channel 7 |
@@ -39,6 +34,13 @@ DMA_SUBPERI_7 |      ●    | TIMER7_UP | TIMER7_CH0| TIMER7_CH1| TIMER7_CH2|   
                                                                                                    | TIMER7_CMT|
 */
 
+#include "hdl_dma.h"
+
+typedef struct {
+  rcu_periph_enum rcu;
+  uint32_t phy;
+} hdl_dma_config_t;
+
 typedef struct {
   uint32_t priority;                        /* DMA_PRIORITY_LOW DMA_PRIORITY_MEDIUM DMA_PRIORITY_HIGH DMA_PRIORITY_ULTRA_HIGH */
   uint32_t periph_width;                    /* DMA_MEMORY_WIDTH_8BIT, DMA_MEMORY_WIDTH_16BIT, DMA_MEMORY_WIDTH_32BIT */
@@ -48,6 +50,17 @@ typedef struct {
   uint8_t periph_inc    : 1,
           memory_inc    : 1,
           circular      : 1;
+  dma_channel_enum ch_no;
 } hdl_dma_channel_config_t;
+
+hdl_module_new_t(hdl_dma_mcu_t, 0, hdl_dma_config_t, hdl_module_base_iface_t);
+
+/* Depends on 
+  dma module 
+*/
+hdl_module_new_t(hdl_dma_channel_mcu_t, 0, hdl_dma_channel_config_t, hdl_dma_channel_iface_t);
+
+extern const hdl_module_base_iface_t hdl_dma_iface;
+extern const hdl_dma_channel_iface_t hdl_dma_channel_iface;
 
 #endif

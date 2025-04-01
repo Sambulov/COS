@@ -1,6 +1,8 @@
 #ifndef PORT_SPI_H_
 #define PORT_SPI_H_
 
+#include "hdl_spi.h"
+
 #define SPI_ERROR_MASK      (uint32_t)(SPI_STAT_FERR | SPI_STAT_RXORERR | SPI_STAT_CONFERR | SPI_STAT_CRCERR | SPI_STAT_TXURERR)
 
 typedef enum {
@@ -34,9 +36,12 @@ typedef enum {
 void hdl_spi_reset_status(uint32_t spi_module_reg);
 
 /**************** vvv  SPI slave vvv  ******************/
-#define HDL_SPI_SERVER_PRIVATE_SIZE            52
+
+
+#define HDL_SPI_SERVER_VAR_SIZE            52
 
 typedef struct {
+  uint32_t phy;
   rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
@@ -44,7 +49,7 @@ typedef struct {
   hdl_interrupt_t *nss_interrupt;
 } hdl_spi_server_config_t;
 
-/* depends on:
+/* hdl_spi_server_t depends on:
   gpio mosi
   gpio miso  
   gpio sck
@@ -52,13 +57,14 @@ typedef struct {
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
   interrupt controller (nvic)
  */
-// typedef struct {
-// } hdl_spi_server_t;
+hdl_module_new_t(hdl_spi_server_mcu_t, HDL_SPI_SERVER_VAR_SIZE, hdl_spi_server_config_t, hdl_spi_server_iface_t);
+
+extern const hdl_spi_server_iface_t hdl_spi_server_iface;
 
 /**************** vvv  SPI slave DMA vvv  ******************/
-#define HDL_SPI_SERVER_DMA_PRIVATE_SIZE        88
+#define HDL_SPI_SERVER_DMA_VAR_SIZE        84
 
-/* depends on:
+/* hdl_spi_server_dma_t depends on:
   gpio mosi
   gpio miso  
   gpio sck
@@ -68,16 +74,17 @@ typedef struct {
   hdl_dma_channel rx
   hdl_dma_channel tx
   timer
-  exti
 */
-// typedef struct {
-// } hdl_spi_server_dma_t;
+hdl_module_new_t(hdl_spi_server_dma_mcu_t, HDL_SPI_SERVER_DMA_VAR_SIZE, hdl_spi_server_config_t, hdl_spi_server_dma_iface_t);
+
+extern const hdl_spi_server_dma_iface_t hdl_spi_server_dma_iface;
 
 /**************** vvv  SPI master vvv  ******************/
-#define HDL_SPI_CLIENT_PRIVATE_SIZE    32
-#define HDL_SPI_CLIENT_CH_PRIVATE_SIZE 24
+#define HDL_SPI_CLIENT_VAR_SIZE           32
+#define HDL_SPI_CLIENT_CH_VAR_SIZE        28
 
 typedef struct {
+  uint32_t phy;
   rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
@@ -85,26 +92,28 @@ typedef struct {
   hdl_interrupt_t *spi_interrupt;
 } hdl_spi_client_config_t;
 
-/* depends on:
+/* hdl_spi_client_t depends on:
   gpio mosi
   gpio miso  
   gpio sck
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
   interrupt controller (nvic)
  */
-// typedef struct {
-// } hdl_spi_client_t;
+hdl_module_new_t(hdl_spi_client_mcu_t, HDL_SPI_CLIENT_VAR_SIZE, hdl_spi_client_config_t, hdl_module_base_iface_t);
 
-/* depends on:
-  hdl_spi_t
-  gpio cs
- */
-// typedef struct {
-// } hdl_spi_client_ch_t;
+extern const hdl_module_base_iface_t hdl_spi_client_iface;
 
 typedef struct {
   uint32_t cs_min_delay;  // ticks
 } hdl_spi_client_ch_config_t;
 
+/* hdl_spi_client_ch_t depends on:
+  hdl_spi_client_t
+  gpio cs
+  hdl_tick_counter
+ */
+hdl_module_new_t(hdl_spi_client_ch_mcu_t, HDL_SPI_CLIENT_CH_VAR_SIZE, hdl_spi_client_ch_config_t, hdl_spi_client_ch_iface_t);
+
+extern const hdl_spi_client_ch_iface_t hdl_spi_client_ch_iface;
 
 #endif // PORT_SPI_H_

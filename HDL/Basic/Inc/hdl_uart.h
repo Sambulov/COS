@@ -1,17 +1,16 @@
 #ifndef HDL_UART_H_
 #define HDL_UART_H_
 
-#include "port_uart.h"
-
 typedef struct {
-  hdl_module_t module;
-  hdl_uart_config_t *config;
-  PRIVATE(hw, HDL_UART_PRV_SIZE);
-} hdl_uart_t;
+  hdl_module_initializer_t init;
+  hdl_set_transceiver_t transceiver_set;
+} hdl_uart_iface_t;
 
-/* Initialization */
-hdl_module_state_t hdl_uart(void *desc, uint8_t enable);
+hdl_module_new_t(hdl_uart_t, 0, void, hdl_uart_iface_t);
 
-void hdl_uart_set_transceiver(hdl_uart_t *uart, hdl_transceiver_t *transceiver);
+__STATIC_INLINE uint8_t hdl_uart_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_uart_t *)desc)->iface->transceiver_set(desc, transceiver, channel_id);
+}
 
 #endif /* HDL_UART_H_ */

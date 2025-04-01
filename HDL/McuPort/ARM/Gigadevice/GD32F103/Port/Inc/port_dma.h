@@ -1,7 +1,10 @@
 #ifndef PORT_DMA_H_
 #define PORT_DMA_H_
 
+#include "hdl_dma.h"
+
 typedef struct {
+  uint32_t phy;
   rcu_periph_enum rcu;
 } hdl_dma_config_t;
 
@@ -14,6 +17,7 @@ typedef struct {
           memory_inc    : 1,
           m2m_direction : 1,
           circular      : 1;
+  dma_channel_enum ch_no;
 } hdl_dma_channel_config_t;
 
 #endif

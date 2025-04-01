@@ -1,5 +1,4 @@
-#include "hdl.h"
-#include "CodeLib.h"
+#include "hdl_iface.h"
 
 static void clock_calc(hdl_clock_freq_t *out, hdl_clock_freq_t *in, int32_t mulldiv_factor) {
   out->denom = in->denom;

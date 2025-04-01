@@ -1,7 +1,7 @@
 #ifndef MS5194T_H_
 #define MS5194T_H_
 
-#define HDL_ADC_MS5194T_PRV_SIZE        64
+#define HDL_ADC_MS5194T_VAR_SIZE        64
 
 #define HDL_ADC_MS5194T_INVALID_VALUE   0xFFFFFFFF
 
@@ -336,14 +336,14 @@ typedef struct {
   hdl_adc_ms5194t_channel_option_t options;
 } hdl_adc_ms5194t_source_t;
 
-#define _hdl_adc_ms5194t_src(...)        ((hdl_adc_ms5194t_source_t *[]){__VA_ARGS__, NULL})
+#define _hdl_adc_ms5194t_src(...)        ((hdl_adc_ms5194t_source_t * const []){__VA_ARGS__, NULL})
 #define hdl_adc_ms5194t_sources(...)     _hdl_adc_ms5194t_src(__VA_ARGS__),\
-                                         .values = (uint32_t [sizeof(_hdl_adc_ms5194t_src(__VA_ARGS__))/sizeof(hdl_adc_ms5194t_source_t *)]){}
+                                         .values = (uint32_t *)static_malloc(sizeof(_hdl_adc_ms5194t_src(__VA_ARGS__))/sizeof(hdl_adc_ms5194t_source_t *)*sizeof(uint32_t))
 
 typedef struct {
   uint8_t io_reg;
   uint16_t mode_reg;
-  hdl_adc_ms5194t_source_t **sources;
+  hdl_adc_ms5194t_source_t * const *sources;
   uint32_t *values;
 } hdl_adc_ms5194t_config_t;
 
@@ -353,15 +353,8 @@ typedef struct {
     rdy_pin
     time_counter
  */
-typedef struct {
-  hdl_module_t module;
-  const hdl_adc_ms5194t_config_t *config;
-  PRIVATE(hdl, HDL_ADC_MS5194T_PRV_SIZE);
-} hdl_adc_ms5194t_t;
+hdl_module_new_t(hdl_adc_ms5194t_t, HDL_ADC_MS5194T_VAR_SIZE, hdl_adc_ms5194t_config_t, hdl_adc_iface_t);
 
-hdl_module_state_t hdl_adc_ms5194t(void *desc, uint8_t enable);
-
-uint32_t hdl_adc_ms5194t_get(hdl_adc_ms5194t_t *hdl_adc, uint32_t src);
-uint32_t hdl_adc_ms5194t_age(hdl_adc_ms5194t_t *hdl_adc);
+extern const hdl_adc_iface_t hdl_adc_ms5194t_iface;
 
 #endif /* MS5194T_H_ */

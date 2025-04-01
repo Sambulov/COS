@@ -1,7 +1,9 @@
 #ifndef PORT_CLOCK_H_
 #define PORT_CLOCK_H_
 
-#define HDL_CLOCK_PRV_SIZE   8
+#include "hdl_clock.h"
+
+#define HDL_CLOCK_VAR_SIZE   8
 
 typedef enum {
   HDL_CLOCK_TYPE_HXTAL,          /* property: freq (can be 4 ~ 32MHz)*/
@@ -34,6 +36,11 @@ typedef union {
 typedef struct {
   hdl_clock_type_t type;
   hdl_clock_property_t property;
+  uint32_t phy;
 } hdl_clock_config_t;
+
+hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_VAR_SIZE, hdl_clock_config_t, hdl_clock_iface_t);
+
+extern const hdl_clock_iface_t hdl_clock_iface;
 
 #endif

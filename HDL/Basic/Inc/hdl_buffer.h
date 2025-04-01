@@ -1,7 +1,7 @@
 #ifndef TRANSCEIVER_BUFFER_H_
 #define TRANSCEIVER_BUFFER_H_
 
-#define HDL_ISR_BUFFER_PRIVATE_SIZE       48
+#define HDL_ISR_BUFFER_PRIVATE_SIZE       52
 
 typedef struct {
   uint8_t *data;

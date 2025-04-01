@@ -1,7 +1,9 @@
 #ifndef PORT_ADC_H_
 #define PORT_ADC_H_
 
-#define HDL_ADC_PRV_SIZE  56
+#include "hdl_adc.h"
+
+#define HDL_ADC_VAR_SIZE  56
 
 // typedef enum {
 //     ADC_OPERATION_MODE_SINGLE_SCAN,    /* Single SCAN, user must launched every conversion with some triger */
@@ -73,17 +75,29 @@ typedef enum {
 } hdl_adc_data_alignment_t;
 
 typedef struct{
-    hdl_interrupt_t *adc_interrupt;
-    hdl_adc_resolution_e resolution;
-    hdl_adc_data_alignment_t data_alignment;
-    uint32_t init_timeout;
-    hdl_adc_source_t **sources;               /* max amount 15 */
-    uint32_t *values;
+  uint32_t phy;
+  hdl_interrupt_t *adc_interrupt;
+  hdl_adc_resolution_e resolution;
+  hdl_adc_data_alignment_t data_alignment;
+  uint32_t init_timeout;
+  const hdl_adc_source_t * const *sources;               /* max amount 15 */
+  uint32_t *values;
 } hdl_adc_config_t;
 
-#define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
+#define hdl_adc_sources(...) ((const hdl_adc_source_t * const []){__VA_ARGS__, NULL})
 
 #define hdl_adc_src(...)  hdl_adc_sources(__VA_ARGS__),\
                           .values = (uint32_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
+
+/* depends on
+  hdl_clock_t
+  hdl_time_counter_t
+  hdl_dma_channel_t
+  hdl_interrupt_controller_t
+*/
+
+hdl_module_new_t(hdl_adc_mcu_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t, hdl_adc_iface_t);
+
+extern const hdl_adc_iface_t hdl_adc_iface;
 
 #endif

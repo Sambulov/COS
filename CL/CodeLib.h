@@ -25,8 +25,8 @@ typedef __UINT64_TYPE__        uint64_t;
 typedef __SIZE_TYPE__          size_t;
 typedef __PTRDIFF_TYPE__       ptrdiff_t;
 
-#define false	               0
-#define true	               !false
+#define cl_false	           0
+#define cl_true	               !cl_false
 #define CL_PRIVATE(size)       uint32_t __private[(size + sizeof(void *) - 1) >> 2]
 
 #define libNULL                ((void *)0)
@@ -43,7 +43,10 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #define va_end(v)              __builtin_va_end(v)
 #define va_arg(v,l)            __builtin_va_arg(v,l)
 
-#define LIB_ASSERRT_STRUCTURE_CAST(private_type, public_type, prv_size_def, def_file)   _Static_assert(sizeof(private_type) == sizeof(public_type), "In "#def_file" data structure size of "#public_type" doesn't match, check "#prv_size_def)
+#define LIB_ASSERRT_STRUCTURE_CAST(private_type, public_type, prv_size_def, def_file) \
+    _Static_assert(sizeof(private_type) == sizeof(public_type), "In "#def_file" data structure size of "#public_type" doesn't match, check "#prv_size_def)
+#define LIB_ASSERRT_STRUCTURE_PROP(private_type, public_type, prop, def_file) \
+    _Static_assert((offsetof(private_type, prop) == offsetof(public_type, prop)), "In "def_file" "#public_type" property "#prop" order doesn't match");
 
 #include "Macros.h"
 #include "ClMath.h"
@@ -53,8 +56,17 @@ typedef __PTRDIFF_TYPE__       ptrdiff_t;
 #include "SimpleCircularBuffer.h"
 #include "Mem.h"
 #include "MedianFilter.h"
-#include "Crc32.h"
+#include "Crc.h"
 #include "BitOp.h"
+#include "StringConverter.h"
+#include "CharsetEncoding.h"
+#include "Str.h"
+#include "CircularBuffer.h"
+#include "Fifo.h"
+#include "Stream.h"
+
+#include "ModBus.h"
+#include "ModBusHelpers.h"
 
 #ifdef __cplusplus
 }

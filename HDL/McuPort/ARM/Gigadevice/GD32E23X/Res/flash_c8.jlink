@@ -2,6 +2,6 @@ si 1
 speed 1000
 device GD32E230C8
 erase
-loadfile build/bmc.hex 0
+loadfile build/firmware.hex 0
 R
 exit

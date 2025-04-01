@@ -1,5 +1,4 @@
-#include "hdl_portable.h"
-#include "Macros.h"
+#include "hdl_iface.h"
 
 void wwdgt_handler()                    { call_isr(HDL_NVIC_IRQ0_WWDGT, 0); } 
 void lvd_handler()                      { call_isr(HDL_NVIC_IRQ1_LVD, 0); }    
@@ -24,7 +23,7 @@ void CAN0_TX_IRQHandler()               { call_isr( HDL_NVIC_IRQ19_CAN0_TX, 0); 
 void CAN0_RX0_IRQHandler()              { call_isr( HDL_NVIC_IRQ20_CAN0_RX0, 0); }
 void CAN0_RX1_IRQHandler()              { call_isr( HDL_NVIC_IRQ21_CAN0_RX1, 0); }
 void CAN0_EWMC_IRQHandler()             { call_isr( HDL_NVIC_IRQ22_CAN0_EWMC, 0); }
-void EXTI5_9_IRQHandler()               { call_isr( HDL_NVIC_IRQ23_EXTI5_9, EXTI_PD & EXTI_LINES_5_9); EXTI_PD |= EXTI_LINES_5_9; }
+void EXTI5_9_IRQHandler()               { call_isr( HDL_NVIC_IRQ23_EXTI5_9, (EXTI_PD & EXTI_LINES_5_9)); EXTI_PD |= EXTI_LINES_5_9; }
 void TIMER0_BRK_TIMER8_IRQHandler()     { call_isr( HDL_NVIC_IRQ24_TIMER0_BRK_TIMER8, TIMER_INTF(TIMER8)); 
                                           TIMER_INTF(TIMER0) &= ~TIMER_INTF_BRKIF;
                                           TIMER_INTF(TIMER8) &= ~TIMER_INTF(TIMER8);
@@ -171,10 +170,10 @@ void TRNG_IRQHandler()                  { call_isr( HDL_NVIC_IRQ80_TRNG, 0); }
 void FPU_IRQHandler()                   { call_isr( HDL_NVIC_IRQ81_FPU, 0); }
 #endif /* GD32F407_427 */
 
-hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
+static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
+  (void)desc;
   /* TODO: */
-  if(enable) {
-    hdl_core_t *core = (hdl_core_t *)desc;
+  if(enable) {    
     rcu_periph_clock_enable(RCU_SYSCFG);
     rcu_periph_clock_enable(RCU_PMU);
     //FMC_WS = (FMC_WS & (~FMC_WC_WSCNT)) | core->flash_latency;
@@ -185,3 +184,6 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
+const hdl_module_base_iface_t hdl_core_arm_iface = {
+  .init = _hdl_core
+};

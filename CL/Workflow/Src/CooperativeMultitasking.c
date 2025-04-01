@@ -1,5 +1,4 @@
 #include "CodeLib.h"
-#include "LinkedList.h"
 
 typedef struct {
   __LinkedListObject__
@@ -64,7 +63,7 @@ static void _vCoroutineRun(LinkedListItem_t *desc, void *pxArg) {
 uint32_t ulCooperativeScheduler(uint8_t bCancelAll) {
   SchedulerArg_t arg = {.bCancel = bCancelAll, .bLeft = 0};
   ulLinkedListDoForeach(xTasksRun, &_vCoroutineRun, (void *)&arg);
-  arg.bCancel = true;
+  arg.bCancel = cl_true;
   ulLinkedListDoForeach(xTasksCancel, &_vCoroutineRun, (void *)&arg);
   return arg.bLeft;
 }

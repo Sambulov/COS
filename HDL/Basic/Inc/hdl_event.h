@@ -12,9 +12,11 @@ typedef struct {
   PRIVATE(hdl, HDL_DELEGATE_PRIVATE_SIZE);
 } hdl_delegate_t;
 
+typedef void (*hdl_event_subscribe_t)(const void *, hdl_delegate_t *delegate);
+
 typedef struct {
   PRIVATE(hdl, HDL_EVENT_PRIVATE_SIZE);
-}hdl_event_t;
+} hdl_event_t;
 
 void hdl_event_subscribe(hdl_event_t *event, hdl_delegate_t *delegate);
 void hdl_event_unsubscribe(hdl_delegate_t *delegate);

@@ -1,5 +1,5 @@
 /*!
-    LinkedList.h
+    SimpleCircularBuffer.h
   
     Created on: 21.05.2024
         Author: Sambulov Dmitry
@@ -46,12 +46,12 @@ static inline uint16_t usScbNonSegmentedAvailableFree(SimpleCircularBuffer_t *px
 }
 
 static inline void vScbMoveTail(SimpleCircularBuffer_t *pxBuf, uint16_t usCount) {
-  uint16_t cnt = MIN(usScbAvailable(pxBuf), usCount);
+  uint16_t cnt = CL_MIN(usScbAvailable(pxBuf), usCount);
   pxBuf->usTail = (pxBuf->usTail + cnt) & (pxBuf->usSize - 1);
 }
 
 static inline void vScbMoveHead(SimpleCircularBuffer_t *pxBuf, uint16_t usCount) {
-  uint16_t cnt = MIN(usScbAvailableFree(pxBuf), usCount);
+  uint16_t cnt = CL_MIN(usScbAvailableFree(pxBuf), usCount);
   pxBuf->usHead = (pxBuf->usHead + cnt) & (pxBuf->usSize - 1);
 }
 

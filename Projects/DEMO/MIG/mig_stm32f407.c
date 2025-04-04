@@ -840,6 +840,16 @@ const hdl_gpio_pin_t mod_gpio_pc7_uart_rx = {
     .pin = GPIO_PIN_7)
 }; //(PC7)
 
+const hdl_gpio_pin_t mod_gpio_pc8 = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_output_pp_mode,
+    .inactive_default = HDL_GPIO_LOW,
+    .pin = GPIO_PIN_8)
+}; //(PB9)
+
 const hdl_gpio_pin_t mod_gpio_pd8_uart_tx = {
   .iface = &hdl_gpio_pin_iface,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
@@ -872,13 +882,14 @@ const hdl_gpio_pin_t mod_gpio_pd9_uart_rx = {
     &mod_gpio_pc6_uart_tx, 
     &mod_clock_apb2, 
     &mod_nvic, 
-    &mod_systick_timer 
+    &mod_systick_timer,
+    &mod_gpio_pc8
   ),
   .config = hdl_module_config(hdl_uart_config_t,
     .phy = (uint32_t)USART6,
     .rcu = RCC_APB2ENR_USART6EN,
     .interrupt = &mod_irq_usart_6,
-    .baudrate = 115200,
+    .baudrate = 9600,
     .word_len = HDL_UART_WORD_8BIT,
     .parity = HDL_UART_PARITY_NONE,
     .stop_bits = HDL_UART_STOP_BITS1
@@ -894,7 +905,8 @@ const hdl_uart_mcu_t mod_uart3 = {
     &mod_gpio_pd8_uart_tx, 
     &mod_clock_apb1, 
     &mod_nvic, 
-    &mod_systick_timer 
+    &mod_systick_timer,
+    &hdl_null_module
   ),
   .config = hdl_module_config(hdl_uart_config_t,
     .phy = (uint32_t)USART3,
@@ -949,7 +961,6 @@ extern const hdl_tick_counter_t mod_tick_counter                  __attribute__ 
 
 extern const hdl_time_counter_t mod_timer_ms                      __attribute__ ((alias ("mod_systick_timer")));
 
-
 extern const hdl_gpio_pin_t mod_output1_pin                       __attribute__ ((alias ("mod_gpio_pa8")));
 extern const hdl_gpio_pin_t mod_output2_pin                       __attribute__ ((alias ("mod_gpio_pa9")));
 
@@ -960,6 +971,7 @@ extern const hdl_gpio_pin_t mod_led4_pin                          __attribute__ 
 extern const hdl_gpio_pin_t mod_button_pin                        __attribute__ ((alias ("mod_gpio_pa0")));
 
 extern const hdl_uart_t mod_uart                                  __attribute__ ((alias ("mod_uart3")));
+extern const hdl_uart_t mod_rs485                                 __attribute__ ((alias ("mod_uart6")));
 
 extern const hdl_spi_client_ch_t mod_spi_client                   __attribute__ ((alias ("mod_spi3_ch1")));
 

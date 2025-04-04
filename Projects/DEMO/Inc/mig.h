@@ -17,6 +17,7 @@ extern const hdl_gpio_pin_t mod_led4_pin;
 extern const hdl_gpio_pin_t mod_button_pin;
 
 extern const hdl_uart_t mod_uart;
+extern const hdl_uart_t mod_rs485;
 
 extern const hdl_spi_client_ch_t mod_spi_client;
 

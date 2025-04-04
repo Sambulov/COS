@@ -65,6 +65,3 @@ file(GLOB SRC
 )
 
 set_property(GLOBAL PROPERTY PROJECT_SOURCES ${SRC})
-
-add_subdirectory("${PROJECT_SOURCE_DIR}/ThirdParty/td8125010" "${CMAKE_CURRENT_BINARY_DIR}/td8125010_lib")
-add_subdirectory("${PROJECT_SOURCE_DIR}/ThirdParty/ckbt_epm30" "${CMAKE_CURRENT_BINARY_DIR}/ckbt_epm30_lib")

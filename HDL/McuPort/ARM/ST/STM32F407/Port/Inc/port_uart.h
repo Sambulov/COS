@@ -33,6 +33,7 @@ typedef struct {
   apb1_bus for USART2/3/4/5, apb2_bus for USART1/6
   interrupt controller (nvic)
   hdl_timer_t
+  gpio rts
  */
 hdl_module_new_t(hdl_uart_mcu_t, HDL_UART_VAR_SIZE, hdl_uart_config_t, hdl_uart_iface_t);
 

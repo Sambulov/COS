@@ -3,6 +3,7 @@
 *.o
 *.elf
 build/
+Proprietary/
 !Projects/
 Projects/*
 !Projects/DEMO*

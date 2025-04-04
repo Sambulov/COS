@@ -19,11 +19,14 @@ static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
   hdl_uart_mcu_t *uart = (hdl_uart_mcu_t *) arg;
   hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;
+  hdl_gpio_pin_t *rts = (hdl_gpio_pin_t *)uart->dependencies[5];
   USART_TypeDef *periph = (USART_TypeDef *)uart->config->phy;
   if((uart_var->transceiver != NULL) && !(periph->CR1 & USART_CR1_TXEIE) &&
      (uart_var->transceiver->tx_available != NULL) && (uart_var->transceiver->tx_empty != NULL) &&
-     (uart_var->transceiver->tx_available(uart_var->transceiver->transmitter_context) > 0))
+     (uart_var->transceiver->tx_available(uart_var->transceiver->transmitter_context) > 0)) {
+    hdl_gpio_set_active(rts);
     periph->CR1 |= USART_CR1_TXEIE;
+  }
   return cancel;
 }
 
@@ -58,7 +61,7 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
       uart_var->transceiver->rx_data(uart_var->transceiver->receiver_context, (uint8_t *)&data, wl);
   }
   ///* UART in mode Transmitter ------------------------------------------------*/
-  if (periph->SR & USART_SR_TXE) {
+  if ((periph->CR1 & USART_CR1_TXEIE) && (periph->SR & USART_SR_TXE)) {
     periph->CR1 &= ~USART_CR1_TXEIE;
     int32_t len = uart_var->transceiver->tx_empty(uart_var->transceiver->transmitter_context, 
       &uart_var->tx_data[uart_var->tx_byte], wl - uart_var->tx_byte);
@@ -71,7 +74,14 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
       }
       else uart_var->tx_byte = len;
     }
+    else periph->CR1 |= USART_CR1_TCIE;
   }
+  if((periph->CR1 & USART_CR1_TCIE) && (periph->SR & USART_SR_TC)) {
+    CL_REG_CLEAR(periph->CR1, USART_CR1_TCIE);
+    CL_REG_CLEAR(periph->SR, USART_SR_TC);
+    hdl_gpio_set_inactive(uart->dependencies[5]);
+  }
+
 }
 
 static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {

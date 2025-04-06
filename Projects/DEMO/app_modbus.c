@@ -13,7 +13,7 @@ modbus_iface_t mb_iface = {
 static uint8_t mb_payload[256];
 
 const modbus_config_t mb_cnf = {
-  .bAsciiMode = 1,
+  .bAsciiMode = 0,
   .pxIface = &mb_iface,
   .pucPayLoadBuffer = mb_payload,
   .ucPayLoadBufferSize = 255,

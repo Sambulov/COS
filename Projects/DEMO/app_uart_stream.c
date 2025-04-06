@@ -22,7 +22,7 @@ hdl_stream_buffer_t *uart_stream_init() {
   hdl_stream_buffer_init(&uart_stream, HDL_TRUE);
   hdl_transceiver_from_stream(&uart_stream.stream, &uart_trx, HDL_FALSE);
   uart_trx.end_of_transmission = &hdl_transceiver_eot_cb;
-  hdl_uart_set_transceiver(&mod_uart, &uart_trx, 0);
+  hdl_uart_set_transceiver(&mod_rs485, &uart_trx, 0);
   return &uart_stream;
 }
 

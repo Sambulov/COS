@@ -1,57 +1,66 @@
 #include "app.h"
 
-static uint16_t coils[2] = { 0x01, 0x23 };
+static uint8_t coils[2] = { 0x00, 0x00 };
 
 static uint16_t registers[10] = {
   0x0123, 0x4567, 0x89AB, 0xCDEF, 0xFEDC,
   0xBA98, 0x7654, 0x3210, 0x01FE, 0x23DC
 };
 
-modbus_result_t test_mbserver_f01_02(modbus_request_t *req, modbus_frame_t *resp) {
-  if((req->xFrame.usRegAddr < 10) && 
-     (req->xFrame.usRegValueCount <= 10) && 
-     ((req->xFrame.usRegAddr + req->xFrame.usRegValueCount) <= 10)) {
-    if(resp->ucLengthCode < ((req->xFrame.usRegValueCount + 7) / 8)) return ModbusSlaveDeviceFailure;
-    uint8_t coils_bit = 1 << (req->xFrame.usRegAddr & 7);
-    uint8_t coils_reg = (req->xFrame.usRegAddr >> 3);
-    uint8_t bit_mask = 1;
-    uint8_t byte = 0;
-    uint8_t res = 0;
-    resp->ucLengthCode = (req->xFrame.usRegValueCount + 7) / 8;
-    while (req->xFrame.usRegValueCount--) {
-      if(coils[coils_reg] & coils_bit) res |= bit_mask;
-      coils[coils_reg] ^= coils_bit;
-      coils_bit <<= 1;
-      bit_mask <<= 1;
-      if(!bit_mask) {
-        bit_mask = 1;
-        resp->pucData[byte] = res;
-        byte++;
-        res = 0;
-      }
-      if(!coils_bit) {
-        coils_reg++;
-        coils_bit = 1;
-      }
-    }
-    if(bit_mask != 0x01) resp->pucData[byte] = res;
-    return ModbusOk;
+void test_mbserver_f01_02(modbus_t *mb, void *context, modbus_frame_t *frame) {
+  (void)mb; (void)context;
+  if((frame->usRegAddr >= 16) || 
+     (frame->usRegValueCount > 16) || 
+     ((frame->usRegAddr + frame->usRegValueCount) > 16)) {
+    modbus_init_frame_error(frame, frame->ucAddr, frame->ucFunc, ModbusIllegalDataAddress);
+    return;
   }
-  return ModbusIllegalDataAddress;
+  if(frame->ucBufferSize < ((frame->usRegValueCount + 7) / 8)) {
+    modbus_init_frame_error(frame, frame->ucAddr, frame->ucFunc, ModbusSlaveDeviceFailure);
+    return;
+  }
+  uint8_t coils_bit = 1 << (frame->usRegAddr & 7);
+  uint8_t coils_reg = (frame->usRegAddr >> 3);
+  uint8_t bit_mask = 1;
+  uint8_t byte = 0;
+  uint8_t res = 0;
+  frame->ucLengthCode = (frame->usRegValueCount + 7) / 8;
+  while (frame->usRegValueCount--) {
+    if(coils[coils_reg] & coils_bit) res |= bit_mask;
+    coils_bit <<= 1;
+    bit_mask <<= 1;
+    if(!bit_mask) {
+      bit_mask = 1;
+      frame->pucData[byte] = res;
+      byte++;
+      res = 0;
+    }
+    if(!coils_bit) {
+      coils_reg++;
+      coils_bit = 1;
+    }
+  }
+  uint16_t *tmp = (uint16_t *)coils;
+  *tmp = *tmp + 1;
+  if(bit_mask != 0x01) frame->pucData[byte] = res;
 }
 
-modbus_result_t test_mbserver_f03_04(modbus_request_t *req, modbus_frame_t *resp) {
-  if((req->xFrame.usRegAddr < 10) && 
-     (req->xFrame.usRegValueCount <= 10) && 
-     ((req->xFrame.usRegAddr + req->xFrame.usRegValueCount) <= 10)) {
-    if(resp->ucLengthCode < (req->xFrame.usRegValueCount * 2)) return ModbusSlaveDeviceFailure;
-    for(uint32_t i = req->xFrame.usRegAddr; i < req->xFrame.usRegValueCount; i++) {
-      *((uint16_t *)&resp->pucData[i*2]) = swap_bytes(registers[i]++);
-    }
-    resp->ucLengthCode = (req->xFrame.usRegValueCount * 2);
-    return ModbusOk;
+void test_mbserver_f03_04(modbus_t *mb, void *context, modbus_frame_t *frame) {
+  (void)mb; (void)context;
+  if((frame->usRegAddr >= 10) || 
+     (frame->usRegValueCount > 10) || 
+     ((frame->usRegAddr + frame->usRegValueCount) > 10)) {
+    modbus_init_frame_error(frame, frame->ucAddr, frame->ucFunc, ModbusIllegalDataAddress);
+    return;
   }
-  return ModbusIllegalDataAddress;
+  if(frame->ucBufferSize < (frame->usRegValueCount * 2)) {
+    modbus_init_frame_error(frame, frame->ucAddr, frame->ucFunc, ModbusSlaveDeviceFailure);
+    return;
+  }
+  for(uint32_t i = 0; i < frame->usRegValueCount; i++) {
+    *((uint16_t *)&frame->pucData[i*2]) = swap_bytes(registers[i + frame->usRegAddr]++);
+  }
+  frame->ucLengthCode = (frame->usRegValueCount * 2);
 }
 
 modbus_handler_t mbh01 = {
@@ -85,5 +94,5 @@ modbus_endpoint_t mb_ep = {
 };
 
 void modbus_server_test(modbus_t *mb) {
-  bModbusServerLinkEndpoints(mb, &mb_ep);
+  modbus_server_link_endpoints(mb, &mb_ep);
 }

@@ -34,6 +34,7 @@ static void _rst_uart_status(USART_TypeDef *uart) {
 	__IO uint32_t tmpreg;
 	tmpreg = uart->SR;
 	tmpreg = uart->DR;
+  uart->SR = 0;
 	(void)tmpreg;
 }
 
@@ -62,7 +63,7 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
   }
   ///* UART in mode Transmitter ------------------------------------------------*/
   if ((periph->CR1 & USART_CR1_TXEIE) && (periph->SR & USART_SR_TXE)) {
-    periph->CR1 &= ~USART_CR1_TXEIE;
+    CL_REG_CLEAR(periph->CR1, USART_CR1_TXEIE);
     int32_t len = uart_var->transceiver->tx_empty(uart_var->transceiver->transmitter_context, 
       &uart_var->tx_data[uart_var->tx_byte], wl - uart_var->tx_byte);
     if(len > 0) {
@@ -82,6 +83,37 @@ static void event_uart_isr(uint32_t event, void *sender, void *context) {
     hdl_gpio_set_inactive(uart->dependencies[5]);
   }
 
+}
+
+uint8_t _hdl_uart_set(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl_uart_parity_t parity, hdl_uart_stop_bits_t stop) {
+  if((boud == 0) || (bits == HDL_UART_WORD_7BIT) ||
+    (bits > HDL_UART_WORD_9BIT) || (parity > HDL_UART_PARITY_EVEN) || 
+    (stop > HDL_UART_STOP_BITS1_5)) return HDL_FALSE;
+  hdl_uart_mcu_t *uart = (hdl_uart_mcu_t*)desc;
+  USART_TypeDef *periph = (USART_TypeDef *)uart->config->phy;
+  hdl_clock_t *clk = (hdl_clock_t *)uart->dependencies[2];
+  hdl_clock_freq_t freq;
+  hdl_clock_get(clk, &freq);
+  uint32_t par = 0;
+  if(parity == HDL_UART_PARITY_ODD) par = USART_CR1_PCE | USART_CR1_PS;
+  else if(parity == HDL_UART_PARITY_EVEN) par = USART_CR1_PCE;
+  uint32_t wl = 0;
+  if(bits == HDL_UART_WORD_9BIT) wl = USART_CR1_M;
+  uint32_t stp = 0;
+  if(stop == HDL_UART_STOP_BITS2) stp = USART_CR2_STOP_1;
+  else if(stop == HDL_UART_STOP_BITS1_5) stp = USART_CR2_STOP_0 | USART_CR2_STOP_1;
+  else if(stop == HDL_UART_STOP_BITS0_5) stp = USART_CR2_STOP_0;
+  uint32_t en = CL_REG_GET(periph->CR1, USART_CR1_UE);
+  CL_REG_CLEAR(periph->CR1, USART_CR1_UE);
+  hdl_gpio_set_inactive(uart->dependencies[5]);
+  while (CL_REG_GET(periph->CR1, USART_CR1_UE));
+  _rst_uart_status(periph);
+  periph->CR1 = par | wl | USART_CR1_TE | USART_CR1_RE | USART_CR1_RXNEIE | USART_CR1_PEIE | USART_CR1_IDLEIE;
+  periph->CR2 = stp;
+  periph->CR3 = USART_CR3_EIE;
+  periph->BRR = freq.num / (freq.denom * boud);
+  CL_REG_MODIFY(periph->CR1, USART_CR1_UE, en);
+  return HDL_TRUE;
 }
 
 static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
@@ -111,14 +143,7 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
   CL_REG_CLEAR(*rcc_rst, uart->config->rcu);
   if(enable) {
     CL_REG_SET(*rcc_en, uart->config->rcu);
-    hdl_clock_t *clk = (hdl_clock_t *)uart->dependencies[2];
-    hdl_clock_freq_t freq;
-    hdl_clock_get(clk, &freq);
-    periph->CR1 = uart->config->parity | uart->config->word_len | USART_CR1_TE | USART_CR1_RE;
-    periph->CR1 |= USART_CR1_RXNEIE | USART_CR1_PEIE | USART_CR1_IDLEIE;
-    periph->CR2 = uart->config->stop_bits;
-    periph->CR3 = USART_CR3_EIE;
-    periph->BRR = freq.num / (freq.denom * uart->config->baudrate);
+    _hdl_uart_set(desc, uart->config->word_len, uart->config->baudrate, uart->config->parity, uart->config->stop_bits);
     coroutine_add(&uart_var->worker, &_uart_worker, uart);
     uart_var->transceiver = NULL;
     uart_var->tx_byte = 0;
@@ -137,16 +162,14 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
 
 static uint8_t _hdl_uart_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
   (void)channel_id;
-  if(desc != NULL) {
-    hdl_uart_mcu_t *uart = (hdl_uart_mcu_t *) desc;
-    hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;  
-    uart_var->transceiver = transceiver;
-    return HDL_TRUE;
-  }
-  return HDL_FALSE;
+  hdl_uart_mcu_t *uart = (hdl_uart_mcu_t *) desc;
+  hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;  
+  uart_var->transceiver = transceiver;
+  return HDL_TRUE;
 }
 
 const hdl_uart_iface_t hdl_uart_iface = {
   .init = &_hdl_uart,
-  .transceiver_set = &_hdl_uart_set_transceiver
+  .transceiver_set = &_hdl_uart_set_transceiver,
+  .set = &_hdl_uart_set
 };

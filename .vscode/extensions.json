@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "twxs.cmake",
+        "ms-vscode.cmake-tools",
+        "marus25.cortex-debug",
+        "marus25.cortex-debug-dp-stm32f4",
+        "mcu-debug.debug-tracker-vscode",
+        "cschlosser.doxdocgen",
+        "ms-vscode.hexeditor"
+    ]
+}

@@ -107,7 +107,7 @@
 				"gdbPath": "/usr/bin/gdb-multiarch"
 			},
 			"runToEntryPoint": "main",
-			"showDevDebugOutput": true,
+			"showDevDebugOutput": "vscode",
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "${config:MCU}",

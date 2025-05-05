@@ -7,6 +7,17 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ARM")
 
 #=================
 
+file(GLOB SRC
+  "${CMAKE_CURRENT_SOURCE_DIR}/Debug/Segger_RTT/RTT/*.c"
+)
+
+set_property(GLOBAL APPEND PROPERTY HDL_HEADERS
+  "${CMAKE_CURRENT_SOURCE_DIR}/Debug/Segger_RTT/RTT/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Debug/Segger_RTT/Config/"
+)
+
+set_property(GLOBAL APPEND PROPERTY HDL_SOURCES ${SRC})
+
 get_property(CORE_SUPPORT GLOBAL PROPERTY CORE_SUPPORTED)
 
 if(NOT CORE_SUPPORT STREQUAL "OK")

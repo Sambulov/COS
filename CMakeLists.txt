@@ -51,7 +51,12 @@ else()
   set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -O0 -g3 -ggdb -fno-builtin)
 endif()
 
-set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -Wl,--gc-sections -Wl,--print-memory-usage -Wl,-Map=output.map -T ${CMAKE_BINARY_DIR}/linkerscript.ld)
+set(LINKER_SCRIPT "${CMAKE_BINARY_DIR}/linkerscript.ld")
+if(EXISTS "${CMAKE_BINARY_DIR}/linkerscript_custom.ld")
+  set(LINKER_SCRIPT "${CMAKE_BINARY_DIR}/linkerscript_custom.ld")
+endif()
+
+set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -Wl,--gc-sections -Wl,--print-memory-usage -Wl,-Map=output.map -T  ${LINKER_SCRIPT})
 set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -std=gnu11 -Wall -Wextra -ffunction-sections -fdata-sections -ffreestanding)
 
 # Get compiler options
@@ -95,7 +100,7 @@ add_compile_definitions(${HDL_DEFINITIONS})
 add_compile_definitions(${CL_DEFINITIONS})
 add_compile_definitions(${PROJECT_DEFINITIONS})
 
-add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES}  ${CL_SOURCES} ${LINKER_SCRIPT})
+add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES}  ${CL_SOURCES})
 
 # Указываем, что нужно использовать newlib-nano
 #target_link_libraries(${EXECUTABLE} -specs=nano.specs)

@@ -5,17 +5,17 @@
 #define syscfg_exti_line_config   gpio_exti_source_select
 
 
-#define EXTI_LINES_ALL            EXTI_0  | EXTI_1  | EXTI_2  |  EXTI_3 | \
+#define EXTI_LINES_ALL           (EXTI_0  | EXTI_1  | EXTI_2  |  EXTI_3 | \
                                   EXTI_4  | EXTI_5  | EXTI_6  |  EXTI_7 | \
                                   EXTI_8  | EXTI_9  | EXTI_10 | EXTI_11 | \
                                   EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15 | \
-                                  EXTI_16 | EXTI_17 | EXTI_19
+                                  EXTI_16 | EXTI_17 | EXTI_19)
 
-#define EXTI_LINES_5_9                      EXTI_5  | EXTI_6  | EXTI_7  | \
-                                  EXTI_8  | EXTI_9
+#define EXTI_LINES_5_9           (          EXTI_5  | EXTI_6  | EXTI_7  | \
+                                  EXTI_8  | EXTI_9)
 
-#define EXTI_LINES_10_15                              EXTI_10 | EXTI_11 | \
-                                  EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15
+#define EXTI_LINES_10_15         (                    EXTI_10 | EXTI_11 | \
+                                  EXTI_12 | EXTI_13 | EXTI_14 | EXTI_15)
 
 typedef enum {
   HDL_EXTI_LINE_0 = EXTI_0,   /*!< EXTI line 0 PA0, PB0, PF0 */

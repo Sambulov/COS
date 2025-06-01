@@ -1,6 +1,6 @@
 #include "hdl_iface.h"
 
-hdl_module_state_t hdl_gpio_port(void *desc, const uint8_t enable) {
+static hdl_module_state_t _hdl_gpio_port(const void *desc, const uint8_t enable) {
   hdl_gpio_port_mcu_t *port = (hdl_gpio_port_mcu_t *)desc;
   if(port->config == NULL)
     return HDL_MODULE_FAULT;
@@ -42,3 +42,7 @@ hdl_module_state_t __hdl_gpio_pin(const void *desc, const uint8_t enable) {
   }
   return HDL_MODULE_ACTIVE;
 }
+
+const hdl_module_base_iface_t hdl_gpio_port_iface = {
+  .init = &_hdl_gpio_port
+};

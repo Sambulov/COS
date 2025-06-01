@@ -130,7 +130,7 @@ static hdl_module_state_t _hdl_bus_clock_cnf(hdl_clock_mcu_t *clk, uint32_t bit_
   return HDL_MODULE_ACTIVE;
 }
 
-static hdl_module_state_t hdl_clock_selector_rtc(hdl_clock_mcu_t *clk, uint8_t enable) {
+static hdl_module_state_t _hdl_clock_selector_rtc(hdl_clock_mcu_t *clk, uint8_t enable) {
   if (enable) {
     if (clk->dependencies == NULL || clk->dependencies[0] == NULL)
       return HDL_MODULE_FAULT;
@@ -206,7 +206,7 @@ hdl_module_state_t __hdl_clock(const void *desc, const uint8_t enable) {
   clock_var->freq.denom = 1;
   switch (clk->config->type) {
     case HDL_CLOCK_TYPE_RTC_SEL:
-      return hdl_clock_selector_rtc(clk, enable);
+      return _hdl_clock_selector_rtc(clk, enable);
 
     case HDL_CLOCK_TYPE_HXTAL:
       clock_var->freq.num = clk->config->property.freq;

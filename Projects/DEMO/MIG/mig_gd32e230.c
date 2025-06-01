@@ -1318,7 +1318,7 @@ const hdl_adc_mcu_t mod_adc_mcu = {
     &mod_systick_timer 
   ),
   .config = hdl_module_config(hdl_uart_config_t,
-    .phy = (uint32_t)USART0, 
+    .phy = (uint32_t)USART1, 
     .rcu = RCU_USART1,
     .interrupt = &mod_irq_usart1,
     .baudrate = 115200,

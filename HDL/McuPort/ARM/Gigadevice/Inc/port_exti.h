@@ -34,10 +34,10 @@ typedef struct {
 
 typedef struct {
   uint32_t phy;
-  hdl_exti_t **extis;
+  const hdl_exti_t * const *extis;
 } hdl_exti_controller_config_t;
 
-#define hdl_extis(...) ((hdl_exti_t *[]){__VA_ARGS__, NULL})
+#define hdl_extis(...) ((const hdl_exti_t * const []){__VA_ARGS__, NULL})
 
 typedef void (*hdl_exti_sw_trigger_t)(const void *, hdl_exti_line_t);
 

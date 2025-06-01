@@ -4,8 +4,8 @@
 #include "hdl_dma.h"
 
 typedef struct {
-  uint32_t phy;
   rcu_periph_enum rcu;
+  uint32_t phy;
 } hdl_dma_config_t;
 
 typedef struct {
@@ -19,5 +19,15 @@ typedef struct {
           circular      : 1;
   dma_channel_enum ch_no;
 } hdl_dma_channel_config_t;
+
+hdl_module_new_t(hdl_dma_mcu_t, 0, hdl_dma_config_t, hdl_module_base_iface_t);
+
+/* Depends on 
+  dma module 
+*/
+hdl_module_new_t(hdl_dma_channel_mcu_t, 0, hdl_dma_channel_config_t, hdl_dma_channel_iface_t);
+
+extern const hdl_module_base_iface_t hdl_dma_iface;
+extern const hdl_dma_channel_iface_t hdl_dma_channel_iface;
 
 #endif

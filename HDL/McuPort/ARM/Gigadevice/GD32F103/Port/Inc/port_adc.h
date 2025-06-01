@@ -1,13 +1,9 @@
 #ifndef PORT_ADC_H_
 #define PORT_ADC_H_
 
-#define HDL_ADC_PRV_SIZE  (56)
+#include "hdl_adc.h"
 
-// typedef enum {
-//     ADC_OPERATION_MODE_SINGLE_SCAN,    /* Single SCAN, user must launched every conversion with some triger */
-//     ADC_OPERATION_MODE_CONTINUOS_SCAN, /* Continuous scan, each next conversion after first triger will be do automaticly */
-// } hdl_adc_operation_mode_e;
-
+#define HDL_ADC_VAR_SIZE  56
 typedef enum {
     HDL_ADC_CHANNEL_0 = ADC_CHANNEL_0,
     HDL_ADC_CHANNEL_1 = ADC_CHANNEL_1,
@@ -35,14 +31,6 @@ typedef enum{
     HDL_ADC_CHANNEL_SAMPLE_TIME_239P5 = ADC_SAMPLETIME_239POINT5, /* 12.5 CK_ADC cycles (const value for 12-bit adc conversion) + 239.5 CK_ADC cycles*/
 } hdl_adc_channel_sample_time_e;
 
-// typedef enum {
-//     HDL_ADC_RESOLUTION_12BIT = ADC_RESOLUTIOL,
-//     HDL_ADC_RESOLUTION_10BIT = ADC_RESOLUTION_10B,
-//     HDL_ADC_RESOLUTION_8BIT = ADC_RESOLUTION_8B,
-//     HDL_ADC_RESOLUTION_6BIT = ADC_RESOLUTION_6B,
-// } hdl_adc_resolution_e;
-
-
 typedef struct {
     hdl_adc_channel_e channel;
     hdl_adc_channel_sample_time_e sample_time;
@@ -54,16 +42,29 @@ typedef enum {
 } hdl_adc_data_alignment_t;
 
 typedef struct{
-    hdl_interrupt_t *adc_interrupt;
-    hdl_adc_data_alignment_t data_alignment;
-    uint32_t init_timeout;
-    hdl_adc_source_t **sources;               /* max amount 15 */
-    uint32_t *values;
+  uint32_t phy;
+  rcu_periph_enum rcu;
+  hdl_interrupt_t *adc_interrupt;
+  hdl_adc_data_alignment_t data_alignment;
+  uint32_t init_timeout;
+  const hdl_adc_source_t * const *sources;               /* max amount 15 */
+  uint32_t *values;
 } hdl_adc_config_t;
 
-#define hdl_adc_sources(...) ((hdl_adc_source_t *[]){__VA_ARGS__, NULL})
+#define hdl_adc_sources(...) ((const hdl_adc_source_t * const []){__VA_ARGS__, NULL})
 
 #define hdl_adc_src(...)  hdl_adc_sources(__VA_ARGS__),\
                           .values = (uint32_t [sizeof(hdl_adc_sources(__VA_ARGS__))/sizeof(hdl_adc_source_t *)]){}
+
+/* depends on
+  hdl_clock_t
+  hdl_time_counter_t
+  hdl_dma_channel_t
+  hdl_interrupt_controller_t
+*/
+
+hdl_module_new_t(hdl_adc_mcu_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t, hdl_adc_iface_t);
+
+extern const hdl_adc_iface_t hdl_adc_iface;
 
 #endif

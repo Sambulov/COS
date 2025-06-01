@@ -21,4 +21,6 @@ extern const hdl_uart_t mod_rs485;
 
 extern const hdl_spi_client_ch_t mod_spi_client;
 
+extern const hdl_i2c_t mod_i2c;
+
 #endif // ATB_MIG_H_

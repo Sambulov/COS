@@ -13,7 +13,8 @@ const hdl_module_base_t mod_app = {
     &mod_led4_pin,
     &mod_uart,
     &mod_rs485,
-    &mod_spi_client
+    &mod_spi_client,
+    &mod_i2c
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };

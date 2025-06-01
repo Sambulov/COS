@@ -1,5 +1,4 @@
 #include "hdl_portable.h"
-#include "Macros.h"
 
 void wwdgt_handler()                    { call_isr(HDL_NVIC_IRQ0_WWDGT, 0); }
 void lvd_handler()                      { call_isr(HDL_NVIC_IRQ1_LVD, 0); }
@@ -22,7 +21,7 @@ void DMA0_Channel6_IRQHandler()         { call_isr(HDL_NVIC_IRQ17_DMA0_Channel6,
 void ADC0_1_IRQHandler()                { call_isr(HDL_NVIC_IRQ18_ADC0_1, 0); }
 
 #ifdef GD32F10X_MD
-void USBD_HP_CAN0_TX_IRQHandler         { call_isr(HDL_NVIC_IRQ19_USBD_HP_CAN0_TX, 0); } /* IRQ19 */
+void USBD_HP_CAN0_TX_IRQHandler()       { call_isr(HDL_NVIC_IRQ19_USBD_HP_CAN0_TX, 0); } /* IRQ19 */
 void USBD_LP_CAN0_RX0_IRQHandler()      { call_isr(HDL_NVIC_IRQ20_USBD_LP_CAN0_RX0, 0); } /* IRQ20 */
 void CAN0_RX1_IRQHandler()              { call_isr(HDL_NVIC_IRQ21_CAN0_RX1, 0); } /* IRQ21 */
 void CAN0_EWMC_IRQHandler()             { call_isr(HDL_NVIC_IRQ22_CAN0_EWMC, 0); } /* IRQ22 */
@@ -189,10 +188,10 @@ void CAN1_EWMC_IRQHandler()             { call_isr(HDL_NVIC_IRQ66_CAN1_EWMC, 0);
 void USBFS_IRQHandler()                 { call_isr(HDL_NVIC_IRQ67_USBFS, 0); } /* IRQ67 */
 #endif /* GD32F10X_CL */
 
-hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
+static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   /* TODO: */
   if(enable) {
-    hdl_core_t *core = (hdl_core_t *)desc;
+    hdl_core_arm_t *core = (hdl_core_arm_t *)desc;
     FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | core->config->flash_latency;
     rcu_periph_clock_enable(RCU_AF);
     return HDL_MODULE_ACTIVE;
@@ -201,3 +200,7 @@ hdl_module_state_t hdl_core(void *desc, uint8_t enable) {
   FMC_WS = (FMC_WS & (~FMC_WS_WSCNT)) | WS_WSCNT_0;
   return HDL_MODULE_UNLOADED;
 }
+
+const hdl_module_base_iface_t hdl_core_arm_iface = {
+  .init = _hdl_core
+};

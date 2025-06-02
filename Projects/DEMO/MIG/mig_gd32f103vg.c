@@ -529,7 +529,7 @@ const hdl_clock_mcu_t mod_clock_apb2 = {
 
 const hdl_clock_mcu_t mod_clock_adc = {
   .iface = &hdl_clock_iface,
-  .dependencies = hdl_module_dependencies(&mod_clock_ahb),
+  .dependencies = hdl_module_dependencies(&mod_clock_apb2),
   .config = hdl_module_config(hdl_clock_config_t,
     .type = HDL_CLOCK_TYPE_ADC,
     .property.div = HDL_ADC_PREDIV,

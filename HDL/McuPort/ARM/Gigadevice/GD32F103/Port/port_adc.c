@@ -21,6 +21,7 @@ static void event_adc_end_of_conversion(uint32_t event, void *sender, void *cont
   (void)event; (void)sender;
   hdl_adc_mcu_t *hdl_adc = (hdl_adc_mcu_t *)context;
   hdl_adc_var_t *adc_var = (hdl_adc_var_t *)hdl_adc->obj_var;
+  CL_REG_CLEAR(ADC_STAT(hdl_adc->config->phy), ADC_STAT_EOC);
   adc_var->age++;
 }
 

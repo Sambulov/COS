@@ -1997,8 +1997,8 @@
               <bitWidth>1</bitWidth>
             </field>
             <field>
-              <name>USART1RST</name>
-              <description>USART1 reset</description>
+              <name>USART0RST</name>
+              <description>USART0 reset</description>
               <bitOffset>14</bitOffset>
               <bitWidth>1</bitWidth>
             </field>
@@ -2325,8 +2325,8 @@
               <bitWidth>1</bitWidth>
             </field>
             <field>
-              <name>USART1EN</name>
-              <description>USART1 clock enable</description>
+              <name>USART0EN</name>
+              <description>USART0 clock enable</description>
               <bitOffset>14</bitOffset>
               <bitWidth>1</bitWidth>
             </field>
@@ -3622,8 +3622,8 @@
               <access>read-write</access>
             </field>
             <field>
-              <name>USART1_REMAP</name>
-              <description>USART1 remapping</description>
+              <name>USART0_REMAP</name>
+              <description>USART0 remapping</description>
               <bitOffset>2</bitOffset>
               <bitWidth>1</bitWidth>
               <access>read-write</access>
@@ -12328,7 +12328,7 @@
       </interrupt>
     </peripheral>
     <peripheral>
-      <name>USART1</name>
+      <name>USART0</name>
       <description>Universal synchronous asynchronous receiver
       transmitter</description>
       <groupName>USART</groupName>
@@ -12339,8 +12339,8 @@
         <usage>registers</usage>
       </addressBlock>
       <interrupt>
-        <name>USART1</name>
-        <description>USART1 global interrupt</description>
+        <name>USART0</name>
+        <description>USART0 global interrupt</description>
         <value>37</value>
       </interrupt>
       <registers>
@@ -12731,7 +12731,7 @@
         </register>
       </registers>
     </peripheral>
-    <peripheral derivedFrom="USART1">
+    <peripheral derivedFrom="USART0">
       <name>USART2</name>
       <baseAddress>0x40004400</baseAddress>
       <interrupt>
@@ -12740,7 +12740,7 @@
         <value>38</value>
       </interrupt>
     </peripheral>
-    <peripheral derivedFrom="USART1">
+    <peripheral derivedFrom="USART0">
       <name>USART3</name>
       <baseAddress>0x40004800</baseAddress>
       <interrupt>

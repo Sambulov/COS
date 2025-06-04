@@ -974,5 +974,6 @@ extern const hdl_uart_t mod_uart                                  __attribute__ 
 extern const hdl_uart_t mod_rs485                                 __attribute__ ((alias ("mod_uart6")));
 
 extern const hdl_spi_client_ch_t mod_spi_client                   __attribute__ ((alias ("mod_spi3_ch1")));
+extern const hdl_i2c_t mod_i2c                                    __attribute__ ((alias ("hdl_null_module")));
 
 #endif

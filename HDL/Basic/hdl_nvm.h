@@ -3,9 +3,8 @@
 
 typedef enum {
   HDL_NVM_OPTION_READ            = 0x01,
-  HDL_NVM_OPTION_WRITE           = 0x02,
-  HDL_NVM_OPTION_ERASE           = 0x04,
-
+  HDL_NVM_OPTION_ERASE           = 0x02,
+  HDL_NVM_OPTION_WRITE           = 0x04,
   HDL_NVM_OPTION_VALIDATE        = 0x08,
 } hdl_nvm_message_options_t;
 
@@ -17,7 +16,7 @@ typedef enum {
   HDL_NVM_ERROR_VALIDATION_FAULT = 0x10,
   HDL_NVM_ERROR_OUT_OF_RANGE     = 0x20,
   HDL_NVM_ERROR_LOCKED           = 0x30,
-  HDL_NVM_ERROR_PAGE_UNALIGNED   = 0x40,
+  HDL_NVM_ERROR_SECTOR_UNALIGNED = 0x40,
   HDL_NVM_ERROR_BUS_FAULT        = 0xD0,
   HDL_NVM_ERROR_BAD_ARG          = 0xE0,
   HDL_NVM_ERROR_INTERNAL_FAULT   = 0xF0,
@@ -25,17 +24,19 @@ typedef enum {
 } hdl_nvm_message_status_t;
 
 typedef struct {
-  uint8_t *buffer;
+  uint8_t *rx_buffer;
+  uint8_t *tx_data;
   uint32_t size;
-  uint32_t transferred;
+  uint32_t out_transferred;
   uint32_t address;
   hdl_nvm_message_options_t options;
-  hdl_nvm_message_status_t status;
+  hdl_nvm_message_status_t out_status;
 } hdl_nvm_message_t;
 
 typedef struct {
   uint32_t volume;
   uint32_t page_size;
+  uint32_t sector_size;
 } hdl_nvm_info_t;
 
 typedef uint8_t (* hdl_nvm_transfer_t)(const void *desc, hdl_nvm_message_t *message);

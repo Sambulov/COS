@@ -13,7 +13,7 @@ typedef struct {
   hdl_transceiver_t *transceiver;
 } hdl_i2c_sw_var_t;
 
-//HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_sw_var_t, *((hdl_i2c_t *)0)->obj_var, HDL_I2C_SW_VAR_SIZE, hdl_button.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_sw_var_t, *((hdl_i2c_sw_t *)0)->obj_var, HDL_I2C_SW_VAR_SIZE, "hdl_i2c_sw.h");
 
 #define WRK_STATE_START    0
 #define WRK_STATE_ADDR     1

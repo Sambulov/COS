@@ -6,7 +6,7 @@
 typedef struct {
   uint16_t chip_address;
   uint16_t page_size;
-  uint32_t write_time;
+  uint16_t write_time;
   uint32_t size;
 } hdl_eeprom_i2c_config_t;
 

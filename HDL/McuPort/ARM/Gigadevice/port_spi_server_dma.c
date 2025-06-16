@@ -72,7 +72,7 @@ static uint8_t _hdl_spi_server_dma_set_rx_buffer(const void *desc, hdl_basic_buf
     hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->dependencies[6];
     spi_var->rx_mem = buffer;
     if(buffer != NULL) {
-      hdl_dma_channel_run(dma_rx, (uint32_t)&SPI_DATA(spi->config->phy), (uint32_t)buffer->data , (uint32_t)buffer->size);
+      hdl_dma_channel_run(dma_rx, (void *)&SPI_DATA(spi->config->phy), buffer->data , (uint32_t)buffer->size);
     }
     else {
       hdl_dma_channel_stop(dma_rx);
@@ -87,7 +87,7 @@ static uint8_t _hdl_spi_server_dma_set_tx_data(const void *desc, hdl_basic_buffe
   if((desc != NULL) && (hdl_state(desc) == HDL_MODULE_ACTIVE)) {
     hdl_dma_channel_t *dma_tx = (hdl_dma_channel_t *)spi->dependencies[7];
     if(buffer != NULL) {
-      hdl_dma_channel_run(dma_tx, (uint32_t)&SPI_DATA(spi->config->phy), (uint32_t)buffer->data , (uint32_t)buffer->size);
+      hdl_dma_channel_run(dma_tx, buffer->data, (void *)&SPI_DATA(spi->config->phy), (uint32_t)buffer->size);
     }
     else {
       hdl_dma_channel_stop(dma_tx);
@@ -107,7 +107,7 @@ static uint8_t _spi_server_dma_worker(coroutine_t *this, uint8_t cancel, void *a
     spi_var->received = 0;
     if(spi_var->rx_mem != NULL) {
       hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->dependencies[6];
-      hdl_dma_channel_run(dma_rx, (uint32_t)&SPI_DATA(spi->config->phy), (uint32_t)spi_var->rx_mem->data , (uint32_t)spi_var->rx_mem->size);
+      hdl_dma_channel_run(dma_rx, (void *)&SPI_DATA(spi->config->phy), spi_var->rx_mem->data, (uint32_t)spi_var->rx_mem->size);
     }
     spi_enable(spi->config->phy);
   }

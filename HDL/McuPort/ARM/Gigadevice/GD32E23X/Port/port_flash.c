@@ -25,26 +25,24 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     hdl_nvm_message_t *message = flash_var->message;
     switch (flash_var->wrk_state) {
       case WRK_STATE_START:
-        message->transferred = 0;
+        message->out_transferred = 0;
         if ((!message->options) ||
-            ((message->options & ~HDL_NVM_OPTION_ERASE) && 
-              ((message->buffer == NULL) || (message->options & HDL_NVM_OPTION_ERASE))) ||
             ((message->options & HDL_NVM_OPTION_READ) && (message->options & HDL_NVM_OPTION_WRITE)) ||
             (message->size == 0)) {
-          message->status |= HDL_NVM_ERROR_BAD_ARG;
+          message->out_status |= HDL_NVM_ERROR_BAD_ARG;
           flash_var->wrk_state = WRK_STATE_COMPLETE;
         }
         else {
           uint32_t fend = (flash->config->page_size * flash->config->pages_amount);
           uint32_t edst = message->address + message->size;
           if(edst > fend) {
-            message->status |= HDL_NVM_ERROR_OUT_OF_RANGE;
+            message->out_status |= HDL_NVM_ERROR_OUT_OF_RANGE;
             flash_var->wrk_state = WRK_STATE_COMPLETE;
           }
           else {
             if(message->options & HDL_NVM_OPTION_ERASE) {
               if((message->address % flash->config->page_size) || (message->size % flash->config->page_size)) {
-                message->status |= HDL_NVM_ERROR_PAGE_UNALIGNED;
+                message->out_status |= HDL_NVM_ERROR_SECTOR_UNALIGNED;
                 flash_var->wrk_state = WRK_STATE_COMPLETE;
               }
               else {
@@ -63,19 +61,19 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         break;
 
       case WRK_STATE_WRITE: {
-        uint32_t address = flash->config->page_address + message->address + message->transferred;
-        uint8_t *src = message->buffer + message->transferred;
-        uint8_t *esrc = message->buffer + message->size;
+        uint32_t address = flash->config->page_address + message->address + message->out_transferred;
+        uint8_t *src = message->tx_data + message->out_transferred;
+        uint8_t *esrc = message->tx_data + message->size;
         FMC_CTL |= FMC_CTL_PG;
         FMC_WS |= FMC_WS_PGW;
-        while (message->transferred < message->size) {
+        while (message->out_transferred < message->size) {
           uint64_t data = *((uint64_t *)(address & ~0x07UL));
           do {
             if(src != esrc) ((uint8_t *)&data)[address & 0x07] = *src++;
           } while (++address & 0x07);
           REG32(address - 8) = (uint32_t)data;
           REG32(address - 4) = (uint32_t)(data >> 32);
-          message->transferred = src - message->buffer;
+          message->out_transferred = src - message->tx_data;
           if(!(address & 0x07)) break;
         }
         flash_var->wrk_state = WRK_STATE_WRITE_AWAITE;
@@ -88,9 +86,9 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           FMC_WS &= ~(FMC_WS_PGW);
           flash_var->wrk_state = WRK_STATE_COMPLETE;
           if((FMC_STAT & FMC_STAT_WPERR) || (FMC_STAT & FMC_STAT_PGERR) || (FMC_STAT & FMC_STAT_PGAERR))
-            message->status |= HDL_NVM_ERROR_INTERNAL_FAULT;
+            message->out_status |= HDL_NVM_ERROR_INTERNAL_FAULT;
           else {
-            if(message->transferred < message->size)
+            if(message->out_transferred < message->size)
               flash_var->wrk_state = WRK_STATE_WRITE;
             else if(message->options & HDL_NVM_OPTION_VALIDATE) 
               flash_var->wrk_state = WRK_STATE_VALIDATE;
@@ -99,7 +97,7 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         break;
 
       case WRK_STATE_ERASE_PAGE: {
-        uint32_t eaddr = flash->config->page_address + message->address + message->transferred;
+        uint32_t eaddr = flash->config->page_address + message->address + message->out_transferred;
         /* start page erase */
         FMC_CTL |= FMC_CTL_PER;
         FMC_ADDR = eaddr;
@@ -112,42 +110,42 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         if(!(FMC_STAT & FMC_STAT_BUSY)) {
           FMC_CTL &= ~FMC_CTL_PER;
           if((FMC_STAT & FMC_STAT_WPERR) || (FMC_STAT & FMC_STAT_PGERR) || (FMC_STAT & FMC_STAT_PGAERR)) {
-            message->status |= HDL_NVM_ERROR_INTERNAL_FAULT;
+            message->out_status |= HDL_NVM_ERROR_INTERNAL_FAULT;
             flash_var->wrk_state = WRK_STATE_COMPLETE;
           }
           else {
-            message->transferred += flash->config->page_size;
-            if(message->transferred >= message->size) flash_var->wrk_state = WRK_STATE_COMPLETE;
+            message->out_transferred += flash->config->page_size;
+            if(message->out_transferred >= message->size) flash_var->wrk_state = WRK_STATE_COMPLETE;
             else flash_var->wrk_state = WRK_STATE_ERASE_PAGE;
           }
         }
         break;
 
       case WRK_STATE_VALIDATE: {
-        uint8_t *src = message->buffer;
+        uint8_t *src = message->tx_data;
         uint8_t *dst = (uint8_t *)(flash->config->page_address + message->address);
         uint32_t i = 0;
         for(; i < message->size; i++) {
           if(src[i] != dst[i]) {
-            message->status |= HDL_NVM_ERROR_VALIDATION_FAULT;
+            message->out_status |= HDL_NVM_ERROR_VALIDATION_FAULT;
             break;
           }
         }
-        message->transferred = i;
+        message->out_transferred = i;
         flash_var->wrk_state = WRK_STATE_COMPLETE;
         break;
       }
 
       case WRK_STATE_READ:
-        mem_cpy(message->buffer, (uint8_t *)(flash->config->page_address + message->address), message->size);
-        message->transferred = message->size;
+        mem_cpy(message->rx_buffer, (uint8_t *)(flash->config->page_address + message->address), message->size);
+        message->out_transferred = message->size;
         flash_var->wrk_state = WRK_STATE_COMPLETE;
         break;
 
       case WRK_STATE_COMPLETE:
         fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_WPERR | FMC_FLAG_PGERR | FMC_FLAG_PGAERR);
         fmc_lock();
-        CL_REG_MODIFY(message->status, HDL_NVM_STATE, HDL_NVM_STATE_COMPLETE);
+        CL_REG_MODIFY(message->out_status, HDL_NVM_STATE, HDL_NVM_STATE_COMPLETE);
         flash_var->message = NULL;
       default:
         break;
@@ -181,7 +179,7 @@ static uint8_t _hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
   hdl_flash_mcu_t *flash = (hdl_flash_mcu_t *)desc;
   hdl_flash_mcu_var_t *flash_var = (hdl_flash_mcu_var_t *)flash->obj_var;
   if((hdl_state(flash) != HDL_MODULE_UNLOADED) && (flash_var->message == NULL)) {
-    message->status = HDL_NVM_STATE_BUSY;
+    message->out_status = HDL_NVM_STATE_BUSY;
     flash_var->message = message;
     flash_var->wrk_state = WRK_STATE_START;
     return HDL_TRUE;

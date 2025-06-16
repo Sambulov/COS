@@ -4,7 +4,8 @@
 #set(BOARD "DEMO_STM32F407")
 #set(BOARD "DEMO_NUM463KG")
 
-
+#set(BOARD "SmartMonitor")
+set(BOARD "CCS2")
 
 set(dir "${CMAKE_CURRENT_SOURCE_DIR}/${BOARD}")
 if((BOARD STREQUAL "DEMO_GD32F103") OR 

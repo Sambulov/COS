@@ -1348,8 +1348,10 @@ extern const hdl_gpio_pin_t mod_led4_pin                          __attribute__ 
 extern const hdl_gpio_pin_t mod_button_pin                        __attribute__ ((alias ("mod_gpio_pa0")));
 
 extern const hdl_uart_t mod_uart                                  __attribute__ ((alias ("mod_uart1")));
+extern const hdl_uart_t mod_rs485                                 __attribute__ ((alias ("hdl_null_module")));
 
 extern const hdl_spi_client_ch_t mod_spi_client                   __attribute__ ((alias ("mod_spi0_ch0")));
 
+extern const hdl_i2c_t mod_i2c                                    __attribute__ ((alias ("hdl_null_module")));
 
 #endif

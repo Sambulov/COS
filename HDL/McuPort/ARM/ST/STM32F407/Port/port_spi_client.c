@@ -23,12 +23,8 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   hdl_spi_client_ch_var_t *ch_var = (hdl_spi_client_ch_var_t *)spi_var->curent_spi_ch->obj_var;
   hdl_spi_message_t *msg = ch_var->curent_msg;
   SPI_TypeDef *phy = (SPI_TypeDef *)spi->config->phy;
-
   uint32_t msg_len = msg->rx_skip + msg->rx_take;
   msg_len = CL_MAX(msg->tx_len, msg_len);
-
-  
-
   uint32_t state = phy->SR;
   if ((state & SPI_ERROR_MASK) == 0) {
     /* RX ---------------------------------------------------*/
@@ -41,12 +37,12 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
       spi_var->rx_cursor++;
       if(spi_var->rx_cursor >= msg_len) {
         phy->CR2 &= ~SPI_CR2_RXNEIE;
-        msg->state |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
+        msg->status |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
       }
+      if(spi_var->tx_cursor < msg_len) phy->CR2 |= SPI_CR2_TXEIE;
     }
-
     ///* TX ------------------------------------------------*/
-    if((state & SPI_SR_TXE) && (spi_var->tx_cursor < msg_len)) {
+    else if((state & SPI_SR_TXE) && (spi_var->tx_cursor < msg_len)) {
       uint16_t data = 0;
       if ((msg->tx_buffer != NULL) && (msg->tx_len > 0)) {
         if (spi_var->tx_cursor < msg->tx_len) data = msg->tx_buffer[spi_var->tx_cursor];
@@ -54,13 +50,20 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
       }
       phy->DR = data;
       spi_var->tx_cursor++;
-      if(spi_var->tx_cursor >= msg_len) phy->CR2 &= ~SPI_CR2_TXEIE;
+      phy->CR2 &= ~SPI_CR2_TXEIE;
     }
     msg->transferred = CL_MIN(spi_var->rx_cursor, spi_var->tx_cursor);
   }
   else {
+    msg->status |= HDL_SPI_MESSAGE_FAULT_BUS_ERROR | HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
     hdl_spi_reset_status(phy);
   }
+}
+
+static inline void _spi_delay(hdl_tick_counter_t *ticks, uint32_t delay) {
+  if(!delay) return;
+  uint32_t ts = hdl_tick_counter_get(ticks);
+  while ((hdl_tick_counter_get(ticks) - ts) < delay);
 }
 
 static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
@@ -70,7 +73,6 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_spi_client_mcu_t *spi = (hdl_spi_client_mcu_t *)ch->dependencies[0];
   hdl_spi_client_var_t *spi_var = (hdl_spi_client_var_t *)spi->obj_var;
   SPI_TypeDef *phy = (SPI_TypeDef *)spi->config->phy;
-
   if((spi_var->curent_spi_ch == NULL) && (spi_ch_var->curent_msg != NULL)) {
     spi_var->curent_spi_ch = ch;
   }
@@ -78,11 +80,11 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     hdl_gpio_pin_t *pin_cs = (hdl_gpio_pin_t *)ch->dependencies[1];
     hdl_spi_message_t *msg = spi_ch_var->curent_msg;
     if((msg != NULL) && hdl_take(spi, ch)) {
-      if (msg->state == HDL_SPI_MESSAGE_STATUS_INITIAL) {
-        //TODO: cs delay
+      if (msg->status == HDL_SPI_MESSAGE_STATUS_INITIAL) {
         if(msg->options & HDL_SPI_MESSAGE_CH_SELECT) {
           hdl_gpio_set_active(pin_cs);
-          msg->state |= HDL_SPI_MESSAGE_STATUS_BUS_HOLD;
+          msg->status |= HDL_SPI_MESSAGE_STATUS_BUS_HOLD;
+          _spi_delay((hdl_tick_counter_t *)ch->dependencies[2], ch->config->cs_min_delay);
         }
         uint32_t msg_len = msg->rx_skip + msg->rx_take;
         msg_len = CL_MAX(msg->tx_len, msg_len);
@@ -90,23 +92,22 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           spi_var->rx_cursor = 0;
           spi_var->tx_cursor = 0;
           hdl_spi_reset_status(phy);
-          msg->state |= HDL_SPI_MESSAGE_STATUS_XFER;
+          msg->status |= HDL_SPI_MESSAGE_STATUS_XFER;
           phy->CR2 |= SPI_CR2_TXEIE | SPI_CR2_RXNEIE;
-
         }
         else {
-          msg->state |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
+          msg->status |= HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE;
         }
       }
-      if(msg->state & HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE) {
+      if(msg->status & HDL_SPI_MESSAGE_STATUS_XFER_COMPLETE) {
         spi_ch_var->curent_msg = NULL;
         if(msg->options & HDL_SPI_MESSAGE_CH_RELEASE) {
           hdl_gpio_set_inactive(pin_cs);
-          msg->state |= HDL_SPI_MESSAGE_STATUS_BUS_RELEASE;
+          msg->status |= HDL_SPI_MESSAGE_STATUS_BUS_RELEASE;
           spi_var->curent_spi_ch = NULL;
           hdl_give(spi, ch);
         }
-        msg->state |= HDL_SPI_MESSAGE_STATUS_COMPLETE;
+        msg->status |= HDL_SPI_MESSAGE_STATUS_COMPLETE;
       }
       //else if() todo timeout
     }
@@ -182,7 +183,7 @@ static uint8_t _hdl_spi_transfer_message(const void *desc, hdl_spi_message_t *me
     if(spi_ch_var->curent_msg == NULL) {
       spi_ch_var->curent_msg = message;
       message->transferred = 0;
-      message->state = HDL_SPI_MESSAGE_STATUS_INITIAL;
+      message->status = HDL_SPI_MESSAGE_STATUS_INITIAL;
       return HDL_TRUE;
     }
   }

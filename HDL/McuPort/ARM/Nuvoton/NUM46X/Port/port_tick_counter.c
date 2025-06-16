@@ -53,14 +53,14 @@ static uint32_t _hdl_tick_counter_get(const void *desc) {
   return 0;
 }
 
-void _hdl_tick_counter_set(const void *counter, uint32_t value, uint32_t period) {
+void _hdl_tick_counter_set(const void *counter, uint32_t *value, uint32_t *period) {
   hdl_tick_counter_mcu_t *tick_cnt = (hdl_tick_counter_mcu_t *)counter;
   uint32_t periph = (uint32_t)tick_cnt->config->phy;
   //const hdl_tick_counter_timer_config_t *config = tick_cnt->config->type.timer;
   if(periph == (uint32_t)SysTick) {
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-    SysTick->VAL = (SysTick->LOAD - value);
-    SysTick->LOAD = period & SysTick_LOAD_RELOAD_Msk;
+    if(value != NULL) SysTick->VAL = (SysTick->LOAD - *value);
+    if(period != NULL) SysTick->LOAD = *period & SysTick_LOAD_RELOAD_Msk;
     SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
   }
   // else {

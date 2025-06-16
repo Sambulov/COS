@@ -35,7 +35,7 @@ static void _adc_xfer(hdl_adc_ms5194t_t *adc) {
   while(adc_var->command_state != MS5194T_ADC_COMMAND_STATE_IDLE) {
     if(adc_var->command_state & MS5194T_ADC_COMMAND_STATE_PUSH_MESSAGE) {
       hdl_spi_client_ch_t *spi = (hdl_spi_client_ch_t *)adc->dependencies[0];
-      if(hdl_spi_transfer_message(spi, &adc_var->message)) {
+      if(hdl_spi_client_ch_transfer(spi, &adc_var->message)) {
         adc_var->command_state &= ~MS5194T_ADC_COMMAND_STATE_PUSH_MESSAGE;
         adc_var->command_state |= MS5194T_ADC_COMMAND_STATE_MESSAGE_AWAITING;
       }
@@ -43,7 +43,7 @@ static void _adc_xfer(hdl_adc_ms5194t_t *adc) {
     }
     else {
       if(adc_var->command_state & MS5194T_ADC_COMMAND_STATE_MESSAGE_AWAITING) {
-        if(!(adc_var->message.state & HDL_SPI_MESSAGE_STATUS_COMPLETE)) break;
+        if(!(adc_var->message.status & HDL_SPI_MESSAGE_STATUS_COMPLETE)) break;
         adc_var->command_state &= ~MS5194T_ADC_COMMAND_STATE_MESSAGE_AWAITING;
       }
       else {

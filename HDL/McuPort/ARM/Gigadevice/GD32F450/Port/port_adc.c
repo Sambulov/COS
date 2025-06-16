@@ -111,7 +111,7 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
         break;
       case GD_ADC_STATE_MACHINE_RUN:
         adc_dma_mode_enable(adc->config->phy);
-        hdl_dma_channel_run(dma, (uint32_t)&ADC_RDATA(adc->config->phy), (uint32_t)adc->config->values, (uint32_t)adc_var->channels_count);
+        hdl_dma_channel_run(dma, (void *)&ADC_RDATA(adc->config->phy), adc->config->values, adc_var->channels_count);
         adc_var->age = 0;
         adc_var->start_conversion.context = adc;
         adc_var->start_conversion.handler = &event_adc_start_conversion;

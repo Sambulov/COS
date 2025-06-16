@@ -29,7 +29,7 @@ typedef struct {
   const hdl_transceiver_t *transceiver;
 } hdl_i2c_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_var_t, *((hdl_i2c_mcu_t *)0)->obj_var, HDL_I2C_VAR_SIZE, hdl_i2c.h);
+HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_var_t, *((hdl_i2c_mcu_t *)0)->obj_var, HDL_I2C_VAR_SIZE, port_i2c.h);
 
 static void _i2c_clear_error(uint32_t i2c_periph) {
   I2C_STAT0(i2c_periph) &= ~(I2C_ERROR_CLEAR_MASK);

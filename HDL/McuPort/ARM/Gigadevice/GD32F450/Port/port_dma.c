@@ -1,13 +1,19 @@
 #include "hdl_iface.h"
 
-uint8_t __hdl_dma_run(const void *desc, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount) {
+uint8_t __hdl_dma_run(const void *desc, uint32_t from_addr, uint32_t to_addr, uint32_t amount) {
   hdl_dma_channel_mcu_t *channel = ((hdl_dma_channel_mcu_t *)desc);
   hdl_dma_mcu_t *dma = (hdl_dma_mcu_t *)channel->dependencies[0];
   if(dma != NULL) {
     dma_deinit(dma->config->phy, channel->config->ch_no);
     dma_channel_subperipheral_select(dma->config->phy, channel->config->ch_no, channel->config->channel_periphery);
-    dma_periph_address_config(dma->config->phy, channel->config->ch_no, periph_addr);
-    dma_memory_address_config(dma->config->phy, channel->config->ch_no, DMA_MEMORY_0, memory_addr);
+    if(channel->config->direction == DMA_MEMORY_TO_PERIPH) {
+      dma_periph_address_config(dma->config->phy, channel->config->ch_no, to_addr);
+      dma_memory_address_config(dma->config->phy, channel->config->ch_no, DMA_MEMORY_0, from_addr);
+    }
+    else {
+      dma_periph_address_config(dma->config->phy, channel->config->ch_no, from_addr);
+      dma_memory_address_config(dma->config->phy, channel->config->ch_no, DMA_MEMORY_0, to_addr);
+    }
     dma_transfer_number_config(dma->config->phy, channel->config->ch_no, amount);
     dma_priority_config(dma->config->phy, channel->config->ch_no, channel->config->priority);
     dma_memory_width_config(dma->config->phy, channel->config->ch_no, channel->config->memory_width);

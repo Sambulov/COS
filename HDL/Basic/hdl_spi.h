@@ -24,7 +24,7 @@ typedef struct {
   uint16_t rx_skip;
   uint16_t rx_take;
   uint16_t transferred;
-  hdl_spi_message_status_t state;
+  hdl_spi_message_status_t status;
   hdl_spi_message_options_t options;
 } hdl_spi_message_t;
 
@@ -82,7 +82,7 @@ typedef struct {
 
 hdl_module_new_t(hdl_spi_client_ch_t, 0, void, hdl_spi_client_ch_iface_t);
 
-__STATIC_INLINE uint8_t hdl_spi_transfer_message(const void *desc, hdl_spi_message_t *message) {
+__STATIC_INLINE uint8_t hdl_spi_client_ch_transfer(const void *desc, hdl_spi_message_t *message) {
   MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_spi_client_ch_t *)desc)->iface->transfer(desc, message);
 }

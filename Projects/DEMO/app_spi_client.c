@@ -3,12 +3,12 @@
 #define MSG_SEND_DELAY  1000
 
 void spi_cliet_sender(uint32_t event_trigger, void *sender, void *context) {
-  static hdl_spi_message_t spi_msg = {.state = HDL_SPI_MESSAGE_STATUS_COMPLETE};
+  static hdl_spi_message_t spi_msg = {.status = HDL_SPI_MESSAGE_STATUS_COMPLETE};
   static uint8_t rx_buffer[128];
   static uint8_t tx_buffer[5];  
   (void)event_trigger; (void)sender; (void)context;
 
-  if(spi_msg.state & HDL_SPI_MESSAGE_STATUS_COMPLETE) {
+  if(spi_msg.status & HDL_SPI_MESSAGE_STATUS_COMPLETE) {
     tx_buffer[0] = 0x0A;
     tx_buffer[1] = 0xA0;
     tx_buffer[2] = 0x05;
@@ -20,7 +20,7 @@ void spi_cliet_sender(uint32_t event_trigger, void *sender, void *context) {
     spi_msg.rx_skip = 4;
     spi_msg.rx_take = 128;
     spi_msg.options = HDL_SPI_MESSAGE_CH_SELECT | HDL_SPI_MESSAGE_CH_RELEASE;
-    hdl_spi_transfer_message(&mod_spi_client, &spi_msg);
+    hdl_spi_client_ch_transfer(&mod_spi_client, &spi_msg);
   }
 }
 

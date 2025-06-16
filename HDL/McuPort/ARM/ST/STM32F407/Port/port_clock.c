@@ -47,6 +47,7 @@ static hdl_module_state_t _hdl_clock_system(hdl_clock_mcu_t *clk, uint8_t enable
     hdl_clock_var_t *src_var = (hdl_clock_var_t *)clock_src->obj_var;
     if(clock_src == NULL) clock_src = (hdl_clock_mcu_t *)clk->dependencies[1];
     hdl_clock_calc_div(&src_var->freq, 1, &clk_var->freq);
+    SystemCoreClock = clk_var->freq.num / clk_var->freq.denom;
     if(clock_src->config->type == HDL_CLOCK_TYPE_PLL_P)
       return _hdl_clock_system_switch(RCC_CR_PLLRDY, RCC_CFGR_SW_PLL, RCC_CFGR_SWS_PLL);
     else if(clock_src->config->type == HDL_CLOCK_TYPE_HXTAL)
@@ -55,6 +56,7 @@ static hdl_module_state_t _hdl_clock_system(hdl_clock_mcu_t *clk, uint8_t enable
       return _hdl_clock_system_switch(RCC_CR_HSIRDY, RCC_CFGR_SW_HSI, RCC_CFGR_SWS_HSI);
     /* TODO: config clock mon */
   }
+  SystemCoreClock = 16000000;
   _hdl_clock_system_switch(RCC_CR_HSIRDY, RCC_CFGR_SW_HSI, RCC_CFGR_SWS_HSI);
   return HDL_MODULE_UNLOADED;
 }

@@ -8,6 +8,8 @@
 #include "port_clock.h"
 #include "port_tick_counter.h"
 #include "port_gpio.h"
+#include "port_dma.h"
+#include "port_adc.h"
 #include "port_uart.h"
 #include "port_spi.h"
 

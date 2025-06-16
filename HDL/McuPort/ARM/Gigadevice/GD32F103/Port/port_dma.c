@@ -7,12 +7,13 @@ uint8_t __hdl_dma_run(const void *desc, uint32_t from_addr, uint32_t to_addr, ui
   hdl_dma_channel_config_t *ch_cnf = (hdl_dma_channel_config_t *)channel->config;
   if(dma == NULL) return HDL_FALSE;
   dma_deinit(dma->config->phy, ch_cnf->ch_no);
-  if(ch_cnf->direction == DMA_PERIPHERAL_TO_MEMORY)
-    dma_periph_address_config(ch_cnf->ch_no, from_addr);
-    dma_memory_address_config(ch_cnf->ch_no, to_addr);
+  if(ch_cnf->direction == DMA_PERIPHERAL_TO_MEMORY) {
+    dma_periph_address_config(dma->config->phy, ch_cnf->ch_no, from_addr);
+    dma_memory_address_config(dma->config->phy, ch_cnf->ch_no, to_addr);
+  }
   else {
-    dma_periph_address_config(ch_cnf->ch_no, to_addr);
-    dma_memory_address_config(ch_cnf->ch_no, from_addr);
+    dma_periph_address_config(dma->config->phy, ch_cnf->ch_no, to_addr);
+    dma_memory_address_config(dma->config->phy, ch_cnf->ch_no, from_addr);
   }
   dma_transfer_number_config(dma->config->phy, ch_cnf->ch_no, amount);
   dma_priority_config(dma->config->phy, ch_cnf->ch_no, ch_cnf->priority);

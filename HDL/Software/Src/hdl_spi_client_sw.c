@@ -17,8 +17,8 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_sw_var_t, *((hdl_spi_client_ch_sw_t
 
 static inline void _spi_sw_delay(hdl_tick_counter_t *ticks, uint32_t delay) {
   if(!delay) return;
-  uint32_t ts = hdl_tick_counter_get(ticks);
-  while ((hdl_tick_counter_get(ticks) - ts) < delay);
+  uint32_t ts = hdl_tick_counter_get_tick(ticks);
+  while ((hdl_tick_counter_get_tick(ticks) - ts) < delay);
 }
 
 static uint8_t _spi_transfer_byte(hdl_spi_client_sw_t *spi, uint8_t byte) {

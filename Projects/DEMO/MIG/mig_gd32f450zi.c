@@ -555,75 +555,61 @@ const hdl_clock_mcu_t mod_clock_adc = {
 /***********************************************************
  *                          COUNTER
 ***********************************************************/
-const hdl_tick_counter_timer_config_t mod_tick_counter0_cnf = {
-  .alignedmode = TIMER_COUNTER_EDGE,
-  .clockdivision = TIMER_CKDIV_DIV1,
-  .counterdirection = TIMER_COUNTER_UP,
-  .period = 16000 - 1,
-  .prescaler = 0,
-  .repetitioncounter = 0,
-  .rcu = RCU_TIMER0
-};
 
-const hdl_tick_counter_timer_config_t mod_tick_counter1_cnf = {
-  .alignedmode = TIMER_COUNTER_EDGE,
-  .clockdivision = TIMER_CKDIV_DIV1,
-  .counterdirection = TIMER_COUNTER_UP,
-  .period = 16000 - 1,
-  .prescaler = 0,
-  .repetitioncounter = 0,
-  .rcu = RCU_TIMER1
-};
-
-const hdl_tick_counter_timer_config_t mod_tick_counter4_cnf = {
-  .alignedmode = TIMER_COUNTER_EDGE,
-  .clockdivision = TIMER_CKDIV_DIV1,
-  .counterdirection = TIMER_COUNTER_UP,
-  .period = 0,
-  .prescaler = 0,
-  .repetitioncounter = 0,
-  .rcu = RCU_TIMER4
-};
-
-const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
-  .period = 240000 - 1
-};
-
-const hdl_tick_counter_t mod_systick_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_systick_counter_t mod_systick_counter = {
+  .iface = &hdl_systick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_ahb),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .type.systick = &mod_systick_counter_cnf,
-    .phy = (uint32_t)SysTick
+  .config = hdl_module_config(hdl_systick_counter_config_t,
+    .phy = (uint32_t)SysTick,
+    .period = 240000-1,
+    .clock_src_mask = 0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };
 
 const hdl_tick_counter_t mod_timer0_counter = {
-  .iface = &hdl_tick_counter_iface,
+  .iface = &hdl_timertick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_apb2),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .type.timer = &mod_tick_counter0_cnf,
+  .config = hdl_module_config(hdl_timertick_counter_config_t,
+    .alignedmode = TIMER_COUNTER_EDGE,
+    .clockdivision = TIMER_CKDIV_DIV1,
+    .counterdirection = TIMER_COUNTER_UP,
+    .period = 16000 - 1,
+    .prescaler = 0,
+    .repetitioncounter = 0,
+    .rcu = RCU_TIMER0,
     .phy = TIMER0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };
 
-const hdl_tick_counter_t mod_timer1_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_timertick_counter_t mod_timer1_counter = {
+  .iface = &hdl_timertick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_apb1),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .type.timer = &mod_tick_counter1_cnf,
+  .config = hdl_module_config(hdl_timertick_counter_config_t,
+    .alignedmode = TIMER_COUNTER_EDGE,
+    .clockdivision = TIMER_CKDIV_DIV1,
+    .counterdirection = TIMER_COUNTER_UP,
+    .period = 16000 - 1,
+    .prescaler = 0,
+    .repetitioncounter = 0,
+    .rcu = RCU_TIMER1,
     .phy = TIMER1
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };
 
-const hdl_tick_counter_t mod_timer4_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_timertick_counter_t mod_timer4_counter = {
+  .iface = &hdl_timertick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_apb1_timers),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .type.timer = &mod_tick_counter4_cnf,
+  .config = hdl_module_config(hdl_timertick_counter_config_t,
+    .alignedmode = TIMER_COUNTER_EDGE,
+    .clockdivision = TIMER_CKDIV_DIV1,
+    .counterdirection = TIMER_COUNTER_UP,
+    .period = 0,
+    .prescaler = 0,
+    .repetitioncounter = 0,
+    .rcu = RCU_TIMER4,
     .phy = TIMER4
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),

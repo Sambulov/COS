@@ -28,9 +28,9 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_sw_var_t, *((hdl_i2c_sw_t *)0)->obj_var, HDL_
 
 void _sw_i2c_line_switch_delay(hdl_i2c_t *i2c) {
   hdl_tick_counter_t *tc = (hdl_tick_counter_t *)i2c->dependencies[2];
-  uint32_t ticks = hdl_tick_counter_get(tc);
+  uint32_t ticks = hdl_tick_counter_get_tick(tc);
   hdl_i2c_sw_hw_config_t *hwc = (hdl_i2c_sw_hw_config_t *)i2c->config->hwc;
-  while ((hdl_tick_counter_get(tc) - ticks) < hwc->switch_delay);
+  while ((hdl_tick_counter_get_tick(tc) - ticks) < hwc->switch_delay);
 }
 
 static uint8_t _sw_i2c_start(hdl_i2c_t *i2c) {

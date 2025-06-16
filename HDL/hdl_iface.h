@@ -15,6 +15,7 @@ extern "C" {
 
 #include "hdl_core.h"
 #include "hdl_clock.h"
+#include "port_systick_counter.h"
 #include "hdl_tick_counter.h"
 #include "hdl_time_counter.h"
 #include "hdl_gpio.h"

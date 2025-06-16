@@ -346,12 +346,13 @@ const hdl_clock_mcu_t mod_clock_apb2 = {
   .obj_var = static_malloc(HDL_CLOCK_VAR_SIZE)
 };
 
-const hdl_tick_counter_t mod_systick_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_systick_counter_t mod_systick_counter = {
+  .iface = &hdl_systick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_ahb),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
+  .config = hdl_module_config(hdl_systick_counter_config_t,
     .phy = (uint32_t)SysTick,
-    .type.systick = hdl_module_config(hdl_tick_counter_systick_config_t, .period = HDL_SYSTICK_COUNTER_RELOAD)
+    .period = HDL_SYSTICK_COUNTER_RELOAD,
+    .clock_src_mask = 0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };

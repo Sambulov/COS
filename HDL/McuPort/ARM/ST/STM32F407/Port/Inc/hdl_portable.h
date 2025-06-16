@@ -7,6 +7,7 @@
 #include "port_exti.h"
 #include "port_clock.h"
 #include "port_tick_counter.h"
+#include "port_pwm.h"
 #include "port_gpio.h"
 #include "port_dma.h"
 #include "port_adc.h"

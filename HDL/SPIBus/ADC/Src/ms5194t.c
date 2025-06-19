@@ -257,7 +257,7 @@ static uint8_t _adc_ms5194t_worker(coroutine_t *this, uint8_t cancel, void *arg)
         if((adc_var->state & MS5194T_ADC_TASK_MASK) == MS5194T_ADC_TASK_GET_VALUE) {
           uint8_t status = adc_var->rx_data;
           if(status & MS5194T_STATUS_REG_ERR) {
-            adc_var->rx_data = HDL_ADC_MS5194T_INVALID_VALUE;
+            adc_var->rx_data = HDL_ADC_INVALID_VALUE;
           }
           else {
             adc_var->comm_reg = (!MS5194T_COMM_REG_WEN) | MS5194T_COMM_REG_READ | MS5194T_COMM_REG_RS_DATA_REG | (!MS5194T_COMM_REG_CREAD);
@@ -323,7 +323,7 @@ static hdl_module_state_t _hdl_adc_ms5194t(const void *desc, uint8_t enable) {
     if(adc->config->sources != NULL) {
       hdl_adc_ms5194t_source_t * const *src = adc->config->sources;
       while (*src != NULL) {
-        adc->config->values[adc_var->src_count] = HDL_ADC_MS5194T_INVALID_VALUE;
+        adc->config->values[adc_var->src_count] = HDL_ADC_INVALID_VALUE;
         adc_var->src_count++;
         src++;
       }
@@ -337,26 +337,28 @@ static hdl_module_state_t _hdl_adc_ms5194t(const void *desc, uint8_t enable) {
   return (cor_state == CO_ROUTINE_CANCELED)? HDL_MODULE_UNLOADED: HDL_MODULE_UNLOADING;
 }
 
-static uint32_t _hdl_adc_ms5194t_get(const void *desc, uint32_t src) {
-  hdl_adc_ms5194t_t *adc = (hdl_adc_ms5194t_t *)desc;
+static uint32_t _hdl_adc_ms5194t_get(const void *desc) {
+  hdl_adc_ch_ms5194t_t *adc_ch = (hdl_adc_ch_ms5194t_t *)desc;
+  hdl_adc_ms5194t_t *adc = (hdl_adc_ms5194t_t *)adc_ch->dependencies[0];
   hdl_adc_ms5194t_var_t *adc_var = (hdl_adc_ms5194t_var_t *)adc->obj_var;
-  if((adc != NULL) && (hdl_state(adc) == HDL_MODULE_ACTIVE) && (adc_var->src_count > src)) {
-    return adc->config->values[src];
-  }
-  return HDL_ADC_MS5194T_INVALID_VALUE;
+  if(adc_var->src_count >= adc_ch->config)
+    return adc->config->values[adc_ch->config];
+  return HDL_ADC_INVALID_VALUE;
 }
 
 static uint32_t _hdl_adc_ms5194t_age(const void *desc) {
-  hdl_adc_ms5194t_t *adc = (hdl_adc_ms5194t_t *)desc;
+  hdl_adc_ch_ms5194t_t *adc_ch = (hdl_adc_ch_ms5194t_t *)desc;
+  hdl_adc_ms5194t_t *adc = (hdl_adc_ms5194t_t *)adc_ch->dependencies[0];
   hdl_adc_ms5194t_var_t *adc_var = (hdl_adc_ms5194t_var_t *)adc->obj_var;
-  if((adc != NULL) && (hdl_state(adc) == HDL_MODULE_ACTIVE)) {
-    return adc_var->timestamp;
-  }
-  return 0;
+  return adc_var->timestamp;
 }
 
-const hdl_adc_iface_t hdl_adc_ms5194t_iface = {
-  .init = &_hdl_adc_ms5194t,
-  .get = &_hdl_adc_ms5194t_get,
+const hdl_module_base_iface_t hdl_adc_ms5194t_iface = {
+  .init = &_hdl_adc_ms5194t
+};
+
+const hdl_adc_ch_iface_t hdl_adc_ch_ms5194t_iface = {
+  .init = NULL,
+  .value = &_hdl_adc_ms5194t_get,
   .age = &_hdl_adc_ms5194t_age
 };

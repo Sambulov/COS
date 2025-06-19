@@ -106,7 +106,7 @@ typedef struct {
   gpio boot 2 (O)
   timer
 */
-hdl_module_new_t(hdl_smarc_carrier_t, HDL_SMARC_CARRIER_VAR_SIZE, hdl_smarc_carrier_config_t, hdl_smarc_carrier_iface_t);
+hdl_module_new_t(hdl_smarc_carrier_t, HDL_SMARC_CARRIER_VAR_SIZE, hdl_smarc_carrier_config_t*, hdl_smarc_carrier_iface_t);
 
 extern const hdl_smarc_carrier_iface_t hdl_smarc_carrier_iface;
 

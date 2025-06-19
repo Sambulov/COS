@@ -2,7 +2,7 @@
 #ifndef HDL_CORE_H_
 #define HDL_CORE_H_
 
-hdl_module_new_t(hdl_core_t, 0, void, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_core_t, 0, void*, hdl_module_base_iface_t);
 
 uint8_t hdl_core_is_in_isr();
 
@@ -22,7 +22,7 @@ typedef struct {
   hdl_interrupt_get_t current_int;
 } hdl_interrupt_controller_iface_t;
 
-hdl_module_new_t(hdl_interrupt_controller_t, 0, void, hdl_interrupt_controller_iface_t);
+hdl_module_new_t(hdl_interrupt_controller_t, 0, void*, hdl_interrupt_controller_iface_t);
 
 __STATIC_INLINE uint8_t hdl_interrupt_request(const void *desc, const hdl_interrupt_t *isr) {
   MODULE_ASSERT(desc, HDL_FALSE);

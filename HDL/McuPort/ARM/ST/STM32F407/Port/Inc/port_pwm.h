@@ -20,7 +20,7 @@ typedef struct {
    hdl_tick_counter
    hdl_gpio
  */
-hdl_module_new_t(hdl_pwm_mcu_t, HDL_PWM_MCU_VAR_SIZE, hdl_pwm_mcu_config_t, hdl_pwm_iface_t);
+hdl_module_new_t(hdl_pwm_mcu_t, HDL_PWM_MCU_VAR_SIZE, hdl_pwm_mcu_config_t*, hdl_pwm_iface_t);
 
 extern const hdl_pwm_iface_t hdl_pwm_mcu_iface;
 

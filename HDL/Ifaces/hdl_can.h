@@ -28,7 +28,7 @@ typedef struct {
   hdl_can_transfer_message_t transfer;
 } hdl_can_iface_t;
 
-hdl_module_new_t(hdl_can_t, 0, void, hdl_can_iface_t);
+hdl_module_new_t(hdl_can_t, 0, void*, hdl_can_iface_t);
 
 __STATIC_INLINE uint8_t hdl_can_transfer(const void *desc, hdl_can_message_t *message) {
   MODULE_ASSERT(desc, HDL_FALSE);

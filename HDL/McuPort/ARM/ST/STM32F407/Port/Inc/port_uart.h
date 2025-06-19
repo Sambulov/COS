@@ -23,7 +23,7 @@ typedef struct {
   hdl_timer_t
   gpio rts
  */
-hdl_module_new_t(hdl_uart_mcu_t, HDL_UART_VAR_SIZE, hdl_uart_config_t, hdl_uart_iface_t);
+hdl_module_new_t(hdl_uart_mcu_t, HDL_UART_VAR_SIZE, hdl_uart_config_t*, hdl_uart_iface_t);
 
 extern const hdl_uart_iface_t hdl_uart_iface;
 

@@ -12,7 +12,7 @@ typedef struct {
   hdl_time_counter
   hdl_gpio int
 */
-hdl_module_new_t(hdl_xl9535_port_t, HDL_XL9535_PORT_VAR_SIZE, hdl_xl9535_port_config_t, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_xl9535_port_t, HDL_XL9535_PORT_VAR_SIZE, hdl_xl9535_port_config_t*, hdl_module_base_iface_t);
 
 extern const hdl_module_base_iface_t hdl_xl9535_port_iface;
 
@@ -40,7 +40,7 @@ typedef struct {
 /* depends on
   hdl_xl9535_port_t
 */
-hdl_module_new_t(hdl_xl9535_pin_t, 0, hdl_xl9535_pin_config_t, hdl_gpio_pin_iface_t);
+hdl_module_new_t(hdl_xl9535_pin_t, 0, hdl_xl9535_pin_config_t*, hdl_gpio_pin_iface_t);
 
 extern const hdl_gpio_pin_iface_t hdl_xl9535_pin_iface;
 

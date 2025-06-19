@@ -14,7 +14,7 @@ typedef struct {
   hdl_pwm_get_set_t set;
 } hdl_pwm_iface_t;
 
-hdl_module_new_t(hdl_pwm_t, 0, void, hdl_pwm_iface_t);
+hdl_module_new_t(hdl_pwm_t, 0, void*, hdl_pwm_iface_t);
 
 __STATIC_INLINE uint8_t hdl_pwm_set(const void *desc, uint32_t *threshold) {
   MODULE_ASSERT(desc, HDL_FALSE);

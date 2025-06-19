@@ -60,10 +60,8 @@ static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
   }
 }
 
-static inline void _spi_delay(hdl_tick_counter_t *ticks, uint32_t delay) {
-  if(!delay) return;
-  uint32_t ts = hdl_tick_counter_get_tick(ticks);
-  while ((hdl_tick_counter_get_tick(ticks) - ts) < delay);
+static inline void _spi_delay(uint32_t delay) {
+  while (delay--);
 }
 
 static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
@@ -84,7 +82,7 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         if(msg->options & HDL_SPI_MESSAGE_CH_SELECT) {
           hdl_gpio_set_active(pin_cs);
           msg->status |= HDL_SPI_MESSAGE_STATUS_BUS_HOLD;
-          _spi_delay((hdl_tick_counter_t *)ch->dependencies[2], ch->config->cs_min_delay);
+          _spi_delay(ch->config->cs_min_delay);
         }
         uint32_t msg_len = msg->rx_skip + msg->rx_take;
         msg_len = CL_MAX(msg->tx_len, msg_len);

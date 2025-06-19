@@ -18,7 +18,7 @@ typedef struct {
   const uint32_t func_alternate; /* see sys_reg.h:1035 */
 } hdl_gpio_pin_hw_config_t;
 
-hdl_module_new_t(hdl_gpio_port_mcu_t, 0, hdl_gpio_port_config_t, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_gpio_port_mcu_t, 0, hdl_gpio_port_config_t*, hdl_module_base_iface_t);
 
 extern const hdl_module_base_iface_t hdl_gpio_port_iface;
 extern const hdl_gpio_pin_iface_t hdl_gpio_pin_iface;

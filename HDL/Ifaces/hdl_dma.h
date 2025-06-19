@@ -12,8 +12,8 @@ typedef struct {
   hdl_dma_get_counter_t get_counter;
 } hdl_dma_channel_iface_t;
 
-hdl_module_new_t(hdl_dma_t, 0, void, hdl_module_base_iface_t);
-hdl_module_new_t(hdl_dma_channel_t, 0, void, hdl_dma_channel_iface_t);
+hdl_module_new_t(hdl_dma_t, 0, void*, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_dma_channel_t, 0, void*, hdl_dma_channel_iface_t);
 
 __STATIC_INLINE uint8_t hdl_dma_channel_run(void const *desc, void *from_addr, void *to_addr, uint32_t amount) {
   MODULE_ASSERT(desc, HDL_FALSE);

@@ -13,5 +13,6 @@
 #include "port_adc.h"
 #include "port_uart.h"
 #include "port_spi.h"
+#include "port_can.h"
 
 #endif // HDL_PORTABLE_H_

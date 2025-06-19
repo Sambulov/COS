@@ -44,7 +44,7 @@ typedef struct {
   uint32_t phy;
 } hdl_clock_config_t;
 
-hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_VAR_SIZE, hdl_clock_config_t, hdl_clock_iface_t);
+hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_VAR_SIZE, hdl_clock_config_t*, hdl_clock_iface_t);
 
 extern const hdl_clock_iface_t hdl_clock_iface;
 
@@ -57,7 +57,7 @@ extern const hdl_clock_iface_t hdl_clock_iface;
     hdl_clock i2s_pll_n
     hdl_clock i2s_pll_r
 */
-hdl_module_new_t(hdl_clock_mcu_pll_t, 0, void, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_clock_mcu_pll_t, 0, void*, hdl_module_base_iface_t);
 
 extern const hdl_module_base_iface_t hdl_clock_mcu_pll_iface;
 

@@ -41,9 +41,8 @@ typedef struct {
   gpio mosi
   gpio miso
   gpio sck
-  hdl_tick_counter
  */
-hdl_module_new_t(hdl_spi_client_sw_t, HDL_SPI_CLIENT_SW_VAR_SIZE, hdl_spi_client_sw_config_t, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_spi_client_sw_t, HDL_SPI_CLIENT_SW_VAR_SIZE, hdl_spi_client_sw_config_t*, hdl_module_base_iface_t);
 
 extern const hdl_module_base_iface_t hdl_spi_client_sw_iface;
 
@@ -54,9 +53,8 @@ typedef struct {
 /* hdl_spi_client_ch_t depends on:
   hdl_spi_client_t
   gpio cs
-  hdl_tick_counter
  */
-hdl_module_new_t(hdl_spi_client_ch_sw_t, HDL_SPI_CLIENT_CH_SW_VAR_SIZE, hdl_spi_client_ch_sw_config_t, hdl_spi_client_ch_iface_t);
+hdl_module_new_t(hdl_spi_client_ch_sw_t, HDL_SPI_CLIENT_CH_SW_VAR_SIZE, hdl_spi_client_ch_sw_config_t*, hdl_spi_client_ch_iface_t);
 
 extern const hdl_spi_client_ch_iface_t hdl_spi_client_ch_sw_iface;
 

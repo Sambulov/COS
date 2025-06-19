@@ -48,7 +48,7 @@ typedef struct{
   hdl_nvm_transfer_t transfer;
 } hdl_nvm_iface_t;
 
-hdl_module_new_t(hdl_nvm_t, 0, void, hdl_nvm_iface_t);
+hdl_module_new_t(hdl_nvm_t, 0, void*, hdl_nvm_iface_t);
 
 __STATIC_INLINE uint8_t hdl_nvm_transfer(const void *desc, hdl_nvm_message_t *message) {
   MODULE_ASSERT(desc, HDL_FALSE);

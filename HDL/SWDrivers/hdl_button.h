@@ -40,7 +40,7 @@ typedef struct {
   gpio
   time_counter
  */
-hdl_module_new_t(hdl_button_t, HDL_BUTTON_VAR_SIZE, hdl_button_config_t, hdl_button_iface_t);
+hdl_module_new_t(hdl_button_t, HDL_BUTTON_VAR_SIZE, hdl_button_config_t*, hdl_button_iface_t);
 
 extern const hdl_button_iface_t hdl_button_iface;
 

@@ -29,7 +29,7 @@ typedef struct {
 /* depends on:
   time_counter
  */
-hdl_module_new_t(hdl_timer_t, HDL_TIMER_VAR_SIZE, hdl_timer_config_t, hdl_timer_iface_t);
+hdl_module_new_t(hdl_timer_t, HDL_TIMER_VAR_SIZE, hdl_timer_config_t*, hdl_timer_iface_t);
 
 extern const hdl_timer_iface_t hdl_timer_iface;
 

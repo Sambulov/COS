@@ -160,7 +160,7 @@ typedef struct
 #define ADC_DUALMODE_INTERL                   ((uint32_t)(ADC_CCR_MULTI_2 | ADC_CCR_MULTI_1 | ADC_CCR_MULTI_0))
 #define ADC_DUALMODE_ALTERTRIG                ((uint32_t)(ADC_CCR_MULTI_3 | ADC_CCR_MULTI_0))
 #define ADC_TRIPLEMODE_REGSIMULT_INJECSIMULT  ((uint32_t)(ADC_CCR_MULTI_4 | ADC_CCR_MULTI_0))
-#define ADC_TRIPLEMODE_REGSIMULT_AlterTrig    ((uint32_t)(ADC_CCR_MULTI_4 | ADC_CCR_MULTI_1))
+#define ADC_TRIPLEMODE_REGSIMULT_ALTERTRIG    ((uint32_t)(ADC_CCR_MULTI_4 | ADC_CCR_MULTI_1))
 #define ADC_TRIPLEMODE_INJECSIMULT            ((uint32_t)(ADC_CCR_MULTI_4 | ADC_CCR_MULTI_2 | ADC_CCR_MULTI_0))
 #define ADC_TRIPLEMODE_REGSIMULT              ((uint32_t)(ADC_CCR_MULTI_4 | ADC_CCR_MULTI_2 | ADC_CCR_MULTI_1))
 #define ADC_TRIPLEMODE_INTERL                 ((uint32_t)(ADC_CCR_MULTI_4 | ADC_CCR_MULTI_2 | ADC_CCR_MULTI_1 | ADC_CCR_MULTI_0))
@@ -340,7 +340,7 @@ HAL_StatusTypeDef HAL_ADCEx_MultiModeConfigChannel(ADC_HandleTypeDef* hadc, ADC_
                            ((MODE) == ADC_DUALMODE_INTERL)                  || \
                            ((MODE) == ADC_DUALMODE_ALTERTRIG)               || \
                            ((MODE) == ADC_TRIPLEMODE_REGSIMULT_INJECSIMULT) || \
-                           ((MODE) == ADC_TRIPLEMODE_REGSIMULT_AlterTrig)   || \
+                           ((MODE) == ADC_TRIPLEMODE_REGSIMULT_ALTERTRIG)   || \
                            ((MODE) == ADC_TRIPLEMODE_INJECSIMULT)           || \
                            ((MODE) == ADC_TRIPLEMODE_REGSIMULT)             || \
                            ((MODE) == ADC_TRIPLEMODE_INTERL)                || \

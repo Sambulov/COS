@@ -33,7 +33,7 @@ typedef struct {
   const uint32_t ospeed;    // HDL_GPIO_SPEED_LOW, HDL_GPIO_SPEED_MEDIUM, HDL_GPIO_SPEED_HIGH, HDL_GPIO_SPEED_VERY_HIGH
 } hdl_gpio_pin_hw_config_t;
 
-hdl_module_new_t(hdl_gpio_port_mcu_t, 0, hdl_gpio_port_config_t, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_gpio_port_mcu_t, 0, hdl_gpio_port_config_t*, hdl_module_base_iface_t);
 
 extern const hdl_module_base_iface_t hdl_gpio_port_iface;
 extern const hdl_gpio_pin_iface_t hdl_gpio_pin_iface;

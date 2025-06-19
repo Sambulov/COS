@@ -63,7 +63,7 @@ typedef struct{
   hdl_interrupt_controller_t
 */
 
-hdl_module_new_t(hdl_adc_mcu_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t, hdl_adc_iface_t);
+hdl_module_new_t(hdl_adc_mcu_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t*, hdl_adc_iface_t);
 
 extern const hdl_adc_iface_t hdl_adc_iface;
 

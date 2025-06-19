@@ -12,7 +12,7 @@ typedef struct {
 /* depends on:
    hdl_clock_t
  */
-hdl_module_new_t(hdl_systick_counter_t, 0, hdl_systick_counter_config_t, hdl_tick_counter_iface_t);
+hdl_module_new_t(hdl_systick_counter_t, 0, hdl_systick_counter_config_t*, hdl_tick_counter_iface_t);
 
 extern const hdl_tick_counter_iface_t hdl_systick_counter_iface;
 

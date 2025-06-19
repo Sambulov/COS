@@ -67,14 +67,16 @@ typedef struct {
 /* Depends on 
   ahb clock 
 */
-hdl_module_new_t(hdl_dma_mcu_t, 0, hdl_dma_config_t, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_dma_mcu_t, 0, hdl_dma_config_t*, hdl_module_base_iface_t);
 
 /* Depends on 
   dma module 
 */
-hdl_module_new_t(hdl_dma_channel_mcu_t, 0, hdl_dma_channel_config_t, hdl_dma_channel_iface_t);
+hdl_module_new_t(hdl_dma_channel_mcu_t, 0, hdl_dma_channel_config_t*, hdl_dma_channel_iface_t);
 
 extern const hdl_module_base_iface_t hdl_dma_iface;
 extern const hdl_dma_channel_iface_t hdl_dma_channel_iface;
+
+uint8_t port_dma_ch_transfer_complete(const void *desc);
 
 #endif /* PORT_DMA_H_ */

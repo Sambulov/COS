@@ -15,7 +15,7 @@ typedef struct {
   hdl_time_counter
   hdl_gpio  (WP optionally)
 */
-hdl_module_new_t(hdl_eeprom_i2c_t, HDL_EEPROM_I2C_VAR_SIZE, hdl_eeprom_i2c_config_t, hdl_nvm_iface_t);
+hdl_module_new_t(hdl_eeprom_i2c_t, HDL_EEPROM_I2C_VAR_SIZE, hdl_eeprom_i2c_config_t*, hdl_nvm_iface_t);
 
 extern const hdl_nvm_iface_t hdl_eeprom_iface;
 

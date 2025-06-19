@@ -41,8 +41,9 @@ static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enab
     if(IS_TIM_ADVANCED_INSTANCE(TIMx)) TIMx->RCR = config->repetition_counter; /* Set the Repetition Counter value */
     /* Generate an update event to reload the Prescaler and the repetition counter(only for TIM1 and TIM8) value immediately */
     TIMx->EGR = TIM_EGR_UG;
+    TIMx->CR2 = config->trgo_mode;
     TIMx->CR1 |= TIM_CR1_CEN;
-    return HDL_MODULE_ACTIVE; 
+    return HDL_MODULE_ACTIVE;
   }
   if(IS_TIM_APB1(TIMx)) {
     RCC->AHB1RSTR &= ~config->rcc;

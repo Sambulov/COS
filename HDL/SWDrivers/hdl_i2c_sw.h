@@ -14,7 +14,7 @@ typedef struct {
   gpio sda
   tick_counter
 */
-hdl_module_new_t(hdl_i2c_sw_t, HDL_I2C_SW_VAR_SIZE, hdl_i2c_config_t, hdl_i2c_iface_t);
+hdl_module_new_t(hdl_i2c_sw_t, HDL_I2C_SW_VAR_SIZE, hdl_i2c_config_t*, hdl_i2c_iface_t);
 
 extern const hdl_i2c_iface_t hdl_i2c_sw_iface;
 

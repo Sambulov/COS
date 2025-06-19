@@ -60,7 +60,7 @@ typedef struct {
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
   interrupt controller (nvic)
  */
-hdl_module_new_t(hdl_spi_client_mcu_t, HDL_SPI_CLIENT_VAR_SIZE, hdl_spi_client_config_t, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_spi_client_mcu_t, HDL_SPI_CLIENT_VAR_SIZE, hdl_spi_client_config_t*, hdl_module_base_iface_t);
 
 extern const hdl_module_base_iface_t hdl_spi_client_iface;
 
@@ -71,9 +71,8 @@ typedef struct {
 /* hdl_spi_client_ch_t depends on:
   hdl_spi_client_t
   gpio cs
-  hdl_tick_counter
  */
-hdl_module_new_t(hdl_spi_client_ch_mcu_t, HDL_SPI_CLIENT_CH_VAR_SIZE, hdl_spi_client_ch_config_t, hdl_spi_client_ch_iface_t);
+hdl_module_new_t(hdl_spi_client_ch_mcu_t, HDL_SPI_CLIENT_CH_VAR_SIZE, hdl_spi_client_ch_config_t*, hdl_spi_client_ch_iface_t);
 
 extern const hdl_spi_client_ch_iface_t hdl_spi_client_ch_iface;
 

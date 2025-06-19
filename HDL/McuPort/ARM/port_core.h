@@ -28,8 +28,8 @@ extern const void *_eflash;
 
 void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
 
-hdl_module_new_t(hdl_core_arm_t, 0, hdl_core_config_t, hdl_module_base_iface_t);
-hdl_module_new_t(hdl_nvic_t, 0, hdl_nvic_config_t, hdl_interrupt_controller_iface_t);
+hdl_module_new_t(hdl_core_arm_t, 0, hdl_core_config_t*, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_nvic_t, 0, hdl_nvic_config_t*, hdl_interrupt_controller_iface_t);
 
 extern const hdl_module_base_iface_t hdl_core_arm_iface;
 extern const hdl_interrupt_controller_iface_t hdl_nvic_iface;

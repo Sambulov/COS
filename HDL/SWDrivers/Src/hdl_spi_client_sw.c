@@ -15,20 +15,17 @@ typedef struct {
 HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_sw_var_t, *((hdl_spi_client_sw_t *)0)->obj_var, HDL_SPI_CLIENT_SW_VAR_SIZE, "hdl_spi_client_sw.h");
 HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_sw_var_t, *((hdl_spi_client_ch_sw_t *)0)->obj_var, HDL_SPI_CLIENT_CH_SW_VAR_SIZE, "hdl_spi_client_sw.h");
 
-static inline void _spi_sw_delay(hdl_tick_counter_t *ticks, uint32_t delay) {
-  if(!delay) return;
-  uint32_t ts = hdl_tick_counter_get_tick(ticks);
-  while ((hdl_tick_counter_get_tick(ticks) - ts) < delay);
+static inline void _spi_sw_delay(uint32_t delay) {
+  while (delay--);
 }
 
 static uint8_t _spi_transfer_byte(hdl_spi_client_sw_t *spi, uint8_t byte) {
     hdl_gpio_pin_t *mosi = (hdl_gpio_pin_t *)spi->dependencies[0];
     hdl_gpio_pin_t *miso = (hdl_gpio_pin_t *)spi->dependencies[1];
     hdl_gpio_pin_t *sck = (hdl_gpio_pin_t *)spi->dependencies[2];
-    hdl_tick_counter_t *ticks = (hdl_tick_counter_t *)spi->dependencies[3];
     if(spi->config->polarity & HDL_SPI_SW_EDGE2) {
       hdl_gpio_toggle(sck);
-      _spi_sw_delay(ticks, spi->config->signal_min_delay);
+      _spi_sw_delay(spi->config->signal_min_delay);
     }
     uint8_t bit = 1;
     if(spi->config->endian == HDL_SPI_SW_BIG_ENDIAN) bit_reflect(byte, 8);
@@ -36,11 +33,11 @@ static uint8_t _spi_transfer_byte(hdl_spi_client_sw_t *spi, uint8_t byte) {
       if(byte & bit) hdl_gpio_set_active(mosi);
       else hdl_gpio_set_inactive(mosi);
       hdl_gpio_toggle(sck);
-      _spi_sw_delay(ticks, spi->config->signal_min_delay);
+      _spi_sw_delay(spi->config->signal_min_delay);
       if(hdl_gpio_is_active(miso)) byte |= bit;
       else byte &= ~bit;
       hdl_gpio_toggle(sck);
-      _spi_sw_delay(ticks, spi->config->signal_min_delay);
+      _spi_sw_delay(spi->config->signal_min_delay);
       bit <<= 1;
     }
     if(spi->config->endian == HDL_SPI_SW_BIG_ENDIAN) bit_reflect(byte, 8);
@@ -58,13 +55,12 @@ static uint8_t _spi_ch_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   }
   if (spi_var->curent_spi_ch == spi_ch) {
     hdl_gpio_pin_t *pin_cs = (hdl_gpio_pin_t *)spi_ch->dependencies[1];
-    hdl_tick_counter_t *ticks = (hdl_tick_counter_t *)spi_ch->dependencies[2];
     hdl_spi_message_t *msg = spi_ch_var->curent_msg;
     if((msg != NULL) && hdl_take(spi, spi_ch)) {
       if (msg->status == HDL_SPI_MESSAGE_STATUS_INITIAL) {
         if(msg->options & HDL_SPI_MESSAGE_CH_SELECT) {
           hdl_gpio_set_active(pin_cs);
-          _spi_sw_delay(ticks, spi_ch->config->cs_min_delay);
+          _spi_sw_delay(spi_ch->config->cs_min_delay);
           msg->status |= HDL_SPI_MESSAGE_STATUS_BUS_HOLD;
         }
         spi_var->msg_len = msg->rx_skip + msg->rx_take;

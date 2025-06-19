@@ -20,8 +20,9 @@ typedef struct {
 typedef struct {
   const hdl_module_base_iface_t *iface;
   const void * const *dependencies;
-  void *config;
   size_t (*mod_var)[((HDL_MODULE_VAR_SIZE + (sizeof(size_t) - 1)) >> 2)];
+  void *obj_var;
+  void *config;
 } hdl_module_base_t;
 
 #define hdl_module_dependencies(...) ((const void * const []){__VA_ARGS__, NULL})
@@ -32,9 +33,9 @@ typedef struct {
   typedef struct { \
     const iface_t *iface; \
     const void * const *dependencies; \
-    const config_t *config; \
     size_t (*mod_var)[((HDL_MODULE_VAR_SIZE + (sizeof(size_t) - 1)) >> 2)];\
     size_t (*obj_var)[((var_size + (sizeof(size_t) - 1)) >> 2)];\
+    const config_t config; \
   } name;
 
 #define MODULE_ASSERT(desc, err_res)        if(!(desc) || hdl_is_null_module(desc) || (hdl_state(desc) == HDL_MODULE_FAULT)) return err_res;

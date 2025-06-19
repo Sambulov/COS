@@ -3,8 +3,6 @@
 
 #define HDL_ADC_MS5194T_VAR_SIZE        64
 
-#define HDL_ADC_MS5194T_INVALID_VALUE   0xFFFFFFFF
-
 /* Write Enable Bit. A 0 must be written to this bit so that the write to the communications register actually occurs. If
    a 1 is the first bit written, the part does not clock on to subsequent bits in the register. It stays at this bit location
    until a 0 is written to this bit. Once a 0 is written to the WEN bit, the next seven bits are loaded to the
@@ -353,8 +351,16 @@ typedef struct {
     rdy_pin
     time_counter
  */
-hdl_module_new_t(hdl_adc_ms5194t_t, HDL_ADC_MS5194T_VAR_SIZE, hdl_adc_ms5194t_config_t, hdl_adc_iface_t);
+hdl_module_new_t(hdl_adc_ms5194t_t, HDL_ADC_MS5194T_VAR_SIZE, hdl_adc_ms5194t_config_t*, hdl_module_base_iface_t);
 
-extern const hdl_adc_iface_t hdl_adc_ms5194t_iface;
+extern const hdl_module_base_iface_t hdl_adc_ms5194t_iface;
+
+/*
+    depends on 
+    hdl_adc_ms5194t_t
+ */
+hdl_module_new_t(hdl_adc_ch_ms5194t_t, 0, uint32_t, hdl_adc_ch_iface_t);
+
+extern const hdl_adc_ch_iface_t hdl_adc_ch_ms5194t_iface;
 
 #endif /* MS5194T_H_ */

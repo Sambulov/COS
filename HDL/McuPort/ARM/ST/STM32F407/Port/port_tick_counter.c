@@ -20,16 +20,16 @@ static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enab
   hdl_timertick_counter_t *counter = (hdl_timertick_counter_t *)desc;
   TIM_TypeDef *TIMx = (TIM_TypeDef *)counter->config->phy;
   const hdl_timertick_counter_config_t *config = counter->config;
-  if(IS_TIM_APB1(TIMx)) RCC->AHB1RSTR |= config->rcc;
-  else RCC->AHB2RSTR |= config->rcc;
+  if(IS_TIM_APB1(TIMx)) RCC->APB1RSTR |= config->rcc;
+  else RCC->APB2RSTR |= config->rcc;
   if(enable) {
     if(!IS_TIM_INSTANCE(TIMx)) return HDL_MODULE_FAULT;
     if(IS_TIM_APB1(TIMx)) {
-      RCC->AHB1RSTR &= ~config->rcc;
+      RCC->APB1RSTR &= ~config->rcc;
       RCC->APB1ENR |= config->rcc;
     }
     else {
-      RCC->AHB2RSTR &= ~config->rcc;
+      RCC->APB2RSTR &= ~config->rcc;
       RCC->APB2ENR |= config->rcc;
     }
     uint32_t tmpcr1 = 0U;

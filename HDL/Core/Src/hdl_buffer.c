@@ -62,13 +62,13 @@ void hdl_isr_buffer_eot(void *proto) {
 hdl_transceiver_t *hdl_get_isr_transceiver_handler(hdl_isr_buffer_t *desc, hdl_isr_buffer_config_t *cnf) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)desc;
   if(buf != NULL) {
-    vScbInit(&buf->private.rx_buf, NULL, 0);
-    vScbInit(&buf->private.tx_buf, NULL, 0);
+    scb_init(&buf->private.rx_buf, NULL, 0);
+    scb_init(&buf->private.tx_buf, NULL, 0);
     if((cnf->rx_buffer != NULL) && (cnf->rx_buffer_size != 0)) {
-      vScbInit(&buf->private.rx_buf, cnf->rx_buffer, cnf->rx_buffer_size);
+      scb_init(&buf->private.rx_buf, cnf->rx_buffer, cnf->rx_buffer_size);
     }
     if((cnf->tx_buffer != NULL) && (cnf->tx_buffer_size != 0)) {
-      vScbInit(&buf->private.tx_buf, cnf->tx_buffer, cnf->tx_buffer_size);
+      scb_init(&buf->private.tx_buf, cnf->tx_buffer, cnf->tx_buffer_size);
     }
     buf->private.transceiver.end_of_transmission = &hdl_isr_buffer_eot;
     buf->private.transceiver.rx_available = &hdl_isr_buffer_rx_av;

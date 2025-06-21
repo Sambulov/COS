@@ -171,5 +171,5 @@ static uint8_t _hdl_uart_set_transceiver(const void *desc, const hdl_transceiver
 const hdl_uart_iface_t hdl_uart_iface = {
   .init = &_hdl_uart,
   .transceiver_set = &_hdl_uart_set_transceiver,
-  .set = &_hdl_uart_set
+  .setup = &_hdl_uart_set
 };

@@ -20,12 +20,12 @@ typedef enum {
   HDL_UART_STOP_BITS1_5    = 3
 } hdl_uart_stop_bits_t;
 
-typedef uint8_t (*hdl_uart_set_t)(const void *, hdl_uart_word_t, uint32_t, hdl_uart_parity_t, hdl_uart_stop_bits_t);
+typedef uint8_t (*hdl_uart_setup_t)(const void *, hdl_uart_word_t, uint32_t, hdl_uart_parity_t, hdl_uart_stop_bits_t);
 
 typedef struct {
   hdl_module_initializer_t init;
   hdl_set_transceiver_t transceiver_set;
-  hdl_uart_set_t set;
+  hdl_uart_setup_t setup;
 } hdl_uart_iface_t;
 
 hdl_module_new_t(hdl_uart_t, 0, void*, hdl_uart_iface_t);
@@ -35,9 +35,9 @@ __STATIC_INLINE uint8_t hdl_uart_set_transceiver(const void *desc, const hdl_tra
   return ((hdl_uart_t *)desc)->iface->transceiver_set(desc, transceiver, channel_id);
 }
 
-__STATIC_INLINE uint8_t hdl_uart_set(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl_uart_parity_t parity, hdl_uart_stop_bits_t stop) {
+__STATIC_INLINE uint8_t hdl_uart_setup(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl_uart_parity_t parity, hdl_uart_stop_bits_t stop) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return ((hdl_uart_t *)desc)->iface->set(desc, bits, boud, parity, stop);
+  return ((hdl_uart_t *)desc)->iface->setup(desc, bits, boud, parity, stop);
 }
 
 #endif /* HDL_UART_H_ */

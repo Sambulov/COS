@@ -107,9 +107,13 @@ static void _hdl_74hc595_write_io(const void *desc, const hdl_gpio_state state, 
   if(pin_no > port->config->shift_reg_length) return;
   uint8_t mask = (1 << (pin_no & 0x07));
   uint8_t *reg = &set_regs(port)[pin_to_reg_index(pin_no)];
-  if(toggle) *reg ^= mask;
-  else CL_REG_MODIFY(*reg, mask, ((state == HDL_GPIO_HIGH)? mask: 0));
-  CL_REG_SET(port_var->state, _74HC595_STATE_SYNC);
+  uint8_t rstate = *reg;
+  if(toggle) rstate ^= mask;
+  else CL_REG_MODIFY(rstate, mask, ((state == HDL_GPIO_HIGH)? mask: 0));
+  if(rstate != *reg) {
+    *reg = rstate;
+    CL_REG_SET(port_var->state, _74HC595_STATE_SYNC);
+  }
 }
 
 static void _hdl_74hc595_write(const void *desc, const hdl_gpio_state state) {

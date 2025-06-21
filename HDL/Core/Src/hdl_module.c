@@ -9,6 +9,8 @@ typedef struct {
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_module_var_t, *((hdl_module_base_t *)0)->mod_var, HDL_MODULE_VAR_SIZE, hdl_module.h);
 
+static uint8_t hdl_enabled = HDL_FALSE;
+
 static linked_list_t _mod_load = NULL;
 static linked_list_t _mod_active = NULL;
 static linked_list_t _mod_unload = NULL;
@@ -42,6 +44,7 @@ static uint8_t _hdl_module_work(coroutine_t *this, uint8_t cancel, void *arg) {
         break;
     }
   }
+  hdl_enabled = !cancel;
   return cancel;
 }
 
@@ -68,6 +71,10 @@ static void _hdl_hw_enable_parents(hdl_module_base_t *desc) {
 
 void hdl_enable(const void *desc) {
   static coroutine_t hdl_module_worker;
+  if(!hdl_enabled) { 
+    coroutine_add(&hdl_module_worker, &_hdl_module_work, NULL);
+    hdl_enabled = HDL_TRUE;
+  }
   hdl_module_var_t *module_var = (hdl_module_var_t *)((hdl_module_base_t *)desc)->mod_var;
   hdl_module_state_t res = hdl_state(desc);
   if(res < HDL_MODULE_ACTIVE) {
@@ -76,7 +83,6 @@ void hdl_enable(const void *desc) {
     _hdl_hw_enable_parents(mod);
     module_var->dependents = 1;
     linked_list_insert_last(&_mod_load, linked_list_item(module_var));
-    coroutine_add(&hdl_module_worker, &_hdl_module_work, NULL);
   }
   else
     module_var->dependents++; /* check overlap */

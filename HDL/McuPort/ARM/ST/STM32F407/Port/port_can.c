@@ -12,18 +12,16 @@ typedef struct {
 HDL_ASSERRT_STRUCTURE_CAST(hdl_can_var_t, *((hdl_can_mcu_t *)0)->obj_var, HDL_CAN_VAR_SIZE, port_can.h);
 
 static uint8_t _can_worker(coroutine_t *this, uint8_t cancel, void *arg) {
-  (void)this;
-  hdl_can_mcu_t *can = (hdl_can_mcu_t *) arg;
-  hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;
-
+  (void)this; (void)arg;
+  //hdl_can_mcu_t *can = (hdl_can_mcu_t *) arg;
+  //hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;
   return cancel;
 }
 
 static void event_can_isr(uint32_t event, void *sender, void *context) {
-  (void)event; (void)sender;
-  hdl_can_mcu_t *can = (hdl_can_mcu_t *)context;
-  hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;
-
+  (void)event; (void)sender; (void)context;
+  //hdl_can_mcu_t *can = (hdl_can_mcu_t *)context;
+  //hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;
 }
 
 static hdl_module_state_t _hdl_can(const void *desc, uint8_t enable) {
@@ -31,7 +29,7 @@ static hdl_module_state_t _hdl_can(const void *desc, uint8_t enable) {
   hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;
   //hdl_time_counter_t *timer = (hdl_time_counter_t *)can->dependencies[4];
 
-  CAN_TypeDef *periph = (CAN_TypeDef *)can->config->phy;
+  //CAN_TypeDef *periph = (CAN_TypeDef *)can->config->phy;
   volatile uint32_t *rcc_en = &RCC->APB1ENR;
   volatile uint32_t *rcc_rst = &RCC->APB1RSTR;
   
@@ -48,11 +46,11 @@ static hdl_module_state_t _hdl_can(const void *desc, uint8_t enable) {
     CL_REG_SET(*rcc_en, can->config->rcu);
 
     coroutine_add(&can_var->worker, &_can_worker, can);
-    hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)can->dependencies[3];
+    //hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)can->dependencies[3];
     can_var->can_isr.context = can;
     can_var->can_isr.handler = &event_can_isr;
-    hdl_event_subscribe(&can->config->interrupt->event, &can_var->can_isr);
-    hdl_interrupt_request(ic, can->config->interrupt);
+    //hdl_event_subscribe(&can->config->interrupt->event, &can_var->can_isr);
+    //hdl_interrupt_request(ic, can->config->interrupt);
     return HDL_MODULE_ACTIVE;
   }
   coroutine_cancel(&can_var->worker);
@@ -61,10 +59,9 @@ static hdl_module_state_t _hdl_can(const void *desc, uint8_t enable) {
 }
 
 static uint8_t _hdl_can_transfer(const void *desc, hdl_can_message_t *message) {
-  (void)channel_id;
-  hdl_can_mcu_t *can = (hdl_can_mcu_t *) desc;
-  hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;  
-  can_var->transceiver = transceiver;
+  (void)desc; (void)message;
+  //hdl_can_mcu_t *can = (hdl_can_mcu_t *) desc;
+  //hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;  
   return HDL_TRUE;
 }
 

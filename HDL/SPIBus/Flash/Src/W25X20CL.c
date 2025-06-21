@@ -36,16 +36,14 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       if(flash_var->nvm_msg == NULL) break;
       hdl_nvm_message_t *nvm_msg = flash_var->nvm_msg;
       flash_var->op = nvm_msg->options;
-      uint8_t rw_op_check = (!flash_var->op) ||
+      uint8_t rw_op_bad = (!flash_var->op) ||
       ((flash_var->op & HDL_NVM_OPTION_READ) && ((nvm_msg->rx_buffer == NULL) || (nvm_msg->size == 0))) ||
       ((flash_var->op & HDL_NVM_OPTION_WRITE) && ((nvm_msg->tx_data == NULL) || (nvm_msg->size == 0))) ||
-      ((flash_var->op & HDL_NVM_OPTION_VALIDATE) && ((nvm_msg->rx_buffer == NULL) || (nvm_msg->tx_data == NULL) || (nvm_msg->size == 0)));
+      ((flash_var->op & HDL_NVM_OPTION_VALIDATE) && ((nvm_msg->rx_buffer == NULL) || (nvm_msg->tx_data == NULL) || (nvm_msg->size == 0))) ||
+      ((flash_var->op & HDL_NVM_OPTION_ERASE) && ((nvm_msg->size == 0) || (nvm_msg->address % flash->config->sector_size) || (nvm_msg->size % flash->config->sector_size)));
       hdl_nvm_message_status_t err = 0;
-      if(rw_op_check) err = HDL_NVM_ERROR_BAD_ARG;
+      if(rw_op_bad) err = HDL_NVM_ERROR_BAD_ARG;
       if((nvm_msg->address + nvm_msg->size) > flash->config->size) err = HDL_NVM_ERROR_OUT_OF_RANGE;
-      if ((flash_var->op & HDL_NVM_OPTION_ERASE) && 
-        ((nvm_msg->size == 0) || (nvm_msg->address % flash->config->sector_size) || (nvm_msg->size % flash->config->sector_size)))
-        err = HDL_NVM_ERROR_BAD_ARG;
       if(err) {
         nvm_msg->out_status |= err;
         flash_var->state = NVM_STATE_COMPLETE;

@@ -26,4 +26,13 @@ __STATIC_INLINE uint8_t hdl_pwm_get(const void *desc, uint32_t *threshold) {
   return ((hdl_pwm_iface_t *)((hdl_module_base_t *)desc)->iface)->get(desc, threshold);
 }
 
+__STATIC_INLINE hdl_tick_counter_t *hdl_pwm_tickcounter(const void *desc) {
+  MODULE_ASSERT(desc, NULL);
+  return ((hdl_pwm_iface_t *)((hdl_module_base_t *)desc)->iface)->get_tickcounter(desc);
+}
+
+__STATIC_INLINE uint32_t hdl_pwm_period(const void *desc) {
+  return hdl_tick_counter_get_period(hdl_pwm_tickcounter(desc));
+}
+
 #endif /* HDL_PWM_H_ */

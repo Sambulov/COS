@@ -119,7 +119,7 @@ static uint8_t _can_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     can_var->reset         = 0;
   }
   if(can_var->init_complete) {
-    if(can_receive(periph, &can_var->msg_buf)) hdl_event_raise(&can_var->event, can, (uint32_t)&can_var->msg_buf);
+    if(can_receive(periph, &can_var->msg_buf)) hdl_event_raise(&can_var->event, can, &can_var->msg_buf);
     //if(can_error(periph))  hdl_event_raise(&can_var->event, can, HDL_CAN_EVENT_ERR);
     can_transmit(periph, can_var);
   }
@@ -272,13 +272,13 @@ static hdl_module_state_t _hdl_can(const void *desc, uint8_t enable) {
 }
 
 static uint8_t _hdl_can_transmit(const void *desc, hdl_can_message_t *message) {
-  (void)desc; (void)message;
   hdl_can_mcu_t *can = (hdl_can_mcu_t *) desc;
   hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;
+  CAN_TypeDef *periph = (CAN_TypeDef *)can->config->phy;
   if(!can_var->init_complete || can_var->reset) return HDL_FALSE;
   hdl_can_message_t **slot = NULL;
   for(uint32_t i = 0; i < 3; i++) {
-    if(!slot && (can_var->msg[i] == NULL)) slot = &can_var->msg[i];
+    if(!slot && (periph->TSR & (CAN_TSR_TME0 << i)) && (can_var->msg[i] == NULL)) slot = &can_var->msg[i];
     if(can_var->msg[i] == message) return HDL_FALSE;
   }
   if(slot) {
@@ -290,8 +290,17 @@ static uint8_t _hdl_can_transmit(const void *desc, hdl_can_message_t *message) {
 }
 
 static uint8_t _hdl_can_cancel(const void *desc, hdl_can_message_t *message) {
-  (void)desc; (void)message;
-  // todo
+  hdl_can_mcu_t *can = (hdl_can_mcu_t *) desc;
+  hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;
+  CAN_TypeDef *periph = (CAN_TypeDef *)can->config->phy;
+  for(uint32_t i = 0; i < 3; i++) {
+    if(can_var->msg[i] == message) {
+      can_var->msg[i]->status = HDL_CAN_MESSAGE_FAULT_ABORT | HDL_CAN_MESSAGE_STATUS_COMPLETE;
+      periph->TSR |= (CAN_TSR_ABRQ0 << (8 * i));
+      can_var->msg[i] = NULL;
+      return HDL_TRUE;
+    }
+  }
   return HDL_FALSE;
 }
 

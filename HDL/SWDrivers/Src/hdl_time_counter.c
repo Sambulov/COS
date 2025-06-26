@@ -7,7 +7,7 @@ typedef struct {
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_time_counter_var_t, *((hdl_time_counter_t *)0)->obj_var, HDL_TIME_COUNTER_VAR_SIZE, hdl_time_counter.h);
 
-static void event_timer_isr(uint32_t event, void *sender, void *context) {
+static void event_timer_isr(void *event, void *sender, void *context) {
   (void)event; (void)sender;
   ((hdl_time_counter_var_t *)context)->count++;
 }

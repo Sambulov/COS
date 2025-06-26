@@ -16,7 +16,7 @@ typedef struct {
 HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_var_t, *((hdl_spi_client_mcu_t *)0)->obj_var, HDL_SPI_CLIENT_VAR_SIZE, port_spi.h);
 HDL_ASSERRT_STRUCTURE_CAST(hdl_spi_client_ch_var_t, *((hdl_spi_client_ch_mcu_t *)0)->obj_var, HDL_SPI_CLIENT_CH_VAR_SIZE, port_spi.h);
 
-static void event_spi_isr_client(uint32_t event, void *sender, void *context) {
+static void event_spi_isr_client(void *event, void *sender, void *context) {
   (void)event; (void)sender;
   hdl_spi_client_mcu_t *spi = (hdl_spi_client_mcu_t *)context;
   hdl_spi_client_var_t *spi_var = (hdl_spi_client_var_t *)spi->obj_var;

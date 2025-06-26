@@ -65,7 +65,7 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
       uint8_t debounce_timeout = CL_TIME_ELAPSED(btn_var->input_change_time, btn->config->debounce_delay, hdl_time_counter_get((hdl_module_base_t *)btn_timer));
       if(debounce_timeout) {
         btn_var->input_state = HDL_BTN_PRESSED;
-        hdl_event_raise(&btn_var->event, (void *)btn, HDL_BTN_EVENT_PRESS);
+        hdl_event_raise(&btn_var->event, (void *)btn, (void *)HDL_BTN_EVENT_PRESS);
       }
       break;
     }
@@ -74,20 +74,20 @@ static uint8_t _button_handler(coroutine_t *this, uint8_t cancel, void *arg) {
         uint8_t hold_timeout = btn->config->hold_delay && CL_TIME_ELAPSED(btn_var->input_change_time, btn->config->hold_delay, hdl_time_counter_get((hdl_module_base_t *)btn_timer));
         if(hold_timeout) {
           btn_var->input_state = HDL_BTN_HOLDING;
-          hdl_event_raise(&btn_var->event, (void *)btn, HDL_BTN_EVENT_HOLD);
+          hdl_event_raise(&btn_var->event, (void *)btn, (void *)HDL_BTN_EVENT_HOLD);
         }
       }
       else {
         btn_var->input_state = HDL_BTN_RELEASED;
-        hdl_event_raise(&btn_var->event, (void *)btn, HDL_BTN_EVENT_RELEASE);
-        hdl_event_raise(&btn_var->event, (void *)btn, HDL_BTN_EVENT_CLICK);
+        hdl_event_raise(&btn_var->event, (void *)btn, (void *)HDL_BTN_EVENT_RELEASE);
+        hdl_event_raise(&btn_var->event, (void *)btn, (void *)HDL_BTN_EVENT_CLICK);
       }
       break;
     case HDL_BTN_HOLDING:
     default:
       if(!btn_active) {
         btn_var->input_state = HDL_BTN_RELEASED;
-        hdl_event_raise(&btn_var->event, (void *)btn, HDL_BTN_EVENT_RELEASE);
+        hdl_event_raise(&btn_var->event, (void *)btn, (void *)HDL_BTN_EVENT_RELEASE);
       }
       break;
   }

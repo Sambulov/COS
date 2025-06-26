@@ -6,11 +6,11 @@ void TAMP_STAMP_IRQHandler()         { call_isr(HDL_NVIC_IRQ2_TAMP_STAMP, 0); }
 void RTC_WKUP_IRQHandler()           { call_isr(HDL_NVIC_IRQ3_RTC_WKUP, 0); }
 void FLASH_IRQHandler()              { call_isr(HDL_NVIC_IRQ4_FLASH, 0); }
 void RCC_IRQHandler()                { call_isr(HDL_NVIC_IRQ5_RCC, 0); }
-void EXTI0_IRQHandler()              { EXTI->PR |= EXTI_PR_PR0; call_isr(HDL_NVIC_IRQ6_EXTI0, EXTI_PR_PR0); }
-void EXTI1_IRQHandler()              { EXTI->PR |= EXTI_PR_PR1; call_isr(HDL_NVIC_IRQ7_EXTI1, EXTI_PR_PR1); }
-void EXTI2_IRQHandler()              { EXTI->PR |= EXTI_PR_PR2; call_isr(HDL_NVIC_IRQ8_EXTI2, EXTI_PR_PR2); }
-void EXTI3_IRQHandler()              { EXTI->PR |= EXTI_PR_PR3; call_isr(HDL_NVIC_IRQ9_EXTI3, EXTI_PR_PR3); }
-void EXTI4_IRQHandler()              { EXTI->PR |= EXTI_PR_PR4; call_isr(HDL_NVIC_IRQ10_EXTI4, EXTI_PR_PR4); }
+void EXTI0_IRQHandler()              { EXTI->PR |= EXTI_PR_PR0; call_isr(HDL_NVIC_IRQ6_EXTI0, (void *)EXTI_PR_PR0); }
+void EXTI1_IRQHandler()              { EXTI->PR |= EXTI_PR_PR1; call_isr(HDL_NVIC_IRQ7_EXTI1, (void *)EXTI_PR_PR1); }
+void EXTI2_IRQHandler()              { EXTI->PR |= EXTI_PR_PR2; call_isr(HDL_NVIC_IRQ8_EXTI2, (void *)EXTI_PR_PR2); }
+void EXTI3_IRQHandler()              { EXTI->PR |= EXTI_PR_PR3; call_isr(HDL_NVIC_IRQ9_EXTI3, (void *)EXTI_PR_PR3); }
+void EXTI4_IRQHandler()              { EXTI->PR |= EXTI_PR_PR4; call_isr(HDL_NVIC_IRQ10_EXTI4, (void *)EXTI_PR_PR4); }
 void DMA1_Stream0_IRQHandler()       { call_isr(HDL_NVIC_IRQ11_DMA1_Stream0, 0); }
 void DMA1_Stream1_IRQHandler()       { call_isr(HDL_NVIC_IRQ12_DMA1_Stream1, 0); }
 void DMA1_Stream2_IRQHandler()       { call_isr(HDL_NVIC_IRQ13_DMA1_Stream2, 0); }
@@ -27,7 +27,7 @@ void EXTI9_5_IRQHandler()            {
   const uint32_t mask = (EXTI_PR_PR5 | EXTI_PR_PR6 | EXTI_PR_PR7 | EXTI_PR_PR8 | EXTI_PR_PR9);
   uint32_t pending = EXTI->PR & mask;
   EXTI->PR |= mask; 
-  call_isr(HDL_NVIC_IRQ23_EXTI9_5, pending);
+  call_isr(HDL_NVIC_IRQ23_EXTI9_5, (void *)pending);
 }
 void TIM1_BRK_TIM9_IRQHandler()      { call_isr(HDL_NVIC_IRQ24_TIM1_BRK_TIM9, 0); }
 void TIM1_UP_TIM10_IRQHandler()      { call_isr(HDL_NVIC_IRQ25_TIM1_UP_TIM10, 0); }
@@ -49,7 +49,7 @@ void EXTI15_10_IRQHandler()          {
   const uint32_t mask = (EXTI_PR_PR10 | EXTI_PR_PR11 | EXTI_PR_PR12 | EXTI_PR_PR13 | EXTI_PR_PR14 | EXTI_PR_PR15);
   uint32_t pending = EXTI->PR & mask;
   EXTI->PR |= mask; 
-  call_isr(HDL_NVIC_IRQ40_EXTI15_10, pending);
+  call_isr(HDL_NVIC_IRQ40_EXTI15_10, (void *)pending);
 }
 void RTC_Alarm_IRQHandler()          { call_isr(HDL_NVIC_IRQ41_RTC_Alarm, 0); }
 void OTG_FS_WKUP_IRQHandler()        { call_isr(HDL_NVIC_IRQ42_OTG_FS_WKUP, 0); }

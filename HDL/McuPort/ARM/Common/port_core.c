@@ -97,7 +97,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_LR(void)  {
   return(result); 
 } 
 
-void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
+void call_isr(hdl_nvic_irq_n_t irq, void *event_trigger) {
   hdl_nvic_config_t *ic = (hdl_nvic_config_t *)((uint32_t *)SCB->VTOR)[0];
   hdl_interrupt_t * const *isrs = ic->interrupts;
   // if(irq == -14) {
@@ -108,7 +108,7 @@ void call_isr(hdl_nvic_irq_n_t irq, uint32_t event) {
       hdl_interrupt_config_t *isr_cnf = (hdl_interrupt_config_t *)(*isrs)->irq_cnf;
       if(isr_cnf->irq_type == irq) {
         hdl_interrupt_t *isr = *isrs;
-        if(!hdl_event_raise(&isr->event, ic, event))
+        if(!hdl_event_raise(&isr->event, ic, event_trigger))
           NVIC_DisableIRQ((IRQn_Type)irq);
         return;
       }
@@ -177,7 +177,7 @@ void svc_handler() {
   asm ("MOV            %0, R1" : "=r" (result));
   result = *(uint32_t*)result;
   result = (uint8_t)(*(uint16_t*)(result - 2));
-  call_isr(HDL_NVIC_EXCEPTION_SVCall, result);
+  call_isr(HDL_NVIC_EXCEPTION_SVCall, (void *)result);
   #endif
 }
 

@@ -26,6 +26,7 @@ set(MCPU cortex-m4)
 set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mcpu=${MCPU})
 
 set_property(GLOBAL APPEND PROPERTY HDL_DEFINES "__MCU_HAL_HDR__=<stm32f4xx_hal.h>")
+set_property(GLOBAL APPEND PROPERTY HDL_DEFINES "STM32F407xx")
 
 if(DEFINED HARD_FLOAT)
   set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mfloat-abi=hard -mfpu=fpv4-sp-d16)

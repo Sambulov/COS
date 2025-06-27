@@ -42,12 +42,12 @@ static uint8_t _adc_sw_trigger(coroutine_t *this, uint8_t cancel, void *arg) {
       if(regular_ready) adc_var->regular_age++;
     }
     if(adc_var->injected_channels) {
-      uint8_t injected_ready = (phy->SR & ADC_FLAG_JEOC);
+      uint8_t injected_ready = (phy->SR & ADC_SR_JEOC);
       if(adc->config->injected_trg_edge == ADC_EXTERNALTRIGINJECCONVEDGE_NONE)
         if(injected_ready || !(phy->SR & ADC_SR_JSTRT)) CL_REG_SET(phy->CR2, ADC_CR2_JSWSTART);
       if(injected_ready) adc_var->injected_age++;
     }
-    phy->SR = ~(ADC_FLAG_EOC | ADC_FLAG_JEOC | ADC_FLAG_OVR);
+    phy->SR = ~(ADC_SR_EOC | ADC_SR_JEOC | ADC_SR_OVR);
   }
   return cancel;
 }

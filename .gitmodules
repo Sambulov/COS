@@ -1,3 +1,6 @@
 [submodule "CL"]
 	path = CL
 	url = https://github.com/Sambulov/CL.git
+[submodule "ThirdParty/LwIP"]
+	path = ThirdParty/LwIP
+	url = https://github.com/lwip-tcpip/lwip.git

@@ -45,6 +45,7 @@ elseif("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
   set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -Os)
 else()
   message(STATUS "Minimal optimization, debug info included")
+  set (LWIP_DEFINITIONS LWIP_DEBUG=1)
   set(CMAKE_VERBOSE_MAKEFILE ON)
   add_compile_definitions("DEBUG")
   set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -O0 -g3 -ggdb -fno-builtin)
@@ -76,10 +77,22 @@ get_property(CL_HEADERS GLOBAL PROPERTY CL_HEADERS)
 get_property(HDL_HEADERS GLOBAL PROPERTY HDL_HEADERS)
 get_property(PROJECT_HEADERS GLOBAL PROPERTY PROJECT_HEADERS)
 
-
 include_directories( ${PROJECT_HEADERS} )
 include_directories( ${HDL_HEADERS} )
 include_directories( ${CL_HEADERS} )
+
+set(LWIP_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/LwIP")
+include(${LWIP_DIR}/src/Filelists.cmake)
+
+set (LWIP_INCLUDE_DIRS
+    "${LWIP_DIR}/src/include/"
+    #"${LWIP_DIR}/contrib/"
+    #"${LWIP_DIR}/contrib/ports/unix/port/include"
+    #"${LWIP_DIR}/contrib/examples/example_app"
+)
+include_directories( ${LWIP_INCLUDE_DIRS} )
+
+#message(SEND_ERROR "${LWIP_INCLUDE_DIRS}")
 
 string (REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
 string (REPLACE ";" " " LINKER_FLAGS "${LINKER_FLAGS}")
@@ -107,6 +120,9 @@ add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES}  ${CL_SOURCES})
 
 # Указываем, что нужно использовать nosys.specs (если не используются системные вызовы)
 target_link_libraries(${EXECUTABLE} -specs=nosys.specs)
+
+# LwIP lib
+target_link_libraries(${EXECUTABLE} lwipallapps)
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)

@@ -72,9 +72,9 @@ static uint8_t can_transmit(CAN_TypeDef *can, hdl_can_var_t *can_var) {
       if(msg->status == HDL_CAN_MESSAGE_STATUS_INITIAL) {
         /* Set up the Id */
         can->sTxMailBox[i].TIR &= CAN_TI0R_TXRQ;
-        if (msg->options & HDL_CAN_MESSAGE_IDE) can->sTxMailBox[i].TIR |= (msg->id << 3U) | CAN_ID_EXT;
+        if (msg->options & HDL_CAN_MESSAGE_IDE) can->sTxMailBox[i].TIR |= (msg->id << 3U) | CAN_TI0R_IDE;
         else can->sTxMailBox[i].TIR |= (msg->id << 21U);
-        if(msg->options & HDL_CAN_MESSAGE_RTR) can->sTxMailBox[i].TIR |= CAN_RTR_REMOTE;
+        if(msg->options & HDL_CAN_MESSAGE_RTR) can->sTxMailBox[i].TIR |= CAN_TI0R_RTR;
         /* Set up the DLC */
         can->sTxMailBox[i].TDTR &= (uint32_t)0xFFFFFFF0U;
         can->sTxMailBox[i].TDTR |= (msg->dlc & 0x0000000FU);

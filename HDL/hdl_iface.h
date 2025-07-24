@@ -18,6 +18,7 @@ extern "C" {
 #include "port_systick_counter.h"
 #include "hdl_tick_counter.h"
 #include "hdl_time_counter.h"
+#include "hdl_entropy.h"
 #include "hdl_gpio.h"
 #include "hdl_pwm.h"
 #include "hdl_nvm.h"

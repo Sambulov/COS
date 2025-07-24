@@ -8,7 +8,7 @@ static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enab
       SysTick->LOAD  = counter->config->period & SysTick_LOAD_RELOAD_Msk;        /* set reload register */
       SysTick->VAL   = 0UL;                                             /* Load the SysTick Counter Value */
       uint32_t ctrl = SysTick_CTRL_ENABLE_Msk;
-      if(counter->config->clock_src_mask) ctrl |= SysTick_CTRL_CLKSOURCE_Msk;
+      if(counter->config->clock_src) ctrl |= SysTick_CTRL_CLKSOURCE_Msk;
       else ctrl &= ~SysTick_CTRL_CLKSOURCE_Msk;
       SysTick->CTRL = ctrl;
       return HDL_MODULE_ACTIVE;

@@ -33,12 +33,12 @@ static void _hdl_spi_mem_full_reset(hdl_spi_server_dma_mcu_t *spi) {
   SPI_CTL1(spi->config->phy) |= SPI_CTL1_DMATEN | SPI_CTL1_DMAREN;
 }
 
-static void event_spi_nss(uint32_t event, void *sender, void *context) {
+static void event_spi_nss(void *event, void *sender, void *context) {
   (void)sender;
   hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t*)context;
   hdl_spi_server_dma_var_t *spi_var = (hdl_spi_server_dma_var_t *)spi->obj_var;
   hdl_gpio_pin_t *nss = (hdl_gpio_pin_t *)spi->dependencies[3];
-  if((event & (uint32_t)nss->config->pin) && hdl_gpio_is_inactive(nss)) {
+  if(((uint32_t)event & (uint32_t)nss->config->pin) && hdl_gpio_is_inactive(nss)) {
 
     if(spi_var->rx_mem) {
       hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->dependencies[6];
@@ -47,7 +47,7 @@ static void event_spi_nss(uint32_t event, void *sender, void *context) {
   }
 }
 
-static void event_spi_isr(uint32_t event, void *sender, void *context) {
+static void event_spi_isr(void *event, void *sender, void *context) {
   (void)event; (void)sender;
   hdl_spi_server_dma_mcu_t *spi = (hdl_spi_server_dma_mcu_t *)context;
   uint32_t state = SPI_STAT(spi->config->phy);
@@ -103,7 +103,7 @@ static uint8_t _spi_server_dma_worker(coroutine_t *this, uint8_t cancel, void *a
   hdl_spi_server_dma_var_t *spi_var = (hdl_spi_server_dma_var_t *)spi->obj_var;
   if(spi_var->received != 0) {
     _hdl_spi_mem_full_reset(spi);
-    hdl_event_raise(&spi_var->event, spi, spi_var->received);
+    hdl_event_raise(&spi_var->event, spi, (void *)spi_var->received);
     spi_var->received = 0;
     if(spi_var->rx_mem != NULL) {
       hdl_dma_channel_t *dma_rx = (hdl_dma_channel_t *)spi->dependencies[6];

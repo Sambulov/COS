@@ -35,7 +35,7 @@ static void _i2c_clear_error(uint32_t i2c_periph) {
   I2C_STAT0(i2c_periph) &= ~(I2C_ERROR_CLEAR_MASK);
 }
 
-static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
+static void event_i2c_ev_isr(void *event, void *sender, void *context) {
   (void) event; (void) sender;
   hdl_i2c_mcu_t *i2c = (hdl_i2c_mcu_t *)context;
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
@@ -84,7 +84,7 @@ static void event_i2c_ev_isr(uint32_t event, void *sender, void *context) {
   }
 }
 
-static void event_i2c_er_isr(uint32_t event, void *sender, void *context) {
+static void event_i2c_er_isr(void *event, void *sender, void *context) {
   (void)event; (void) sender;
   hdl_i2c_mcu_t *i2c = (hdl_i2c_mcu_t *)context;
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;

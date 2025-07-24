@@ -2,6 +2,17 @@ get_property(CORE GLOBAL PROPERTY CORE)
 get_property(MANUFACTURER GLOBAL PROPERTY MCU_MANUFACTURER)
 get_property(MCU GLOBAL PROPERTY MCU)
 
+file(GLOB SRC
+  "${CMAKE_CURRENT_SOURCE_DIR}/Debug/Segger_RTT/RTT/*.c"
+)
+
+set_property(GLOBAL APPEND PROPERTY HDL_HEADERS
+  "${CMAKE_CURRENT_SOURCE_DIR}/Debug/Segger_RTT/RTT/"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Debug/Segger_RTT/Config/"
+)
+
+set_property(GLOBAL APPEND PROPERTY HDL_SOURCES ${SRC})
+
 #Add all core dirs
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/ARM")
 

@@ -5,7 +5,7 @@ static inline int32_t circular_buffer_flush_wrup(void *desc) {
   return 0;
 }
 
-const fifo_iface_t fifo_buffer_iface = {
+const fifo_iface_t fifo_circular_buffer_iface = {
   .pfBufferAvailable = (buffer_base_t)&circular_buffer_available,
   .pfBufferFlush = (buffer_base_t)&circular_buffer_flush_wrup,
   .pfBufferFree = (buffer_base_t)&circular_buffer_free,
@@ -15,7 +15,7 @@ const fifo_iface_t fifo_buffer_iface = {
   .pfIsInIsr = &hdl_core_is_in_isr
 };
 
-const fifo_iface_ex_t fifo_buffer_ex_iface = {
+const fifo_iface_ex_t fifo_circular_buffer_ex_iface = {
   .pfBufferBackup = (buffer_base_bool_t)&circular_buffer_backup,
   .pfBufferCommit = (buffer_base_bool_t)&circular_buffer_commit,
   .pfBufferRestore = (buffer_base_bool_t)&circular_buffer_restore
@@ -30,8 +30,8 @@ uint8_t hdl_stream_buffer_init(hdl_stream_buffer_t *stream_buffer, uint8_t is_is
   fifo_t *in = (fifo_t *)stream_buffer->buffer_in;
   fifo_t *out = (fifo_t *)stream_buffer->buffer_out;
   const uint32_t fifo_size = sizeof(fifo_t);
-  in->pxIface = out->pxIface = &fifo_buffer_iface;
-  in->pxIfaceEx = out->pxIfaceEx = &fifo_buffer_ex_iface;
+  in->pxIface = out->pxIface = &fifo_circular_buffer_iface;
+  in->pxIfaceEx = out->pxIfaceEx = &fifo_circular_buffer_ex_iface;
   if(!fifo_init(in, stream_buffer->buffer_in + fifo_size, stream_buffer->size_in - fifo_size, is_isr_safe) ||
       !fifo_init(out, stream_buffer->buffer_out + fifo_size, stream_buffer->size_out - fifo_size, is_isr_safe)) return HDL_FALSE;
   stream_buffer->stream.pxIFifo = in;

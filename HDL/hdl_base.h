@@ -28,11 +28,6 @@ extern "C" {
 
 #define HDL_ASSERRT_STRUCTURE_CAST(private_type, public_type, prv_size_def, def_file)   _Static_assert(sizeof(private_type) == sizeof(public_type), "In "#def_file" data structure size of "#public_type" doesn't match, check "#prv_size_def)
 
-typedef void** hdl_tuple_t;
-#define hdl_tuple_make(...) ((void *[]){__VA_ARGS__})
-#define hdl_tuple_get(tuple, index, type) ((type)(((void **)tuple)[index]))
-
-
 #include <stddef.h>
 #include __MCU_HAL_HDR__
 

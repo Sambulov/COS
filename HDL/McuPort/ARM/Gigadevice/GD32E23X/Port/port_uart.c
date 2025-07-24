@@ -32,7 +32,7 @@ static void _rst_uart_status(hdl_uart_mcu_t *uart) {
 	(void)tmpreg;
 }
 
-static void event_uart_isr(uint32_t event, void *sender, void *context) {
+static void event_uart_isr(void *event, void *sender, void *context) {
   (void)event; (void)sender;
   hdl_uart_mcu_t *uart = (hdl_uart_mcu_t *)context;
   hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;

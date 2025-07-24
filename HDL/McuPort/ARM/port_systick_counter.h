@@ -6,7 +6,7 @@
 typedef struct {
   uint32_t phy;
   uint32_t period;                            /*!< counter auto reload value */
-  uint32_t clock_src_mask;                    /* clock source switch: SysTick_CTRL_CLKSOURCE_Msk */
+  uint32_t clock_src;                         /* clock source switch: SysTick_CTRL_CLKSOURCE_Msk */
 } hdl_systick_counter_config_t;
 
 /* depends on:

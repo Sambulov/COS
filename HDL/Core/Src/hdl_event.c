@@ -28,13 +28,13 @@ void hdl_event_unsubscribe(hdl_delegate_t *delegate) {
 
 static void _call_delegate(linked_list_item_t *item, void *arg) {
   hdl_delegate_private_t *delegate = linked_list_get_object(hdl_delegate_private_t, item);
-  hdl_tuple_t args = (hdl_tuple_t)arg;
+  cl_tuple_t args = (cl_tuple_t)arg;
   delegate->handler(args[0], args[1],delegate->context);
 }
 
 uint32_t hdl_event_raise(hdl_event_t *event, void *sender, void *event_trigger) {
   hdl_event_private_t *evt = (hdl_event_private_t *)event;
   if(event != NULL)
-    return linked_list_do_foreach(evt->private.delegates, &_call_delegate, hdl_tuple_make(event_trigger, sender));
+    return linked_list_do_foreach(evt->private.delegates, &_call_delegate, cl_tuple_make(event_trigger, sender));
   return 0;
 }

@@ -85,14 +85,23 @@ set(LWIP_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/LwIP")
 include(${LWIP_DIR}/src/Filelists.cmake)
 
 set (LWIP_INCLUDE_DIRS
-    "${LWIP_DIR}/src/include/"
-    #"${LWIP_DIR}/contrib/"
-    #"${LWIP_DIR}/contrib/ports/unix/port/include"
-    #"${LWIP_DIR}/contrib/examples/example_app"
+  "${LWIP_DIR}/src/include/"
+  #"${LWIP_DIR}/contrib/"
+  #"${LWIP_DIR}/contrib/ports/unix/port/include"
+  #"${LWIP_DIR}/contrib/examples/example_app"
 )
 include_directories( ${LWIP_INCLUDE_DIRS} )
 
-#message(SEND_ERROR "${LWIP_INCLUDE_DIRS}")
+
+set (MBEDTLS_INCLUDE_DIRS
+  "${CMAKE_SOURCE_DIR}/ThirdParty/MbedTLS/include"
+  "${CMAKE_SOURCE_DIR}/ThirdParty/MbedTLS/library"
+)
+include_directories( ${MBEDTLS_INCLUDE_DIRS} )
+
+file(GLOB MBEDTLS_SRC
+  "${CMAKE_SOURCE_DIR}/ThirdParty/MbedTLS/library/*.c"
+)
 
 string (REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
 string (REPLACE ";" " " LINKER_FLAGS "${LINKER_FLAGS}")
@@ -113,16 +122,15 @@ add_compile_definitions(${HDL_DEFINITIONS})
 add_compile_definitions(${CL_DEFINITIONS})
 add_compile_definitions(${PROJECT_DEFINITIONS})
 
-add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES}  ${CL_SOURCES})
+
+add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES} ${CL_SOURCES} ${lwipnoapps_SRCS} ${lwipmbedtls_SRCS} ${MBEDTLS_SRC})
+#add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES} ${CL_SOURCES} ${lwipnoapps_SRCS} ${MBEDTLS_SRC})
 
 # Указываем, что нужно использовать newlib-nano
 #target_link_libraries(${EXECUTABLE} -specs=nano.specs)
 
 # Указываем, что нужно использовать nosys.specs (если не используются системные вызовы)
 target_link_libraries(${EXECUTABLE} -specs=nosys.specs)
-
-# LwIP lib
-target_link_libraries(${EXECUTABLE} lwipallapps)
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)

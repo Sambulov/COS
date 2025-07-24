@@ -42,15 +42,14 @@ uint8_t _hdl_try_alloc(hdl_mem_block_t *block, uint32_t size) {
   return HDL_FALSE;
 }
 
-void *hdl_malloc(uint32_t size) {
+void *hdl_malloc(size_t size) {
+  if(!size) return NULL;
   if(first_block == NULL) _hdl_heap_init();
-  if(size != 0) {
-    hdl_mem_block_t *block = first_block;
-    while (block != NULL) {
-      if(!(block->size & OCCUPIED_BLOCK_FLAG) && _hdl_try_alloc(block, size))
-        return (void *)((uint32_t)block + sizeof(hdl_mem_block_t));
-      block = block->address;
-    }
+  hdl_mem_block_t *block = first_block;
+  while (block != NULL) {
+    if(!(block->size & OCCUPIED_BLOCK_FLAG) && _hdl_try_alloc(block, size))
+      return (void *)((uint32_t)block + sizeof(hdl_mem_block_t));
+    block = block->address;
   }
   return NULL;
 }

@@ -68,6 +68,31 @@ static uint8_t _hdl_tick_counter_get(const void *counter, uint32_t *value, uint3
   return HDL_TRUE;
 }
 
+static uint8_t _hdl_tick_counter_clock_get(const void *counter, hdl_clock_freq_t *freq) {
+  hdl_timertick_counter_t *tick_cnt = (hdl_timertick_counter_t *)counter;
+  const hdl_timertick_counter_config_t *config = tick_cnt->config;
+  hdl_clock_t *src_clk = (hdl_clock_t *)tick_cnt->dependencies[0];
+  int32_t presc = config->period;
+  switch (config->clock_div) {
+    case TIM_CLOCKDIVISION_DIV4:
+      presc <<= 1;
+    /* fall through */
+    case TIM_CLOCKDIVISION_DIV2:
+      presc <<= 1;
+    /* fall through */
+    case TIM_CLOCKDIVISION_DIV1:
+    default:
+      break;
+  }
+  /* if center alingned mode */
+  if((config->counter_mode != TIM_COUNTERMODE_UP) &&  (config->counter_mode != TIM_COUNTERMODE_DOWN))
+    presc <<= 1;
+  hdl_clock_freq_t src_freq;
+  hdl_clock_get(src_clk, &src_freq);
+  hdl_clock_calc_div(&src_freq, presc, freq);
+  return HDL_TRUE;
+}
+
 static uint8_t _hdl_tick_counter_set(const void *counter, uint32_t *value, uint32_t *period) {
   hdl_timertick_counter_t *tick_cnt = (hdl_timertick_counter_t *)counter;
   TIM_TypeDef *TIMx = (TIM_TypeDef *)tick_cnt->config->phy;
@@ -92,6 +117,7 @@ static uint8_t _hdl_tick_counter_stop(const void *counter) {
 
 const hdl_tick_counter_iface_t hdl_timertick_counter_iface = {
   .init = &_hdl_tick_counter,
+  .clock_get = &_hdl_tick_counter_clock_get,
   .get = &_hdl_tick_counter_get,
   .set = &_hdl_tick_counter_set,
   .stop = &_hdl_tick_counter_stop

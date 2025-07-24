@@ -8,7 +8,15 @@ typedef struct {
   uint32_t size;
 } hdl_mem_block_t;
 
-void *hdl_malloc(uint32_t size);
+void *hdl_malloc(size_t size);
+
+static inline void *hdl_calloc(size_t amount, size_t block) {
+  size_t size = amount * block;
+  uint8_t* ptr = (uint8_t *)hdl_malloc(size);
+  if (ptr != NULL) while (size--) ptr[size] = 0;
+  return ptr;
+}
+
 void hdl_free(void *ptr);
 
 #endif /* HDL_HEAP_H_ */

@@ -114,7 +114,7 @@ static hdl_module_state_t _hdl_adc_ch(const void *desc, uint8_t enable){
     adc_disable();
     hdl_dma_channel_stop(dma);
     adc->config->adc_slots[adc_var->channels_count++] = HDL_ADC_INVALID_VALUE;
-    adc_regular_channel_config(adc_ch->config->rank, adc_ch->config->channel, adc_ch->config->sample_time);
+    adc_regular_channel_config(adc_ch->config->rank - 1, adc_ch->config->channel, adc_ch->config->sample_time);
     adc_channel_length_config(ADC_REGULAR_CHANNEL, adc_var->channels_count);
     adc_enable();
     hdl_dma_channel_run(dma, (void *)&ADC_RDATA, adc->config->adc_slots, adc_var->channels_count);

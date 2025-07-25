@@ -47,14 +47,12 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     case EE_STATE_AWAIT_MEM_ADDR_MSG: {
       if(eeprom_var->i2c_msg.status & HDL_I2C_MESSAGE_STATUS_COMPLETE) {
         if(eeprom_var->i2c_msg.status & (HDL_I2C_MESSAGE_FAULT_ARBITRATION_LOST | HDL_I2C_MESSAGE_FAULT_BUS_ERROR | HDL_I2C_MESSAGE_FAULT_BAD_STATE)) {
-          eeprom_var->nvm_msg->out_status = HDL_NVM_ERROR_BUS_FAULT;
+          eeprom_var->nvm_msg->out_status |= HDL_NVM_ERROR_BUS_FAULT;
           eeprom_var->state = EE_STATE_COMPLETE;
-          eeprom_var->nvm_msg = NULL;
         }
         else if(eeprom_var->i2c_msg.status & HDL_I2C_MESSAGE_STATUS_NACK) {
-          eeprom_var->nvm_msg->out_status = HDL_NVM_ERROR_INTERNAL_FAULT;
+          eeprom_var->nvm_msg->out_status |= HDL_NVM_ERROR_INTERNAL_FAULT;
           eeprom_var->state = EE_STATE_COMPLETE;
-          eeprom_var->nvm_msg = NULL;
         }
         else {
           eeprom_var->i2c_msg.buffer = (eeprom_var->nvm_msg->rx_buffer + eeprom_var->nvm_msg->out_transferred);

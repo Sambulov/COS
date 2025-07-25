@@ -1044,10 +1044,8 @@ void SDH_Get_SD_info(SDH_T *sdh)
 
 static uint32_t SDH_ResetCard(SDH_T *sdh)
 {
-    uint32_t volatile i;
     SDH_INFO_T *pSD;
     uint32_t u32TimeOutCount;
-    uint32_t ret = 0;
 
     sdh->GINTEN = 0ul;
     sdh->CTL &= ~SDH_CTL_SDNWR_Msk;
@@ -1259,7 +1257,7 @@ uint32_t SDH_Probe(SDH_T *sdh)
  */
 uint32_t SDH_Read(SDH_T *sdh, uint8_t *pu8BufAddr, uint32_t u32StartSec, uint32_t u32SecCount)
 {
-    uint32_t volatile bIsSendCmd = FALSE, buf;
+    uint32_t volatile bIsSendCmd = FALSE;
     uint32_t volatile reg;
     uint32_t volatile i, loop, status;
     uint32_t blksize = SDH_BLOCK_SIZE;

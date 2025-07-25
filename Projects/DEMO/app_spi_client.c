@@ -2,7 +2,7 @@
 
 #define MSG_SEND_DELAY  1000
 
-void spi_cliet_sender(uint32_t event_trigger, void *sender, void *context) {
+void spi_cliet_sender(void *event_trigger, void *sender, void *context) {
   static hdl_spi_message_t spi_msg = {.status = HDL_SPI_MESSAGE_STATUS_COMPLETE};
   static uint8_t rx_buffer[128];
   static uint8_t tx_buffer[5];  

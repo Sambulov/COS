@@ -562,7 +562,7 @@ const hdl_systick_counter_t mod_systick_counter = {
   .config = hdl_module_config(hdl_systick_counter_config_t,
     .phy = (uint32_t)SysTick,
     .period = 240000-1,
-    .clock_src_mask = 0
+    .clock_src = 0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };
@@ -1431,53 +1431,6 @@ hdl_dma_channel_t mod_dma_ch_spi_3_m2m = {
 /**************************************************************
  *                        ADC
  *************************************************************/
-const hdl_adc_source_t mod_adc_source_0_adc_24v = {
-  .channel = HDL_ADC_CHANNEL_0,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_1_adc_24v_poe = {
-  .channel = HDL_ADC_CHANNEL_1,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_2_adc_5v = {
-  .channel = HDL_ADC_CHANNEL_2,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_3_adc_3v3 = {
-  .channel = HDL_ADC_CHANNEL_3,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_4_adc_2v5 = {
-  .channel = HDL_ADC_CHANNEL_4,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_5_adc_1v8 = {
-  .channel = HDL_ADC_CHANNEL_5,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_config_t mod_adc_cnf = {
-  .phy = ADC0,
-  .adc_interrupt = &mod_irq_adc,
-  .resolution = HDL_ADC_RESOLUTION_12BIT,
-  .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
-  .init_timeout = 3000,
-  .sources = hdl_adc_src(&mod_adc_source_0_adc_24v, &mod_adc_source_1_adc_24v_poe, &mod_adc_source_2_adc_5v,
-                          &mod_adc_source_3_adc_3v3, &mod_adc_source_4_adc_2v5, &mod_adc_source_5_adc_1v8),
-};
-
-hdl_adc_mcu_t mod_adc = {
-  .iface = &hdl_adc_iface,
-  .dependencies = hdl_module_dependencies(&mod_clock_adc, &mod_systick_timer, &mod_adc_dma_ch, &mod_nvic),
-  .config = &mod_adc_cnf,
-  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
-  .obj_var = static_malloc(HDL_ADC_VAR_SIZE)
-};
 
 /**************************************************************
  *                        SPI

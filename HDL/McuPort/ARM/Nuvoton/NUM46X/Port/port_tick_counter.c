@@ -1,6 +1,7 @@
 #include "hdl_iface.h"
 
 static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enable) {
+  (void)desc;
   //hdl_timertick_counter_t *counter = (hdl_timertick_counter_t *)desc;
   //uint32_t periph = (uint32_t)counter->config->phy;
   //const hdl_tick_counter_timer_config_t *config = counter->config->type.timer;
@@ -25,6 +26,7 @@ static hdl_module_state_t _hdl_tick_counter(const void *desc, const uint8_t enab
 }
 
 static uint8_t _hdl_tick_counter_get(const void *desc, uint32_t *value, uint32_t *period) {
+  (void)desc;(void)value;(void)period;
   //hdl_timertick_counter_t *counter = (hdl_timertick_counter_t *)desc;
   //uint32_t periph = (uint32_t)counter->config->phy;
   //const hdl_tick_counter_timer_config_t *config = counter->config.timer;
@@ -35,6 +37,7 @@ static uint8_t _hdl_tick_counter_get(const void *desc, uint32_t *value, uint32_t
 }
 
 static uint8_t _hdl_tick_counter_set(const void *counter, uint32_t *value, uint32_t *period) {
+  (void)counter;(void)value;(void)period;
   //hdl_timertick_counter_t *tick_cnt = (hdl_timertick_counter_t *)counter;
   //uint32_t periph = (uint32_t)tick_cnt->config->phy;
   //const hdl_tick_counter_timer_config_t *config = tick_cnt->config->type.timer;
@@ -52,6 +55,7 @@ static uint8_t _hdl_tick_counter_set(const void *counter, uint32_t *value, uint3
 }
 
 static uint8_t _hdl_tick_counter_stop(const void *counter) {
+  (void)counter;
   //hdl_timertick_counter_t *tick_cnt = (hdl_timertick_counter_t *)counter;
   //uint32_t periph = (uint32_t)tick_cnt->config->phy;
   //  timer_disable(periph);

@@ -1016,7 +1016,7 @@ int32_t FMC_WriteConfig(uint32_t u32Config[], uint32_t u32Count)
         return -1;
     }
 
-    for (i = 0; i < u32Count; i++)
+    for (i = 0; i < (int32_t)u32Count; i++)
     {
         if (FMC_Write(FMC_CONFIG_BASE+i*4UL, u32Config[i]) != 0)
         {

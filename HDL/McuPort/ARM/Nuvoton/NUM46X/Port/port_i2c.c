@@ -288,7 +288,7 @@ static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) 
   return cancel;
 }
 
-static void event_i2c_isr(uint32_t event, void *sender, void *context) {
+static void event_i2c_isr(void *event, void *sender, void *context) {
   (void)event; (void)sender;
   hdl_i2c_mcu_t *i2c = (hdl_i2c_mcu_t *)context;
   hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;

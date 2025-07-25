@@ -515,7 +515,7 @@ static uint32_t CANFD_CalculateTimingValues(CANFD_T *psCanfd, uint32_t u32Nomina
     /* observe baud rate maximums */
     if (u32NominalBaudRate > MAX_NOMINAL_BAUDRATE) u32NominalBaudRate = MAX_NOMINAL_BAUDRATE;
 
-    for (i32Ntq = MAX_TIME_QUANTA; i32Ntq >= MIN_TIME_QUANTA; i32Ntq--)
+    for (i32Ntq = MAX_TIME_QUANTA; i32Ntq >= (int32_t)MIN_TIME_QUANTA; i32Ntq--)
     {
         i32Nclk = u32NominalBaudRate * i32Ntq;
 
@@ -545,7 +545,7 @@ static uint32_t CANFD_CalculateTimingValues(CANFD_T *psCanfd, uint32_t u32Nomina
                     }
 
                     /* calculate data settings */
-                    for (i32Dtq = MAX_TIME_QUANTA; i32Dtq >= MIN_TIME_QUANTA; i32Dtq--)
+                    for (i32Dtq = MAX_TIME_QUANTA; i32Dtq >= (int32_t)MIN_TIME_QUANTA; i32Dtq--)
                     {
                         i32Dclk = u32DataBaudRate * i32Dtq;
 

@@ -67,9 +67,9 @@ void KPI_IRQHandler()
         col = ((KPI->CTL & KPI_CTL_KCOL_Msk) >> KPI_CTL_KCOL_Pos) + 1;
         
         /* Deal with the key evernts */
-        for(i=0;i<row;i++)
+        for(i=0;i<(int32_t)row;i++)
         {
-            for(j=0;j<col;j++)
+            for(j=0;j<(int32_t)col;j++)
             {
                 /* Identify the specified key bit */
                 idx = (i < 4)?0:1;
@@ -97,9 +97,9 @@ void KPI_IRQHandler()
         }
         
         /* Deal with the key evernts */
-        for(i=0;i<row;i++)
+        for(i=0;i<(int32_t)row;i++)
         {
-            for(j=0;j<col;j++)
+            for(j=0;j<(int32_t)col;j++)
             {
                 /* Identify the specified key bit */
                 idx = (i < 4)?0:1;

@@ -28,7 +28,7 @@ hdl_stream_buffer_t *uart_stream_init() {
 
 #define STREAM_PRINT_DELAY  1000
 
-void stream_printer(uint32_t event_trigger, void *sender, void *context) {
+void stream_printer(void *event_trigger, void *sender, void *context) {
   (void)event_trigger; (void)sender;
   hdl_stream_buffer_t *uart_stream = (hdl_stream_buffer_t *)context;
   uint32_t now = hdl_time_counter_get(&mod_timer_ms);

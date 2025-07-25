@@ -11,7 +11,7 @@
 #include "port_gpio.h"
 //#include "port_nvm.h"
 #include "port_dma.h"
-#include "port_adc.h"
+//#include "port_adc.h"
 #include "port_spi.h"
 #include "port_i2c.h"
 //#include "port_uart.h"

@@ -2,20 +2,20 @@
 
 #define SWITCH_DELAY              1000
 
-void btn_handler(uint32_t event_trigger, void *sender, void *context) {
+void btn_handler(void *event_trigger, void *sender, void *context) {
   (void)sender;
   static uint32_t delay = SWITCH_DELAY;
-  if(event_trigger == HDL_BTN_EVENT_CLICK){
+  if((uint32_t)event_trigger == HDL_BTN_EVENT_CLICK){
     delay = delay / 2;
     hdl_timer_reset(context, delay, HDL_TIMER_MODE_LOOP);
   }
-  if(event_trigger == HDL_BTN_EVENT_HOLD) {
+  if((uint32_t)event_trigger == HDL_BTN_EVENT_HOLD) {
     delay = SWITCH_DELAY;
     hdl_timer_reset(context, delay, HDL_TIMER_MODE_LOOP);
   }
 }
 
-void led_handler(uint32_t event_trigger, void *sender, void *context) {
+void led_handler(void *event_trigger, void *sender, void *context) {
   static uint32_t led_no = 0;
   static const hdl_gpio_pin_t * const leds[] = { &mod_led1_pin, &mod_led2_pin, &mod_led3_pin, &mod_led4_pin };
   (void)sender; (void)event_trigger; (void)context;

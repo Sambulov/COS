@@ -19,8 +19,7 @@ static hdl_module_state_t _hdl_time_counter(const void *desc, const uint8_t enab
     timer_var->reload_isr.context = timer->obj_var;
     timer_var->reload_isr.handler = &event_timer_isr;
     timer_var->count = 0;
-    hdl_event_subscribe(&timer->config->reload_interrupt->event, &timer_var->reload_isr);
-    if(hdl_interrupt_request(timer->dependencies[1], timer->config->reload_interrupt))
+    if(hdl_interrupt_request(timer->dependencies[1], &timer_var->reload_isr))
       return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_UNLOADED;

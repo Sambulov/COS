@@ -44,7 +44,6 @@ typedef enum {
 typedef struct {
   uint32_t phy;                    /* ADC */
   uint32_t rcu;                    /* RCC_APB2ENR_ADC1EN, RCC_APB2ENR_ADC2EN, RCC_APB2ENR_ADC3EN */
-  hdl_interrupt_t *adc_interrupt;
   uint32_t data_alignment;         /* ADC_DATAALIGN_RIGHT, ADC_DATAALIGN_LEFT */
   uint32_t regular_ext_trg;        /* ADC_EXTERNALTRIGCONV_[T1_CC1(CC2/CC3), T2_CC2(CC3/CC4/TRGO), T3_CC1(TRGO), T4_CC4, T5_CC1(CC2/CC3), T8_CC1(TRGO), Ext_IT11] */
   uint32_t regular_trg_edge;       /* ADC_EXTERNALTRIGCONVEDGE_[NONE, RISING, FALLING, RISINGFALLING] */
@@ -88,7 +87,7 @@ typedef struct {
   hdl_clock_t
   hdl_time_counter_t
   hdl_dma_channel_t
-  hdl_interrupt_controller_t
+  interrupt
 */
 hdl_module_new_t(hdl_adc_mcu_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t*, hdl_module_base_iface_t);
 

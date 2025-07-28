@@ -15,7 +15,6 @@ typedef struct {
 typedef struct {
   uint32_t phy;                    /* ADC1, ADC2, ADC3*/
   uint32_t rcc;                    /* RCC_APB2ENR_ADC1EN, RCC_APB2ENR_ADC2EN, RCC_APB2ENR_ADC3EN */
-  hdl_interrupt_t *adc_interrupt;
   uint32_t resolution;             /* ADC_RESOLUTION_12B, ADC_RESOLUTION_10B, ADC_RESOLUTION_8B, ADC_RESOLUTION_6B */
   uint32_t data_alignment;         /* ADC_DATAALIGN_RIGHT, ADC_DATAALIGN_LEFT */
   uint32_t regular_ext_trg;        /* ADC_EXTERNALTRIGCONV_[T1_CC1(CC2/CC3), T2_CC2(CC3/CC4/TRGO), T3_CC1(TRGO), T4_CC4, T5_CC1(CC2/CC3), T8_CC1(TRGO), Ext_IT11] */

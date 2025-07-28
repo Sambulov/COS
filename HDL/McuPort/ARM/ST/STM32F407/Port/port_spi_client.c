@@ -150,11 +150,9 @@ static hdl_module_state_t _hdl_spi_client(const void *desc, uint8_t enable) {
     CL_REG_SET(*rcc_en, spi->config->rcu);
     phy->CR1 = SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI | 
       spi->config->endian | spi->config->prescale | spi->config->polarity;
-    hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->dependencies[4];
     spi_var->isr.context = spi;
     spi_var->isr.handler = &event_spi_isr_client;
-    hdl_event_subscribe(&spi->config->interrupt->event, &spi_var->isr);
-    hdl_interrupt_request(ic, spi->config->interrupt);
+    hdl_interrupt_request(spi->dependencies[4], &spi_var->isr);
     phy->CR1 |= SPI_CR1_SPE;
     return HDL_MODULE_ACTIVE;
   }

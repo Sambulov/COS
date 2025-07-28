@@ -1,5 +1,19 @@
 #include "hdl_iface.h"
 
+typedef struct {
+  hdl_nvic_irq_t *irq;
+} hdl_nvic_var_t;
+
+HDL_ASSERRT_STRUCTURE_CAST(hdl_nvic_var_t, *((hdl_nvic_t *)0)->obj_var, HDL_NVIC_VAR_SIZE, port_core.h);
+
+typedef struct {
+  hdl_nvic_irq_t *next;
+  hdl_event_t event;
+} hdl_nvic_irq_var_t;
+
+HDL_ASSERRT_STRUCTURE_CAST(hdl_nvic_irq_var_t, *((hdl_nvic_irq_t *)0)->obj_var, HDL_NVIC_IRQ_VAR_SIZE, port_core.h);
+
+
 void nmi_handler()                      { call_isr(HDL_NVIC_EXCEPTION_NonMaskableInt, 0); }
 void hard_fault_handler()               { call_isr(HDL_NVIC_EXCEPTION_HardFault, 0); }
 void pend_sv_handler()                  { call_isr(HDL_NVIC_EXCEPTION_PendSV, 0); }
@@ -97,28 +111,32 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_LR(void)  {
   return(result); 
 } 
 
-void call_isr(hdl_nvic_irq_n_t irq, void *event_trigger) {
-  hdl_nvic_config_t *ic = (hdl_nvic_config_t *)((uint32_t *)SCB->VTOR)[0];
-  hdl_interrupt_t * const *isrs = ic->interrupts;
+void call_isr(hdl_nvic_irq_n_t irqn, void *event_trigger) {
+  hdl_nvic_t *ic = (hdl_nvic_t *)((uint32_t *)SCB->VTOR)[0];
+  hdl_nvic_var_t *ic_var = (hdl_nvic_var_t *)ic->obj_var;
+  hdl_nvic_irq_t *irq = ic_var->irq;
+
   // if(irq == -14) {
   //   NVIC_DisableIRQ(irq);
   // }
-  if(isrs != NULL) {
-    while (*isrs != NULL) {
-      hdl_interrupt_config_t *isr_cnf = (hdl_interrupt_config_t *)(*isrs)->irq_cnf;
-      if(isr_cnf->irq_type == irq) {
-        hdl_interrupt_t *isr = *isrs;
-        if(!hdl_event_raise(&isr->event, ic, event_trigger))
-          NVIC_DisableIRQ((IRQn_Type)irq);
-        return;
+  uint8_t no_handler = 1;
+  if(irq != NULL) {
+    while (irq != NULL) {
+      hdl_nvic_irq_var_t *irq_var = (hdl_nvic_irq_var_t *)irq->obj_var;
+      uint32_t trg = ((uint32_t)event_trigger) & irq->config->event_mask;
+      if((irq->config->irq_type == irqn) && (trg == irq->config->event_id)) {
+        hdl_event_raise(&irq_var->event, ic, (void *)trg);
+        no_handler = 0;
       }
-      isrs++;
+      irq = irq_var->next;
     }
   }
-  //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
-	asm("bkpt 255");
-  while(irq < 0) ;
-  NVIC_DisableIRQ((IRQn_Type)irq);
+  if(no_handler) {
+    //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
+    asm("bkpt 255");
+    while(irqn < 0) ;
+    NVIC_DisableIRQ((IRQn_Type)irq);
+  }
 }
 
 // __attribute__((naked)) void switch_to_psp(void) {
@@ -212,34 +230,58 @@ uint8_t hdl_core_is_in_isr() {
 static hdl_module_state_t _hdl_interrupt_controller(const void *desc, uint8_t enable) {
   hdl_nvic_t *nvic = (hdl_nvic_t *)desc;
   if(enable) {
+    ((hdl_nvic_var_t *)nvic->obj_var)->irq = NULL;
     _hdl_interrupt_controller_spec(nvic, enable);
     if(nvic->config->vector != NULL) SCB->VTOR = (uint32_t)nvic->config->vector;
     return HDL_MODULE_ACTIVE;
   }
-  else {
-    _hdl_interrupt_controller_spec(nvic, enable);
+  _hdl_interrupt_controller_spec(nvic, enable);
+  return HDL_MODULE_UNLOADED;
+}
+
+static hdl_module_state_t _hdl_interrupt(const void *desc, uint8_t enable) {
+  hdl_nvic_irq_t *irq = (hdl_nvic_irq_t *)desc;
+  hdl_nvic_irq_var_t *irq_var = (hdl_nvic_irq_var_t *)irq->obj_var;
+  hdl_nvic_irq_config_t *irq_cnf = (hdl_nvic_irq_config_t *)irq->config;
+  hdl_nvic_t *ic = (hdl_nvic_t *)irq->dependencies[0];
+  if(enable) {
+    _hdl_isr_prio_set(irq_cnf->irq_type, irq_cnf->priority_group, irq_cnf->priority, ic->config->prio_bits);
+    irq_var->next = NULL;
+    return HDL_MODULE_ACTIVE;
   }
   return HDL_MODULE_UNLOADED;
 }
 
-static uint8_t _hdl_interrupt_request(const void *desc, const hdl_interrupt_t *isr) {
-  hdl_nvic_t *ic = (hdl_nvic_t *)desc;
-  if((hdl_state(desc) == HDL_MODULE_FAULT) || (ic->config->interrupts == NULL) || (isr == NULL)) return HDL_FALSE;
-  hdl_interrupt_config_t *isr_cnf = (hdl_interrupt_config_t *)isr->irq_cnf;
-  _hdl_isr_prio_set(isr_cnf->irq_type, isr_cnf->priority_group, isr_cnf->priority, ic->config->prio_bits);
-  if(isr_cnf->irq_type < 0) return hdl_exception_irq_enable(isr_cnf->irq_type);
-  else NVIC_EnableIRQ((IRQn_Type)isr_cnf->irq_type);
+static uint8_t _hdl_interrupt_request(const void *desc, hdl_delegate_t *isr) {
+  hdl_nvic_irq_t *irq = (hdl_nvic_irq_t *)desc;
+  hdl_nvic_irq_var_t *irq_var = (hdl_nvic_irq_var_t *)irq->obj_var;
+  hdl_nvic_t *ic = (hdl_nvic_t *)irq->dependencies[0];
+  hdl_nvic_var_t *ic_var = (hdl_nvic_var_t *)ic->obj_var;
+  hdl_nvic_irq_config_t *irq_cnf = (hdl_nvic_irq_config_t *)irq->config;
+  hdl_event_subscribe(&irq_var->event, isr);
+  hdl_nvic_irq_t *irq_list = ic_var->irq;
+  while (irq_list != NULL) {
+    if(irq_list == irq) return HDL_TRUE;
+    irq_list = ((hdl_nvic_irq_var_t *)irq_list->obj_var)->next;
+  }
+  irq_var->next = ic_var->irq;
+  ic_var->irq = irq;
+  if(irq_cnf->irq_type < 0) return hdl_exception_irq_enable(irq_cnf->irq_type);
+  else NVIC_EnableIRQ((IRQn_Type)irq_cnf->irq_type);
   return HDL_TRUE;
 }
 
-static void _hdl_interrupt_sw_trigger(const void *int_ctr, const hdl_interrupt_t *isr) {
-  (void)int_ctr;
-  hdl_interrupt_config_t *isr_cnf = (hdl_interrupt_config_t *)isr->irq_cnf;
-  NVIC_SetPendingIRQ((IRQn_Type)isr_cnf->irq_type);
+static void _hdl_interrupt_sw_trigger(const void *desc) {
+  hdl_nvic_irq_t *irq = (hdl_nvic_irq_t *)desc;
+  NVIC_SetPendingIRQ((IRQn_Type)irq->config->irq_type);
 }
 
-const hdl_interrupt_controller_iface_t hdl_nvic_iface = {
-  .init = &_hdl_interrupt_controller,
+const hdl_module_base_iface_t hdl_nvic_iface = {
+  .init = &_hdl_interrupt_controller
+};
+
+const hdl_interrupt_iface_t hdl_nvic_irq_iface = {
+  .init = &_hdl_interrupt,
   .request = &_hdl_interrupt_request,
   .trigger = &_hdl_interrupt_sw_trigger
 };

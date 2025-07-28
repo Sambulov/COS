@@ -12,7 +12,6 @@
 
 typedef struct {
   uint32_t phy;                    /* ADC */
-  hdl_interrupt_t *adc_interrupt;
   uint32_t resolution;             /* ADC_RESOLUTION_[6, 8, 10, 12]B */
   uint32_t data_alignment;         /* ADC_DATAALIGN_RIGHT, ADC_DATAALIGN_LEFT */
   uint32_t regular_ext_trg;        /* ADC_EXTTRIG_REGULAR_[NONE, T0_CH(0,1,2), T2_TRGO, T14_CH0, EXTI_11] */
@@ -55,7 +54,7 @@ typedef struct {
   hdl_clock_t
   hdl_time_counter_t
   hdl_dma_channel_t
-  hdl_interrupt_controller_t
+  hdl_interrupt_t
 */
 hdl_module_new_t(hdl_adc_mcu_t, HDL_ADC_VAR_SIZE, hdl_adc_config_t*, hdl_module_base_iface_t);
 

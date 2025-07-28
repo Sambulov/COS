@@ -69,11 +69,8 @@ static hdl_module_state_t _hdl_spi_server(const void *desc, uint8_t enable) {
     spi_var->nss_isr.handler = &event_spi_nss;
     spi_var->spi_isr.context = spi;
     spi_var->spi_isr.handler = &event_spi_isr_server;
-    hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)spi->dependencies[5];
-    hdl_event_subscribe(&spi->config->spi_interrupt->event, &spi_var->spi_isr);
-    hdl_interrupt_request(ic, spi->config->nss_interrupt);
-    hdl_event_subscribe(&spi->config->spi_interrupt->event, &spi_var->spi_isr);
-    hdl_interrupt_request(ic, spi->config->nss_interrupt);
+    hdl_interrupt_request(spi->dependencies[5], &spi_var->spi_isr);
+    hdl_interrupt_request(spi->dependencies[6], &spi_var->nss_isr);
     spi_enable(spi->config->phy);
     return HDL_MODULE_ACTIVE;
   }

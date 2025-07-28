@@ -50,7 +50,6 @@ typedef struct {
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
   hdl_spi_prescale_t prescale;
-  hdl_interrupt_t *interrupt;
 } hdl_spi_client_config_t;
 
 /* hdl_spi_client_t depends on:
@@ -58,7 +57,7 @@ typedef struct {
   gpio miso  
   gpio sck
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
-  interrupt controller (nvic)
+  interrupt
  */
 hdl_module_new_t(hdl_spi_client_mcu_t, HDL_SPI_CLIENT_VAR_SIZE, hdl_spi_client_config_t*, hdl_module_base_iface_t);
 

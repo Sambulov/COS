@@ -147,11 +147,9 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
     coroutine_add(&uart_var->worker, &_uart_worker, uart);
     uart_var->transceiver = NULL;
     uart_var->tx_byte = 0;
-    hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)uart->dependencies[3];
     uart_var->uart_isr.context = uart;
     uart_var->uart_isr.handler = &event_uart_isr;
-    hdl_event_subscribe(&uart->config->interrupt->event, &uart_var->uart_isr);
-    hdl_interrupt_request(ic, uart->config->interrupt);
+    hdl_interrupt_request(uart->dependencies[3], &uart_var->uart_isr);
     periph->CR1 |= USART_CR1_UE;
     return HDL_MODULE_ACTIVE;
   }

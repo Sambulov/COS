@@ -57,11 +57,9 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable) {
         adc_external_trigger_config(hdl_adc->config->phy, ADC_REGULAR_CHANNEL, ENABLE);
         adc_external_trigger_source_config(hdl_adc->config->phy, ADC_REGULAR_CHANNEL, ADC0_1_2_EXTTRIG_REGULAR_NONE);
         adc_var->channels_count = 0;
-        hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)hdl_adc->dependencies[3];
         adc_var->adc_end_of_conversion.context = hdl_adc;
         adc_var->adc_end_of_conversion.handler = &event_adc_end_of_conversion;
-        hdl_event_subscribe(&hdl_adc->config->adc_interrupt->event, &adc_var->adc_end_of_conversion);
-        hdl_interrupt_request(ic, hdl_adc->config->adc_interrupt);
+        hdl_interrupt_request(hdl_adc->dependencies[3], &adc_var->adc_end_of_conversion);
         //adc_channel_length_config(hdl_adc->config->phy, ADC_REGULAR_CHANNEL, 0);
         adc_enable(hdl_adc->config->phy);
         //         for(uint16_t i = 0; i < adc_short_delay_after_start; i++)
@@ -87,7 +85,7 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable) {
         adc_var->age = 0;
         adc_var->start_conversion.context = hdl_adc;
         adc_var->start_conversion.handler = &event_adc_start_conversion;
-        hdl_event_subscribe(&timer->config->reload_interrupt->event, &adc_var->start_conversion);
+        hdl_interrupt_request(timer->dependencies[1], &adc_var->start_conversion);
         //adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
         adc_var->state_machine = GD_ADC_STATE_MACHINE_WORKING;
         ADC_CTL0(hdl_adc->config->phy) |= ADC_CTL0_EOCIE;

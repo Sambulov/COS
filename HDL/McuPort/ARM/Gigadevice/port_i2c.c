@@ -103,7 +103,7 @@ static void event_i2c_er_isr(void *event, void *sender, void *context) {
 #define WC_STATE_HIT         1
 
 static void _i2c_phy_set_wait_condition(hdl_i2c_mcu_t *i2c, __IO uint32_t *phy, uint32_t flags, uint8_t is_set, uint32_t timeout) {
-  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->dependencies[4];
+  hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->dependencies[3];
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   i2c_var->wc_ts = hdl_time_counter_get(timer);
   i2c_var->wc_flags = flags;
@@ -116,7 +116,7 @@ static void _i2c_phy_set_wait_condition(hdl_i2c_mcu_t *i2c, __IO uint32_t *phy, 
 static void _i2c_phy_wait_condition(hdl_i2c_mcu_t *i2c) {
   hdl_i2c_var_t *i2c_var = (hdl_i2c_var_t *)i2c->obj_var;
   if(i2c_var->wc_state == WC_STATE_AWAITING) {
-    hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->dependencies[4];
+    hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->dependencies[3];
     uint32_t now = hdl_time_counter_get(timer);
     if(i2c_var->wc_flags_is_set) {
       if((*i2c_var->wc_phy & i2c_var->wc_flags) == i2c_var->wc_flags) i2c_var->wc_state = WC_STATE_HIT;
@@ -442,12 +442,8 @@ static hdl_module_state_t _hdl_i2c(const void *desc, uint8_t enable) {
     i2c_var->ev_isr.handler = &event_i2c_ev_isr;
     i2c_var->er_isr.context = i2c;
     i2c_var->er_isr.handler = &event_i2c_er_isr; 
-    hdl_interrupt_controller_t *ic = (hdl_interrupt_controller_t *)i2c->dependencies[3];
-    hdl_event_subscribe(&hwc->err_interrupt->event, &i2c_var->er_isr);
-    hdl_interrupt_request(ic, hwc->err_interrupt);
-    hdl_event_subscribe(&hwc->ev_interrupt->event, &i2c_var->ev_isr);
-    hdl_interrupt_request(ic, hwc->ev_interrupt);
-
+    hdl_interrupt_request(i2c->dependencies[4], &i2c_var->ev_isr);
+    hdl_interrupt_request(i2c->dependencies[5], &i2c_var->er_isr);
     I2C_CTL1(hwc->phy) |= (I2C_CTL1_BUFIE | I2C_CTL1_EVIE | I2C_CTL1_ERRIE);
     I2C_CTL0(hwc->phy) |= I2C_CTL0_I2CEN;
 

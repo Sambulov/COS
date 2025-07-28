@@ -43,8 +43,6 @@ typedef struct {
   rcu_periph_enum rcu;
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
-  hdl_interrupt_t *spi_interrupt;
-  hdl_interrupt_t *nss_interrupt;
 } hdl_spi_server_config_t;
 
 /* hdl_spi_server_t depends on:
@@ -53,7 +51,8 @@ typedef struct {
   gpio sck
   gpio nss
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
-  interrupt controller (nvic)
+  spi_interrupt
+  nss_interrupt
  */
 hdl_module_new_t(hdl_spi_server_mcu_t, HDL_SPI_SERVER_VAR_SIZE, hdl_spi_server_config_t*, hdl_spi_server_iface_t);
 
@@ -68,10 +67,10 @@ extern const hdl_spi_server_iface_t hdl_spi_server_iface;
   gpio sck
   gpio nss
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
-  interrupt controller (nvic)
   hdl_dma_channel rx
   hdl_dma_channel tx
-  timer
+  spi int
+  nss int
 */
 hdl_module_new_t(hdl_spi_server_dma_mcu_t, HDL_SPI_SERVER_DMA_VAR_SIZE, hdl_spi_server_config_t*, hdl_spi_server_dma_iface_t);
 
@@ -87,7 +86,6 @@ typedef struct {
   hdl_spi_endianness_t endian;
   hdl_spi_polarity_t polarity;
   hdl_spi_prescale_t prescale;
-  hdl_interrupt_t *spi_interrupt;
 } hdl_spi_client_config_t;
 
 /* hdl_spi_client_t depends on:
@@ -95,7 +93,7 @@ typedef struct {
   gpio miso  
   gpio sck
   apb2_bus for SPI 5, 4, 3, 0; apb1_bus for SPI 1, 2
-  interrupt controller (nvic)
+  interrupt
  */
 hdl_module_new_t(hdl_spi_client_mcu_t, HDL_SPI_CLIENT_VAR_SIZE, hdl_spi_client_config_t*, hdl_module_base_iface_t);
 
@@ -109,6 +107,7 @@ typedef struct {
   hdl_spi_client_t
   gpio cs
   hdl_tick_counter
+  interrupt
  */
 hdl_module_new_t(hdl_spi_client_ch_mcu_t, HDL_SPI_CLIENT_CH_VAR_SIZE, hdl_spi_client_ch_config_t*, hdl_spi_client_ch_iface_t);
 

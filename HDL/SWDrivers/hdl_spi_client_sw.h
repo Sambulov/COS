@@ -5,8 +5,8 @@
 #define HDL_SPI_CLIENT_CH_SW_VAR_SIZE        28
 
 typedef enum {
-  HDL_SPI_SW_BIG_ENDIAN,
-  HDL_SPI_SW_LITTLE_ENDIAN,
+  HDL_SPI_SW_MSBF,
+  HDL_SPI_SW_LSBF,
 } hdl_spi_sw_endianness_t;
 
 /*             __    __    __    __    CPOL=0

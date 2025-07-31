@@ -27,8 +27,8 @@ static uint8_t _spi_transfer_byte(hdl_spi_client_sw_t *spi, uint8_t byte) {
       hdl_gpio_toggle(sck);
       _spi_sw_delay(spi->config->signal_min_delay);
     }
-    uint8_t bit = 1;
-    if(spi->config->endian == HDL_SPI_SW_BIG_ENDIAN) bit_reflect(byte, 8);
+    uint8_t bit = 0x01;
+    if(spi->config->endian == HDL_SPI_SW_MSBF) bit = 0x80;
     while (bit) {
       if(byte & bit) hdl_gpio_set_active(mosi);
       else hdl_gpio_set_inactive(mosi);
@@ -38,9 +38,9 @@ static uint8_t _spi_transfer_byte(hdl_spi_client_sw_t *spi, uint8_t byte) {
       else byte &= ~bit;
       hdl_gpio_toggle(sck);
       _spi_sw_delay(spi->config->signal_min_delay);
-      bit <<= 1;
+      if(spi->config->endian == HDL_SPI_SW_MSBF) bit >>= 1;
+      else bit <<= 1;
     }
-    if(spi->config->endian == HDL_SPI_SW_BIG_ENDIAN) bit_reflect(byte, 8);
     return byte;
 }
 

@@ -15,7 +15,7 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_74hc595_port_var_t, *((hdl_74hc595_port_t *)0)->o
 #define state_regs(port)  (((uint8_t *)port->config->port_regs))
 #define set_regs(port)  (&((uint8_t *)port->config->port_regs)[(port->config->shift_reg_length >> 3)])
 
-#define pin_to_reg_index(pin_no)   (pin_no >> 3)
+#define pin_to_reg_index(pin_no)   ((pin_no) >> 3)
 
 static uint8_t _74hc595_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
@@ -26,8 +26,8 @@ static uint8_t _74hc595_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_gpio_pin_t *oe = (hdl_gpio_pin_t *)port->dependencies[3];
   if(port_var->state & _74HC595_STATE_TRANSFER) {
     if(port_var->msg.status & HDL_SPI_MESSAGE_STATUS_COMPLETE) {
-      hdl_gpio_set_active(oe);
       hdl_gpio_set_active(latch);
+      hdl_gpio_set_active(oe);
       port_var->state &= ~_74HC595_STATE_TRANSFER;
     }
   }
@@ -94,7 +94,7 @@ static hdl_gpio_state _hdl_74hc595_read_output(const void *desc) {
   hdl_74hc595_port_t *port = (hdl_74hc595_port_t *)pin->dependencies[0];
   uint32_t pin_no = pin->config->pin;
   if(pin_no > port->config->shift_reg_length) return HDL_GPIO_LOW;
-  uint8_t *reg = &state_regs(port)[pin_to_reg_index(pin_no)];
+  uint8_t *reg = &state_regs(port)[pin_to_reg_index(port->config->shift_reg_length - pin_no - 1)];
   uint8_t mask = (1 << (pin_no & 0x07));
   return (*reg & mask)? HDL_GPIO_HIGH: HDL_GPIO_LOW;
 }
@@ -106,7 +106,7 @@ static void _hdl_74hc595_write_io(const void *desc, const hdl_gpio_state state, 
   uint32_t pin_no = pin->config->pin;
   if(pin_no > port->config->shift_reg_length) return;
   uint8_t mask = (1 << (pin_no & 0x07));
-  uint8_t *reg = &set_regs(port)[pin_to_reg_index(pin_no)];
+  uint8_t *reg = &set_regs(port)[pin_to_reg_index(port->config->shift_reg_length - pin_no - 1)];
   uint8_t rstate = *reg;
   if(toggle) rstate ^= mask;
   else CL_REG_MODIFY(rstate, mask, ((state == HDL_GPIO_HIGH)? mask: 0));

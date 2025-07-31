@@ -31,6 +31,7 @@ extern "C" {
 #include "hdl_spi_client_sw.h"
 #include "hdl_can.h"
 #include "hdl_button.h"
+#include "hdl_buzzer.h"
 #include "hdl_timer.h"
 #include "hdl_eeprom_i2c.h"
 #include "W25X20CL.h"

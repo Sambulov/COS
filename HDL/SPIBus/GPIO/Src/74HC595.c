@@ -80,7 +80,7 @@ static hdl_module_state_t _hdl_74hc595_pin(const void *desc, const uint8_t enabl
     hdl_74hc595_port_var_t *port_var = (hdl_74hc595_port_var_t *)port->obj_var;
     uint32_t pin_no = pin->config->pin;
     if(pin_no > port->config->shift_reg_length) return HDL_MODULE_FAULT;    
-    uint8_t *reg = &set_regs(port)[pin_to_reg_index(pin_no)];
+    uint8_t *reg = &set_regs(port)[pin_to_reg_index(port->config->shift_reg_length - pin_no - 1)];
     uint8_t mask = (1 << (pin_no & 0x07));
     CL_REG_MODIFY(*reg, mask, ((pin->config->inactive_default == HDL_GPIO_HIGH)? mask: 0));
     CL_REG_SET(port_var->state, _74HC595_STATE_SYNC);

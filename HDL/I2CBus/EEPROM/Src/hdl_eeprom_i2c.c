@@ -1,4 +1,3 @@
-
 #include "hdl_iface.h"
 
 typedef struct {
@@ -6,6 +5,7 @@ typedef struct {
   hdl_i2c_message_t i2c_msg;
   hdl_nvm_message_t *nvm_msg;
   uint16_t mem_addr;
+  hdl_nvm_message_options_t nvm_options;
   uint8_t state;
   uint32_t burn_time;
 } hdl_eeprom_i2c_var_t;
@@ -57,14 +57,13 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         else {
           eeprom_var->i2c_msg.buffer = (eeprom_var->nvm_msg->rx_buffer + eeprom_var->nvm_msg->out_transferred);
           eeprom_var->i2c_msg.length = eeprom_var->nvm_msg->size - eeprom_var->nvm_msg->out_transferred;
-          eeprom_var->i2c_msg.options = HDL_I2C_MESSAGE_STOP;
-          if(!(eeprom_var->nvm_msg->options & HDL_NVM_OPTION_WRITE)) {
-            eeprom_var->i2c_msg.buffer = (eeprom_var->nvm_msg->tx_data + eeprom_var->nvm_msg->out_transferred);
-            eeprom_var->i2c_msg.options |= HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST;
-          }
-          else {
-            if(eeprom_var->i2c_msg.length > eeprom->config->page_size) {
-              eeprom_var->i2c_msg.length = eeprom->config->page_size;
+          eeprom_var->i2c_msg.options = HDL_I2C_MESSAGE_START | HDL_I2C_MESSAGE_ADDR | HDL_I2C_MESSAGE_MRSW | HDL_I2C_MESSAGE_NACK_LAST | HDL_I2C_MESSAGE_STOP;
+          if(!(eeprom_var->nvm_options & HDL_NVM_OPTION_READ)) {
+            if(eeprom_var->nvm_options & HDL_NVM_OPTION_WRITE) {
+              eeprom_var->i2c_msg.buffer = (eeprom_var->nvm_msg->tx_data + eeprom_var->nvm_msg->out_transferred);
+              eeprom_var->i2c_msg.options = HDL_I2C_MESSAGE_STOP;
+              if(eeprom_var->i2c_msg.length > eeprom->config->page_size)
+                eeprom_var->i2c_msg.length = eeprom->config->page_size;
             }
           }
           eeprom_var->state = EE_STATE_TX_DATA_MSG;
@@ -88,16 +87,18 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           data->out_status |= HDL_NVM_ERROR_BUS_FAULT;
           break;
         }
-        if(data->options & HDL_NVM_OPTION_WRITE) {
-          if(eeprom_var->i2c_msg.status & HDL_I2C_MESSAGE_STATUS_NACK) {
-            data->out_status |= HDL_NVM_ERROR_INTERNAL_FAULT;
-            break;
+        if(!(eeprom_var->nvm_options & HDL_NVM_OPTION_READ)) {
+          if(eeprom_var->nvm_options & HDL_NVM_OPTION_WRITE) {
+            if(eeprom_var->i2c_msg.status & HDL_I2C_MESSAGE_FAULT_MASK) {
+              data->out_status |= HDL_NVM_ERROR_INTERNAL_FAULT;
+              break;
+            }
+            hdl_i2c_t *bus = (hdl_i2c_t *)eeprom->dependencies[0]; 
+            hdl_give(bus, eeprom);
+            eeprom_var->state = EE_STATE_AWAIT_BURNING;
+            hdl_time_counter_t *time_cnt = (hdl_time_counter_t *)eeprom->dependencies[1];
+            eeprom_var->burn_time = hdl_time_counter_get(time_cnt);
           }
-          hdl_i2c_t *bus = (hdl_i2c_t *)eeprom->dependencies[0]; 
-          hdl_give(bus, eeprom);
-          eeprom_var->state = EE_STATE_AWAIT_BURNING;
-          hdl_time_counter_t *time_cnt = (hdl_time_counter_t *)eeprom->dependencies[1];
-          eeprom_var->burn_time = hdl_time_counter_get(time_cnt);
         }
       }
       break;
@@ -120,9 +121,25 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     case EE_STATE_COMPLETE: {
       hdl_i2c_t *bus = (hdl_i2c_t *)eeprom->dependencies[0]; 
       hdl_give(bus, eeprom);
-      if(eeprom_var->nvm_msg->options & HDL_NVM_OPTION_WRITE) {
-        hdl_gpio_pin_t *wp_pin = (hdl_gpio_pin_t *)eeprom->dependencies[2];
-        hdl_gpio_set_inactive(wp_pin);
+      if(!(eeprom_var->nvm_msg->out_status & HDL_NVM_ERROR)) {
+        if(eeprom_var->nvm_options & HDL_NVM_OPTION_READ) {
+          eeprom_var->nvm_options &= ~HDL_NVM_OPTION_READ;
+        }
+        else if(eeprom_var->nvm_msg->options & HDL_NVM_OPTION_WRITE) {
+          eeprom_var->nvm_options &= ~HDL_NVM_OPTION_WRITE;
+          hdl_gpio_pin_t *wp_pin = (hdl_gpio_pin_t *)eeprom->dependencies[2];
+          hdl_gpio_set_inactive(wp_pin);
+        }
+        else if(eeprom_var->nvm_msg->options & HDL_NVM_OPTION_VALIDATE) {
+          eeprom_var->nvm_msg->options &= ~HDL_NVM_OPTION_VALIDATE;
+          if(mem_cmp(eeprom_var->nvm_msg->rx_buffer, eeprom_var->nvm_msg->tx_data, eeprom_var->nvm_msg->size))
+            eeprom_var->nvm_msg->out_status |= HDL_NVM_ERROR_VALIDATION_FAULT;
+        }
+        if(eeprom_var->nvm_options) {
+          eeprom_var->nvm_msg->out_transferred = 0;
+          eeprom_var->state = EE_STATE_SET_MEM_ADDR_MSG;
+          break;
+        }
       }
       eeprom_var->nvm_msg->out_status |= HDL_NVM_STATE_COMPLETE;
       eeprom_var->nvm_msg->out_status &= ~HDL_NVM_STATE_BUSY;
@@ -138,6 +155,8 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           hdl_gpio_pin_t *wp_pin = (hdl_gpio_pin_t *)eeprom->dependencies[2];
           if(!hdl_is_null_module(wp_pin) && hdl_gpio_is_active(wp_pin)) break;
         }
+        eeprom_var->nvm_options = eeprom_var->nvm_msg->options;
+        eeprom_var->nvm_msg->out_transferred = 0;
         eeprom_var->state = EE_STATE_SET_MEM_ADDR_MSG;
       }
       break;

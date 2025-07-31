@@ -32,10 +32,6 @@ typedef struct {
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_var_t, *((hdl_i2c_mcu_t *)0)->obj_var, HDL_I2C_VAR_SIZE, port_i2c.h);
 
-static void _i2c_clear_error(uint32_t i2c_periph) {
-  I2C_STAT0(i2c_periph) &= ~(I2C_ERROR_CLEAR_MASK);
-}
-
 static void event_i2c_ev_isr(void *event, void *sender, void *context) {
   (void) event; (void) sender;
   hdl_i2c_mcu_t *i2c = (hdl_i2c_mcu_t *)context;
@@ -96,7 +92,7 @@ static void event_i2c_er_isr(void *event, void *sender, void *context) {
       transceiver->end_of_transmission(transceiver->receiver_context);
     I2C_CTL0(hwc->phy) |= (I2C_CTL0_ACKEN);
   }
-  _i2c_clear_error(hwc->phy);
+  I2C_STAT0(hwc->phy) &= ~(I2C_ERROR_CLEAR_MASK);
 }
 
 #define WC_STATE_AWAITING    0

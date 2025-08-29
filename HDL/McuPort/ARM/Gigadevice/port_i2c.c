@@ -115,6 +115,7 @@ static void _i2c_phy_wait_condition(hdl_i2c_mcu_t *i2c) {
   if(i2c_var->wc_state == WC_STATE_AWAITING) {
     hdl_time_counter_t *timer = (hdl_time_counter_t *)i2c->dependencies[3];
     uint32_t now = hdl_time_counter_get(timer);
+    if(CL_TIME_ELAPSED(i2c_var->wc_ts, i2c_var->wc_timeout, now)) i2c_var->wc_state = WC_STATE_TIMEOUT;
     if(i2c_var->wc_flags_is_set) {
       if((*i2c_var->wc_phy & i2c_var->wc_flags) == i2c_var->wc_flags) i2c_var->wc_state = WC_STATE_HIT;
     }
@@ -122,7 +123,6 @@ static void _i2c_phy_wait_condition(hdl_i2c_mcu_t *i2c) {
       uint32_t flags = ~i2c_var->wc_flags;
       if((*i2c_var->wc_phy | flags) == flags) i2c_var->wc_state = WC_STATE_HIT;
     }
-    if(CL_TIME_ELAPSED(i2c_var->wc_ts, i2c_var->wc_timeout, now)) i2c_var->wc_state = WC_STATE_TIMEOUT;
   }
 }
 
@@ -351,10 +351,10 @@ static uint8_t _i2c_client_worker(coroutine_t *this, uint8_t cancel, void *arg) 
           break;
 
         case WRK_STATE_TERMINATE: {
-          hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
-          I2C_CTL0(hwc->phy) |= I2C_CTL0_SRESET;
-          __NOP(); __NOP(); __NOP(); __NOP();
-          I2C_CTL0(hwc->phy) &= ~I2C_CTL0_SRESET;
+          //hdl_i2c_config_hw_t *hwc = (hdl_i2c_config_hw_t *)i2c->config->hwc;
+          //I2C_CTL0(hwc->phy) |= I2C_CTL0_SRESET;
+          //__NOP(); __NOP(); __NOP(); __NOP();
+          //I2C_CTL0(hwc->phy) &= ~I2C_CTL0_SRESET;
           i2c_var->wrk_state++;
         }
         /* fall through */
@@ -399,7 +399,6 @@ static hdl_module_state_t _hdl_i2c(const void *desc, uint8_t enable) {
   if(enable) {
     rcu_periph_clock_enable(hwc->rcu);
     //i2c_clock_config((uint32_t)_i2c->module.phy, _i2c->config->speed, _i2c->config->dtcy);
-    
     hdl_clock_t *clk = (hdl_clock_t *)i2c->dependencies[2];
     uint32_t freq_mhz;
     uint32_t freq_hz;

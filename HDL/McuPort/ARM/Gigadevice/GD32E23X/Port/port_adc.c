@@ -78,7 +78,7 @@ static hdl_module_state_t _hdl_adc(const void *desc, uint8_t enable){
         adc_var->age = 0;
         adc_var->start_conversion.context = adc;
         adc_var->start_conversion.handler = &event_adc_start_conversion;
-        hdl_interrupt_request(&timer->dependencies[1], &adc_var->start_conversion);
+        hdl_interrupt_request(timer->dependencies[1], &adc_var->start_conversion);
         //adc_software_trigger_enable(ADC_REGULAR_CHANNEL);
         adc_var->state_machine = GD_ADC_STATE_MACHINE_WORKING;
         ADC_CTL0 |= ADC_CTL0_EOCIE;

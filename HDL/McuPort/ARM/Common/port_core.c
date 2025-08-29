@@ -132,10 +132,12 @@ void call_isr(hdl_nvic_irq_n_t irqn, void *event_trigger) {
     }
   }
   if(no_handler) {
+    #if DEBUG
     //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
     asm("bkpt 255");
+    #endif
     while(irqn < 0) ;
-    NVIC_DisableIRQ((IRQn_Type)irq);
+    NVIC_DisableIRQ((IRQn_Type)irqn);
   }
 }
 

@@ -30,9 +30,9 @@ typedef struct {
 
 hdl_module_new_t(hdl_uart_t, 0, void*, hdl_uart_iface_t);
 
-__STATIC_INLINE uint8_t hdl_uart_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id) {
+__STATIC_INLINE uint8_t hdl_uart_set_transceiver(const void *desc, const hdl_transceiver_t *transceiver) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return ((hdl_uart_t *)desc)->iface->transceiver_set(desc, transceiver, channel_id);
+  return ((hdl_uart_t *)desc)->iface->transceiver_set(desc, transceiver, 0);
 }
 
 __STATIC_INLINE uint8_t hdl_uart_setup(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl_uart_parity_t parity, hdl_uart_stop_bits_t stop) {

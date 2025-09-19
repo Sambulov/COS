@@ -51,10 +51,6 @@ static void event_uart_isr(void *event, void *sender, void *context) {
     if((uart_var->transceiver != NULL) && (uart_var->transceiver->end_of_transmission != NULL))
         uart_var->transceiver->end_of_transmission(uart_var->transceiver->receiver_context);
 	}
-	if (periph->SR & (USART_SR_NE | USART_SR_FE | USART_SR_ORE | USART_SR_PE)) {
-    _rst_uart_status(periph);
-    return;
-  }
   /* UART in mode Receiver ---------------------------------------------------*/
   if (periph->SR & USART_SR_RXNE) {
     uint16_t data = periph->DR;
@@ -77,12 +73,14 @@ static void event_uart_isr(void *event, void *sender, void *context) {
     }
     else periph->CR1 |= USART_CR1_TCIE;
   }
-  if((periph->CR1 & USART_CR1_TCIE) && (periph->SR & USART_SR_TC)) {
+  if(((periph->CR1 & USART_CR1_TCIE) && (periph->SR & USART_SR_TC)) ||
+    (periph->SR & (USART_SR_NE | USART_SR_FE | USART_SR_ORE | USART_SR_PE))) {
     CL_REG_CLEAR(periph->CR1, USART_CR1_TCIE);
     CL_REG_CLEAR(periph->SR, USART_SR_TC);
     hdl_gpio_set_inactive(uart->dependencies[5]);
+    if (periph->SR & (USART_SR_NE | USART_SR_FE | USART_SR_ORE | USART_SR_PE))
+      _rst_uart_status(periph);
   }
-
 }
 
 uint8_t _hdl_uart_set(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl_uart_parity_t parity, hdl_uart_stop_bits_t stop) {

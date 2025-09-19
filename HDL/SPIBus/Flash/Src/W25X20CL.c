@@ -138,6 +138,8 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       }
       else if(flash_var->op & HDL_NVM_OPTION_ERASE) {
         flash_var->nvm_msg->out_transferred += flash->config->sector_size;
+        hdl_time_counter_t *time_cnt = (hdl_time_counter_t *)flash->dependencies[1];
+        flash_var->burn_time = hdl_time_counter_get(time_cnt);
         flash_var->state = NVM_STATE_AWAIT_BURNING;
         break;
       }
@@ -174,7 +176,12 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     case NVM_STATE_AWAIT_BURNING: {
       hdl_time_counter_t *time_cnt = (hdl_time_counter_t *)flash->dependencies[1];
       uint32_t now = hdl_time_counter_get(time_cnt);
-      if(!(CL_TIME_ELAPSED(flash_var->burn_time, flash->config->write_time, now))) break;
+      if(flash_var->op & HDL_NVM_OPTION_WRITE) {
+        if(!(CL_TIME_ELAPSED(flash_var->burn_time, flash->config->write_time, now))) break;
+      }
+      else { /* erase */
+        if(!(CL_TIME_ELAPSED(flash_var->burn_time, flash->config->sector_erase_time, now))) break;
+      }
       flash_var->state = NVM_STATE_COMPLETE;
     }
 

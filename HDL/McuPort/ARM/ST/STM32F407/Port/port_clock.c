@@ -149,7 +149,21 @@ static hdl_module_state_t _hdl_clock(const void *desc, uint8_t enable) {
 
     case HDL_CLOCK_TYPE_LXTAL:
       clk_var->freq.num = clk->config->property.freq;
-      if(enable) return _hdl_clock_osc_en(&RCC->BDCR, RCC_BDCR_LSEON, RCC_BDCR_LSERDY); /* todo: pwr backup en */
+      if(enable) { /* todo: power dimain module dependesy */
+        CL_REG_SET(RCC->APB1ENR, RCC_APB1ENR_PWREN);
+        __DSB();
+        if(!(PWR->CR & PWR_CR_DBP)) {
+          uint32_t timer = 1000000;
+          CL_REG_SET(PWR->CR, PWR_CR_DBP);
+          while (timer-- && !(PWR->CR & PWR_CR_DBP));
+          if(!(PWR->CR & PWR_CR_DBP)) return HDL_MODULE_FAULT;
+          CL_REG_SET(RCC->BDCR, RCC_BDCR_LSEON);
+        }
+        /* todo timeout */
+        if(!(RCC->BDCR & RCC_BDCR_LSERDY)) return HDL_MODULE_LOADING;
+        return HDL_MODULE_ACTIVE;
+      }
+      CL_REG_CLEAR(RCC->BDCR, RCC_BDCR_LSEON);
       return HDL_MODULE_UNLOADED;
 
     case HDL_CLOCK_TYPE_IRC16M:

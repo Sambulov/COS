@@ -7,6 +7,7 @@ typedef struct {
   uint32_t sector_size;
   uint16_t page_size;
   uint16_t write_time;
+  uint16_t sector_erase_time;
   uint32_t size;
 } hdl_w25x20cl_config_t;
 

@@ -11,7 +11,7 @@ const fifo_iface_t fifo_circular_buffer_iface = {
   .pfBufferFree = (buffer_base_t)&circular_buffer_free,
   .pfBufferInit = (buffer_init_t)&circular_buffer_init,
   .pfBufferRead = (buffer_read_t)&circular_buffer_read,
-  .pfBufferWrte = (buffer_write_t)&circular_buffer_write,
+  .pfBufferWrite = (buffer_write_t)&circular_buffer_write,
   .pfIsInIsr = &hdl_core_is_in_isr
 };
 

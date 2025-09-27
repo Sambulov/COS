@@ -10,7 +10,7 @@ typedef enum {
   HDL_CLOCK_TYPE_HXTAL,          /* property: freq (can be 4 ~ 26MHz)*/
   HDL_CLOCK_TYPE_LXTAL,          /* property: freq (32768)*/
   HDL_CLOCK_TYPE_IRC16M,         /* property: freq = 16000000 const */
-  HDL_CLOCK_TYPE_PLL_M,          /* property: div (can be 2, 3 .. 63), module depends on HXTAL or IRC16 */
+  HDL_CLOCK_TYPE_PLL_SRC,        /* property: div (can be 2, 3 .. 63), module depends on HXTAL or IRC16 */
 
   /* For PLL clocks also need to be dependency on corresponding hdl_clock_mcu_pll_t */
   HDL_CLOCK_TYPE_PLL_N,          /* property: mul (can be 50, 51 .. 432), module depends on PLL_SEL */
@@ -38,13 +38,15 @@ typedef union {
   uint32_t div;
 } hdl_clock_property_t;
 
-typedef struct {
-  hdl_clock_type_t type;
-  hdl_clock_property_t property;
-  uint32_t phy;
-} hdl_clock_config_t;
+typedef struct hdl_clock_config_t hdl_clock_config_t;
 
 hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_VAR_SIZE, hdl_clock_config_t*, hdl_clock_iface_t);
+
+struct hdl_clock_config_t {
+  const hdl_clock_mcu_t *clock_src;
+  hdl_clock_type_t type;
+  hdl_clock_property_t property;
+};
 
 extern const hdl_clock_iface_t hdl_clock_iface;
 

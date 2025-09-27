@@ -25,7 +25,7 @@ static uint8_t _hdl_tick_counter_get(const void *counter, uint32_t *value, uint3
   uint32_t periph = tick_cnt->config->phy;
   if(periph == (uint32_t)SysTick) return HDL_FALSE;
   if(value != NULL) *value = (SysTick->LOAD - SysTick->VAL);
-  if(period != NULL) *period = SysTick->LOAD;
+  if(period != NULL) *period = SysTick->LOAD + 1;
   return HDL_TRUE;
 }
 

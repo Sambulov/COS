@@ -64,7 +64,7 @@ static uint8_t _hdl_tick_counter_get(const void *counter, uint32_t *value, uint3
     if(TIMx->CR1 & TIM_CR1_DIR) *value = (TIMx->ARR - TIMx->CNT);
     else *value = TIMx->CNT;
   }
-  if(period != NULL) *period = TIMx->ARR;
+  if(period != NULL) *period = TIMx->ARR + 1;
   return HDL_TRUE;
 }
 

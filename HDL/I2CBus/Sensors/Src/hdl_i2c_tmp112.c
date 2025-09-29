@@ -26,7 +26,7 @@ static uint8_t _tmp112_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         tmp112_var->data->state = -1;
         if(!(res & HDL_I2C_MEM_XFER_FAIL)) {
           int32_t temp = (int32_t)(swap_bytes(tmp112_var->temp_sns_reg_val) >> 4);
-          temp = (625L * (temp + 880)) - 550000L;
+          temp = ((625L * (temp + 880)) - 550000L) / 10;
           tmp112_var->data->temp = temp;
           tmp112_var->data->state = 1;
         }

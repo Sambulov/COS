@@ -1,13 +1,16 @@
 #ifndef HDL_I2C_BM8563_H_
 #define HDL_I2C_BM8563_H_
 
-#define HDL_I2C_BM8563_VAR_SIZE  76
+#define HDL_I2C_BM8563_VAR_SIZE  32
 
 /* chip_address 0x51 */
 
-typedef struct {
-  uint16_t chip_address;
-} hdl_i2c_bm8563_config_t;
+typedef enum {
+  HDL_I2C_BM8563_XFER_STATE_FAIL  = 0xff,
+  HDL_I2C_BM8563_XFER_STATE_BUSY  = 0x00,
+  HDL_I2C_BM8563_XFER_STATE_READY = 0x01,
+} hdl_i2c_bm8563_xfer_sate_t;
+
 
 typedef struct {
   uint8_t sec;
@@ -17,7 +20,7 @@ typedef struct {
   uint8_t dow;
   uint8_t month;
   uint8_t year;
-  int8_t state; /* -1 fault; 0 busy; 1 ready */
+  hdl_i2c_bm8563_xfer_sate_t state;
 } hdl_i2c_bm8563_data_t;
 
 typedef uint8_t (* hdl_i2c_bm8563_xfer_t)(const void *desc, hdl_i2c_bm8563_data_t *data);
@@ -32,7 +35,7 @@ typedef struct {
   hdl_i2c
   hdl_gpio  (int)
 */
-hdl_module_new_t(hdl_i2c_bm8563_t, HDL_I2C_BM8563_VAR_SIZE, hdl_i2c_bm8563_config_t*, hdl_i2c_bm8563_iface_t);
+hdl_module_new_t(hdl_i2c_bm8563_t, HDL_I2C_BM8563_VAR_SIZE, uint8_t, hdl_i2c_bm8563_iface_t);
 
 extern const hdl_i2c_bm8563_iface_t hdl_i2c_bm8563_iface;
 

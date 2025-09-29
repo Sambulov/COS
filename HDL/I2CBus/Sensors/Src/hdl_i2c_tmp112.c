@@ -2,7 +2,6 @@
 
 typedef struct {
   coroutine_t worker;
-  hdl_i2c_reg_io_t reg_io;
   hdl_i2c_tmp112_data_t *data;
   uint16_t temp_sns_reg_val;
   uint8_t temp_sns_reg;
@@ -14,31 +13,25 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_tmp112_var_t, *((hdl_i2c_tmp112_t *)0)->obj_v
 static uint8_t _tmp112_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
   hdl_i2c_tmp112_t *tmp112 = (hdl_i2c_tmp112_t *)arg;
+  hdl_i2c_mem_t *mem = (hdl_i2c_mem_t *)tmp112->dependencies[0];
   hdl_i2c_tmp112_var_t *tmp112_var = (hdl_i2c_tmp112_var_t *)tmp112->obj_var;
   if(tmp112_var->data != NULL) {
     if(tmp112_var->state == 0) {
-      hdl_i2c_reg_cnf_t reg_cnf = {
-        .cmd = &tmp112_var->temp_sns_reg,
-        .cmd_size = 1,
-        .dev_addr = tmp112->config->chip_address,
-        .bus_lock_obj = tmp112,
-        .mod_i2c = tmp112->dependencies[0],
-        .reg_buf = (uint8_t *)&tmp112_var->temp_sns_reg_val,
-        .xfer_size = 2,
-        .retry = 3
-      };
-      hdl_i2c_reg_io_init(&tmp112_var->reg_io, &reg_cnf);
-      tmp112_var->state++;
+      if(hdl_i2c_mem_read(mem, tmp112->config, tmp112_var->temp_sns_reg, (uint8_t *)&tmp112_var->temp_sns_reg_val, 2))
+        tmp112_var->state++;
     }
-    int8_t res;
-    if((tmp112_var->state == 1) && (res = hdl_i2c_reg_read(&tmp112_var->reg_io))) {
-      if(res > 0) {
-        int32_t temp = (int32_t)(swap_bytes(tmp112_var->temp_sns_reg_val) >> 4);
-        temp = (625L * (temp + 880)) - 550000L;
-        tmp112_var->data->temp = temp;
+    if(tmp112_var->state == 1) {
+      hdl_i2c_mem_state_t res = hdl_i2c_mem_state(mem);
+      if(!(res & HDL_I2C_MEM_BUSY)) {
+        tmp112_var->data->state = -1;
+        if(!(res & HDL_I2C_MEM_XFER_FAIL)) {
+          int32_t temp = (int32_t)(swap_bytes(tmp112_var->temp_sns_reg_val) >> 4);
+          temp = (625L * (temp + 880)) - 550000L;
+          tmp112_var->data->temp = temp;
+          tmp112_var->data->state = 1;
+        }
+        tmp112_var->data = NULL;
       }
-      tmp112_var->data->state = res;
-      tmp112_var->data = NULL;
     }
   }
   return cancel;

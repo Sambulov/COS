@@ -3,12 +3,9 @@
 
 /* TMP112x High-Accuracy, Low-Power, Digital Temperature Sensor */
 
-#define HDL_I2C_TMP112_VAR_SIZE  76
+#define HDL_I2C_TMP112_VAR_SIZE  32
 
 /* chip_address 0x48 */
-typedef struct {
-  uint16_t chip_address;
-} hdl_i2c_tmp112_config_t;
 
 typedef struct {
   int32_t temp;
@@ -27,7 +24,7 @@ typedef struct {
   hdl_i2c
   hdl_gpio  (int)
 */
-hdl_module_new_t(hdl_i2c_tmp112_t, HDL_I2C_TMP112_VAR_SIZE, hdl_i2c_tmp112_config_t*, hdl_i2c_tmp112_iface_t);
+hdl_module_new_t(hdl_i2c_tmp112_t, HDL_I2C_TMP112_VAR_SIZE, uint8_t, hdl_i2c_tmp112_iface_t);
 
 extern const hdl_i2c_tmp112_iface_t hdl_i2c_tmp112_iface;
 

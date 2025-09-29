@@ -5,9 +5,8 @@ typedef struct {
   const hdl_transceiver_t *transceiver;
   coroutine_t worker;
   uint8_t tx_data[2];
-  uint8_t rx_byte           : 1,
-          tx_byte           : 1,
-          transmiting       : 1;
+  uint8_t rx_byte  : 1;
+  uint8_t tx_byte  : 1;
 } hdl_uart_var_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_uart_var_t, *((hdl_uart_mcu_t *)0)->obj_var, HDL_UART_VAR_SIZE, port_uart.h);
@@ -22,20 +21,11 @@ static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;
   hdl_gpio_pin_t *rts = (hdl_gpio_pin_t *)uart->dependencies[5];
   USART_TypeDef *periph = (USART_TypeDef *)uart->config->phy;
-  if(!uart_var->transmiting) {
-    uint8_t transmit_ready = (uart_var->transceiver != NULL) &&
-      (uart_var->transceiver->tx_available != NULL) &&
-      uart_var->transceiver->tx_available(uart_var->transceiver->transmitter_context);
-    if(transmit_ready) {
-      hdl_gpio_set_active(rts);
-      transmit_ready = (hdl_is_null_module(rts) || hdl_gpio_is_active(rts));
-    }
-    else
-      hdl_gpio_set_inactive(rts);
-    if(transmit_ready) {
-      uart_var->transmiting = HDL_TRUE;
-      CL_REG_SET(periph->CR1, USART_CR1_TXEIE);
-    }
+  if((uart_var->transceiver != NULL) && !(periph->CR1 & USART_CR1_TXEIE) &&
+     (uart_var->transceiver->tx_available != NULL) && (uart_var->transceiver->tx_empty != NULL) &&
+     (uart_var->transceiver->tx_available(uart_var->transceiver->transmitter_context) > 0)) {
+    hdl_gpio_set_active(rts);
+    periph->CR1 |= USART_CR1_TXEIE;
   }
   return cancel;
 }
@@ -44,7 +34,7 @@ static void _rst_uart_status(USART_TypeDef *uart) {
 	__IO uint32_t tmpreg;
 	tmpreg = uart->SR;
 	tmpreg = uart->DR;
-  uart->SR = ~USART_SR_TC;
+  uart->SR = 0;
 	(void)tmpreg;
 }
 
@@ -70,32 +60,27 @@ static void event_uart_isr(void *event, void *sender, void *context) {
   ///* UART in mode Transmitter ------------------------------------------------*/
   if ((periph->CR1 & USART_CR1_TXEIE) && (periph->SR & USART_SR_TXE)) {
     CL_REG_CLEAR(periph->CR1, USART_CR1_TXEIE);
-    int32_t len = 0;
-    if((uart_var->transceiver != NULL) &&
-       (uart_var->transceiver->tx_empty != NULL))
-      len = uart_var->transceiver->tx_empty(uart_var->transceiver->transmitter_context, 
-                                      &uart_var->tx_data[uart_var->tx_byte], wl - uart_var->tx_byte);
+    int32_t len = uart_var->transceiver->tx_empty(uart_var->transceiver->transmitter_context, 
+      &uart_var->tx_data[uart_var->tx_byte], wl - uart_var->tx_byte);
     if(len > 0) {
       if((len + uart_var->tx_byte) == wl) {
-        CL_REG_CLEAR(periph->SR, USART_SR_TC);
+        //if(wl == 1) uart_var->tx_data[1] = 0;
         periph->DR = *((uint16_t *)uart_var->tx_data);
-        CL_REG_SET(periph->CR1, USART_CR1_TCIE);
         uart_var->tx_byte = 0;
+        periph->CR1 |= USART_CR1_TXEIE;
       }
-      else {
-        uart_var->tx_byte = 1;
-        CL_REG_SET(periph->CR1, USART_CR1_TXEIE);
-      }
+      else uart_var->tx_byte = len;
     }
-    else
-      uart_var->transmiting = HDL_FALSE;
+    else periph->CR1 |= USART_CR1_TCIE;
   }
-  if((periph->CR1 & USART_CR1_TCIE) && (periph->SR & USART_SR_TC)) {
+  if(((periph->CR1 & USART_CR1_TCIE) && (periph->SR & USART_SR_TC)) ||
+    (periph->SR & (USART_SR_NE | USART_SR_FE | USART_SR_ORE | USART_SR_PE))) {
     CL_REG_CLEAR(periph->CR1, USART_CR1_TCIE);
-    CL_REG_SET(periph->CR1, USART_CR1_TXEIE);
+    CL_REG_CLEAR(periph->SR, USART_SR_TC);
+    hdl_gpio_set_inactive(uart->dependencies[5]);
+    if (periph->SR & (USART_SR_NE | USART_SR_FE | USART_SR_ORE | USART_SR_PE))
+      _rst_uart_status(periph);
   }
-  if (periph->SR & (USART_SR_NE | USART_SR_FE | USART_SR_ORE | USART_SR_PE))
-    _rst_uart_status(periph);
 }
 
 uint8_t _hdl_uart_set(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl_uart_parity_t parity, hdl_uart_stop_bits_t stop) {
@@ -103,7 +88,6 @@ uint8_t _hdl_uart_set(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl
     (bits > HDL_UART_WORD_9BIT) || (parity > HDL_UART_PARITY_EVEN) || 
     (stop > HDL_UART_STOP_BITS1_5)) return HDL_FALSE;
   hdl_uart_mcu_t *uart = (hdl_uart_mcu_t*)desc;
-  hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;
   USART_TypeDef *periph = (USART_TypeDef *)uart->config->phy;
   hdl_clock_t *clk = (hdl_clock_t *)uart->dependencies[2];
   hdl_clock_freq_t freq;
@@ -122,7 +106,6 @@ uint8_t _hdl_uart_set(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl
   hdl_gpio_set_inactive(uart->dependencies[5]);
   while (CL_REG_GET(periph->CR1, USART_CR1_UE));
   _rst_uart_status(periph);
-  uart_var->transmiting = HDL_FALSE;
   periph->CR1 = par | wl | USART_CR1_TE | USART_CR1_RE | USART_CR1_RXNEIE | USART_CR1_PEIE | USART_CR1_IDLEIE;
   periph->CR2 = stp;
   periph->CR3 = USART_CR3_EIE;
@@ -139,17 +122,13 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
   USART_TypeDef *periph = (USART_TypeDef *)uart->config->phy;
   volatile uint32_t *rcc_en = &RCC->APB1ENR;
   volatile uint32_t *rcc_rst = &RCC->APB1RSTR;
-  
   switch (uart->config->phy) {
     case (uint32_t)USART1:
-    case (uint32_t)USART6:
       rcc_en = &RCC->APB2ENR;
       rcc_rst = &RCC->APB2RSTR;
       break;
     case (uint32_t)USART2:
     case (uint32_t)USART3:
-    case (uint32_t)UART4:
-    case (uint32_t)UART5:
       break;
     default:
       return HDL_MODULE_FAULT;

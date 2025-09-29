@@ -3,7 +3,7 @@
 
 /* MEMS digital output motion sensor: ultra-low-power high-performance 3-axis "femto" accelerometer */
 
-#define HDL_I2C_LIS2DH12_VAR_SIZE  88
+#define HDL_I2C_LIS2DH12_VAR_SIZE  44
 
 #define HDL_I2C_LIS2DH12_CTRL0_SDO_PU_DIS     0x80    /* Disconnect SDO/SA0 pull-up. */
 
@@ -27,6 +27,7 @@
 
 /* chip_address 0x18 */
 typedef struct {
+  uint8_t chip_address;
   uint8_t cnf_reg0;
   uint8_t cnf_reg1;
   uint8_t cnf_reg2;
@@ -34,8 +35,6 @@ typedef struct {
   uint8_t cnf_reg4;
   uint8_t cnf_reg5;
   uint8_t cnf_reg6;
-
-  uint16_t chip_address;
 } hdl_i2c_lis2dh12_config_t;
 
 typedef struct {

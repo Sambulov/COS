@@ -2,7 +2,6 @@
 
 typedef struct {
   coroutine_t worker;
-  hdl_i2c_reg_io_t reg_io;
   int32_t temp;
   uint8_t sns_reg_val[6];
   uint8_t sns_reg_adr;
@@ -10,15 +9,14 @@ typedef struct {
   uint8_t state     : 4,
           ready     : 1,
           reg_prep  : 1,
-          reg_rsync : 1,
-          reg_wsync : 1;
+          reg_read  : 1,
+          reg_await : 1;
   hdl_i2c_lis2dh12_data_t *data;
 } hdl_i2c_lis2dh12_var_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_lis2dh12_var_t, *((hdl_i2c_lis2dh12_t *)0)->obj_var, HDL_I2C_LIS2DH12_VAR_SIZE, hdl_i2c_lis2dh12.h);
 
 #define READ_MULTIPLE    0x80
-//#define READ_MULTIPLE    0x00
 
 #define STATUS_REG_AUX   0x06
 #define OUT_TEMP_L       0x0c
@@ -95,26 +93,24 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_i2c_lis2dh12_var_t, *((hdl_i2c_lis2dh12_t *)0)->o
 static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
   hdl_i2c_lis2dh12_t *lis2dh12 = (hdl_i2c_lis2dh12_t *)arg;
+  hdl_i2c_mem_t *mem = (hdl_i2c_mem_t *)lis2dh12->dependencies[0];
   hdl_i2c_lis2dh12_var_t *lis2dh12_var = (hdl_i2c_lis2dh12_var_t *)lis2dh12->obj_var;
 
   if(lis2dh12_var->reg_prep) {
-    hdl_i2c_reg_cnf_t reg_cnf = {
-      .cmd = &lis2dh12_var->sns_reg_adr,
-      .cmd_size = 1,
-      .dev_addr = lis2dh12->config->chip_address,
-      .bus_lock_obj = lis2dh12,
-      .mod_i2c = lis2dh12->dependencies[0],
-      .reg_buf = (uint8_t *)&lis2dh12_var->sns_reg_val,
-      .xfer_size = lis2dh12_var->sns_reg_size,
-      .retry = 3
-    };
-    hdl_i2c_reg_io_init(&lis2dh12_var->reg_io, &reg_cnf);
-    lis2dh12_var->reg_prep = 0;
+    if(lis2dh12_var->reg_read)
+      lis2dh12_var->reg_await = 
+        hdl_i2c_mem_read(mem, lis2dh12->config->chip_address, 
+          lis2dh12_var->sns_reg_adr, (uint8_t *)&lis2dh12_var->sns_reg_val, lis2dh12_var->sns_reg_size);
+    else
+      lis2dh12_var->reg_await = 
+        hdl_i2c_mem_write(mem, lis2dh12->config->chip_address, 
+          lis2dh12_var->sns_reg_adr, (uint8_t *)&lis2dh12_var->sns_reg_val, lis2dh12_var->sns_reg_size);
+    lis2dh12_var->reg_prep = !lis2dh12_var->reg_await;
   }
-  if(lis2dh12_var->reg_wsync) {
-    int8_t res = hdl_i2c_reg_write(&lis2dh12_var->reg_io);
-    if(!res) return cancel;
-    if(res < 0) {
+  if(lis2dh12_var->reg_await) {
+    hdl_i2c_mem_state_t res = hdl_i2c_mem_state(mem);
+    if(res & HDL_I2C_MEM_BUSY) return cancel;
+    if(res & HDL_I2C_MEM_XFER_FAIL) {
       lis2dh12_var->state = LIS2DH12_REG_CNF0_SYNC;
       lis2dh12_var->ready = 0;
       if(lis2dh12_var->data != NULL) {
@@ -122,20 +118,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         lis2dh12_var->data = NULL;
       }
     }
-    lis2dh12_var->reg_wsync = 0;
-  }
-  if(lis2dh12_var->reg_rsync) {
-    int8_t res = hdl_i2c_reg_read(&lis2dh12_var->reg_io);
-    if(!res) return cancel;
-    if(res < 0) {
-      lis2dh12_var->state = LIS2DH12_REG_CNF0_SYNC;
-      lis2dh12_var->ready = 0;
-      if(lis2dh12_var->data != NULL) {
-        lis2dh12_var->data->state = -1;
-        lis2dh12_var->data = NULL;
-      }
-    }
-    lis2dh12_var->reg_rsync = 0;
+    lis2dh12_var->reg_await = 0;
   }
 
   switch (lis2dh12_var->state) {
@@ -144,7 +127,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       lis2dh12_var->sns_reg_val[0] = ((lis2dh12->config->cnf_reg0 & REG_MASK_CTRL0) | REG_FIX_CTRL0);
       lis2dh12_var->sns_reg_size = 1;
       lis2dh12_var->reg_prep = 1;
-      lis2dh12_var->reg_wsync = 1;
+      lis2dh12_var->reg_read = 0;
       lis2dh12_var->state = LIS2DH12_REG_CNF1_SYNC;
       break;
     case LIS2DH12_REG_CNF1_SYNC:
@@ -152,7 +135,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       lis2dh12_var->sns_reg_val[0] = ((lis2dh12->config->cnf_reg1 & REG_MASK_CTRL1) | REG_FIX_CTRL1);
       lis2dh12_var->sns_reg_size = 1;
       lis2dh12_var->reg_prep = 1;
-      lis2dh12_var->reg_wsync = 1;
+      lis2dh12_var->reg_read = 0;
       lis2dh12_var->state = LIS2DH12_REG_CNF2_SYNC;
       break;
     case LIS2DH12_REG_CNF2_SYNC:
@@ -160,7 +143,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       lis2dh12_var->sns_reg_val[0] = ((lis2dh12->config->cnf_reg1 & REG_MASK_CTRL2) | REG_FIX_CTRL2);
       lis2dh12_var->sns_reg_size = 1;
       lis2dh12_var->reg_prep = 1;
-      lis2dh12_var->reg_wsync = 1;
+      lis2dh12_var->reg_read = 0;
       lis2dh12_var->state = LIS2DH12_REG_CNF3_SYNC;
       break;
     case LIS2DH12_REG_CNF3_SYNC:
@@ -168,7 +151,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       lis2dh12_var->sns_reg_val[0] = ((lis2dh12->config->cnf_reg1 & REG_MASK_CTRL3) | REG_FIX_CTRL3);
       lis2dh12_var->sns_reg_size = 1;
       lis2dh12_var->reg_prep = 1;
-      lis2dh12_var->reg_wsync = 1;
+      lis2dh12_var->reg_read = 0;
       lis2dh12_var->state = LIS2DH12_REG_CNF4_SYNC;
       break;
     case LIS2DH12_REG_CNF4_SYNC:
@@ -176,7 +159,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       lis2dh12_var->sns_reg_val[0] = ((lis2dh12->config->cnf_reg1 & REG_MASK_CTRL4) | REG_FIX_CTRL4);
       lis2dh12_var->sns_reg_size = 1;
       lis2dh12_var->reg_prep = 1;
-      lis2dh12_var->reg_wsync = 1;
+      lis2dh12_var->reg_read = 0;
       lis2dh12_var->state = LIS2DH12_REG_CNF5_SYNC;
       break;
     case LIS2DH12_REG_CNF5_SYNC:
@@ -184,7 +167,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       lis2dh12_var->sns_reg_val[0] = ((lis2dh12->config->cnf_reg1 & REG_MASK_CTRL5) | REG_FIX_CTRL5);
       lis2dh12_var->sns_reg_size = 1;
       lis2dh12_var->reg_prep = 1;
-      lis2dh12_var->reg_wsync = 1;
+      lis2dh12_var->reg_read = 0;
       lis2dh12_var->state = LIS2DH12_REG_CNF6_SYNC;
       break;
     case LIS2DH12_REG_CNF6_SYNC:
@@ -192,7 +175,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       lis2dh12_var->sns_reg_val[0] = ((lis2dh12->config->cnf_reg1 & REG_MASK_CTRL6) | REG_FIX_CTRL6);
       lis2dh12_var->sns_reg_size = 1;
       lis2dh12_var->reg_prep = 1;
-      lis2dh12_var->reg_wsync = 1;
+      lis2dh12_var->reg_read = 0;
       lis2dh12_var->state = LIS2DH12_REG_AXIS_SYNC;
       break;
     case LIS2DH12_REG_AXIS_SYNC:
@@ -201,7 +184,7 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
         lis2dh12_var->sns_reg_adr = OUT_X_L | READ_MULTIPLE;
         lis2dh12_var->sns_reg_size = 6;
         lis2dh12_var->reg_prep = 1;
-        lis2dh12_var->reg_rsync = 1;
+        lis2dh12_var->reg_read = 1;
         lis2dh12_var->state = LIS2DH12_REG_AXIS_COMPLETE;
       }
       break;
@@ -223,8 +206,7 @@ static hdl_module_state_t _hdl_i2c_lis2dh12(const void *desc, uint8_t enable) {
   hdl_i2c_lis2dh12_t *lis2dh12 = (hdl_i2c_lis2dh12_t *)desc;
   hdl_i2c_lis2dh12_var_t *lis2dh12_var = (hdl_i2c_lis2dh12_var_t *)lis2dh12->obj_var;
   if(enable) {
-    lis2dh12_var->reg_rsync = 0;
-    lis2dh12_var->reg_wsync = 0;
+    lis2dh12_var->reg_await = 0;
     lis2dh12_var->data = NULL;
     lis2dh12_var->state = LIS2DH12_REG_CNF0_SYNC;
     coroutine_add(&lis2dh12_var->worker, &_lis2dh12_worker, (void*)lis2dh12);

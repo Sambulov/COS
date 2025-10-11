@@ -1,25 +1,13 @@
 #ifndef HDL_EVENT_H_
 #define HDL_EVENT_H_
 
-#define HDL_DELEGATE_PRIVATE_SIZE    16
-#define HDL_EVENT_PRIVATE_SIZE        4
+typedef event_handler_t hdl_event_handler_t;
+typedef delegate_t hdl_delegate_t;
+typedef event_subscribe_t hdl_event_subscribe_t;
+typedef event_t hdl_event_t;
 
-typedef void (*hdl_event_handler_t)(void *event_trigger, void *sender, void *context);
-
-typedef struct {
-  hdl_event_handler_t handler;
-  void *context;
-  PRIVATE(hdl, HDL_DELEGATE_PRIVATE_SIZE);
-} hdl_delegate_t;
-
-typedef void (*hdl_event_subscribe_t)(const void *, hdl_delegate_t *delegate);
-
-typedef struct {
-  PRIVATE(hdl, HDL_EVENT_PRIVATE_SIZE);
-} hdl_event_t;
-
-void hdl_event_subscribe(hdl_event_t *event, hdl_delegate_t *delegate);
-void hdl_event_unsubscribe(hdl_delegate_t *delegate);
-uint32_t hdl_event_raise(hdl_event_t *event, void *sender, void *event_trigger);
+#define hdl_event_subscribe event_subscribe
+#define hdl_event_unsubscribe event_unsubscribe
+#define hdl_event_raise event_raise
 
 #endif // HDL_EVENT_H_

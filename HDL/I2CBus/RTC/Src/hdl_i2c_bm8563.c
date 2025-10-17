@@ -37,16 +37,19 @@ static uint8_t _bm8563_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           bm8563_var->data->state = HDL_I2C_BM8563_XFER_STATE_READY;
         }
         bm8563_var->data = NULL;
+        hdl_give(mem, bm8563);
       }
     }
     else {
-      if(bm8563_var->mode == RTC_MODE_READ) {
-        if(hdl_i2c_mem_read(mem, bm8563->config, RTC_REG_SECONDS, (uint8_t *)bm8563_var->data, 7))
-          bm8563_var->awaiting = HDL_TRUE;
-      }
-      else {
-        if(hdl_i2c_mem_write(mem, bm8563->config, RTC_REG_SECONDS, (uint8_t *)bm8563_var->data, 7))
-          bm8563_var->awaiting = HDL_TRUE;
+      if(hdl_take(mem, bm8563)) {
+        if(bm8563_var->mode == RTC_MODE_READ) {
+          if(hdl_i2c_mem_read_r1(mem, bm8563->config, RTC_REG_SECONDS, (uint8_t *)bm8563_var->data, 7))
+            bm8563_var->awaiting = HDL_TRUE;
+        }
+        else {
+          if(hdl_i2c_mem_write_r1(mem, bm8563->config, RTC_REG_SECONDS, (uint8_t *)bm8563_var->data, 7))
+            bm8563_var->awaiting = HDL_TRUE;
+        }
       }
     }
   }

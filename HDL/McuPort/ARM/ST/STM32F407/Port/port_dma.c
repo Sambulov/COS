@@ -39,7 +39,7 @@ static hdl_module_state_t _hdl_dma_ch(const void *desc, uint8_t enable) {
     while((stream->CR & DMA_SxCR_EN) && time--);
     if(!time) return HDL_MODULE_FAULT;
     stream->FCR = (uint32_t)0x00000021U;
-    stream->CR =  ch_cnf->channel_periphery | ch_cnf->direction | ch_cnf->priority |
+    stream->CR =  ch_cnf->channel_periphery | ch_cnf->priority |
                   ch_cnf->memory_width | ch_cnf->periph_width |
                   (ch_cnf->periph_inc? DMA_SxCR_PINC: 0) |
                   (ch_cnf->memory_inc? DMA_SxCR_MINC: 0) |
@@ -89,7 +89,7 @@ static uint8_t _hdl_dma_stop(const void *desc) {
   return time != 0;
 }
 
-static uint8_t _hdl_dma_run(const void *desc, uint32_t from_addr, uint32_t to_addr, uint32_t amount) {
+static uint8_t _hdl_dma_run(const void *desc, hdl_dma_direction_t dir, uint32_t periph_addr, uint32_t mem_addr, uint32_t amount) {
   hdl_dma_channel_mcu_t *channel = ((hdl_dma_channel_mcu_t *)desc);
   hdl_dma_t *dma = (hdl_dma_t *)channel->dependencies[0];
   hdl_dma_channel_config_t *ch_cnf = (hdl_dma_channel_config_t *)channel->config;
@@ -98,14 +98,21 @@ static uint8_t _hdl_dma_run(const void *desc, uint32_t from_addr, uint32_t to_ad
   if(stream->CR & DMA_SxCR_EN) return HDL_FALSE;
   stream->CR &= (uint32_t)(~DMA_SxCR_DBM);
   stream->NDTR = amount;
-  if(ch_cnf->direction == DMA_MEMORY_TO_PERIPH) {
-    stream->PAR = to_addr;
-    stream->M0AR = from_addr;
-  }
-  else {
-    stream->PAR = from_addr;
-    stream->M0AR = to_addr;
-  }
+  stream->PAR = periph_addr;
+  stream->M0AR = mem_addr;
+  switch (dir) {
+    case HDL_DMA_M2M:
+      CL_REG_MODIFY(stream->CR, DMA_SxCR_DIR, DMA_MEMORY_TO_MEMORY);
+      break;
+    case HDL_DMA_P2M:
+      CL_REG_MODIFY(stream->CR, DMA_SxCR_DIR, DMA_PERIPH_TO_MEMORY);
+      break;
+    case HDL_DMA_M2P:
+      CL_REG_MODIFY(stream->CR, DMA_SxCR_DIR, DMA_MEMORY_TO_PERIPH);
+      break;
+    default:
+      return HDL_FALSE;
+  } 
   stream->CR |= DMA_SxCR_EN;
   return HDL_TRUE;  
 }

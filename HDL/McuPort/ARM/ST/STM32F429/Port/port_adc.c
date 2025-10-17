@@ -176,7 +176,7 @@ static hdl_module_state_t _hdl_adc_ch(const void *desc, uint8_t enable) {
         CL_REG_SET(phy->CR1, ADC_CR1_SCAN); /* Set ADC scan mode */
         CL_REG_SET(phy->CR2, ADC_CR2_DDS | ADC_CR2_DMA); /* Enable ADC DMA continuous request */
         hdl_dma_channel_stop(dma);
-        hdl_dma_channel_run(dma, (void *)&phy->DR, adc->config->adc_slots, adc_var->regular_channels);
+        hdl_dma_channel_run_p2m(dma, (void *)&phy->DR, adc->config->adc_slots, adc_var->regular_channels);
       //}
       CL_REG_MODIFY(phy->SQR1, ADC_SQR1_L, ADC_SQR1(adc_var->regular_channels)); /* Set ADC number of conversion */
     }

@@ -97,31 +97,34 @@ static uint8_t _lis2dh12_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_i2c_lis2dh12_var_t *lis2dh12_var = (hdl_i2c_lis2dh12_var_t *)lis2dh12->obj_var;
 
   if(lis2dh12_var->reg_prep) {
-    if(lis2dh12_var->reg_read)
-      lis2dh12_var->reg_await = 
-        hdl_i2c_mem_read(mem, lis2dh12->config->chip_address, 
-          lis2dh12_var->sns_reg_adr, (uint8_t *)&lis2dh12_var->sns_reg_val, lis2dh12_var->sns_reg_size);
-    else
-      lis2dh12_var->reg_await = 
-        hdl_i2c_mem_write(mem, lis2dh12->config->chip_address, 
-          lis2dh12_var->sns_reg_adr, (uint8_t *)&lis2dh12_var->sns_reg_val, lis2dh12_var->sns_reg_size);
-    lis2dh12_var->reg_prep = !lis2dh12_var->reg_await;
-  }
-  if(lis2dh12_var->reg_await) {
-    hdl_i2c_mem_state_t res = hdl_i2c_mem_state(mem);
-    if(res & HDL_I2C_MEM_BUSY) return cancel;
-    if(res & HDL_I2C_MEM_XFER_FAIL) {
-      lis2dh12_var->state = LIS2DH12_REG_CNF0_SYNC;
-      lis2dh12_var->ready = 0;
-      if(lis2dh12_var->data != NULL) {
-        lis2dh12_var->data->state = -1;
-        lis2dh12_var->data = NULL;
-      }
+    if(hdl_take(mem, lis2dh12)) {
+      if(lis2dh12_var->reg_read)
+        lis2dh12_var->reg_await = 
+          hdl_i2c_mem_read_r1(mem, lis2dh12->config->chip_address, 
+            lis2dh12_var->sns_reg_adr, (uint8_t *)&lis2dh12_var->sns_reg_val, lis2dh12_var->sns_reg_size);
+      else
+        lis2dh12_var->reg_await = 
+          hdl_i2c_mem_write_r1(mem, lis2dh12->config->chip_address, 
+            lis2dh12_var->sns_reg_adr, (uint8_t *)&lis2dh12_var->sns_reg_val, lis2dh12_var->sns_reg_size);
+      lis2dh12_var->reg_prep = !lis2dh12_var->reg_await;
     }
-    lis2dh12_var->reg_await = 0;
   }
-
-  switch (lis2dh12_var->state) {
+  else if(lis2dh12_var->reg_await) {
+    hdl_i2c_mem_state_t res = hdl_i2c_mem_state(mem);
+    if(!(res & HDL_I2C_MEM_BUSY)) {
+      if(res & HDL_I2C_MEM_XFER_FAIL) {
+        lis2dh12_var->state = LIS2DH12_REG_CNF0_SYNC;
+        lis2dh12_var->ready = 0;
+        if(lis2dh12_var->data != NULL) {
+          lis2dh12_var->data->state = -1;
+          lis2dh12_var->data = NULL;
+        }
+      }
+      lis2dh12_var->reg_await = 0;
+      hdl_give(mem, lis2dh12);
+    }
+  }
+  else switch (lis2dh12_var->state) {
     case LIS2DH12_REG_CNF0_SYNC:
       lis2dh12_var->sns_reg_adr = CTRL_REG0;
       lis2dh12_var->sns_reg_val[0] = ((lis2dh12->config->cnf_reg0 & REG_MASK_CTRL0) | REG_FIX_CTRL0);

@@ -17,10 +17,12 @@ static uint8_t _tmp112_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   hdl_i2c_tmp112_var_t *tmp112_var = (hdl_i2c_tmp112_var_t *)tmp112->obj_var;
   if(tmp112_var->data != NULL) {
     if(tmp112_var->state == 0) {
-      if(hdl_i2c_mem_read(mem, tmp112->config, tmp112_var->temp_sns_reg, (uint8_t *)&tmp112_var->temp_sns_reg_val, 2))
-        tmp112_var->state++;
+      if(hdl_take(mem, tmp112)) {
+        if(hdl_i2c_mem_read_r1(mem, tmp112->config, tmp112_var->temp_sns_reg, (uint8_t *)&tmp112_var->temp_sns_reg_val, 2))
+          tmp112_var->state++;
+      }
     }
-    if(tmp112_var->state == 1) {
+    else {
       hdl_i2c_mem_state_t res = hdl_i2c_mem_state(mem);
       if(!(res & HDL_I2C_MEM_BUSY)) {
         tmp112_var->data->state = -1;
@@ -31,6 +33,7 @@ static uint8_t _tmp112_worker(coroutine_t *this, uint8_t cancel, void *arg) {
           tmp112_var->data->state = 1;
         }
         tmp112_var->data = NULL;
+        hdl_give(mem, tmp112);
       }
     }
   }

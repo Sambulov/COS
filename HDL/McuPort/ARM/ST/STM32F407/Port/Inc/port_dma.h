@@ -2,7 +2,7 @@
 #define PORT_DMA_H_
 
 /*                            
-                                                   DMA 0
+                                                   DMA 1
           |  Stream 0 |  Stream 1 |  Stream 2 |  Stream 3 |  Stream 4 |  Stream 5 |  Stream 6 |  Stream 7 |
 Channel 0 |  SPI3_RX  |     ●     |  SPI3_RX  |  SPI2_RX  |  SPI2_TX  |  SPI3_TX  |     ●     |  SPI3_TX  |
 Channel 1 |  I2C1_RX  |     ●     | TIMER7_UP |     ●     | TIMER7_UP |  I2C1_RX  |  I2C1_TX  |  I2C1_TX  |
@@ -16,7 +16,7 @@ Channel 6 | TIMER5_CH3|TIMER5_CH4 | TIMER5_CH1|TIMER5_CH4 | TIMER5_CH2|     ● 
           | TIMER5_UP |TIMER5_TRIG|           |TIMER5_TRIG|           |           |           |           |
 Channel 7 |     ●     | TIMER6_UP |  I2C2_RX  | I2C2_RX   | USART3_TX |  DAC1     |  DAC2     |   I2C2_TX |
 
-                                                   DMA 1
+                                                   DMA 2
           |  Stream 0 |  Stream 1 |  Stream 2 |  Stream 3 |  Stream 4 |  Stream 5 |  Stream 6 |  Stream 7 |
 Channel 0 |   ADC1    |   SAI1_A  |TIMER8_CH1 |   SAI1_A  |   ADC1    |   SAI1_B  |TIMER1_CH1 |     ●     |
           |           |           |TIMER8_CH2 |           |           |           |TIMER1_CH2 |           |
@@ -55,7 +55,6 @@ typedef struct {
   uint32_t priority;               /* DMA_PRIORITY_LOW, DMA_PRIORITY_MEDIUM, DMA_PRIORITY_HIGH, DMA_PRIORITY_VERY_HIGH */
   uint32_t periph_width;           /* DMA_PDATAALIGN_BYTE, DMA_PDATAALIGN_HALFWORD, DMA_PDATAALIGN_WORD */
   uint32_t memory_width;           /* DMA_MDATAALIGN_BYTE, DMA_MDATAALIGN_HALFWORD, DMA_MDATAALIGN_WORD */
-  uint32_t direction;              /* DMA_MEMORY_TO_MEMORY, DMA_MEMORY_TO_PERIPH, DMA_PERIPH_TO_MEMORY */
   uint32_t channel_periphery;      /* DMA_CHANNEL_0 ... DMA_CHANNEL_7 */
   uint8_t periph_inc    : 1,
           memory_inc    : 1,

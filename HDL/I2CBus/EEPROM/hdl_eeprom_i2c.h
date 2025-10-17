@@ -1,7 +1,7 @@
 #ifndef HDL_EEPROM_I2C_H_
 #define HDL_EEPROM_I2C_H_
 
-#define HDL_EEPROM_I2C_VAR_SIZE  52
+#define HDL_EEPROM_I2C_VAR_SIZE  36
 
 typedef struct {
   uint16_t chip_address;
@@ -11,7 +11,7 @@ typedef struct {
 } hdl_eeprom_i2c_config_t;
 
 /* depends on
-  hdl_i2c
+  hdl_i2c_mem
   hdl_time_counter
   hdl_gpio  (WP optionally)
 */

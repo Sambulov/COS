@@ -3,7 +3,7 @@
 typedef struct {
   coroutine_t worker;
   hdl_i2c_message_t msg;
-  uint32_t addr;
+  uint8_t addr[4];
   uint8_t *data;
   uint32_t data_size;
   uint8_t mem_addr_size;
@@ -39,7 +39,7 @@ static uint8_t _mem_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   switch (mem_var->xfer_state) {
     case XFER_STATE_MSG_ADDR:
       mem_var->msg.address = mem_var->dev_addr;
-      mem_var->msg.buffer = (uint8_t *)&mem_var->addr;
+      mem_var->msg.buffer = mem_var->addr;
       mem_var->msg.length = mem_var->mem_addr_size;
       mem_var->msg.options = HDL_I2C_MESSAGE_WRITE_HALT;
       mem_var->xfer_state++;
@@ -90,38 +90,38 @@ static hdl_i2c_mem_state_t _hdl_i2c_mem_get_state(const void *desc) {
   return mem_var->task_state;
 }
 
-static uint8_t _hdl_i2c_mem_xfer(const void *desc, uint8_t dev_addr, uint32_t addr, uint8_t *data, uint32_t size, uint8_t mode) {
+static uint8_t _hdl_i2c_mem_xfer(const void *desc, uint8_t dev_addr, uint8_t r_addr_sz, uint32_t addr, uint8_t *data, uint32_t size, uint8_t mode) {
   hdl_i2c_mem_t *mem = (hdl_i2c_mem_t *)desc;
   hdl_i2c_mem_var_t *mem_var = (hdl_i2c_mem_var_t *)mem->obj_var;
-  if(mem_var->xfer_state == XFER_STATE_IDLE) {
-    mem_var->addr = addr;
-    mem_var->data = data;
-    mem_var->data_size = size;
-    mem_var->xfer_mode = mode;
-    mem_var->retry = mem->config->xfer_retry;
-    mem_var->mem_addr_size = mem->config->mem_addr_size;
-    mem_var->dev_addr = dev_addr;
-    mem_var->task_state |= HDL_I2C_MEM_BUSY;
-    mem_var->task_state &= ~HDL_I2C_MEM_XFER_FAIL;
-    mem_var->xfer_state = XFER_STATE_MSG_ADDR;
-    return HDL_TRUE;
+  if((mem_var->xfer_state != XFER_STATE_IDLE) || !r_addr_sz || (r_addr_sz > 4))
+    return HDL_FALSE;
+  for(uint8_t i = 0, ofst = (r_addr_sz - 1) * 8; i < r_addr_sz; i++, ofst-=8) {
+    mem_var->addr[i] = addr >> ofst;
   }
-  return HDL_FALSE;
+  mem_var->data = data;
+  mem_var->data_size = size;
+  mem_var->xfer_mode = mode;
+  mem_var->retry = mem->config->xfer_retry;
+  mem_var->mem_addr_size = r_addr_sz;
+  mem_var->dev_addr = dev_addr;
+  mem_var->task_state |= HDL_I2C_MEM_BUSY;
+  mem_var->task_state &= ~HDL_I2C_MEM_XFER_FAIL;
+  mem_var->xfer_state = XFER_STATE_MSG_ADDR;
+  return HDL_TRUE;
 }
 
-static uint8_t _hdl_i2c_mem_read(const void *desc, uint8_t dev_addr, uint32_t addr, uint8_t *data, uint32_t size) {
-  return _hdl_i2c_mem_xfer(desc, dev_addr, addr, data, size, XFER_MODE_READ);
+static uint8_t _hdl_i2c_mem_read(const void *desc, uint8_t dev_addr, uint8_t r_addr_sz, uint32_t r_addr, uint8_t *data, uint32_t size) {
+  return _hdl_i2c_mem_xfer(desc, dev_addr, r_addr_sz, r_addr, data, size, XFER_MODE_READ);
 }
 
-static uint8_t _hdl_i2c_mem_write(const void *desc, uint8_t dev_addr, uint32_t addr, const uint8_t *data, uint32_t size) {
-  return _hdl_i2c_mem_xfer(desc, dev_addr, addr, (uint8_t *)data, size, XFER_MODE_WRITE);
+static uint8_t _hdl_i2c_mem_write(const void *desc, uint8_t dev_addr, uint8_t r_addr_sz, uint32_t r_addr, const uint8_t *data, uint32_t size) {
+  return _hdl_i2c_mem_xfer(desc, dev_addr, r_addr_sz, r_addr, (uint8_t *)data, size, XFER_MODE_WRITE);
 }
 
 static hdl_module_state_t _hdl_i2c_mem_init(const void *desc, uint8_t enable) {
   hdl_i2c_mem_t *mem = (hdl_i2c_mem_t *)desc;
   hdl_i2c_mem_var_t *mem_var = (hdl_i2c_mem_var_t *)mem->obj_var;
   if(enable) {
-    mem_var->task_state = HDL_I2C_MEM_READY;
     mem_var->xfer_state = XFER_STATE_IDLE;
     coroutine_add(&mem_var->worker, &_mem_worker, (void*)mem);
     return HDL_MODULE_ACTIVE;

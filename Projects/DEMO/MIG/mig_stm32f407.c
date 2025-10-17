@@ -1012,6 +1012,14 @@ const hdl_gpio_pin_hw_config_t mod_gpio_spi3_mode = {
   .pull = HDL_GPIO_PUPD_PULL_UP
 };
 
+const hdl_gpio_pin_hw_config_t mod_gpio_sdio_mode = {
+  .mode = HDL_GPIO_MODE_AF,
+  .af = GPIO_AF12_SDIO,
+  .ospeed = HDL_GPIO_SPEED_VERY_HIGH,
+  .otype = HDL_GPIO_OTYPE_PUSH_PULL,
+  .pull = HDL_GPIO_PUPD_NONE
+};
+
 const hdl_gpio_pin_hw_config_t mod_gpio_tim4_mode = {
   .mode = HDL_GPIO_MODE_AF,
   .af = GPIO_AF2_TIM4,
@@ -1536,12 +1544,32 @@ const hdl_gpio_pin_t mod_gpio_pc8 = {
     .pin = GPIO_PIN_8)
 }; //(PC8)
 
+const hdl_gpio_pin_t mod_gpio_pc8_sdio_d0 = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_sdio_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_8)
+}; //(PC8)
+
 const hdl_gpio_pin_t mod_gpio_pc9 = {
   .iface = &hdl_gpio_pin_iface,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_input_pu_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_9)
+}; //(PC9)
+
+const hdl_gpio_pin_t mod_gpio_pc9_sdio_d1 = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_sdio_mode,
     .inactive_default = HDL_GPIO_HIGH,
     .pin = GPIO_PIN_9)
 }; //(PC9)
@@ -1566,12 +1594,32 @@ const hdl_gpio_pin_t mod_gpio_pc10_spi_sck = {
     .pin = GPIO_PIN_10)
 }; //(PC10)
 
+const hdl_gpio_pin_t mod_gpio_pc10_sdio_d2 = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_sdio_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_10)
+}; //(PC10)
+
 const hdl_gpio_pin_t mod_gpio_pc11_uart_rx = {
   .iface = &hdl_gpio_pin_iface,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_uart4_5_6_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_11)
+}; //(PC11)
+
+const hdl_gpio_pin_t mod_gpio_pc11_sdio_d3 = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_sdio_mode,
     .inactive_default = HDL_GPIO_HIGH,
     .pin = GPIO_PIN_11)
 }; //(PC11)
@@ -1592,6 +1640,16 @@ const hdl_gpio_pin_t mod_gpio_pc12_spi_mosi = {
   .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_spi3_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_12)
+}; //(PC12)
+
+const hdl_gpio_pin_t mod_gpio_pc12_sdio_ck = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_c),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_sdio_mode,
     .inactive_default = HDL_GPIO_HIGH,
     .pin = GPIO_PIN_12)
 }; //(PC12)
@@ -1626,13 +1684,22 @@ const hdl_gpio_pin_t mod_gpio_pd1_can1_tx = {
     .pin = GPIO_PIN_1)
 }; //(PD1)
 
-
 const hdl_gpio_pin_t mod_gpio_pd2_uart_rx = {
   .iface = &hdl_gpio_pin_iface,
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .dependencies = hdl_module_dependencies(&hdl_gpio_port_d),
   .config = hdl_module_config(hdl_gpio_pin_config_t,
     .hwc = &mod_gpio_uart4_5_6_mode,
+    .inactive_default = HDL_GPIO_HIGH,
+    .pin = GPIO_PIN_2)
+}; //(PD2)
+
+const hdl_gpio_pin_t mod_gpio_pd2_sdio_cmd = {
+  .iface = &hdl_gpio_pin_iface,
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .dependencies = hdl_module_dependencies(&hdl_gpio_port_d),
+  .config = hdl_module_config(hdl_gpio_pin_config_t,
+    .hwc = &mod_gpio_sdio_mode,
     .inactive_default = HDL_GPIO_HIGH,
     .pin = GPIO_PIN_2)
 }; //(PD2)
@@ -1986,15 +2053,14 @@ hdl_dma_channel_mcu_t mod_dma_ch_adc1 = {
   .dependencies = hdl_module_dependencies(&mod_dma2),
   .config = hdl_module_config(hdl_dma_channel_config_t,
     .priority = DMA_PRIORITY_LOW,
-    .direction = DMA_PERIPH_TO_MEMORY,
     .memory_width = DMA_MDATAALIGN_WORD,
     .periph_width = DMA_PDATAALIGN_WORD,
     .memory_inc = 1,
     .periph_inc = 0,
     .periph_ctrl = 0,
     .circular = 1,
-    .channel_periphery = DMA_CHANNEL_0,
-    .stream = HDL_DMA_STREAM_0
+    .stream = HDL_DMA_STREAM_0,
+    .channel_periphery = DMA_CHANNEL_0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };
@@ -2004,15 +2070,31 @@ hdl_dma_channel_mcu_t mod_dma_ch_m2m = {
   .dependencies = hdl_module_dependencies(&mod_dma2),
   .config = hdl_module_config(hdl_dma_channel_config_t,
     .priority = DMA_PRIORITY_LOW,
-    .direction = DMA_MEMORY_TO_MEMORY,
     .memory_width = DMA_MDATAALIGN_BYTE,
     .periph_width = DMA_PDATAALIGN_BYTE,
     .memory_inc = 1,
     .periph_inc = 1,
     .periph_ctrl = 0,
     .circular = 0,
-    .channel_periphery = DMA_CHANNEL_3,
-    .stream = HDL_DMA_STREAM_1
+    .stream = HDL_DMA_STREAM_1,
+    .channel_periphery = DMA_CHANNEL_3
+  ),
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+};
+
+hdl_dma_channel_mcu_t mod_dma_ch_sdio = {
+  .iface = &hdl_dma_channel_iface,
+  .dependencies = hdl_module_dependencies(&mod_dma2),
+  .config = hdl_module_config(hdl_dma_channel_config_t,
+    .priority = DMA_PRIORITY_LOW,
+    .memory_width = DMA_MDATAALIGN_WORD,
+    .periph_width = DMA_PDATAALIGN_WORD,
+    .memory_inc = 1,
+    .periph_inc = 0,
+    .periph_ctrl = 1,
+    .circular = 0,
+    .stream = HDL_DMA_STREAM_3,
+    .channel_periphery = DMA_CHANNEL_4
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };

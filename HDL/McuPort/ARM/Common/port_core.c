@@ -92,7 +92,7 @@ __attribute__((naked, noreturn)) uint8_t hdl_coroutine_run_yielding(coroutine_t 
   __asm volatile("PUSH {R2-R7}");
 
   __asm volatile("CBZ  R0, __cor_exit_cancel"); /* if coroutine == NULL  then exit cancel */
-  __asm volatile("LDR  R3, [R0, #24]");      /* R3 = ccb */
+  __asm volatile("LDR  R3, [R0, #"CL_TOSTR(CO_ROUTINE_DESC_SIZE)"]");      /* R3 = ccb */
   __asm volatile("CBZ  R4, __cor_exit_cancel"); /* if ccb == NULL then exit cancel */
   __asm volatile("LDR  R4, [R3, #8]");
   __asm volatile("CMP  R4, #127");

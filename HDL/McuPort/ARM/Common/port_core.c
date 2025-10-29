@@ -20,7 +20,7 @@ typedef struct {
   uint32_t stack[];
 } ccb_t;
 
-void hdl_coroutine_add(coroutine_ex_t *cor_buf, void *cor_cb, uint32_t size, coroutine_handler_t handler, void *arg) {
+void hdl_coroutine_add(hdl_coroutine_t *cor_buf, void *cor_cb, uint32_t size, coroutine_handler_t handler, void *arg) {
   ccb_t *ccb = (ccb_t *)cor_cb;
   ccb->stack_size = (size - sizeof(ccb_t));
   ccb->cor_sp = 0;
@@ -93,32 +93,38 @@ __attribute__((naked, noreturn)) uint8_t hdl_coroutine_run_yielding(coroutine_t 
 
   __asm volatile("CBZ  R0, __cor_exit_cancel"); /* if coroutine == NULL  then exit cancel */
   __asm volatile("LDR  R3, [R0, #"CL_TOSTR(CO_ROUTINE_DESC_SIZE)"]");      /* R3 = ccb */
-  __asm volatile("CBZ  R4, __cor_exit_cancel"); /* if ccb == NULL then exit cancel */
-  __asm volatile("LDR  R4, [R3, #8]");
+  __asm volatile("CBZ  R3, __cor_exit_cancel"); /* if ccb == NULL then exit cancel */
+  __asm volatile("LDR  R4, [R3, #8]");       /* R4 = stack_size */
   __asm volatile("CMP  R4, #127");
   __asm volatile("BLS  __cor_exit_cancel");  /* stack_size <= 127 too small, exit cancel */
   __asm volatile("LDR  R6, [R3]");           /* R6 = ccb->cor_sp */
+  __asm volatile("B    __cor_prepare");
 
-  __asm volatile("CBNZ R6, __cor_resume");   /* if ccb->cor_sp == 0 init coroutine */
-    __asm volatile("MOV R5, #12");
-    __asm volatile("ADD R5, R4");
-    __asm volatile("ADD R5, R3");
-    __asm volatile("LSR R5, #0X03");
-    __asm volatile("LSL R5, #0X03");         /* R5 = handlers stack bottom 8 bytes aligned */
-    __asm volatile("SUB R5, #0x40");         /* Handler context struct */
-    __asm volatile("LDR R4, [R3, #4]");
-    __asm volatile("MOV R6, #1");
-    __asm volatile("ORR R4, R6");
-    __asm volatile("STR R4, [R5, #0x3C]");   /* push PC = ccb->cor */
-    __asm volatile("STR R2, [R5, #0x38]");
-    __asm volatile("STR R1, [R5, #0x34]");
-    __asm volatile("STR R0, [R5, #0x30]");   /* push args */
-    __asm volatile("STR R3, [R5, #0x20]");   /* push ccb */
-    __asm volatile("LDR R4, =__cor_exit");
-    __asm volatile("ORR R4, R6");
-    __asm volatile("STR R4, [R5, #0x00]");   /* handler returns to LR = __cor_exit */
-    __asm volatile("STR R5, [R3, #0x00]");   /* ccb->psp = handler stack */
-    __asm volatile("MOV R6, R5");
+  __asm volatile("__cor_exit_cancel:");
+    __asm volatile("MOVS R0, #1");           /* return 1 */
+    __asm volatile("B    __cor_end");
+
+  __asm volatile("__cor_prepare:");
+    __asm volatile("CBNZ R6, __cor_resume"); /* if ccb->cor_sp == 0 init coroutine */
+    __asm volatile("MOV  R5, #12");
+    __asm volatile("ADD  R5, R4");
+    __asm volatile("ADD  R5, R3");
+    __asm volatile("LSR  R5, #0X03");
+    __asm volatile("LSL  R5, #0X03");        /* R5 = handlers stack bottom 8 bytes aligned */
+    __asm volatile("SUB  R5, #0x40");        /* Handler context struct */
+    __asm volatile("LDR  R4, [R3, #4]");
+    __asm volatile("MOV  R6, #1");
+    __asm volatile("ORR  R4, R6");
+    __asm volatile("STR  R4, [R5, #0x3C]");  /* push PC = ccb->cor */
+    __asm volatile("STR  R2, [R5, #0x38]");
+    __asm volatile("STR  R1, [R5, #0x34]");
+    __asm volatile("STR  R0, [R5, #0x30]");  /* push args */
+    __asm volatile("STR  R3, [R5, #0x20]");  /* push ccb */
+    __asm volatile("LDR  R4, =__cor_exit");
+    __asm volatile("ORR  R4, R6");
+    __asm volatile("STR  R4, [R5, #0x00]");  /* handler returns to LR = __cor_exit */
+    __asm volatile("STR  R5, [R3, #0x00]");  /* ccb->psp = handler stack */
+    __asm volatile("MOV  R6, R5");
 
   __asm volatile("__cor_resume:");
     __asm volatile("LDR  R4, =__cor_yielded");
@@ -144,9 +150,6 @@ __attribute__((naked, noreturn)) uint8_t hdl_coroutine_run_yielding(coroutine_t 
     __asm volatile("MOVS R11, R3");
     __asm volatile("POP  {R2-R7}");          /* dummy + restore gp registers 3-7 */
     __asm volatile("POP  {R0-R2, PC}");      /* resume handler */
-
-  __asm volatile("__cor_exit_cancel:");
-    __asm volatile("MOVS R0, #1");           /* return 1 */
 
   __asm volatile("__cor_end:");
     __asm volatile("POP {R2-R7}");

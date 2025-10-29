@@ -95,6 +95,9 @@ void FPU_ISR()                { call_isr(HDL_NVIC_IRQ81_FPU, 0); }
 static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   (void)desc;
   if(enable) {
+#if __FPU_USED
+    SCB->CPACR |= ((3UL << (10 * 2)) | (3UL << (11 * 2)));
+#endif
     hdl_core_arm_t *core = (hdl_core_arm_t *)desc;
     FLASH->ACR |= FLASH_ACR_ICEN;
     FLASH->ACR |= FLASH_ACR_DCEN;

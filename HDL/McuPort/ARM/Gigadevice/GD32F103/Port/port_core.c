@@ -6,11 +6,11 @@ void TAMPER_IRQHandler()                { call_isr(HDL_NVIC_IRQ2_TAMPER, 0); }
 void rtc_handler()                      { call_isr(HDL_NVIC_IRQ3_RTC, 0); }
 void fmc_handler()                      { call_isr(HDL_NVIC_IRQ4_FMC, 0); }
 void rcu_handler()                      { call_isr(HDL_NVIC_IRQ5_RCU_CTC, 0); }
-void EXTI0_IRQHandler()                 { call_isr(HDL_NVIC_IRQ6_EXTI0, EXTI_0); EXTI_PD |= EXTI_0; }
-void EXTI1_IRQHandler()                 { call_isr(HDL_NVIC_IRQ7_EXTI1, EXTI_1); EXTI_PD |= EXTI_1; }
-void EXTI2_IRQHandler()                 { call_isr(HDL_NVIC_IRQ8_EXTI2, EXTI_2); EXTI_PD |= EXTI_2; }
-void EXTI3_IRQHandler()                 { call_isr(HDL_NVIC_IRQ9_EXTI3, EXTI_3); EXTI_PD |= EXTI_3; }
-void EXTI4_IRQHandler()                 { call_isr(HDL_NVIC_IRQ10_EXTI4, EXTI_4); EXTI_PD |= EXTI_4; }
+void EXTI0_IRQHandler()                 { call_isr(HDL_NVIC_IRQ6_EXTI0, (void *)EXTI_0); EXTI_PD |= EXTI_0; }
+void EXTI1_IRQHandler()                 { call_isr(HDL_NVIC_IRQ7_EXTI1, (void *)EXTI_1); EXTI_PD |= EXTI_1; }
+void EXTI2_IRQHandler()                 { call_isr(HDL_NVIC_IRQ8_EXTI2, (void *)EXTI_2); EXTI_PD |= EXTI_2; }
+void EXTI3_IRQHandler()                 { call_isr(HDL_NVIC_IRQ9_EXTI3, (void *)EXTI_3); EXTI_PD |= EXTI_3; }
+void EXTI4_IRQHandler()                 { call_isr(HDL_NVIC_IRQ10_EXTI4, (void *)EXTI_4); EXTI_PD |= EXTI_4; }
 void DMA0_Channel0_IRQHandler()         { call_isr(HDL_NVIC_IRQ11_DMA0_Channel0, 0); }
 void DMA0_Channel1_IRQHandler()         { call_isr(HDL_NVIC_IRQ12_DMA0_Channel1, 0); }
 void DMA0_Channel2_IRQHandler()         { call_isr(HDL_NVIC_IRQ13_DMA0_Channel2, 0); }
@@ -25,7 +25,7 @@ void USBD_HP_CAN0_TX_IRQHandler()       { call_isr(HDL_NVIC_IRQ19_USBD_HP_CAN0_T
 void USBD_LP_CAN0_RX0_IRQHandler()      { call_isr(HDL_NVIC_IRQ20_USBD_LP_CAN0_RX0, 0); } /* IRQ20 */
 void CAN0_RX1_IRQHandler()              { call_isr(HDL_NVIC_IRQ21_CAN0_RX1, 0); } /* IRQ21 */
 void CAN0_EWMC_IRQHandler()             { call_isr(HDL_NVIC_IRQ22_CAN0_EWMC, 0); } /* IRQ22 */
-void EXTI5_9_IRQHandler()               { call_isr(HDL_NVIC_IRQ23_EXTI5_9, EXTI_PD & EXTI_LINES_5_9); EXTI_PD |= EXTI_LINES_5_9; } /* IRQ23 */
+void EXTI5_9_IRQHandler()               { uint32_t lines = (EXTI_PD & EXTI_LINES_5_9); call_isr(HDL_NVIC_IRQ23_EXTI5_9, (void *)lines); EXTI_PD |= lines; } /* IRQ23 */
 void TIMER0_BRK_IRQHandler()            { call_isr(HDL_NVIC_IRQ24_TIMER0_BRK, 0); } /* IRQ24 */
 void TIMER0_UP_IRQHandler()             { call_isr(HDL_NVIC_IRQ25_TIMER0_UP, 0); } /* IRQ25 */
 void TIMER0_TRG_CMT_IRQHandler()        { call_isr(HDL_NVIC_IRQ26_TIMER0_TRG_CMT, 0); } /* IRQ26 */
@@ -42,7 +42,7 @@ void spi1_handler()                     { call_isr(HDL_NVIC_IRQ36_SPI1, 0); } /*
 void usart0_handler()                   { call_isr(HDL_NVIC_IRQ37_USART0, 0); } /* IRQ37 */
 void usart1_handler()                   { call_isr(HDL_NVIC_IRQ38_USART1, 0); } /* IRQ38 */
 void USART2_IRQHandler()                { call_isr(HDL_NVIC_IRQ39_USART2, 0); } /* IRQ39 */
-void EXTI10_15_IRQHandler()             { call_isr(HDL_NVIC_IRQ40_EXTI10_15, EXTI_PD & EXTI_LINES_10_15); EXTI_PD |= EXTI_LINES_10_15; } /* IRQ40 */
+void EXTI10_15_IRQHandler()             { uint32_t lines = (EXTI_PD & EXTI_LINES_10_15); call_isr(HDL_NVIC_IRQ40_EXTI10_15, (void *)lines); EXTI_PD |= lines; } /* IRQ40 */
 void RTC_Alarm_IRQHandler()             { call_isr(HDL_NVIC_IRQ41_RTC_Alarm, 0); } /* IRQ41 */
 void USBD_WKUP_IRQHandler()             { call_isr(HDL_NVIC_IRQ42_USBD_WKUP, 0); } /* IRQ42 */
 void EXMC_IRQHandler()                  { call_isr(HDL_NVIC_IRQ48_EXMC, 0); } /* IRQ48 */

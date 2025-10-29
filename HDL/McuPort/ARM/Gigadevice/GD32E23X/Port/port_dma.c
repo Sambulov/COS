@@ -1,6 +1,6 @@
 #include "hdl_iface.h"
 
-uint8_t __hdl_dma_run(const void *desc, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount) {
+uint8_t __hdl_dma_run(const void *desc, hdl_dma_direction_t dir, uint32_t periph_addr, uint32_t memory_addr, uint32_t amount) {
   hdl_dma_channel_mcu_t *channel = ((hdl_dma_channel_mcu_t *)desc);
   if(channel == NULL) return HDL_FALSE;
   hdl_dma_t *dma = (hdl_dma_t *)channel->dependencies[0];
@@ -15,7 +15,10 @@ uint8_t __hdl_dma_run(const void *desc, uint32_t periph_addr, uint32_t memory_ad
   dma_periph_width_config(ch_cnf->ch_no, ch_cnf->periph_width);
   if(ch_cnf->memory_inc) dma_memory_increase_enable( ch_cnf->ch_no);
   if(ch_cnf->periph_inc) dma_periph_increase_enable( ch_cnf->ch_no);
-  dma_transfer_direction_config(ch_cnf->ch_no, ch_cnf->direction);
+  if(dir == HDL_DMA_M2P) 
+    dma_transfer_direction_config(ch_cnf->ch_no, DMA_MEMORY_TO_PERIPHERAL);
+  else 
+    dma_transfer_direction_config(ch_cnf->ch_no, DMA_PERIPHERAL_TO_MEMORY);
   if(ch_cnf->m2m_direction) dma_memory_to_memory_enable( ch_cnf->ch_no);
   if (ch_cnf->circular) dma_circulation_enable(ch_cnf->ch_no);
   dma_channel_enable(ch_cnf->ch_no);

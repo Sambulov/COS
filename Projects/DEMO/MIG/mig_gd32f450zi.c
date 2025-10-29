@@ -555,75 +555,61 @@ const hdl_clock_mcu_t mod_clock_adc = {
 /***********************************************************
  *                          COUNTER
 ***********************************************************/
-const hdl_tick_counter_timer_config_t mod_tick_counter0_cnf = {
-  .alignedmode = TIMER_COUNTER_EDGE,
-  .clockdivision = TIMER_CKDIV_DIV1,
-  .counterdirection = TIMER_COUNTER_UP,
-  .period = 16000 - 1,
-  .prescaler = 0,
-  .repetitioncounter = 0,
-  .rcu = RCU_TIMER0
-};
 
-const hdl_tick_counter_timer_config_t mod_tick_counter1_cnf = {
-  .alignedmode = TIMER_COUNTER_EDGE,
-  .clockdivision = TIMER_CKDIV_DIV1,
-  .counterdirection = TIMER_COUNTER_UP,
-  .period = 16000 - 1,
-  .prescaler = 0,
-  .repetitioncounter = 0,
-  .rcu = RCU_TIMER1
-};
-
-const hdl_tick_counter_timer_config_t mod_tick_counter4_cnf = {
-  .alignedmode = TIMER_COUNTER_EDGE,
-  .clockdivision = TIMER_CKDIV_DIV1,
-  .counterdirection = TIMER_COUNTER_UP,
-  .period = 0,
-  .prescaler = 0,
-  .repetitioncounter = 0,
-  .rcu = RCU_TIMER4
-};
-
-const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
-  .period = 240000 - 1
-};
-
-const hdl_tick_counter_t mod_systick_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_systick_counter_t mod_systick_counter = {
+  .iface = &hdl_systick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_ahb),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .type.systick = &mod_systick_counter_cnf,
-    .phy = (uint32_t)SysTick
+  .config = hdl_module_config(hdl_systick_counter_config_t,
+    .phy = (uint32_t)SysTick,
+    .period = 240000-1,
+    .clock_src = 0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };
 
 const hdl_tick_counter_t mod_timer0_counter = {
-  .iface = &hdl_tick_counter_iface,
+  .iface = &hdl_timertick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_apb2),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .type.timer = &mod_tick_counter0_cnf,
+  .config = hdl_module_config(hdl_timertick_counter_config_t,
+    .alignedmode = TIMER_COUNTER_EDGE,
+    .clockdivision = TIMER_CKDIV_DIV1,
+    .counterdirection = TIMER_COUNTER_UP,
+    .period = 16000 - 1,
+    .prescaler = 0,
+    .repetitioncounter = 0,
+    .rcu = RCU_TIMER0,
     .phy = TIMER0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };
 
-const hdl_tick_counter_t mod_timer1_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_timertick_counter_t mod_timer1_counter = {
+  .iface = &hdl_timertick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_apb1),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .type.timer = &mod_tick_counter1_cnf,
+  .config = hdl_module_config(hdl_timertick_counter_config_t,
+    .alignedmode = TIMER_COUNTER_EDGE,
+    .clockdivision = TIMER_CKDIV_DIV1,
+    .counterdirection = TIMER_COUNTER_UP,
+    .period = 16000 - 1,
+    .prescaler = 0,
+    .repetitioncounter = 0,
+    .rcu = RCU_TIMER1,
     .phy = TIMER1
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
 };
 
-const hdl_tick_counter_t mod_timer4_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_timertick_counter_t mod_timer4_counter = {
+  .iface = &hdl_timertick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_apb1_timers),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .type.timer = &mod_tick_counter4_cnf,
+  .config = hdl_module_config(hdl_timertick_counter_config_t,
+    .alignedmode = TIMER_COUNTER_EDGE,
+    .clockdivision = TIMER_CKDIV_DIV1,
+    .counterdirection = TIMER_COUNTER_UP,
+    .period = 0,
+    .prescaler = 0,
+    .repetitioncounter = 0,
+    .rcu = RCU_TIMER4,
     .phy = TIMER4
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
@@ -1445,53 +1431,6 @@ hdl_dma_channel_t mod_dma_ch_spi_3_m2m = {
 /**************************************************************
  *                        ADC
  *************************************************************/
-const hdl_adc_source_t mod_adc_source_0_adc_24v = {
-  .channel = HDL_ADC_CHANNEL_0,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_1_adc_24v_poe = {
-  .channel = HDL_ADC_CHANNEL_1,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_2_adc_5v = {
-  .channel = HDL_ADC_CHANNEL_2,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_3_adc_3v3 = {
-  .channel = HDL_ADC_CHANNEL_3,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_4_adc_2v5 = {
-  .channel = HDL_ADC_CHANNEL_4,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_source_t mod_adc_source_5_adc_1v8 = {
-  .channel = HDL_ADC_CHANNEL_5,
-  .sample_time = HDL_ADC_SAMPLETIME_3,
-};
-
-const hdl_adc_config_t mod_adc_cnf = {
-  .phy = ADC0,
-  .adc_interrupt = &mod_irq_adc,
-  .resolution = HDL_ADC_RESOLUTION_12BIT,
-  .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
-  .init_timeout = 3000,
-  .sources = hdl_adc_src(&mod_adc_source_0_adc_24v, &mod_adc_source_1_adc_24v_poe, &mod_adc_source_2_adc_5v,
-                          &mod_adc_source_3_adc_3v3, &mod_adc_source_4_adc_2v5, &mod_adc_source_5_adc_1v8),
-};
-
-hdl_adc_mcu_t mod_adc = {
-  .iface = &hdl_adc_iface,
-  .dependencies = hdl_module_dependencies(&mod_clock_adc, &mod_systick_timer, &mod_adc_dma_ch, &mod_nvic),
-  .config = &mod_adc_cnf,
-  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
-  .obj_var = static_malloc(HDL_ADC_VAR_SIZE)
-};
 
 /**************************************************************
  *                        SPI
@@ -1571,7 +1510,10 @@ extern const hdl_gpio_pin_t mod_led4_pin                          __attribute__ 
 extern const hdl_gpio_pin_t mod_button_pin                        __attribute__ ((alias ("mod_gpio_pf12")));
 
 extern const hdl_uart_t mod_uart                                  __attribute__ ((alias ("hdl_null_module")));
+extern const hdl_uart_t mod_rs485                                 __attribute__ ((alias ("hdl_null_module")));
 
 extern const hdl_spi_client_ch_t mod_spi_client                   __attribute__ ((alias ("hdl_null_module")));
+
+extern const hdl_i2c_t mod_i2c                                    __attribute__ ((alias ("hdl_null_module")));
 
 #endif

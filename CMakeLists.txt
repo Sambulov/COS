@@ -20,6 +20,38 @@ add_subdirectory("${CMAKE_SOURCE_DIR}/Projects")
 add_subdirectory("${CMAKE_SOURCE_DIR}/HDL")
 add_subdirectory("${CMAKE_SOURCE_DIR}/CL")
 
+
+get_property(LIB_ENABLE_LWIP GLOBAL PROPERTY LIB_ENABLE_LWIP)
+get_property(LIB_ENABLE_MBEDTLS GLOBAL PROPERTY LIB_ENABLE_MBEDTLS)
+
+if(LIB_ENABLE_LWIP STREQUAL "ENABLE")
+  set(LWIP_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/LwIP")
+  set_property(GLOBAL APPEND PROPERTY HDL_HEADERS
+    "${LWIP_DIR}/src/include/"
+    #"${LWIP_DIR}/contrib/"
+    #"${LWIP_DIR}/contrib/ports/unix/port/include"
+    #"${LWIP_DIR}/contrib/examples/example_app"
+  )
+  include(${LWIP_DIR}/src/Filelists.cmake)
+  set_property(GLOBAL APPEND PROPERTY HDL_SOURCES ${lwipnoapps_SRCS})
+  if(LIB_ENABLE_MBEDTLS STREQUAL "ENABLE")
+    set_property(GLOBAL APPEND PROPERTY HDL_SOURCES ${lwipmbedtls_SRCS})
+  endif()
+endif()
+
+if(LIB_ENABLE_MBEDTLS STREQUAL "ENABLE")
+  set_property(GLOBAL APPEND PROPERTY HDL_HEADERS
+    "${CMAKE_SOURCE_DIR}/ThirdParty/MbedTLS/include"
+    "${CMAKE_SOURCE_DIR}/ThirdParty/MbedTLS/library"
+  )
+  file(GLOB MBEDTLS_SRC
+    "${CMAKE_SOURCE_DIR}/ThirdParty/MbedTLS/library/*.c"
+  )
+  set_property(GLOBAL APPEND PROPERTY HDL_SOURCES ${MBEDTLS_SRC})
+endif()
+
+
+
 get_property(TOOLCHAIN_PREFIX GLOBAL PROPERTY TOOLCHAIN_PREFIX)
 get_property(TOOLCHAIN_DIR GLOBAL PROPERTY TOOLCHAIN_DIR)
 set(CMAKE_C_COMPILER ${TOOLCHAIN_DIR}${TOOLCHAIN_PREFIX}gcc)
@@ -45,6 +77,7 @@ elseif("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
   set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -Os)
 else()
   message(STATUS "Minimal optimization, debug info included")
+  set (LWIP_DEFINITIONS LWIP_DEBUG=1)
   set(CMAKE_VERBOSE_MAKEFILE ON)
   add_compile_definitions("DEBUG")
   set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -O0 -g3 -ggdb -fno-builtin)
@@ -76,7 +109,6 @@ get_property(CL_HEADERS GLOBAL PROPERTY CL_HEADERS)
 get_property(HDL_HEADERS GLOBAL PROPERTY HDL_HEADERS)
 get_property(PROJECT_HEADERS GLOBAL PROPERTY PROJECT_HEADERS)
 
-
 include_directories( ${PROJECT_HEADERS} )
 include_directories( ${HDL_HEADERS} )
 include_directories( ${CL_HEADERS} )
@@ -100,7 +132,8 @@ add_compile_definitions(${HDL_DEFINITIONS})
 add_compile_definitions(${CL_DEFINITIONS})
 add_compile_definitions(${PROJECT_DEFINITIONS})
 
-add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES}  ${CL_SOURCES})
+
+add_executable(${EXECUTABLE} ${HDL_SOURCES} ${PROJECT_SOURCES} ${CL_SOURCES})
 
 # Указываем, что нужно использовать newlib-nano
 #target_link_libraries(${EXECUTABLE} -specs=nano.specs)

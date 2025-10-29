@@ -22,13 +22,13 @@ hdl_stream_buffer_t *uart_stream_init() {
   hdl_stream_buffer_init(&uart_stream, HDL_TRUE);
   hdl_transceiver_from_stream(&uart_stream.stream, &uart_trx, HDL_FALSE);
   uart_trx.end_of_transmission = &hdl_transceiver_eot_cb;
-  hdl_uart_set_transceiver(&mod_uart, &uart_trx, 0);
+  hdl_uart_set_transceiver(&mod_uart, &uart_trx);
   return &uart_stream;
 }
 
 #define STREAM_PRINT_DELAY  1000
 
-void stream_printer(uint32_t event_trigger, void *sender, void *context) {
+void stream_printer(void *event_trigger, void *sender, void *context) {
   (void)event_trigger; (void)sender;
   hdl_stream_buffer_t *uart_stream = (hdl_stream_buffer_t *)context;
   uint32_t now = hdl_time_counter_get(&mod_timer_ms);

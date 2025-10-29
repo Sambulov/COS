@@ -20,6 +20,8 @@
 #define HDL_SYSTICK_COUNTER_RELOAD   108000 - 1                /* Clocked by AHB   */
 #define HDL_I2C_SLAVE_ADDR           0x31
 
+#define HDL_SYSTICK_PRESCALER        1                         /* Can be 1 or 8 */
+
 #define TIMER0_RELOAD_VAL            16000-1
 #define TIMER1_RELOAD_VAL            16000-1
 
@@ -539,48 +541,49 @@ const hdl_clock_mcu_t mod_clock_adc = {
   .obj_var = static_malloc(HDL_CLOCK_VAR_SIZE)
 };
 
-const hdl_tick_counter_t mod_systick_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_systick_counter_t mod_systick_counter = {
+  .iface = &hdl_systick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_ahb),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
+  .config = hdl_module_config(hdl_systick_counter_config_t,
     .phy = (uint32_t)SysTick,
-    .type.systick = hdl_module_config(hdl_tick_counter_systick_config_t, .period = HDL_SYSTICK_COUNTER_RELOAD)
+    .period = HDL_SYSTICK_COUNTER_RELOAD,
+    #if (HDL_SYSTICK_PRESCALER == 8)
+      .clock_src = 0
+    #else
+      .clock_src = SysTick_CTRL_CLKSOURCE_Msk
+    #endif
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
-const hdl_tick_counter_t mod_timer0_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_timertick_counter_t mod_timer0_counter = {
+  .iface = &hdl_timertick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_apb2),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
+  .config = hdl_module_config(hdl_timertick_counter_config_t,
     .phy = (uint32_t)TIMER0,
-    .type.timer = hdl_module_config(hdl_tick_counter_timer_config_t, 
-      .alignedmode = TIMER_COUNTER_EDGE,
-      .clockdivision = TIMER_CKDIV_DIV1,
-      .counterdirection = TIMER_COUNTER_UP,
-      .period = TIMER0_RELOAD_VAL,
-      .prescaler = 0,
-      .repetitioncounter = 0,
-      .rcu = RCU_TIMER0
-    )
+    .alignedmode = TIMER_COUNTER_EDGE,
+    .clockdivision = TIMER_CKDIV_DIV1,
+    .counterdirection = TIMER_COUNTER_UP,
+    .period = TIMER0_RELOAD_VAL,
+    .prescaler = 0,
+    .repetitioncounter = 0,
+    .rcu = RCU_TIMER0
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
-const hdl_tick_counter_t mod_timer1_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_timertick_counter_t mod_timer1_counter = {
+  .iface = &hdl_timertick_counter_iface,
   .dependencies = hdl_module_dependencies(&mod_clock_apb1),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
+  .config = hdl_module_config(hdl_timertick_counter_config_t,
     .phy = (uint32_t)TIMER1,
-    .type.timer = hdl_module_config(hdl_tick_counter_timer_config_t, 
-      .alignedmode = TIMER_COUNTER_EDGE,
-      .clockdivision = TIMER_CKDIV_DIV1,
-      .counterdirection = TIMER_COUNTER_UP,
-      .period = TIMER1_RELOAD_VAL,
-      .prescaler = 0,
-      .repetitioncounter = 0,
-      .rcu = RCU_TIMER1
-    )
+    .alignedmode = TIMER_COUNTER_EDGE,
+    .clockdivision = TIMER_CKDIV_DIV1,
+    .counterdirection = TIMER_COUNTER_UP,
+    .period = TIMER1_RELOAD_VAL,
+    .prescaler = 0,
+    .repetitioncounter = 0,
+    .rcu = RCU_TIMER1
   ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
@@ -995,41 +998,30 @@ const hdl_spi_client_ch_mcu_t mod_spi0_ch0 = {
  *  ADC
  *************************************************************/
 
-hdl_adc_source_t mod_adc_source_0 = {
-  .channel = HDL_ADC_CHANNEL_0,
-  .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
-};
-
-hdl_adc_source_t mod_adc_source_1 = {
-  .channel = HDL_ADC_CHANNEL_1,
-  .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
-};
-
-hdl_adc_source_t mod_adc_source_2 = {
-  .channel = HDL_ADC_CHANNEL_2,
-  .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
-};
-
-hdl_adc_source_t mod_adc_source_3 = {
-  .channel = HDL_ADC_CHANNEL_3,
-  .sample_time = HDL_ADC_CHANNEL_SAMPLE_TIME_7P5
-};
-
-const hdl_adc_config_t mod_adc0_mcu_cnf = {
-  .phy = ADC0,
-  .rcu = RCU_ADC0,
-  .adc_interrupt = &mod_irq_adc0_1,
-  .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
-  .init_timeout = 3000,
-  .sources = hdl_adc_src(&mod_adc_source_3),
-};
-
-const hdl_adc_mcu_t mod_adc0_mcu = {
+const hdl_adc_mcu_t mod_adc0 = {
   .iface = &hdl_adc_iface,
-  .dependencies = hdl_module_dependencies(&mod_clock_adc, &mod_systick_timer, &mod_dma0_ch0, &mod_nvic, &mod_gpio_pa3),
-  .config = &mod_adc0_mcu_cnf,
+  .dependencies = hdl_module_dependencies(&mod_clock_adc, &mod_systick_timer, &mod_dma0_ch0, &mod_nvic),
+  .config = hdl_module_config(hdl_adc_config_t,
+    .phy = ADC0,
+    .rcu = RCU_ADC0,
+    .adc_interrupt = &mod_irq_adc0_1,
+    .data_alignment = HDL_ADC_DATA_ALIGN_RIGHT,
+    .init_timeout = 3000,
+    .adc_slots = (uint32_t *)static_malloc(8)
+  ),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
   .obj_var = static_malloc(HDL_ADC_VAR_SIZE)
+};
+
+const hdl_adc_ch_mcu_t mod_adc0_ch3 = {
+  .iface = &hdl_adc_ch_iface,
+  .dependencies = hdl_module_dependencies(&mod_adc0, &mod_gpio_pa3),
+  .config = hdl_module_config(hdl_adc_ch_config_t,
+    .channel = ADC_CHANNEL_3,
+    .sample_time = ADC_SAMPLETIME_239POINT5,
+    .rank = HDL_ADC_CH_RANK_REGULAR1
+  ),
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
 /**************************************************************

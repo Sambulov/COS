@@ -50,7 +50,7 @@ typedef struct {
   depends on:
   nvic
 */
-hdl_module_new_t(hdl_exti_controller_t, 0, hdl_exti_controller_config_t, hdl_exti_controller_iface_t);
+hdl_module_new_t(hdl_exti_controller_t, 0, hdl_exti_controller_config_t*, hdl_exti_controller_iface_t);
 
 extern const hdl_exti_controller_iface_t hdl_exti_controller_iface;
 

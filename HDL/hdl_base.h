@@ -39,6 +39,17 @@ extern "C" {
 #include "hdl_event.h"
 #include "hdl_heap.h"
 
+typedef struct {
+  coroutine_t coroutine;
+  void *ccb;
+} hdl_coroutine_t;
+
+void hdl_coroutine_add(hdl_coroutine_t *cor_buf, void *cor_cxt, uint32_t size, coroutine_handler_t handler, void *arg);
+uint8_t hdl_coroutine_run_yielding(coroutine_t *this, uint8_t cancel, void *arg);
+
+void hdl_coroutine_yield_return();
+
+#define yield_return  hdl_coroutine_yield_return()
 
 #ifdef __cplusplus
 }

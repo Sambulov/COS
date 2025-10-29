@@ -5,34 +5,38 @@
 #include "hdl_core.h"
 #include "port_core_spec.h"
 
+#define HDL_NVIC_VAR_SIZE        4
+#define HDL_NVIC_IRQ_VAR_SIZE    8
+
 typedef struct {
   hdl_nvic_irq_n_t irq_type;
   uint8_t priority_group;
   uint8_t priority;
-} hdl_interrupt_config_t;
+  uint32_t event_mask;
+  uint32_t event_id;
+} hdl_nvic_irq_config_t;
 
 typedef struct {
-  hdl_interrupt_t * const *interrupts;
   uint8_t prio_bits;
   uint8_t irq_latency; /* processor ensures that a minimum of irq_latency+1 hclk cycles exist between an interrupt becoming pended */
   const void * const vector;
   void *phy;
 } hdl_nvic_config_t;
 
-#define hdl_interrupts(...) ((hdl_interrupt_t * const []){__VA_ARGS__, NULL})
-
 extern const void *_estack;
 extern const void *_sidata, *_sdata, *_edata;
 extern const void *_sbss, *_ebss;
 extern const void *_eflash;
 
-void call_isr(hdl_nvic_irq_n_t irq, uint32_t event);
+void call_isr(hdl_nvic_irq_n_t irq, void *event_trigger);
 
-hdl_module_new_t(hdl_core_arm_t, 0, hdl_core_config_t, hdl_module_base_iface_t);
-hdl_module_new_t(hdl_nvic_t, 0, hdl_nvic_config_t, hdl_interrupt_controller_iface_t);
+hdl_module_new_t(hdl_core_arm_t, 0, hdl_core_config_t*, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_nvic_t, HDL_NVIC_VAR_SIZE, hdl_nvic_config_t*, hdl_module_base_iface_t);
+hdl_module_new_t(hdl_nvic_irq_t, HDL_NVIC_IRQ_VAR_SIZE, hdl_nvic_irq_config_t*, hdl_interrupt_iface_t);
 
 extern const hdl_module_base_iface_t hdl_core_arm_iface;
-extern const hdl_interrupt_controller_iface_t hdl_nvic_iface;
+extern const hdl_module_base_iface_t hdl_nvic_iface;
+extern const hdl_interrupt_iface_t hdl_nvic_irq_iface;
 
 void irq_n_handler();
 void reset_handler();

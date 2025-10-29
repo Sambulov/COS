@@ -315,6 +315,7 @@ static void SPIM_ReadStatusRegister(uint8_t dataBuf[], uint32_t u32NRx, uint32_t
   */
 static void SPIM_WriteStatusRegister(uint8_t dataBuf[], uint32_t u32NTx, uint32_t u32NBit)
 {
+    (void)u32NTx;
     uint8_t cmdBuf[] = {OPCODE_WRSR, 0x00U};     /* 1-byte Write Status Register #1 command + 1-byte data. */
 
     cmdBuf[1] = dataBuf[0];
@@ -353,6 +354,7 @@ static void SPIM_ReadStatusRegister2(uint8_t dataBuf[], uint32_t u32NRx, uint32_
   */
 static void SPIM_WriteStatusRegister2(uint8_t dataBuf[], uint32_t u32NTx, uint32_t u32NBit)
 {
+    (void)u32NTx;
     uint8_t cmdBuf[3] = {OPCODE_WRSR, 0U, 0U};
 
     cmdBuf[1] = dataBuf[0];

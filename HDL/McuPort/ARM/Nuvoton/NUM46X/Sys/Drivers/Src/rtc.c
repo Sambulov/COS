@@ -1049,7 +1049,7 @@ void RTC_DynamicTamperConfig(uint32_t u32ChangeRate, uint32_t u32SeedReload, uin
   */
 uint32_t RTC_SetClockSource(uint32_t u32ClkSrc)
 {
-    uint32_t u32TrimDefault = inpw(SYS_BASE + 0x14Cul);
+    //uint32_t u32TrimDefault = inpw(SYS_BASE + 0x14Cul);
 
     if(u32ClkSrc == RTC_CLOCK_SOURCE_LXT)
     {

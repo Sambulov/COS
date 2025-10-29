@@ -55,7 +55,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "executable": "./build/firmware.elf",
-            //"showDevDebugOutput": "parsed",
+            "showDevDebugOutput": "parsed",
             "windows": {
                 // "searchDir": [ 
                 //     "./HDL/McuPort/ARM/Nuvoton/NUM46X/Res"
@@ -107,19 +107,20 @@
 				"gdbPath": "/usr/bin/gdb-multiarch"
 			},
 			"runToEntryPoint": "main",
-			"showDevDebugOutput": "vscode",
+			"showDevDebugOutput": "parsed",
 			"servertype": "jlink",
 			"interface": "swd",
 			"device": "${config:MCU}",
+            //"loadFiles": ["./build/firmware.elf"],
 			"svdFile": "./build/mcu.svd",
-			//"preLaunchTask": "J-Link Flash",
+			"preLaunchTask": "J-Link Flash",
 			"overrideLaunchCommands": [
-			 	"monitor reset halt",
-			 	"cd ./build",
-			 	"file firmware.elf",
+			// 	"monitor reset halt",
+			// 	"cd ./build",
+			// 	"file firmware.elf",
 			 	//"target extended-remote localhost:50000",
-			 	"load",
-			 	"set output-radix 16"
+			// 	"load",
+			// 	"set output-radix 16"
 			],
 			//"liveWatch": {
 			//	"enabled": true,

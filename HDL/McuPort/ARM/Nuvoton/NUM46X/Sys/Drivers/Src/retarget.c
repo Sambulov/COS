@@ -375,7 +375,7 @@ __WEAK uint32_t ProcessHardFault(uint32_t lr, uint32_t msp, uint32_t psp)
     */
 
 
-    printf("HardFault @ 0x%08x\n", sp[6]);
+    printf("HardFault @ 0x%08lx\n", sp[6]);
     /* Get the instruction caused the hardfault */
     if( sp != NULL )
     {
@@ -385,7 +385,7 @@ __WEAK uint32_t ProcessHardFault(uint32_t lr, uint32_t msp, uint32_t psp)
 
     printf("HardFault Analysis:\n");
 
-    printf("Instruction code = %x\n", inst);
+    printf("Instruction code = %lx\n", inst);
 
     if(inst == 0xBEAB)
     {
@@ -398,10 +398,10 @@ __WEAK uint32_t ProcessHardFault(uint32_t lr, uint32_t msp, uint32_t psp)
         rn = (inst >> 3) & 0x7;
         rt = inst & 0x7;
 
-        printf("LDR/STR rt=%x rm=%x rn=%x\n", rt, rm, rn);
+        printf("LDR/STR rt=%lx rm=%lx rn=%lx\n", rt, rm, rn);
         taddr = sp[rn] + sp[rm];
         tdata = sp[rt];
-        printf("[0x%08x] 0x%04x %s 0x%x [0x%x]\n", addr, inst,
+        printf("[0x%08lx] 0x%04lx %s 0x%lx [0x%lx]\n", addr, inst,
                (inst & BIT11) ? "LDR" : "STR", tdata, taddr);
 
     }
@@ -412,10 +412,10 @@ __WEAK uint32_t ProcessHardFault(uint32_t lr, uint32_t msp, uint32_t psp)
         rn = (inst >> 3) & 0x7;
         rt = inst & 0x7;
 
-        printf("LDR/STR rt=%x rn=%x imm5=%x\n", rt, rn, imm5);
+        printf("LDR/STR rt=%lx rn=%lx imm5=%lx\n", rt, rn, imm5);
         taddr = sp[rn] + imm5;
         tdata = sp[rt];
-        printf("[0x%08x] 0x%04x %s 0x%x [0x%x]\n", addr, inst,
+        printf("[0x%08lx] 0x%04lx %s 0x%lx [0x%lx]\n", addr, inst,
                (inst & BIT11) ? "LDR" : "STR", tdata, taddr);
     }
     else if((inst >> 12) == 8)
@@ -425,10 +425,10 @@ __WEAK uint32_t ProcessHardFault(uint32_t lr, uint32_t msp, uint32_t psp)
         rn = (inst >> 3) & 0x7;
         rt = inst & 0x7;
 
-        printf("LDRH/STRH rt=%x rn=%x imm5=%x\n", rt, rn, imm5);
+        printf("LDRH/STRH rt=%lx rn=%lx imm5=%lx\n", rt, rn, imm5);
         taddr = sp[rn] + imm5;
         tdata = sp[rt];
-        printf("[0x%08x] 0x%04x %s 0x%x [0x%x]\n", addr, inst,
+        printf("[0x%08lx] 0x%04lx %s 0x%lx [0x%lx]\n", addr, inst,
                (inst & BIT11) ? "LDR" : "STR", tdata, taddr);
 
     }
@@ -438,10 +438,10 @@ __WEAK uint32_t ProcessHardFault(uint32_t lr, uint32_t msp, uint32_t psp)
         imm8 = inst & 0xff;
         rt = (inst >> 8) & 0x7;
 
-        printf("LDRH/STRH rt=%x imm8=%x\n", rt, imm8);
+        printf("LDRH/STRH rt=%lx imm8=%lx\n", rt, imm8);
         taddr = sp[6] + imm8;
         tdata = sp[rt];
-        printf("[0x%08x] 0x%04x %s 0x%x [0x%x]\n", addr, inst,
+        printf("[0x%08lx] 0x%04lx %s 0x%lx [0x%lx]\n", addr, inst,
                (inst & BIT11) ? "LDR" : "STR", tdata, taddr);
     }
     else
@@ -664,6 +664,7 @@ int fputc(int ch, FILE *stream)
 #if !defined(OS_USE_SEMIHOSTING)
 int _write(int fd, char *ptr, int len)
 {
+    (void)fd;
     int i = len;
 
     while(i--)
@@ -683,7 +684,7 @@ int _write(int fd, char *ptr, int len)
 
 int _read(int fd, char *ptr, int len)
 {
-
+    (void)fd; (void)len;
     while((DEBUG_PORT->FIFOSTS & UART_FIFOSTS_RXEMPTY_Msk) != 0);
     *ptr = DEBUG_PORT->DAT;
     return 1;

@@ -5,9 +5,28 @@ void lvd_handler()                   { call_isr((hdl_nvic_irq_n_t)LVD_IRQn, 0); 
 void rtc_handler()                   { call_isr((hdl_nvic_irq_n_t)RTC_IRQn, 0); }
 void fmc_handler()                   { call_isr((hdl_nvic_irq_n_t)FMC_IRQn, 0); }
 void rcu_handler()                   { call_isr((hdl_nvic_irq_n_t)RCU_IRQn, 0); }
-void exti0_1_handler()               { call_isr((hdl_nvic_irq_n_t)EXTI0_1_IRQn, 0); EXTI_PD |= (EXTI_0 | EXTI_1); }
-void exti2_3_IRQHandler()            { call_isr((hdl_nvic_irq_n_t)EXTI2_3_IRQn, 0); EXTI_PD |= (EXTI_2 | EXTI_3); }
-void exti4_15_handler()              { call_isr((hdl_nvic_irq_n_t)EXTI4_15_IRQn, 0); EXTI_PD |= EXTI_LINES_4_15; }
+void exti0_1_handler()               { 
+  uint32_t pd = EXTI_PD & (EXTI_0 | EXTI_1); 
+  if (pd) {
+    call_isr((hdl_nvic_irq_n_t)EXTI0_1_IRQn, (void *)pd); 
+    EXTI_PD |= pd; 
+  }
+}
+void exti2_3_IRQHandler()            { 
+  uint32_t pd = EXTI_PD & (EXTI_2 | EXTI_3); 
+  if (pd) {
+    call_isr((hdl_nvic_irq_n_t)EXTI2_3_IRQn, (void *)pd); EXTI_PD |= pd; 
+    EXTI_PD |= pd;
+  }
+}
+
+void exti4_15_handler()              { 
+  uint32_t pd = EXTI_PD & (EXTI_LINES_4_15); 
+  if (pd) {
+    call_isr((hdl_nvic_irq_n_t)EXTI4_15_IRQn, (void *)pd); 
+    EXTI_PD |= pd;
+  }
+}
 void dma_channel0_handler()          { call_isr((hdl_nvic_irq_n_t)DMA_Channel0_IRQn, 0); }
 void dma_channel1_2_handler()        { call_isr((hdl_nvic_irq_n_t)DMA_Channel1_2_IRQn, 0); }
 void dma_channel3_4_handler()        { call_isr((hdl_nvic_irq_n_t)DMA_Channel3_4_IRQn, 0); }

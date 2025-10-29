@@ -12,13 +12,19 @@ typedef struct {
                 addr_10_bits        : 1,
                 dual_address        : 1,
                 stretch_enable      : 1;
-  hdl_interrupt_t *err_interrupt;
-  hdl_interrupt_t *ev_interrupt;
   const rcu_periph_enum rcu;
   uint32_t phy;
 } hdl_i2c_config_hw_t;
 
-hdl_module_new_t(hdl_i2c_mcu_t, HDL_I2C_VAR_SIZE, hdl_i2c_config_t, hdl_i2c_iface_t);
+/* depends on 
+  gpio scl
+  gpio sda
+  clock
+  time counter
+  mod_irq_ev
+  mod_irq_er
+*/
+hdl_module_new_t(hdl_i2c_mcu_t, HDL_I2C_VAR_SIZE, hdl_i2c_config_t*, hdl_i2c_iface_t);
 
 extern const hdl_i2c_iface_t hdl_i2c_iface;
 

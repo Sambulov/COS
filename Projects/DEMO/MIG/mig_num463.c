@@ -19,6 +19,8 @@
 #define HDL_SYSTICK_CLOCK                 mod_clock_sys                 /* Can be clocked by: mod_clock_sys, mod_clock_systick_ref*/
 #define HDL_SYSTICK_RELOAD                200000 - 1
 
+#define HDL_SYSTICK_PRESCALER             1
+
 #define HDL_I2C_SLAVE_ADDR                0x68
 
 extern const void *_heap_start;
@@ -398,18 +400,19 @@ const hdl_clock_mcu_t mod_clock_apb1 = {
   .obj_var = static_malloc(HDL_CLOCK_VAR_SIZE)
 };
 
-const hdl_tick_counter_systick_config_t mod_systick_counter_cnf = {
-  .period = HDL_SYSTICK_RELOAD,
-};
-
-const hdl_tick_counter_mcu_t mod_systick_counter = {
-  .iface = &hdl_tick_counter_iface,
+const hdl_systick_counter_t mod_systick_counter = {
+  .iface = &hdl_systick_counter_iface,
   .dependencies = hdl_module_dependencies(&HDL_SYSTICK_CLOCK),
-  .config = hdl_module_config(hdl_tick_counter_config_t,
-    .phy = SysTick,
-    .type.systick = &mod_systick_counter_cnf
+  .config = hdl_module_config(hdl_systick_counter_config_t,
+    .phy = (uint32_t)SysTick,
+    .period = HDL_SYSTICK_RELOAD,
+    #if (HDL_SYSTICK_PRESCALER == 8)
+      .clock_src = 0
+    #else
+      .clock_src = SysTick_CTRL_CLKSOURCE_Msk
+    #endif
   ),
-  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE),
+  .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 
 const hdl_time_counter_config_t mod_systick_timer_cnf = {
@@ -945,8 +948,10 @@ extern const hdl_gpio_pin_t mod_led4_pin                          __attribute__ 
 extern const hdl_gpio_pin_t mod_button_pin                        __attribute__ ((alias ("mod_gpio_pb13")));
 
 extern const hdl_uart_t mod_uart                                  __attribute__ ((alias ("hdl_null_module")));
+extern const hdl_uart_t mod_rs485                                 __attribute__ ((alias ("hdl_null_module")));
 
 extern const hdl_spi_client_ch_t mod_spi_client                   __attribute__ ((alias ("hdl_null_module")));
 
+extern const hdl_i2c_t mod_i2c                                    __attribute__ ((alias ("hdl_null_module")));
 
 #endif

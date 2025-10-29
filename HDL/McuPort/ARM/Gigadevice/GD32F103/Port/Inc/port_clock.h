@@ -47,7 +47,7 @@ typedef struct {
 
 #define HDL_CLOCK_VAR_SIZE 8
 
-hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_VAR_SIZE, hdl_clock_config_t, hdl_clock_iface_t);
+hdl_module_new_t(hdl_clock_mcu_t, HDL_CLOCK_VAR_SIZE, hdl_clock_config_t*, hdl_clock_iface_t);
 
 extern const hdl_clock_iface_t hdl_clock_iface;
 

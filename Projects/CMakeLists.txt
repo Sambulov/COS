@@ -7,7 +7,8 @@
 
 #set(BOARD "SMART_MONITOR_GD32E230")
 
-set(BOARD "CCS2")
+set(BOARD "AIC2")
+#set(BOARD "CCS2")
 #set(BOARD "TCE")
 
 set(dir "${CMAKE_CURRENT_SOURCE_DIR}/${BOARD}")

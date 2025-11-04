@@ -7,9 +7,15 @@
 
 /* chip_address 0x48 */
 
+typedef enum {
+  HDL_I2C_TMP112_XFER_STATE_FAIL  = 0xff,
+  HDL_I2C_TMP112_XFER_STATE_BUSY  = 0x00,
+  HDL_I2C_TMP112_XFER_STATE_READY = 0x01,
+} hdl_i2c_tmp112_xfer_sate_t;
+
 typedef struct {
   int32_t temp;
-  int8_t state; /* -1 fault; 0 busy; 1 ready */
+  hdl_i2c_tmp112_xfer_sate_t state;
 } hdl_i2c_tmp112_data_t;
 
 

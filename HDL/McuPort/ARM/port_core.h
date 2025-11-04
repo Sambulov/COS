@@ -23,6 +23,7 @@ typedef struct {
   void *phy;
 } hdl_nvic_config_t;
 
+extern const void *_sram;
 extern const void *_estack;
 extern const void *_sidata, *_sdata, *_edata;
 extern const void *_sbss, *_ebss;

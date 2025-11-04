@@ -86,10 +86,13 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       hdl_i2c_mem_t *mem = (hdl_i2c_mem_t *)eeprom->dependencies[0];
       if(!hdl_take(mem, eeprom)) break;
       uint16_t chip_address = eeprom->config->chip_address;
-      if(eeprom_var->nvm_msg->address > 0xffff)
+      uint32_t addr = eeprom_var->nvm_msg->address;
+      while (addr > 0xffff) {
+        addr -= 0x10000;
         chip_address++;
+      }
       if(!hdl_i2c_mem_read_r2(mem, chip_address, 
-        eeprom_var->nvm_msg->address,
+        addr,
         eeprom_var->nvm_msg->data,
         eeprom_var->nvm_msg->size)) break;
       eeprom_var->state = EE_STATE_AWAIT_BUS;

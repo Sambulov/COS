@@ -3,10 +3,11 @@
 
 typedef enum {
   HDL_GPIO_LOW = 0,
-  HDL_GPIO_HIGH = !HDL_GPIO_LOW
+  HDL_GPIO_HIGH = !HDL_GPIO_LOW,
+  HDL_GPIO_HIGH_Z = -1
 } hdl_gpio_state;
 
-_Static_assert(HDL_GPIO_LOW == !HDL_GPIO_HIGH, "Expression (HDL_GPIO_LOW == !HDL_GPIO_HIGH) must always be true");
+_Static_assert(((HDL_GPIO_LOW == !HDL_GPIO_HIGH) && (HDL_GPIO_HIGH == !HDL_GPIO_LOW)), "Expression (HDL_GPIO_LOW == !HDL_GPIO_HIGH) must always be true");
 
 typedef struct {
   hdl_gpio_state inactive_default;

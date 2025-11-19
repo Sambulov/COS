@@ -18,4 +18,10 @@ typedef struct {
 typedef uint8_t (*hdl_set_transceiver_t)(const void *desc, const hdl_transceiver_t *transceiver, uint32_t channel_id);
 typedef hdl_transceiver_t *(*hdl_get_transceiver_t)(const void *desc);
 
+uint8_t hdl_transceiver_from_stream(stream_t *stream, uint8_t fifo_reverse, hdl_transceiver_t *out_transceiver);
+uint8_t hdl_transceiver_from_fifos(fifo_t *i_fifo, fifo_t *o_fifo, hdl_transceiver_t *out_transceiver);
+
+extern const fifo_iface_t fifo_circular_buffer_iface;
+extern const fifo_iface_ex_t fifo_circular_buffer_ex_iface;
+
 #endif

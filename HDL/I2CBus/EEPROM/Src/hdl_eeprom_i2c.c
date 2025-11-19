@@ -209,7 +209,7 @@ static uint8_t _hdl_epprom_i2c_info_get(const void *desc, hdl_nvm_info_t *out_in
   hdl_eeprom_i2c_t *eeprom = (hdl_eeprom_i2c_t *)desc;
   if(out_info != NULL) {
     out_info->sector_size = 1;
-    out_info->page_size = eeprom->config->page_size;
+    out_info->mtu_size = eeprom->config->page_size;
     out_info->volume = eeprom->config->size;
     return HDL_TRUE;
   }

@@ -15,5 +15,6 @@
 #include "port_uart.h"
 #include "port_spi.h"
 #include "port_can.h"
+#include "port_sd.h"
 
 #endif // HDL_PORTABLE_H_

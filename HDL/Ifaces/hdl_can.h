@@ -17,15 +17,21 @@ typedef enum {
 typedef enum {
   HDL_CAN_MESSAGE_IDE               = 0x01, /* Extended ID 29-bits */
   HDL_CAN_MESSAGE_RTR               = 0x02, /* Remote Transmission Request */
+  /* TODO: CAN FD OPTIONS */
 } hdl_can_message_options_t;
 
 typedef struct {
-  uint8_t payload[8];
-  uint32_t id;
   uint8_t dlc;         /* Data Length Code 0..8 */
   hdl_can_message_status_t status;
   hdl_can_message_options_t options;
+  uint32_t id;
+  uint8_t payload[8];
 } hdl_can_message_t;
+
+typedef struct {
+  hdl_can_message_t base;
+  uint8_t payload[56];
+} hdl_can_fd_message_t;
 
 typedef struct {
   uint32_t id;

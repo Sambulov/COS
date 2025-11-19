@@ -43,8 +43,6 @@ extern "C" {
 #include "ms5194t.h"
 #include "74HC595.h"
 
-#include "hdl_stream_buffer.h"
-
 //#include "smarc_carrier.h"
 //#include "smarc_module.h"
 

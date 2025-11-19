@@ -5,7 +5,7 @@
 
 typedef struct {
     uint32_t shift_reg_length;
-    void *port_regs;            /* statc_malloc(shift_reg_length / 4) */
+    void *port_regs;            /* static_malloc(shift_reg_length / 4) */
 } hdl_74hc595_port_config_t;
 
 /* depends on

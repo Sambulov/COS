@@ -82,6 +82,7 @@ void hdl_enable(const void *desc) {
     ((hdl_module_var_t *)mod->mod_var)->mod = mod;
     _hdl_hw_enable_parents(mod);
     module_var->dependents = 1;
+    module_var->owner = NULL;
     linked_list_insert_last(&_mod_load, linked_list_item(module_var));
   }
   else

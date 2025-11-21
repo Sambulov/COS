@@ -157,7 +157,7 @@ static hdl_module_state_t _hdl_nvm_init(const void *desc, uint8_t enable) {
 static uint8_t _hdl_nvm_info_get(const void *desc, hdl_nvm_info_t *out_info) {
   hdl_flash_mcu_t *flash = (hdl_flash_mcu_t *)desc;
   if(out_info != NULL) {
-    out_info->page_size = flash->config->page_size;
+    out_info->mtu_size = flash->config->page_size;
     out_info->volume = flash->config->page_size * flash->config->pages_amount;
     return HDL_TRUE;
   }

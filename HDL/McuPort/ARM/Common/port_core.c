@@ -15,7 +15,7 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_nvic_irq_var_t, *((hdl_nvic_irq_t *)0)->obj_var, 
 
 typedef struct {
   uint32_t cor_sp;
-  coroutine_handler_t cor;
+  coroutine_handler_t handler;
   uint32_t stack_size;
   uint32_t stack[];
 } ccb_t;
@@ -24,7 +24,7 @@ void hdl_coroutine_add(hdl_coroutine_t *cor_buf, void *cor_cb, uint32_t size, co
   ccb_t *ccb = (ccb_t *)cor_cb;
   ccb->stack_size = (size - sizeof(ccb_t));
   ccb->cor_sp = 0;
-  ccb->cor = handler;
+  ccb->handler = handler;
   cor_buf->ccb = ccb;
   coroutine_add(&cor_buf->coroutine, &hdl_coroutine_run_yielding, arg);
 }
@@ -36,18 +36,18 @@ void hdl_coroutine_add(hdl_coroutine_t *cor_buf, void *cor_cb, uint32_t size, co
 ------------------------------
 |  ccb  | x + 0x00 |   LR    | <-- SP
 |  PC   | x + 0x04 |   R12   |
-|  R12  | x + 0x08 |   R8    |
-|  R11  | x + 0x0C |   R9    |
-|  R10  | x + 0x10 |   R10   |
-|  R9   | x + 0x14 |   R11   |
-|  R8   | x + 0x18 |  dummy  |
-|  R7   | x + 0x1C |   R3    |
-|  R6   | x + 0x20 |   R4    |
-|  R5   | x + 0x24 |   R5    |
-|  R4   | x + 0x28 |   R6    |
-|  R3   | x + 0x2C |   R7    |
-|  LR   | x + 0x30 |   R0    |
-          x + 0x34 |   R1    |
+|  cor  | x + 0x08 |   R8    |
+|  R8   | x + 0x0C |   R9    |
+|  R9   | x + 0x10 |   R10   |
+|  R10  | x + 0x14 |   R11   |
+|  R11  | x + 0x18 |  dummy  |
+|  R12  | x + 0x1C |   R3    |
+|  R3   | x + 0x20 |   R4    |
+|  R4   | x + 0x24 |   R5    |
+|  R5   | x + 0x28 |   R6    |
+|  R6   | x + 0x2C |   R7    |
+|  R7   | x + 0x30 |   R0    |
+|  LR   | x + 0x34 |   R1    |
           x + 0x38 |   R2    |
           x + 0x3C |   PC    |
 *dummy word, for 8 bytes align
@@ -55,14 +55,18 @@ void hdl_coroutine_add(hdl_coroutine_t *cor_buf, void *cor_cb, uint32_t size, co
 
 __attribute__((naked, noreturn)) void hdl_coroutine_yield_return() {
   __asm volatile("PUSH {R0-R2, LR}");     /* save r0-r2, LR as place holder for PC */
+  __asm volatile("MRS  R0, CONTROL");     /* if we are using main stak */
+  __asm volatile("MOV  R1, #0x02");
+  __asm volatile("AND  R0, R1");          /* it is not yielding coroutine, */
+  __asm volatile("CBZ  R0, force_resume");/* resume now */
   __asm volatile("PUSH {R2-R7}");         /* save r3-r7, r2 to dummy */
   __asm volatile("MOV  R0, R8");
   __asm volatile("MOV  R1, R9");
   __asm volatile("MOV  R2, R10");
   __asm volatile("MOV  R3, R11");
   __asm volatile("PUSH {R0-R3}");         /* save R8-R11 */
-  __asm volatile("SUB  SP, #8");          /* LR + R12 */
-  __asm volatile("LDR  R0, =cor_resume_from");
+  __asm volatile("SUB  SP, #8");          /* reserv for LR + R12 */
+  __asm volatile("LDR  R0, =yield_resume");
   __asm volatile("MOV  R1, #1");
   __asm volatile("ORR  R0, R1");
   __asm volatile("STR  R0, [SP, #0x3C]"); /* save resume PC */
@@ -70,14 +74,16 @@ __attribute__((naked, noreturn)) void hdl_coroutine_yield_return() {
   __asm volatile("STR  R0, [SP, #0x04]"); /* save R12 */
   __asm volatile("MOV  R0, LR");
   __asm volatile("STR  R0, [SP, #0]");    /* save LR */
-  __asm volatile("MRS  R0, CONTROL");
-  __asm volatile("MOV  R1, #0x02");
-  __asm volatile("BIC  R0, R1");
-  __asm volatile("MOV  R1, SP");          /* PSP t0 R1 */
-  __asm volatile("MSR  CONTROL, R0");     /* switch to MSP */
+  __asm volatile("MRS  R1, CONTROL");
+  __asm volatile("MOV  R0, #0x02");
+  __asm volatile("BIC  R1, R0");
+  __asm volatile("MOV  R0, SP");          /* PSP t0 R0 */
+  __asm volatile("MSR  CONTROL, R1");     /* switch to MSP */
   __asm volatile("ISB");
-  __asm volatile("POP  {R0, PC}");
-  __asm volatile("cor_resume_from:");
+  __asm volatile("POP  {R1, PC}");        /* return to __cor_yielding R0 = PSP, R1 = ccb */
+  __asm volatile("force_resume:");
+  __asm volatile("POP  {R0-R2, PC}");
+  __asm volatile("yield_resume:");
   __asm volatile("BX   LR");
 }
 
@@ -89,9 +95,10 @@ __attribute__((naked, noreturn)) uint8_t hdl_coroutine_run_yielding(coroutine_t 
   __asm volatile("MOV  R5, R10");
   __asm volatile("MOV  R6, R11");
   __asm volatile("MOV  R7, R12");
-  __asm volatile("PUSH {R2-R7}");
+  __asm volatile("PUSH {R2-R7}"); 
+  __asm volatile("STR  R0, [SP, #0x00]");    /* coroutine_t this */
 
-  __asm volatile("CBZ  R0, __cor_exit_cancel"); /* if coroutine == NULL  then exit cancel */
+  __asm volatile("CBZ  R0, __cor_exit_cancel"); /* if this coroutine == NULL  then exit cancel */
   __asm volatile("LDR  R3, [R0, #"CL_TOSTR(CO_ROUTINE_DESC_SIZE)"]");      /* R3 = ccb */
   __asm volatile("CBZ  R3, __cor_exit_cancel"); /* if ccb == NULL then exit cancel */
   __asm volatile("LDR  R4, [R3, #8]");       /* R4 = stack_size */
@@ -109,16 +116,16 @@ __attribute__((naked, noreturn)) uint8_t hdl_coroutine_run_yielding(coroutine_t 
     __asm volatile("MOV  R5, #12");
     __asm volatile("ADD  R5, R4");
     __asm volatile("ADD  R5, R3");
-    __asm volatile("LSR  R5, #0X03");
-    __asm volatile("LSL  R5, #0X03");        /* R5 = handlers stack bottom 8 bytes aligned */
+    __asm volatile("LSR  R5, #0x03");
+    __asm volatile("LSL  R5, #0x03");        /* R5 = handlers stack bottom 8 bytes aligned */
     __asm volatile("SUB  R5, #0x40");        /* Handler context struct */
     __asm volatile("LDR  R4, [R3, #4]");
     __asm volatile("MOV  R6, #1");
     __asm volatile("ORR  R4, R6");
     __asm volatile("STR  R4, [R5, #0x3C]");  /* push PC = ccb->cor */
-    __asm volatile("STR  R2, [R5, #0x38]");
-    __asm volatile("STR  R1, [R5, #0x34]");
-    __asm volatile("STR  R0, [R5, #0x30]");  /* push args */
+    __asm volatile("STR  R2, [R5, #0x38]");  /* push arg */
+    __asm volatile("STR  R1, [R5, #0x34]");  /* push cancel*/
+    __asm volatile("STR  R0, [R5, #0x30]");  /* push this*/
     __asm volatile("STR  R3, [R5, #0x20]");  /* push ccb */
     __asm volatile("LDR  R4, =__cor_exit");
     __asm volatile("ORR  R4, R6");
@@ -127,10 +134,10 @@ __attribute__((naked, noreturn)) uint8_t hdl_coroutine_run_yielding(coroutine_t 
     __asm volatile("MOV  R6, R5");
 
   __asm volatile("__cor_resume:");
-    __asm volatile("LDR  R4, =__cor_yielded");
+    __asm volatile("LDR  R4, =__cor_yielding");
     __asm volatile("MOV  R5, #1");
     __asm volatile("ORR  R4, R5");
-    __asm volatile("PUSH {R3, R4}");         /* push to main stack ccb & yield return PC = __cor_yielded */
+    __asm volatile("PUSH {R3, R4}");         /* push to main stack ccb & yield return PC = __cor_yielding */
 
     __asm volatile("MSR  PSP, R6");          /* set PSP */
 
@@ -160,21 +167,37 @@ __attribute__((naked, noreturn)) uint8_t hdl_coroutine_run_yielding(coroutine_t 
     __asm volatile("MOV R12, R7");
     __asm volatile("POP {R3-R7, PC}");
 
-  __asm volatile("__cor_yielded:");
-    __asm volatile("STR  R1, [R0]");         /* save PSP to ccb */
+  __asm volatile("__cor_yielding:");         /* R0 = PSP, R1 = ccb */
+    __asm volatile("MOV  R3, R0");
+    __asm volatile("MOV  R4, R1");
     __asm volatile("EOR  R0, R0");           /* return 0 */
-    __asm volatile("B    __cor_end");
+    __asm volatile("B    __cor_restore_desc");
 
   __asm volatile("__cor_exit:");
-    __asm volatile("EOR  R3, R3");
-    __asm volatile("STR  R3, [R4, #0x00]");  /* ccb->psp == 0 */
-    __asm volatile("MRS  R4, CONTROL");
-    __asm volatile("MOV  R3, #0x02");
-    __asm volatile("BIC  R4, R3");
-    __asm volatile("MSR  CONTROL, R0");      /* switch to MSP */
+    __asm volatile("MRS  R1, CONTROL");
+    __asm volatile("MOV  R2, #0x02");
+    __asm volatile("BIC  R1, R2");
+    __asm volatile("MSR  CONTROL, R1");      /* switch to MSP */
     __asm volatile("ISB");
-    __asm volatile("POP  {R1-R2}");          /* pop ccb & yield return ptr */
+    __asm volatile("POP  {R1-R2}");          /* dummy pop ccb & yield return ptr */
+    __asm volatile("EOR  R3, R3");
+
+  __asm volatile("__cor_restore_desc:");     /* R0 = result; R3 = psp; R4 = ccb; SP[0] = this; */
+    __asm volatile("STR  R3, [R4, #0]");     /* save PSP to ccb */
+    __asm volatile("MOV  R5, R0");           /* save coroutine result */
+    __asm volatile("LDR  R0, [SP, #0]");     /* R0 = this coroutine */
+    __asm volatile("BL coroutine_get_handler"); /* R0 = this coroutine current handler */
+    __asm volatile("LDR  R2, =hdl_coroutine_run_yielding");
+    __asm volatile("CMP  R0, R2");           /* if current handler is hdl_coroutine_run_yielding */
+    __asm volatile("BEQ  __cor_yielded");    /* yeldig ready */
+    __asm volatile("STR  R0, [R4, #4]");     /* else ccb->handler = this coroutine new handler */
+    __asm volatile("LDR  R0, [SP, #0]");     /* R0 = this coroutine */
+    __asm volatile("MOV  R1, R2");           /* R1 = hdl_coroutine_run_yielding */
+    __asm volatile("BL coroutine_set_handler"); /* set this coroutine handler = hdl_coroutine_run_yielding */
+    __asm volatile("__cor_yielded:");
+    __asm volatile("MOV  R0, R5");           /* restore coroutine result */
     __asm volatile("B    __cor_end");
+
 }
 
 void nmi_handler()                      { call_isr(HDL_NVIC_EXCEPTION_NonMaskableInt, 0); }

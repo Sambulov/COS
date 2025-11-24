@@ -55,6 +55,8 @@ typedef struct {
   uint32_t priority;               /* DMA_PRIORITY_LOW, DMA_PRIORITY_MEDIUM, DMA_PRIORITY_HIGH, DMA_PRIORITY_VERY_HIGH */
   uint32_t periph_width;           /* DMA_PDATAALIGN_BYTE, DMA_PDATAALIGN_HALFWORD, DMA_PDATAALIGN_WORD */
   uint32_t memory_width;           /* DMA_MDATAALIGN_BYTE, DMA_MDATAALIGN_HALFWORD, DMA_MDATAALIGN_WORD */
+  uint32_t periph_burst;           /* DMA_PBURST_SINGLE, DMA_PBURST_INC4, DMA_PBURST_INC8, DMA_PBURST_INC16 */
+  uint32_t memory_burst;           /* DMA_MBURST_SINGLE, DMA_MBURST_INC4, DMA_MBURST_INC8, DMA_MBURST_INC16 */
   uint32_t channel_periphery;      /* DMA_CHANNEL_0 ... DMA_CHANNEL_7 */
   uint8_t periph_inc    : 1,
           memory_inc    : 1,

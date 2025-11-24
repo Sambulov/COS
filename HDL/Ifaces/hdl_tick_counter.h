@@ -16,7 +16,6 @@ typedef struct {
 
 hdl_module_new_t(hdl_tick_counter_t, 0, void*, hdl_tick_counter_iface_t);
 
-/* returns timer reload frequency */
 __STATIC_INLINE uint8_t hdl_tick_counter_get_clock(const void *desc, hdl_clock_freq_t *freq) {
   MODULE_ASSERT_FAST(desc, HDL_FALSE);
   return ((hdl_tick_counter_iface_t *)((hdl_module_base_t *)desc)->iface)->clock_get(desc, freq);

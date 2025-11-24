@@ -41,6 +41,7 @@ static hdl_module_state_t _hdl_dma_ch(const void *desc, uint8_t enable) {
     stream->FCR = (uint32_t)0x00000021U;
     stream->CR =  ch_cnf->channel_periphery | ch_cnf->priority |
                   ch_cnf->memory_width | ch_cnf->periph_width |
+                  ch_cnf->memory_burst | ch_cnf->periph_burst |
                   (ch_cnf->periph_inc? DMA_SxCR_PINC: 0) |
                   (ch_cnf->memory_inc? DMA_SxCR_MINC: 0) |
                   (ch_cnf->circular? DMA_SxCR_CIRC: 0) |

@@ -20,7 +20,9 @@ typedef struct {
   uint32_t stack[];
 } ccb_t;
 
-void hdl_coroutine_add(hdl_coroutine_t *cor_buf, void *cor_cb, uint32_t size, coroutine_handler_t handler, void *arg) {
+uint8_t hdl_coroutine_run_yielding(coroutine_t *this, uint8_t cancel, void *arg);
+
+void hdl_coroutine_add_yielding(hdl_coroutine_t *cor_buf, void *cor_cb, uint32_t size, coroutine_handler_t handler, void *arg) {
   ccb_t *ccb = (ccb_t *)cor_cb;
   ccb->stack_size = (size - sizeof(ccb_t));
   ccb->cor_sp = 0;

@@ -46,18 +46,18 @@ __STATIC_INLINE uint8_t hdl_is_null_module(const void *desc) {
   return (mod->iface == NULL) && (mod->config == NULL) && (mod->dependencies == NULL);
 }
 
-uint8_t hdl_modele_take(const void *desc, const void *owner);
-uint8_t hdl_modele_give(const void *desc, const void *owner);
-void hdl_modele_enable(const void *desc);
-void hdl_modele_kill(const void *desc);
-hdl_module_state_t hdl_modele_state(const void *desc);
-uint8_t hdl_init_complete();
+uint8_t hdl_module_take(const void *desc, const void *owner);
+uint8_t hdl_module_give(const void *desc, const void *owner);
+void hdl_module_enable(const void *desc);
+void hdl_module_kill(const void *desc);
+hdl_module_state_t hdl_module_state(const void *desc);
 
 /* Legacy */
-#define hdl_take hdl_modele_take
-#define hdl_give hdl_modele_give
-#define hdl_enable hdl_modele_enable
-#define hdl_kill hdl_modele_kill
-#define hdl_state hdl_modele_state
+uint8_t hdl_init_complete();
+#define hdl_take hdl_module_take
+#define hdl_give hdl_module_give
+#define hdl_enable hdl_module_enable
+#define hdl_kill hdl_module_kill
+#define hdl_state hdl_module_state
 
 #endif // HDL_MODULE_H_

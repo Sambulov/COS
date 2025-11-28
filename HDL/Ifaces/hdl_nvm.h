@@ -18,15 +18,13 @@ typedef enum {
 typedef struct {
   uint8_t *data;
   uint32_t size;
-  uint32_t address;
-  uint32_t address_high;
+  uint64_t address;
   uint32_t synced_size;
   hdl_nvm_message_status_t out_status;
 } hdl_nvm_message_t;
 
 typedef struct {
-  uint32_t volume_high;
-  uint32_t volume;
+  uint64_t volume;
   uint32_t mtu_size;
   uint32_t sector_size;
 } hdl_nvm_info_t;

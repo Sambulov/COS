@@ -16,6 +16,7 @@ typedef struct {
                                      [SDIO_CLOCK_POWER_SAVE_DISABLE, SDIO_CLOCK_POWER_SAVE_ENABLE]           */
   uint32_t hardware_flow_control; /* Specifies whether the HDL_SDIO hardware flow control is enabled or disabled.
                                      [SDIO_HARDWARE_FLOW_CONTROL_DISABLE, SDIO_HARDWARE_FLOW_CONTROL_ENABLE] */
+  uint32_t init_speed;            /* Use default 400000 */
 } hdl_sdio_mcu_config_t;
 
 /* depends on:

@@ -11,7 +11,7 @@ typedef enum {
   HDL_SDIO_ERROR_BAD_ARG  = 0xE0,
   HDL_SDIO_ERROR_INTERNAL = 0xF0,
   HDL_SDIO_ERROR          = 0xF0
-} hdl_sdio_cmd_status_t;
+} hdl_sdio_msg_status_t;
 
 typedef enum {
   HDL_SDIO_CMD_RESPONSE_NONE  = 0x00,
@@ -28,7 +28,7 @@ typedef struct {
                              response[0] = [39:8] for short; */
   uint8_t cmd;            /* Specifies the command index [0,64] & responce type. 
                              Complete message contains returned [45:40]/[133:128] bits & responce type */
-  hdl_sdio_cmd_status_t status;
+  hdl_sdio_msg_status_t status;
 } hdl_sdio_cmd_message_t;
 
 typedef enum {
@@ -47,8 +47,13 @@ typedef struct {
   uint32_t data_block_size;     /* Specifies the data block size for block transfer. */
   hdl_sdio_data_dir_t dir; 
   hdl_sdio_data_transfer_type_t mode;
+  uint32_t timeout;             /* Data transfer timeout ms
+                                   SD spec see 4.6.2:
+                                   Data write timeout is 250ms  
+                                   Data read timeout is 100ms
+                                */
   uint32_t transferred;
-  uint8_t state;
+  hdl_sdio_msg_status_t status;
 } hdl_sdio_data_message_t;
 
 typedef enum {

@@ -33,7 +33,6 @@ static hdl_module_state_t _hdl_dma_ch(const void *desc, uint8_t enable) {
   hdl_dma_config_t *dma_cnf = (hdl_dma_config_t *)dma->config;
   DMA_Stream_TypeDef *stream = (DMA_Stream_TypeDef *)(dma_cnf->phy + sizeof(DMA_TypeDef) + (sizeof(DMA_Stream_TypeDef) * ch_cnf->stream));
   if(enable) {
-
     stream->CR &= ~DMA_SxCR_EN;
     uint32_t time = 10000;
     while((stream->CR & DMA_SxCR_EN) && time--);
@@ -75,7 +74,11 @@ static uint32_t _hdl_dma_get_counter(const void *desc) {
   hdl_dma_channel_config_t *ch_cnf = (hdl_dma_channel_config_t *)channel->config;
   hdl_dma_config_t *dma_cnf = (hdl_dma_config_t *)dma->config;
   DMA_Stream_TypeDef *stream = (DMA_Stream_TypeDef *)(dma_cnf->phy + sizeof(DMA_TypeDef) + (sizeof(DMA_Stream_TypeDef) * ch_cnf->stream));
-  return stream->NDTR;
+  uint32_t tx_size = (1 << ((stream->CR & DMA_SxCR_MSIZE) >> DMA_SxCR_MSIZE_Pos));
+  if(stream->CR & DMA_SxCR_PFCTRL)
+    return ((uint16_t)(0xffff - stream->NDTR)) * tx_size;
+  else
+    return stream->NDTR * tx_size;
 }
 
 static uint8_t _hdl_dma_stop(const void *desc) {
@@ -97,6 +100,13 @@ static uint8_t _hdl_dma_run(const void *desc, hdl_dma_direction_t dir, uint32_t 
   hdl_dma_config_t *dma_cnf = (hdl_dma_config_t *)dma->config;
   DMA_Stream_TypeDef *stream = (DMA_Stream_TypeDef *)(dma_cnf->phy + sizeof(DMA_TypeDef) + (sizeof(DMA_Stream_TypeDef) * ch_cnf->stream));
   if(stream->CR & DMA_SxCR_EN) return HDL_FALSE;
+  DMA_TypeDef *dma_state = (DMA_TypeDef *)dma_cnf->phy;
+  uint32_t flags = DMA_LIFCR_CTCIF0 | DMA_LIFCR_CHTIF0 | DMA_LIFCR_CTEIF0 | DMA_LIFCR_CDMEIF0 | DMA_LIFCR_CFEIF0;
+  flags <<= ((ch_cnf->stream & 1) * 6 + (ch_cnf->stream & 2) * 8);
+  if(ch_cnf->stream > HDL_DMA_STREAM_3)
+    dma_state->HIFCR |= flags;
+  else
+    dma_state->LIFCR |= flags;
   stream->CR &= (uint32_t)(~DMA_SxCR_DBM);
   stream->NDTR = amount;
   stream->PAR = periph_addr;
@@ -115,7 +125,7 @@ static uint8_t _hdl_dma_run(const void *desc, hdl_dma_direction_t dir, uint32_t 
       return HDL_FALSE;
   } 
   stream->CR |= DMA_SxCR_EN;
-  return HDL_TRUE;  
+  return (stream->CR & DMA_SxCR_EN) != 0;  
 }
 
 const hdl_module_base_iface_t hdl_dma_iface = {

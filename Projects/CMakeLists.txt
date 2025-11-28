@@ -7,7 +7,7 @@
 
 #set(BOARD "SMART_MONITOR_GD32E230")
 
-set(BOARD "AIC2")
+set(BOARD "BPSC")
 #set(BOARD "CCS2")
 #set(BOARD "TCE")
 

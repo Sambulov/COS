@@ -14,15 +14,7 @@
 
 #define HDL_SD_ACMD41_OCR                 0x00FFFF00UL
 
-#define HDL_SD_OCR_VW_2V7_2V8             0x00008000UL
-#define HDL_SD_OCR_VW_2V8_2V9             0x00010000UL
-#define HDL_SD_OCR_VW_2V9_3V0             0x00020000UL
-#define HDL_SD_OCR_VW_3V0_3V1             0x00040000UL
-#define HDL_SD_OCR_VW_3V1_3V2             0x00080000UL
-#define HDL_SD_OCR_VW_3V2_3V3             0x00100000UL
-#define HDL_SD_OCR_VW_3V3_3V4             0x00200000UL
-#define HDL_SD_OCR_VW_3V4_3V5             0x00400000UL
-#define HDL_SD_OCR_VW_3V5_3V6             0x00800000UL
+#define HDL_SD_OCR_VW_2V7_3V6             0x00FF8000UL
 
 
 

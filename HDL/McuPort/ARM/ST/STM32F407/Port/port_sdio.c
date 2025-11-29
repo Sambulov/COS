@@ -6,7 +6,7 @@ typedef struct {
   hdl_sdio_data_message_t *data_msg;
   uint8_t cmd_state  : 4;
   uint8_t data_state : 4;
-  uint8_t clk_div; /* sdio_ck = Pf/(div+2) */
+  uint32_t sdio_ck; /* sdio_ck = Pf/(div+2) */
 } hdl_sdio_mcu_var_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_sdio_mcu_var_t, *((hdl_sdio_mcu_t *)0)->obj_var, HDL_SDIO_MCU_VAR_SIZE, port_sd.h);
@@ -39,8 +39,7 @@ static void _sdio_data_flow(hdl_sdio_mcu_t *sdio) {
     if(sdio_var->data_msg->timeout) {
       hdl_clock_freq_t sdio_f;
       hdl_clock_get(sdio->dependencies[0], &sdio_f);
-      uint32_t sdio_ck = (sdio_f.num / ((uint32_t)sdio_var->clk_div + 2)) / sdio_f.denom;
-      uint32_t timeout = (sdio_ck * sdio_var->data_msg->timeout + 500) / 1000;
+      uint32_t timeout = (sdio_var->sdio_ck * sdio_var->data_msg->timeout + 500) / 1000;
       phy->DTIMER = timeout;
     }
 
@@ -65,7 +64,7 @@ static void _sdio_data_flow(hdl_sdio_mcu_t *sdio) {
   if(sdio_var->data_state == 1) {
     if(!(phy->STA & (SDIO_STA_RXACT | SDIO_STA_TXACT))) {
       hdl_dma_channel_stop(sdio_dma);
-      if(phy->STA & SDIO_FLAG_DTIMEOUT)
+      if((phy->STA & SDIO_FLAG_DTIMEOUT) && !((phy->STA & SDIO_FLAG_DATAEND) && (phy->STA && SDIO_FLAG_DBCKEND)))
         sdio_var->data_msg->status |= HDL_SDIO_ERROR_TIMEOUT;
       if(phy->STA & SDIO_FLAG_DCRCFAIL)
         sdio_var->data_msg->status |= HDL_SDIO_ERROR_CRC;
@@ -144,7 +143,7 @@ static uint8_t _hdl_sdio_set_clock(const void *desc, uint32_t speed) {
   hdl_sdio_mcu_var_t *sdio_var = (hdl_sdio_mcu_var_t *)sdio->obj_var;
   if(div < 2) div = 0;
   else div = (div - 2) & 0xff;
-  sdio_var->clk_div = div;
+  sdio_var->sdio_ck = (sdio_f.num / (div + 2)) / sdio_f.denom;
   CL_REG_MODIFY(phy->CLKCR, SDIO_CLKCR_CLKDIV, div << SDIO_CLKCR_CLKDIV_Pos);
   return HDL_TRUE;
 }
@@ -215,13 +214,43 @@ static uint8_t _hdl_sdio_data_transfer(const void *desc, hdl_sdio_data_message_t
   return HDL_TRUE;
 }
 
+static uint8_t _hdl_sdio_check_bus(const void *desc, hdl_sdio_bus_width_t width) {
+  hdl_sdio_mcu_t *sdio = (hdl_sdio_mcu_t *)desc;
+  if(!width || (width & (width - 1)) || (width & ~HDL_SDIO_BUS_WIDTH_ALL) || !(sdio->config->support_bw & width))
+    return HDL_FALSE;
+  return HDL_TRUE;
+}
+
 static uint8_t _hdl_sdio_set_bus(const void *desc, hdl_sdio_bus_width_t width) {
+  if(!_hdl_sdio_check_bus(desc, width)) 
+    return HDL_FALSE;
   hdl_sdio_mcu_t *sdio = (hdl_sdio_mcu_t *)desc;
   SDIO_TypeDef *phy = (SDIO_TypeDef *)sdio->config->phy;
   uint32_t tmpreg = SDIO_BUS_WIDE_1B;
-  if(width == HDL_SDIO_BUS_WIDTH_4) tmpreg = SDIO_BUS_WIDE_4B;
-  if(width == HDL_SDIO_BUS_WIDTH_8) tmpreg = SDIO_BUS_WIDE_8B;
+  if(width == HDL_SDIO_BUS_WIDTH_4)
+    tmpreg = SDIO_BUS_WIDE_4B;
+  else if(width == HDL_SDIO_BUS_WIDTH_8)
+    tmpreg = SDIO_BUS_WIDE_8B;
   CL_REG_MODIFY(phy->CLKCR, SDIO_BUS_WIDE_1B | SDIO_BUS_WIDE_4B | SDIO_BUS_WIDE_8B, tmpreg);
+  return HDL_TRUE;
+}
+
+static uint8_t _hdl_sdio_get_cnf(const void *desc, hdl_sdio_bus_width_t *out_width, uint32_t *out_speed) {
+  hdl_sdio_mcu_t *sdio = (hdl_sdio_mcu_t *)desc;
+  if(out_width != NULL) {
+    SDIO_TypeDef *phy = (SDIO_TypeDef *)sdio->config->phy;
+    uint32_t tmp = (phy->CLKCR & (SDIO_BUS_WIDE_1B | SDIO_BUS_WIDE_4B | SDIO_BUS_WIDE_8B));
+    if(tmp == SDIO_BUS_WIDE_1B)
+      *out_width = HDL_SDIO_BUS_WIDTH_1;
+    else if(tmp == SDIO_BUS_WIDE_4B)
+      *out_width = HDL_SDIO_BUS_WIDTH_4;
+    else if(tmp == SDIO_BUS_WIDE_8B)
+      *out_width = HDL_SDIO_BUS_WIDTH_8;
+  }
+  if(out_speed != NULL) {
+    hdl_sdio_mcu_var_t *sdio_var = (hdl_sdio_mcu_var_t *)sdio->obj_var;
+    *out_speed = sdio_var->sdio_ck;
+  }
   return HDL_TRUE;
 }
 
@@ -230,5 +259,7 @@ const hdl_sdio_iface_t hdl_sdio_mcu_iface = {
   .cmd = &_hdl_sdio_cmd_transfer,
   .data = &_hdl_sdio_data_transfer,
   .set_bus = &_hdl_sdio_set_bus,
-  .set_clock = &_hdl_sdio_set_clock
+  .set_clock = &_hdl_sdio_set_clock,
+  .check_bus = &_hdl_sdio_check_bus,
+  .get_bus_clock = &_hdl_sdio_get_cnf
 };

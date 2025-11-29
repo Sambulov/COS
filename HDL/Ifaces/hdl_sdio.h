@@ -57,22 +57,26 @@ typedef struct {
 } hdl_sdio_data_message_t;
 
 typedef enum {
-  HDL_SDIO_BUS_WIDTH_1,
-  HDL_SDIO_BUS_WIDTH_4,
-  HDL_SDIO_BUS_WIDTH_8
+  HDL_SDIO_BUS_WIDTH_1 = 1,
+  HDL_SDIO_BUS_WIDTH_4 = 2,
+  HDL_SDIO_BUS_WIDTH_8 = 4,
+  HDL_SDIO_BUS_WIDTH_ALL = 7
 } hdl_sdio_bus_width_t;
 
 typedef uint8_t (* hdl_sdio_cmd_transfer_t)(const void *desc, hdl_sdio_cmd_message_t *message);
 typedef uint8_t (* hdl_sdio_data_transfer_t)(const void *desc, hdl_sdio_data_message_t *message);
-typedef uint8_t (* hdl_sdio_set_bus_t)(const void *desc, hdl_sdio_bus_width_t width);
-typedef uint8_t (* hdl_sdio_set_clock_t)(const void *desc, uint32_t speed);
+typedef uint8_t (* hdl_sdio_cnf_t)(const void *desc, hdl_sdio_bus_width_t *out_width, uint32_t *out_speed);
+typedef uint8_t (* hdl_sdio_bus_t)(const void *desc, hdl_sdio_bus_width_t width);
+typedef uint8_t (* hdl_sdio_clock_t)(const void *desc, uint32_t speed);
 
 typedef struct{
   hdl_module_initializer_t init;
   hdl_sdio_cmd_transfer_t cmd;
   hdl_sdio_data_transfer_t data;
-  hdl_sdio_set_bus_t set_bus;
-  hdl_sdio_set_clock_t set_clock;
+  hdl_sdio_cnf_t get_bus_clock;
+  hdl_sdio_bus_t check_bus;
+  hdl_sdio_bus_t set_bus;
+  hdl_sdio_clock_t set_clock;
 } hdl_sdio_iface_t;
 
 hdl_module_new_t(hdl_sdio_t, 0, void *, hdl_sdio_iface_t);
@@ -92,9 +96,19 @@ __STATIC_INLINE uint8_t hdl_sdio_set_bus(const void *desc, hdl_sdio_bus_width_t 
   return ((hdl_sdio_t *)desc)->iface->set_bus(desc, width);
 }
 
+__STATIC_INLINE uint8_t hdl_sdio_bus_supported(const void *desc, hdl_sdio_bus_width_t width) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_sdio_t *)desc)->iface->check_bus(desc, width);
+}
+
 __STATIC_INLINE uint8_t hdl_sdio_set_clock(const void *desc, uint32_t speed) {
   MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_sdio_t *)desc)->iface->set_clock(desc, speed);
+}
+
+__STATIC_INLINE uint8_t hdl_sdio_get_bus_clock(const void *desc, hdl_sdio_bus_width_t *out_width, uint32_t *out_speed) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_sdio_t *)desc)->iface->get_bus_clock(desc, out_width, out_speed);
 }
 
 #endif /* HDL_SDIO_H_ */

@@ -8,8 +8,7 @@ typedef enum {
 } hdl_sd_op_mode_t;
 
 typedef struct {
-  hdl_coroutine_t worker;
-  uint32_t wrk_ccb_buffer[1024];
+  coroutine_t worker;
   uint32_t timer;
   struct {
     uint64_t capacity;
@@ -19,36 +18,46 @@ typedef struct {
     uint8_t sdhc       :1,
             wr_protect :1;
   } card;
+  struct {
+    struct {
+      uint16_t block_offset;
+      uint8_t sate     : 7,
+              cmd_sent : 1;
+      uint8_t retry;
+    } sub;
+    hdl_sd_op_mode_t op_mode;
+    uint8_t sd_state;
+    uint32_t delay_timer;
+    uint32_t delay;
+  } fsm;
   
   hdl_nvm_message_t *nvm_msg;
-  hdl_sd_op_mode_t op_mode;
-  uint8_t state;
   hdl_sdio_cmd_message_t cmd_msg;
   hdl_sdio_data_message_t data_msg;
 } hdl_sd_var_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_sd_var_t, *((hdl_sd_t *)0)->obj_var, HDL_SD_VAR_SIZE, "hdl_sd.h");
 
-static uint8_t _sdio_send_cmd(hdl_sd_t *sd, uint8_t *cmd, uint32_t arg, uint32_t **resp) {
+static inline uint8_t _sdio_send_cmd(hdl_sd_t *sd, uint8_t cmd, uint32_t arg) {
   hdl_sdio_t *sdio = (hdl_sdio_t *)sd->dependencies[0];
   hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
-  sd_var->cmd_msg.cmd = *cmd;
+  sd_var->cmd_msg.cmd = cmd;
   sd_var->cmd_msg.argument = arg;
-  hdl_sdio_cmd_transfer(sdio, &sd_var->cmd_msg);
-  while(!(sd_var->cmd_msg.status & HDL_SDIO_STATE_COMPLETE))
-    yield_return;
-  *cmd = sd_var->cmd_msg.cmd;
-  *resp = sd_var->cmd_msg.response;
-  return sd_var->cmd_msg.status & HDL_SDIO_ERROR;
+  return hdl_sdio_cmd_transfer(sdio, &sd_var->cmd_msg);
 }
 
-static void _delay(hdl_time_counter_t *tc, uint32_t ms) {
-  uint32_t time = hdl_time_counter_get(tc);
-  uint32_t now;
-  do {
-    yield_return;
-    now = hdl_time_counter_get(tc);
-  } while (!CL_TIME_ELAPSED(time, ms, now));
+static inline uint8_t _sdio_cmd_awaiting(hdl_sd_var_t *sd_var) {
+  return !(sd_var->cmd_msg.status & HDL_SDIO_STATE_COMPLETE);
+}
+
+static inline void _delay_set(hdl_time_counter_t *tc, hdl_sd_var_t *sd_var, uint32_t ms) {
+  sd_var->fsm.delay_timer = hdl_time_counter_get(tc);
+  sd_var->fsm.delay = ms;
+}
+
+static inline uint8_t _delay_awaiting(hdl_time_counter_t *tc, hdl_sd_var_t *sd_var) {
+  uint32_t now = hdl_time_counter_get(tc);
+  return !CL_TIME_ELAPSED(sd_var->fsm.delay_timer, sd_var->fsm.delay, now);
 }
 
 static void _sd_parse_csd(hdl_sd_var_t *sd_var, uint32_t *csd) {
@@ -100,161 +109,290 @@ static void _sd_parse_csd(hdl_sd_var_t *sd_var, uint32_t *csd) {
   //sd_var->card.CSD_CRC = (uint8_t)((csd[3] & 0x000000FEU) >> 1U);
 }
 
-static uint8_t init_sd(hdl_sd_t *sd) {
+#define SD_INIT_STATE_PREPARE      0
+#define SD_INIT_STATE_RESET        1
+#define SD_INIT_STATE_HS_SEND_EXT  2
+#define SD_INIT_STATE_ACMD41_PREP  3
+#define SD_INIT_STATE_ACMD41       4
+#define SD_INIT_STATE_CID          5
+#define SD_INIT_STATE_RCA          6
+#define SD_INIT_STATE_CSD          7
+#define SD_INIT_STATE_SELECT       8
+#define SD_INIT_STATE_STATUS       9
+#define SD_INIT_STATE_ACMD6_PREP   10
+#define SD_INIT_STATE_ACMD6        11
+#define SD_INIT_STATE_COMPLETE     12
+
+static int8_t init_sd(hdl_sd_t *sd) {
   hdl_sdio_t *sdio = (hdl_sdio_t *)sd->dependencies[0];
   hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
   hdl_time_counter_t *tc = (hdl_time_counter_t *)sd->dependencies[1];
-  uint32_t *responce;
-  uint8_t cmd;
-  uint8_t err;
 
-  cmd = SDMMC_CMD_GO_IDLE_STATE | HDL_SDIO_CMD_RESPONSE_NONE;
-  while(_sdio_send_cmd(sd, &cmd, 0, &responce));
-  _delay(tc, 10);
-  cmd = SDMMC_CMD_HS_SEND_EXT_CSD | HDL_SDIO_CMD_RESPONSE_SHORT;
-  err = _sdio_send_cmd(sd, &cmd, SDMMC_CHECK_PATTERN, &responce);
-
-  if(err || (responce[0] & SDMMC_CHECK_PATTERN) != SDMMC_CHECK_PATTERN) 
-    return HDL_FALSE; /* Not 2.0 Spec */
-  uint32_t retry = 30;
-  do {
-    _delay(tc, 40);
-    cmd = SDMMC_CMD_APP_CMD | HDL_SDIO_CMD_RESPONSE_SHORT;
-    if((!_sdio_send_cmd(sd, &cmd, 0, &responce)) && (responce[0] & HDL_SD_STA_APP_CMD)) {
-      _delay(tc, 5);
-      cmd = HDL_SD_ACMD41 | HDL_SDIO_CMD_RESPONSE_SHORT;
-      err = _sdio_send_cmd(sd, &cmd, 0x40FF8000,
-        //HDL_SD_ACMD41_ARG_HIGH_CAPACITY | HDL_SD_OCR_VW_3V2_3V3, 
-        &responce);
-      err = err & ~HDL_SDIO_ERROR_CRC; /* there is no CRC in R3 responce */
-      uint32_t exp_options = HDL_SD_ACMD41_RESP_BUSY | HDL_SD_OCR_VW_3V2_3V3;
-      if(!err && ((responce[0] & exp_options) == exp_options)) {
-        sd_var->card.sdhc = ((responce[0] & HDL_SD_ACMD41_RESP_HIGH_CAPACITY) != 0);
+  if(sd_var->fsm.sub.cmd_sent) {
+    uint8_t next_state;
+    switch (sd_var->fsm.sub.sate) {
+      case SD_INIT_STATE_RESET:
+        if(sd_var->cmd_msg.status & HDL_SDIO_ERROR) {
+          _delay_set(tc, sd_var, 10);
+          next_state = SD_INIT_STATE_RESET;
+        }
+        next_state = SD_INIT_STATE_HS_SEND_EXT;
         break;
-      }
+      case SD_INIT_STATE_HS_SEND_EXT:
+        if((sd_var->cmd_msg.status & HDL_SDIO_ERROR) || 
+          (sd_var->cmd_msg.response[0] & SDMMC_CHECK_PATTERN) != SDMMC_CHECK_PATTERN) 
+          return -1; /* Not 2.0 Spec */
+        next_state = SD_INIT_STATE_ACMD41_PREP;
+        break;
+      case SD_INIT_STATE_ACMD41_PREP:
+        if(!(sd_var->cmd_msg.status & HDL_SDIO_ERROR) && (sd_var->cmd_msg.response[0] & HDL_SD_STA_APP_CMD))
+          next_state = SD_INIT_STATE_ACMD41;
+        else
+          next_state = SD_INIT_STATE_ACMD41_PREP;
+        break;
+      case SD_INIT_STATE_ACMD41:
+        sd_var->cmd_msg.status &= ~HDL_SDIO_ERROR_CRC; /* there is no CRC in R3 responce */
+        uint32_t exp_options = HDL_SD_ACMD41_RESP_BUSY | sd->config->voltage_window;
+        if(!(sd_var->cmd_msg.status & HDL_SDIO_ERROR) && ((sd_var->cmd_msg.response[0] & exp_options) == exp_options)) {
+          sd_var->card.sdhc = ((sd_var->cmd_msg.response[0] & HDL_SD_ACMD41_RESP_HIGH_CAPACITY) != 0);
+          next_state = SD_INIT_STATE_CID;
+        }
+        else
+          next_state = SD_INIT_STATE_ACMD41_PREP;
+        break;
+      case SD_INIT_STATE_CID:
+        if(sd_var->cmd_msg.status & HDL_SDIO_ERROR)
+          return -1;
+        /* todo: parse CID */
+        next_state = SD_INIT_STATE_RCA;
+        break;
+      case SD_INIT_STATE_RCA:
+        if(sd_var->cmd_msg.status & HDL_SDIO_ERROR)
+          return -1;
+        sd_var->card.rca = sd_var->cmd_msg.response[0] & 0xffff0000; /* RCA [31:16] */
+        next_state = SD_INIT_STATE_CSD;
+        break;
+      case SD_INIT_STATE_CSD:
+        if(sd_var->cmd_msg.status & HDL_SDIO_ERROR)
+          return -1;
+        _sd_parse_csd(sd_var, sd_var->cmd_msg.response);
+        next_state = SD_INIT_STATE_SELECT;
+        break;
+      case SD_INIT_STATE_SELECT:
+        if(sd_var->cmd_msg.status & HDL_SDIO_ERROR)
+          return -1;
+        next_state = SD_INIT_STATE_STATUS;
+        break;
+      case SD_INIT_STATE_STATUS:
+        if((sd_var->cmd_msg.status & HDL_SDIO_ERROR) || !(sd_var->cmd_msg.response[0] & HDL_SD_STA_READY_FOR_DATA))
+          return -1; /* cmd err or !READY_FOR_DATA */
+        next_state = SD_INIT_STATE_ACMD6_PREP;
+        break;
+      case SD_INIT_STATE_ACMD6_PREP:
+        if(!(sd_var->cmd_msg.status & HDL_SDIO_ERROR) && (sd_var->cmd_msg.response[0] & HDL_SD_STA_APP_CMD))
+          next_state = SD_INIT_STATE_ACMD6;
+        else
+          next_state = SD_INIT_STATE_COMPLETE;
+        break;
+      case SD_INIT_STATE_ACMD6:
+        if(!(sd_var->cmd_msg.status & HDL_SDIO_ERROR))
+          hdl_sdio_set_bus(sdio, HDL_SDIO_BUS_WIDTH_4);
+        next_state = SD_INIT_STATE_COMPLETE;
+        break;
+      default:
+        return -1;
     }
-  } while (!err && retry--);
-  if(err) 
-    return HDL_FALSE;
-
-
-  cmd = SDMMC_CMD_ALL_SEND_CID | HDL_SDIO_CMD_RESPONSE_LONG;
-  if (_sdio_send_cmd(sd, &cmd, 0, &responce))
-    return HDL_FALSE;
-
-  cmd = SDMMC_CMD_SET_REL_ADDR | HDL_SDIO_CMD_RESPONSE_SHORT;
-  if (_sdio_send_cmd(sd, &cmd, 0, &responce))
-    return HDL_FALSE;
-  sd_var->card.rca = responce[0] & 0xffff0000; /* RCA [31:16] */
-
-  cmd = SDMMC_CMD_SEND_CSD | HDL_SDIO_CMD_RESPONSE_LONG;
-  if (_sdio_send_cmd(sd, &cmd, sd_var->card.rca, &responce))
-    return HDL_FALSE;
-
-  _sd_parse_csd(sd_var, responce);
-
-  cmd = SDMMC_CMD_SEL_DESEL_CARD | HDL_SDIO_CMD_RESPONSE_SHORT;
-  if (_sdio_send_cmd(sd, &cmd, sd_var->card.rca, &responce))
-    return HDL_FALSE;
-
-  cmd = SDMMC_CMD_SEND_STATUS | HDL_SDIO_CMD_RESPONSE_SHORT;
-  if (_sdio_send_cmd(sd, &cmd, sd_var->card.rca, &responce) || 
-    (!(responce[0] & HDL_SD_STA_READY_FOR_DATA)))
-      return HDL_FALSE; /* cmd err or !READY_FOR_DATA */
-
-
-  cmd = SDMMC_CMD_APP_CMD | HDL_SDIO_CMD_RESPONSE_SHORT;
-  if((!_sdio_send_cmd(sd, &cmd, sd_var->card.rca, &responce)) && (responce[0] & HDL_SD_STA_APP_CMD)) {
-    _delay(tc, 5);
-    cmd = SDMMC_CMD_APP_SD_SET_BUSWIDTH | HDL_SDIO_CMD_RESPONSE_SHORT;
-    if(!_sdio_send_cmd(sd, &cmd, 2, &responce)) /* '00' = 1 bit or '10' = 4 bits bus */
-      hdl_sdio_set_bus(sdio, HDL_SDIO_BUS_WIDTH_4);
+    sd_var->fsm.sub.sate = next_state;
+    sd_var->fsm.sub.cmd_sent = HDL_FALSE;
   }
-  hdl_sdio_set_clock(sdio, sd_var->card.max_bus_clk * 1000000);      
-  return HDL_TRUE;
+
+  uint8_t cmd;
+  uint32_t arg;
+  switch (sd_var->fsm.sub.sate) {
+    case SD_INIT_STATE_PREPARE:
+      sd_var->fsm.sub.cmd_sent = HDL_FALSE;
+      sd_var->fsm.sub.retry = 30;
+      sd_var->fsm.sub.sate = SD_INIT_STATE_RESET;
+    /* fall through */
+    case SD_INIT_STATE_RESET:
+      cmd = SDMMC_CMD_GO_IDLE_STATE | HDL_SDIO_CMD_RESPONSE_NONE;
+      arg = 0;
+      break;
+    case SD_INIT_STATE_HS_SEND_EXT:
+      cmd = SDMMC_CMD_HS_SEND_EXT_CSD | HDL_SDIO_CMD_RESPONSE_SHORT;
+      arg = SDMMC_CHECK_PATTERN;
+      _delay_set(tc, sd_var, 10);
+      break;
+    case SD_INIT_STATE_ACMD41_PREP:
+      if(!sd_var->fsm.sub.retry) 
+        return -1;
+      sd_var->fsm.sub.retry--;
+      cmd = SDMMC_CMD_APP_CMD | HDL_SDIO_CMD_RESPONSE_SHORT;
+      arg = 0;
+      _delay_set(tc, sd_var, 5);
+      break;
+    case SD_INIT_STATE_ACMD41:
+      cmd = HDL_SD_ACMD41 | HDL_SDIO_CMD_RESPONSE_SHORT;
+      arg = HDL_SD_ACMD41_ARG_HIGH_CAPACITY | sd->config->voltage_window;
+      _delay_set(tc, sd_var, 45);
+      break;
+    case SD_INIT_STATE_CID:
+      cmd = SDMMC_CMD_ALL_SEND_CID | HDL_SDIO_CMD_RESPONSE_LONG;
+      arg = 0;
+      break;
+    case SD_INIT_STATE_RCA:
+      cmd = SDMMC_CMD_SET_REL_ADDR | HDL_SDIO_CMD_RESPONSE_SHORT;
+      arg = 0;
+      break;
+    case SD_INIT_STATE_CSD:
+      cmd = SDMMC_CMD_SEND_CSD | HDL_SDIO_CMD_RESPONSE_LONG;
+      arg = sd_var->card.rca;
+      break;
+    case SD_INIT_STATE_SELECT:
+      cmd = SDMMC_CMD_SEL_DESEL_CARD | HDL_SDIO_CMD_RESPONSE_SHORT;
+      arg = sd_var->card.rca;
+      break;
+    case SD_INIT_STATE_STATUS:
+      cmd = SDMMC_CMD_SEND_STATUS | HDL_SDIO_CMD_RESPONSE_SHORT;
+      arg = sd_var->card.rca;
+      break;
+    case SD_INIT_STATE_ACMD6_PREP:
+      if(hdl_sdio_bus_supported(sdio, HDL_SDIO_BUS_WIDTH_4)) {
+        cmd = SDMMC_CMD_APP_CMD | HDL_SDIO_CMD_RESPONSE_SHORT;
+        arg = sd_var->card.rca;
+        _delay_set(tc, sd_var, 5);
+      }
+      else {
+        sd_var->fsm.sub.sate = SD_INIT_STATE_COMPLETE;
+        return 0;
+      }
+      break;
+    case SD_INIT_STATE_ACMD6:
+      cmd = SDMMC_CMD_APP_SD_SET_BUSWIDTH | HDL_SDIO_CMD_RESPONSE_SHORT;
+      arg = 2;
+      break;
+    case SD_INIT_STATE_COMPLETE:
+      hdl_sdio_set_clock(sdio, sd_var->card.max_bus_clk * 1000000);
+      return 1;
+    default:
+      break;
+  }
+  if(_sdio_send_cmd(sd, cmd, arg))
+    sd_var->fsm.sub.cmd_sent = HDL_TRUE;
+  return 0;
 }
 
 #define SD_BLOCK_SIZE        512
 
-static uint8_t sd_read_write(hdl_sd_t *sd, uint8_t read) {
+#define SD_RW_STATE_PREPARE     0
+#define SD_RW_STATE_COMMAND     1
+#define SD_RW_STATE_TX_DATA     2
+#define SD_RW_STATE_AWAIT       3
+#define SD_RW_STATE_COMPLETE    4
+#define SD_RW_STATE_ERR         5
+
+static uint8_t sd_read_write(hdl_sd_t *sd) {
   hdl_sdio_t *sdio = (hdl_sdio_t *)sd->dependencies[0];
   hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
   hdl_time_counter_t *tc = (hdl_time_counter_t *)sd->dependencies[1];
-  uint32_t *responce;
-  uint8_t cmd;
-  uint32_t offset = 0;
-  uint8_t retry = 10;
-  uint32_t addr = sd_var->nvm_msg->address / SD_BLOCK_SIZE;
-  do {
-    sd_var->data_msg.data = &((uint8_t *)sd_var->nvm_msg->data)[offset * SD_BLOCK_SIZE];
-    sd_var->data_msg.data_block_size = SD_BLOCK_SIZE;
-    sd_var->data_msg.data_length = SD_BLOCK_SIZE;
-    sd_var->data_msg.dir = read? HDL_SDIO_DATA_FROM_DEV: HDL_SDIO_DATA_TO_DEV;
-    sd_var->data_msg.mode = HDL_SDIO_DATA_BLOCK;
-    sd_var->data_msg.timeout = 1000;
-    if(read)
-      hdl_sdio_data_transfer(sdio, &sd_var->data_msg);
-
-    cmd = (read? SDMMC_CMD_READ_SINGLE_BLOCK: SDMMC_CMD_WRITE_SINGLE_BLOCK) | HDL_SDIO_CMD_RESPONSE_SHORT;
-    if (_sdio_send_cmd(sd, &cmd, addr + offset, &responce)) {
-      _delay(tc, 5);
-      if(retry--) continue;
-      sd_var->nvm_msg->out_status |= HDL_NVM_ERROR_BUS_FAULT;
-      break;
+  while (sd_var->nvm_msg != NULL) {
+    if(sd_var->fsm.sub.sate == SD_RW_STATE_PREPARE) {
+      sd_var->fsm.sub.retry = 3;
+      sd_var->fsm.sub.block_offset = 0;
+      sd_var->fsm.sub.sate = SD_RW_STATE_COMMAND;
     }
-
-    if(!read) {
-      if(responce[0] & HDL_SD_STA_READY_FOR_DATA)
+    if(sd_var->fsm.sub.sate == SD_RW_STATE_COMMAND) {
+      uint32_t data_offset = (uint32_t)sd_var->fsm.sub.block_offset * SD_BLOCK_SIZE;
+      sd_var->data_msg.data = &((uint8_t *)sd_var->nvm_msg->data)[data_offset];
+      sd_var->data_msg.data_block_size = SD_BLOCK_SIZE;
+      sd_var->data_msg.data_length = SD_BLOCK_SIZE;
+      sd_var->data_msg.dir = ((sd_var->fsm.op_mode == SD_READ))? HDL_SDIO_DATA_FROM_DEV: HDL_SDIO_DATA_TO_DEV;
+      sd_var->data_msg.mode = HDL_SDIO_DATA_BLOCK;
+      sd_var->data_msg.timeout = 1000;
+      if(sd_var->fsm.op_mode == SD_READ)
         hdl_sdio_data_transfer(sdio, &sd_var->data_msg);
-      else {
-        _delay(tc, 5);
-        if(retry--) continue;
-        sd_var->nvm_msg->out_status |= HDL_NVM_ERROR_BUS_FAULT;
-        break;
+      uint8_t cmd = ((sd_var->fsm.op_mode == SD_READ)? 
+        SDMMC_CMD_READ_SINGLE_BLOCK: 
+        SDMMC_CMD_WRITE_SINGLE_BLOCK) | HDL_SDIO_CMD_RESPONSE_SHORT;
+      uint32_t block = (sd_var->nvm_msg->address / SD_BLOCK_SIZE) + sd_var->fsm.sub.block_offset;
+      if(_sdio_send_cmd(sd, cmd, block)) {
+        if(sd_var->fsm.op_mode == SD_WRITE)
+          sd_var->fsm.sub.sate = SD_RW_STATE_TX_DATA;
+        else 
+          sd_var->fsm.sub.sate = SD_RW_STATE_AWAIT;
       }
     }
-
-    while(!(sd_var->data_msg.status & HDL_SDIO_STATE_COMPLETE))
-      yield_return;
-    
-    if(sd_var->data_msg.status & HDL_SDIO_ERROR) {
-      if(sd_var->data_msg.status & HDL_SDIO_ERROR_INTERNAL)
+    else if(sd_var->fsm.sub.sate == SD_RW_STATE_TX_DATA) {
+      sd_var->fsm.sub.sate = SD_RW_STATE_AWAIT;
+      if(!(sd_var->cmd_msg.status & HDL_SDIO_ERROR)) {
+        if(sd_var->cmd_msg.response[0] & HDL_SD_STA_READY_FOR_DATA)
+          hdl_sdio_data_transfer(sdio, &sd_var->data_msg);
+        else {
+          if(sd_var->fsm.sub.retry--) {
+            _delay_set(tc, sd_var, 1);
+            sd_var->fsm.sub.sate = SD_RW_STATE_COMMAND;
+            return HDL_TRUE;
+          }
+          sd_var->nvm_msg->out_status |= HDL_NVM_ERROR_BUS_FAULT;
+        }
+      }
+    }
+    if(sd_var->fsm.sub.sate == SD_RW_STATE_AWAIT) {
+      if((sd_var->cmd_msg.status & HDL_SDIO_ERROR) || (sd_var->data_msg.status & HDL_SDIO_ERROR))
+        sd_var->fsm.sub.sate = SD_RW_STATE_ERR;
+      else if(sd_var->data_msg.status & HDL_SDIO_STATE_COMPLETE) {
+        sd_var->fsm.sub.sate = SD_RW_STATE_COMPLETE;
+        sd_var->nvm_msg->synced_size += SD_BLOCK_SIZE;
+        sd_var->fsm.sub.block_offset++;
+        if(sd_var->nvm_msg->size > ((uint32_t)sd_var->fsm.sub.block_offset * SD_BLOCK_SIZE)) {
+          sd_var->fsm.sub.sate = SD_RW_STATE_COMMAND;
+          continue;
+        }
+      }
+    }
+    if(sd_var->fsm.sub.sate == SD_RW_STATE_ERR) {
+      if((sd_var->data_msg.status | sd_var->cmd_msg.status) & HDL_SDIO_ERROR_INTERNAL)
         sd_var->nvm_msg->out_status |= HDL_NVM_ERROR_INTERNAL_FAULT;
       else
         sd_var->nvm_msg->out_status |= HDL_NVM_ERROR_BUS_FAULT;
-      break;
+      sd_var->fsm.sub.sate = SD_RW_STATE_COMPLETE;
     }
-    //cmd = SDMMC_CMD_SEND_STATUS | HDL_SDIO_CMD_RESPONSE_SHORT;
-    //uint8_t err = _sdio_send_cmd(sd, &cmd, sd_var->card.rca, &responce);
-    sd_var->nvm_msg->synced_size += SD_BLOCK_SIZE;
-    offset++;
-  } while (sd_var->nvm_msg->size > (offset * SD_BLOCK_SIZE));
-  sd_var->nvm_msg->out_status &= ~HDL_NVM_STATE_BUSY;
-  sd_var->nvm_msg->out_status |= HDL_NVM_STATE_COMPLETE;
-  uint32_t xfer_size = sd_var->nvm_msg->size;
-  sd_var->nvm_msg = NULL;
-  return !(sd_var->nvm_msg->out_status & HDL_NVM_ERROR);
+    if(sd_var->fsm.sub.sate == SD_RW_STATE_COMPLETE) {
+      sd_var->nvm_msg->out_status &= ~HDL_NVM_STATE_BUSY;
+      sd_var->nvm_msg->out_status |= HDL_NVM_STATE_COMPLETE;
+      sd_var->nvm_msg = NULL;
+      sd_var->fsm.sub.sate = SD_RW_STATE_PREPARE;
+    }
+    break;
+  }
+  return HDL_TRUE;
+}
+
+static inline void _sd_fsm_reset(hdl_sd_t *sd) {
+  hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
+  sd_var->fsm.sub.sate = 0;
+  sd_var->fsm.sub.cmd_sent = HDL_FALSE;
+  sd_var->fsm.delay = 0;
 }
 
 static void _sd_reset(hdl_sd_t *sd) {
   hdl_sdio_t *sdio = (hdl_sdio_t *)sd->dependencies[0];
-  hdl_gpio_pin_t *pw_pin = (hdl_gpio_pin_t *)sd->dependencies[3];
   hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
+  _sd_fsm_reset(sd);
   sd_var->card.capacity = 0;
   sd_var->card.rca = 0;
-  hdl_gpio_set_inactive(pw_pin);
-  hdl_sdio_set_clock(sdio, 200000);
+  sd_var->cmd_msg.status = HDL_SDIO_STATE_COMPLETE;
+  hdl_sdio_set_clock(sdio, 300000);
   hdl_sdio_set_bus(sdio, HDL_SDIO_BUS_WIDTH_1);
   if(sd_var->nvm_msg != NULL)
     sd_var->nvm_msg->out_status = HDL_NVM_STATE_CANCELED | HDL_NVM_STATE_COMPLETE;
   sd_var->nvm_msg = NULL;
 }
 
-#define SD_STATE_NO_CARD         0
-#define SD_STATE_POWER_UP_DELAY  1
+#define SD_STATE_CARD_DETECT     0
+#define SD_STATE_RESET           1
 #define SD_STATE_INIT            2
 #define SD_STATE_READY           3
-#define SD_STATE_UNUSABLE        4
 
 static uint8_t _sd_worker(coroutine_t *this, uint8_t cancel, void *context) {
   (void)this;
@@ -264,40 +402,41 @@ static uint8_t _sd_worker(coroutine_t *this, uint8_t cancel, void *context) {
   hdl_gpio_pin_t *cd_pin = (hdl_gpio_pin_t *)sd->dependencies[2];
   hdl_gpio_pin_t *pw_pin = (hdl_gpio_pin_t *)sd->dependencies[3];
 
-  uint32_t now = hdl_time_counter_get(tc);
-  if(sd_var->state == SD_STATE_NO_CARD) {
-    if(hdl_gpio_is_active(cd_pin)) {
+  if(_delay_awaiting(tc, sd_var)) return cancel;
+  if(_sdio_cmd_awaiting(sd_var)) return cancel;
+
+  if(sd_var->fsm.sd_state == SD_STATE_CARD_DETECT) {
+    if(hdl_is_null_module(cd_pin) || hdl_gpio_is_active(cd_pin)) {
+      _delay_set(tc, sd_var, sd->config->power_up_delay);
       hdl_gpio_set_active(pw_pin);
-      sd_var->timer = now;
-      sd_var->state = SD_STATE_POWER_UP_DELAY;
+      sd_var->fsm.sd_state = SD_STATE_INIT;
+      _sd_fsm_reset(sd);
     }
   }
-  else if(sd_var->state == SD_STATE_POWER_UP_DELAY) {
-    if(CL_TIME_ELAPSED(sd_var->timer, sd->config->power_up_delay, now))
-      sd_var->state = SD_STATE_INIT;
-  }
-  else if(sd_var->state == SD_STATE_INIT) {
-    if(init_sd(sd))
-      sd_var->state = SD_STATE_READY;
-    else 
-      sd_var->state = SD_STATE_UNUSABLE;
-    sd_var->timer = now;
-  }
-  else if (sd_var->state == SD_STATE_READY) {
-    if(sd_var->nvm_msg != NULL) {
-      if(!sd_read_write(sd, (sd_var->op_mode == SD_READ)))
-        sd_var->state = SD_STATE_UNUSABLE;
+  else if(sd_var->fsm.sd_state == SD_STATE_INIT) {
+    int8_t res = init_sd(sd);
+    if(res > 0) {
+      sd_var->fsm.sd_state = SD_STATE_READY;
+      _sd_fsm_reset(sd);
     }
+    if(res < 0)
+      sd_var->fsm.sd_state = SD_STATE_RESET;
   }
-  else if (sd_var->state == SD_STATE_UNUSABLE) {
-    if(CL_TIME_ELAPSED(sd_var->timer, 1000, now)) {
+  else if (sd_var->fsm.sd_state == SD_STATE_READY) {
+    if(!sd_read_write(sd)) {
       _sd_reset(sd);
-      sd_var->state = SD_STATE_NO_CARD;
+      sd_var->fsm.sd_state = SD_STATE_INIT;
     }
   }
-  if(hdl_gpio_is_inactive(cd_pin)) {
+  if (hdl_gpio_is_inactive(cd_pin)) {
+    hdl_gpio_set_inactive(pw_pin);
     _sd_reset(sd);
-    sd_var->state = SD_STATE_NO_CARD;
+    sd_var->fsm.sd_state = SD_STATE_CARD_DETECT;
+  }
+  else if(sd_var->fsm.sd_state == SD_STATE_RESET) {
+    _sd_reset(sd);
+    _delay_set(tc, sd_var, sd->config->init_retry_delay);
+    sd_var->fsm.sd_state = SD_STATE_INIT;
   }
   return cancel;
 }
@@ -307,11 +446,11 @@ static hdl_module_state_t _hdl_sd(const void *desc, uint8_t enable) {
   hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
   if(enable) {
     _sd_reset(sd);
-    sd_var->state = 0;
-    hdl_coroutine_add_yielding(&sd_var->worker, sd_var->wrk_ccb_buffer, sizeof(sd_var->wrk_ccb_buffer), _sd_worker, sd);
+    sd_var->fsm.sd_state = 0;
+    coroutine_add(&sd_var->worker, _sd_worker, sd);
     return HDL_MODULE_ACTIVE;
   }
-  coroutine_cancel(&sd_var->worker.coroutine);
+  coroutine_cancel(&sd_var->worker);
   return HDL_MODULE_UNLOADED;
 }
 
@@ -330,7 +469,7 @@ static uint8_t _hdl_sd_info_get(const void *desc, hdl_nvm_info_t *out_info) {
 static uint8_t _hdl_sd_rw(const void *desc, hdl_nvm_message_t *message, hdl_sd_op_mode_t op_mode) {
   hdl_sd_t *sd = (hdl_sd_t *)desc;
   hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
-  if((message != NULL) && (sd_var->state == SD_STATE_READY) && (sd_var->nvm_msg == NULL)) {
+  if((message != NULL) && (sd_var->fsm.sd_state == SD_STATE_READY) && (sd_var->nvm_msg == NULL)) {
     if(message->address & (sd_var->card.block_size - 1))
       message->out_status = HDL_NVM_ERROR_SECTOR_UNALIGNED | HDL_NVM_STATE_COMPLETE;
     else if((message->address + message->size) >= sd_var->card.capacity)
@@ -340,7 +479,7 @@ static uint8_t _hdl_sd_rw(const void *desc, hdl_nvm_message_t *message, hdl_sd_o
     else if((op_mode == SD_WRITE) && (sd_var->card.wr_protect))
       message->out_status = HDL_NVM_ERROR_LOCKED | HDL_NVM_STATE_COMPLETE;
     else {
-      sd_var->op_mode = op_mode;
+      sd_var->fsm.op_mode = op_mode;
       sd_var->nvm_msg = message;
       message->out_status = HDL_NVM_STATE_BUSY;
     }

@@ -3,7 +3,7 @@
 
 #include "hdl_sdio.h"
 
-#define HDL_SDIO_MCU_VAR_SIZE        36
+#define HDL_SDIO_MCU_VAR_SIZE        40
 
 typedef struct {
   uint32_t phy;                   /* SDIO */
@@ -17,6 +17,7 @@ typedef struct {
   uint32_t hardware_flow_control; /* Specifies whether the HDL_SDIO hardware flow control is enabled or disabled.
                                      [SDIO_HARDWARE_FLOW_CONTROL_DISABLE, SDIO_HARDWARE_FLOW_CONTROL_ENABLE] */
   uint32_t init_speed;            /* Use default 400000 */
+  hdl_sdio_bus_width_t support_bw; /* HDL_SDIO_BUS_WIDTH_1(default), HDL_SDIO_BUS_WIDTH_4, HDL_SDIO_BUS_WIDTH_8 */
 } hdl_sdio_mcu_config_t;
 
 /* depends on:

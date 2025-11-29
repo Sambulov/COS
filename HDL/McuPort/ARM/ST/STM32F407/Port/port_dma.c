@@ -60,17 +60,36 @@ static hdl_module_state_t _hdl_dma_ch(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-static uint32_t _hdl_dma_get_counter(const void *desc) {
-  hdl_dma_channel_mcu_t *channel = ((hdl_dma_channel_mcu_t *)desc);
-  hdl_dma_t *dma = (hdl_dma_t *)channel->dependencies[0];
-  hdl_dma_channel_config_t *ch_cnf = (hdl_dma_channel_config_t *)channel->config;
-  hdl_dma_config_t *dma_cnf = (hdl_dma_config_t *)dma->config;
-  DMA_Stream_TypeDef *stream = (DMA_Stream_TypeDef *)(dma_cnf->phy + sizeof(DMA_TypeDef) + (sizeof(DMA_Stream_TypeDef) * ch_cnf->stream));
-  uint32_t tx_size = (1 << ((stream->CR & DMA_SxCR_MSIZE) >> DMA_SxCR_MSIZE_Pos));
-  if(stream->CR & DMA_SxCR_PFCTRL)
-    return ((uint16_t)(0xffff - stream->NDTR)) * tx_size;
-  else
-    return stream->NDTR * tx_size;
+static uint8_t _hdl_dma_get_state(const void *desc, hdl_dma_state_t *out_state) {
+  if(out_state != NULL) {
+    hdl_dma_channel_mcu_t *channel = ((hdl_dma_channel_mcu_t *)desc);
+    hdl_dma_t *dma = (hdl_dma_t *)channel->dependencies[0];
+    hdl_dma_channel_config_t *ch_cnf = (hdl_dma_channel_config_t *)channel->config;
+    hdl_dma_config_t *dma_cnf = (hdl_dma_config_t *)dma->config;
+    DMA_Stream_TypeDef *stream = (DMA_Stream_TypeDef *)(dma_cnf->phy + sizeof(DMA_TypeDef) + (sizeof(DMA_Stream_TypeDef) * ch_cnf->stream));
+    uint32_t tx_size = (1 << ((stream->CR & DMA_SxCR_MSIZE) >> DMA_SxCR_MSIZE_Pos));
+    uint32_t e_flags = DMA_LISR_TEIF0 | DMA_LISR_DMEIF0 | DMA_LISR_FEIF0;
+    dma_stream_registers_t *stream_regs = (dma_stream_registers_t *) ((ch_cnf->stream > HDL_DMA_STREAM_3)? 
+      ((dma_cnf->phy & (uint32_t)(~0x3FFU)) + 4U) /* return pointer to HISR and HIFCR */:
+      (dma_cnf->phy & (uint32_t)(~0x3FFU))) /* return pointer to LISR and LIFCR */;
+    switch (stream->CR & DMA_SxCR_DIR) {
+      case DMA_MEMORY_TO_MEMORY: out_state->dir = HDL_DMA_M2M; break;
+      case DMA_PERIPH_TO_MEMORY: out_state->dir = HDL_DMA_P2M; break;
+      case DMA_MEMORY_TO_PERIPH: out_state->dir = HDL_DMA_M2P; break;
+      default:
+        return HDL_FALSE;
+    }
+    out_state->transferred = stream->NDTR * tx_size;
+    if(stream->CR & DMA_SxCR_PFCTRL)
+      out_state->transferred = ((uint16_t)(0xffff - stream->NDTR)) * tx_size;
+    out_state->status = 0;
+    if(stream->CR & DMA_SxCR_EN)
+      out_state->status = HDL_DMA_SATE_RUN;
+    if(stream_regs->ISR & e_flags)
+      out_state->status = HDL_DMA_SATE_ERR;
+    return HDL_TRUE;
+  }
+  return HDL_FALSE;
 }
 
 static uint8_t _hdl_dma_stop(const void *desc) {
@@ -120,7 +139,7 @@ const hdl_module_base_iface_t hdl_dma_iface = {
 
 const hdl_dma_channel_iface_t hdl_dma_channel_iface = {
   .init = &_hdl_dma_ch,
-  .get_counter = &_hdl_dma_get_counter,
+  .get_state = &_hdl_dma_get_state,
   .run = &_hdl_dma_run,
   .stop = &_hdl_dma_stop
 };

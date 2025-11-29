@@ -33,6 +33,7 @@
 #define HDL_SD_STA_ERASE_SEQ_ERR                       0x10000000U
 #define HDL_SD_STA_BAD_ERASE_PARAM                     0x08000000U
 #define HDL_SD_STA_WRITE_PROT_VIOLATION                0x04000000U
+#define HDL_SD_STA_LOCKED                              0x02000000U
 #define HDL_SD_STA_LOCK_UNLOCK_FAILED                  0x01000000U
 #define HDL_SD_STA_COM_CRC_FAILED                      0x00800000U
 #define HDL_SD_STA_ILLEGAL_CMD                         0x00400000U
@@ -47,9 +48,10 @@
 #define HDL_SD_STA_ERASE_RESET                         0x00002000U
 #define HDL_SD_STA_READY_FOR_DATA                      0x00000100U
 #define HDL_SD_STA_AKE_SEQ_ERROR                       0x00000008U
+#define HDL_SD_STA_FX_EVENT                            0x00000040U
+#define HDL_SD_STA_APP_CMD                             0x00000020U
 
 #define HDL_SD_STA_STATE_MASK                          0x00001E00U
-
 #define HDL_SD_STA_ERRORBITS                           0xFDFFE008U
 
 #endif /* HDL_SD_DEF_H_ */

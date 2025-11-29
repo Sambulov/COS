@@ -16,7 +16,7 @@ typedef enum {
 } hdl_nvm_message_status_t;
 
 typedef struct {
-  uint8_t *data;
+  void *data;
   uint32_t size;
   uint64_t address;
   uint32_t synced_size;

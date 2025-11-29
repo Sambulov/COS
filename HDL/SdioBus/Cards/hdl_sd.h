@@ -2,7 +2,7 @@
 
 #include "hdl_nvm.h"
 
-#define HDL_SD_VAR_SIZE   4200
+#define HDL_SD_VAR_SIZE   4216
 
 typedef struct {
   uint32_t power_up_delay;

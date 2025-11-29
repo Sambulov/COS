@@ -108,7 +108,7 @@ static uint8_t _eeprom_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       uint32_t addr = eeprom_var->nvm_msg->address + eeprom_var->nvm_msg->synced_size;
       uint32_t size = eeprom_var->nvm_msg->size - eeprom_var->nvm_msg->synced_size;
       if(size > eeprom->config->page_size) size = eeprom->config->page_size;
-      uint8_t *data_ptr = &eeprom_var->nvm_msg->data[eeprom_var->nvm_msg->synced_size];
+      uint8_t *data_ptr = &((uint8_t *)eeprom_var->nvm_msg->data)[eeprom_var->nvm_msg->synced_size];
       if(!hdl_i2c_mem_write_r2(mem, chip_address, addr, data_ptr, size)) 
         break;
       eeprom_var->state = EE_STATE_AWAIT_BUS;

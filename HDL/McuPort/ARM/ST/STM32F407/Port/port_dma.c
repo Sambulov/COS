@@ -24,6 +24,14 @@ static hdl_module_state_t _hdl_dma(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
+static void _dma_int_clear(uint32_t phy, hdl_dma_stream_t stream) {
+  uint32_t flags = DMA_LIFCR_CTCIF0 | DMA_LIFCR_CHTIF0 | DMA_LIFCR_CTEIF0 | DMA_LIFCR_CDMEIF0 | DMA_LIFCR_CFEIF0;
+  dma_stream_registers_t *stream_regs = (dma_stream_registers_t *) ((stream > HDL_DMA_STREAM_3)? 
+  ((phy & (uint32_t)(~0x3FFU)) + 4U) /* return pointer to HISR and HIFCR */:
+  (phy & (uint32_t)(~0x3FFU))) /* return pointer to LISR and LIFCR */;
+  stream_regs->IFCR = flags << dma_stream_bitshift[stream];
+}
+
 static hdl_module_state_t _hdl_dma_ch(const void *desc, uint8_t enable) {
   hdl_dma_channel_mcu_t *channel = ((hdl_dma_channel_mcu_t *)desc);
   if(channel == NULL) return HDL_MODULE_FAULT;
@@ -37,7 +45,7 @@ static hdl_module_state_t _hdl_dma_ch(const void *desc, uint8_t enable) {
     uint32_t time = 10000;
     while((stream->CR & DMA_SxCR_EN) && time--);
     if(!time) return HDL_MODULE_FAULT;
-    stream->FCR = (uint32_t)0x00000021U;
+    stream->FCR = (ch_cnf->fifo_mode? DMA_FIFOMODE_ENABLE: DMA_FIFOMODE_DISABLE) | ch_cnf->fifo_threshold;
     stream->CR =  ch_cnf->channel_periphery | ch_cnf->priority |
                   ch_cnf->memory_width | ch_cnf->periph_width |
                   ch_cnf->memory_burst | ch_cnf->periph_burst |
@@ -45,27 +53,11 @@ static hdl_module_state_t _hdl_dma_ch(const void *desc, uint8_t enable) {
                   (ch_cnf->memory_inc? DMA_SxCR_MINC: 0) |
                   (ch_cnf->circular? DMA_SxCR_CIRC: 0) |
                   (ch_cnf->periph_ctrl? DMA_SxCR_PFCTRL: 0);
-
-    dma_stream_registers_t *stream_regs = (dma_stream_registers_t *) ((ch_cnf->stream > HDL_DMA_STREAM_3)? 
-      (((uint32_t)dma_cnf->phy & (uint32_t)(~0x3FFU)) + 4U) /* return pointer to HISR and HIFCR */:
-      ((uint32_t)dma_cnf->phy & (uint32_t)(~0x3FFU))) /* return pointer to LISR and LIFCR */;
-    stream_regs->IFCR = 0x3FU << dma_stream_bitshift[ch_cnf->stream];
+    _dma_int_clear(dma_cnf->phy, ch_cnf->stream);
     return HDL_MODULE_ACTIVE;
   }
   stream->CR = 0;
   return HDL_MODULE_UNLOADED;
-}
-
-uint8_t port_dma_ch_transfer_complete(const void *desc) {
-  hdl_dma_channel_mcu_t *channel = ((hdl_dma_channel_mcu_t *)desc);
-  if(hdl_is_null_module(desc)) return HDL_FALSE;
-  hdl_dma_t *dma = (hdl_dma_t *)channel->dependencies[0];
-  hdl_dma_channel_config_t *ch_cnf = (hdl_dma_channel_config_t *)channel->config;
-  hdl_dma_config_t *dma_cnf = (hdl_dma_config_t *)dma->config;
-  dma_stream_registers_t *stream_regs = (dma_stream_registers_t *) ((ch_cnf->stream > HDL_DMA_STREAM_3)? 
-    (((uint32_t)dma_cnf->phy & (uint32_t)(~0x3FFU)) + 4U) /* return pointer to HISR and HIFCR */:
-    ((uint32_t)dma_cnf->phy & (uint32_t)(~0x3FFU))) /* return pointer to LISR and LIFCR */;
-  return (stream_regs->ISR & (DMA_LISR_TCIF0 << dma_stream_bitshift[ch_cnf->stream]))? HDL_TRUE: HDL_FALSE;
 }
 
 static uint32_t _hdl_dma_get_counter(const void *desc) {
@@ -100,17 +92,11 @@ static uint8_t _hdl_dma_run(const void *desc, hdl_dma_direction_t dir, uint32_t 
   hdl_dma_config_t *dma_cnf = (hdl_dma_config_t *)dma->config;
   DMA_Stream_TypeDef *stream = (DMA_Stream_TypeDef *)(dma_cnf->phy + sizeof(DMA_TypeDef) + (sizeof(DMA_Stream_TypeDef) * ch_cnf->stream));
   if(stream->CR & DMA_SxCR_EN) return HDL_FALSE;
-  DMA_TypeDef *dma_state = (DMA_TypeDef *)dma_cnf->phy;
-  uint32_t flags = DMA_LIFCR_CTCIF0 | DMA_LIFCR_CHTIF0 | DMA_LIFCR_CTEIF0 | DMA_LIFCR_CDMEIF0 | DMA_LIFCR_CFEIF0;
-  flags <<= ((ch_cnf->stream & 1) * 6 + (ch_cnf->stream & 2) * 8);
-  if(ch_cnf->stream > HDL_DMA_STREAM_3)
-    dma_state->HIFCR |= flags;
-  else
-    dma_state->LIFCR |= flags;
+  _dma_int_clear(dma_cnf->phy, ch_cnf->stream);
   stream->CR &= (uint32_t)(~DMA_SxCR_DBM);
   stream->NDTR = amount;
   stream->PAR = periph_addr;
-  stream->M0AR = mem_addr;
+  stream->M0AR = mem_addr;  
   switch (dir) {
     case HDL_DMA_M2M:
       CL_REG_MODIFY(stream->CR, DMA_SxCR_DIR, DMA_MEMORY_TO_MEMORY);

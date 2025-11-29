@@ -22,8 +22,6 @@ static void _sdio_data_flow(hdl_sdio_mcu_t *sdio) {
   SDIO_TypeDef *phy = (SDIO_TypeDef *)sdio->config->phy;
   const hdl_dma_channel_t *sdio_dma = (hdl_dma_channel_t *)sdio->dependencies[1];
   if(sdio_var->data_state == 0) {
-    /* amout = 0, data transfer controled by SDIO */
-    hdl_dma_channel_run_p2m(sdio_dma, (void *)&phy->FIFO, sdio_var->data_msg->data, 0);
     uint32_t dtctrl = SDIO_DCTRL_DTEN | SDIO_DCTRL_DMAEN;
     if(sdio_var->data_msg->mode == HDL_SDIO_DATA_BLOCK) {
       uint32_t bs = sdio_var->data_msg->data_block_size;
@@ -47,34 +45,34 @@ static void _sdio_data_flow(hdl_sdio_mcu_t *sdio) {
     }
 
     if(sdio_var->data_msg->dir == HDL_SDIO_DATA_TO_DEV) {
+      /* amout = 0, data transfer controled by SDIO */
+      hdl_dma_channel_run_m2p(sdio_dma, (void *)&phy->FIFO, sdio_var->data_msg->data, 0);
       /* This is SDIO+DMA hardware bug workaround. */
       CL_REG_CLEAR(SDIO->CLKCR, SDIO_CLKCR_CLKEN); /* Disable SDIO_CK */
   		phy->DCTRL = dtctrl; /* Start transmission in DMA mode */
       while (SDIO->STA & SDIO_STA_TXFIFOHE); /* Wait FIFO half-full */
       CL_REG_SET(SDIO->CLKCR, SDIO_CLKCR_CLKEN); /* Enable SDIO_CK */
     }
-    else
+    else {
+      /* amout = 0, data transfer controled by SDIO */
+      hdl_dma_channel_run_p2m(sdio_dma, (void *)&phy->FIFO, sdio_var->data_msg->data, 0);
       phy->DCTRL = dtctrl | SDIO_DCTRL_DTDIR;
+    }
     uint32_t delay = 1000;
     while (delay--); /* delay for sdio fsm */
     sdio_var->data_state = 1;
   }
   if(sdio_var->data_state == 1) {
-    if((phy->STA & SDIO_STA_DATAEND) && (phy->STA & SDIO_STA_RXDAVL) && !phy->FIFOCNT) {
-      uint32_t dma_xfer = hdl_dma_channel_get_counter(sdio_dma);
-      do {
-        uint32_t data = phy->FIFO;
-        uint8_t sz = 4;
-        while (sz-- && (dma_xfer < sdio_var->data_msg->data_length)) {
-          ((uint8_t *)sdio_var->data_msg->data)[dma_xfer++] = data;
-          data >>= 8;
-        }
-      } while (phy->STA & SDIO_STA_RXDAVL);
-    }
-
     if(!(phy->STA & (SDIO_STA_RXACT | SDIO_STA_TXACT))) {
       hdl_dma_channel_stop(sdio_dma);
+      if(phy->STA & SDIO_FLAG_DTIMEOUT)
+        sdio_var->data_msg->status |= HDL_SDIO_ERROR_TIMEOUT;
+      if(phy->STA & SDIO_FLAG_DCRCFAIL)
+        sdio_var->data_msg->status |= HDL_SDIO_ERROR_CRC;
+      if(phy->STA & (SDIO_FLAG_TXUNDERR | SDIO_FLAG_RXOVERR))
+        sdio_var->data_msg->status |= HDL_SDIO_ERROR_INTERNAL;
       phy->ICR = SDIO_STATIC_DATA_FLAGS;
+      sdio_var->data_msg->transferred = hdl_dma_channel_get_counter(sdio_dma);
       sdio_var->data_state = 2;
     }
   }
@@ -91,12 +89,6 @@ static void _sdio_cmd_flow(hdl_sdio_mcu_t *sdio) {
   SDIO_TypeDef *phy = (SDIO_TypeDef *)sdio->config->phy;
   if(sdio_var->cmd_state == 0) {
     uint32_t tmpreg = sdio_var->cmd_msg->cmd | SDIO_CPSM_ENABLE | SDIO_WAIT_NO;
-    // uint32_t tmpreg = (sdio_var->cmd_msg->cmd & 0x3F) | SDIO_CPSM_ENABLE | SDIO_WAIT_NO;
-    // switch (sdio_var->cmd_msg->cmd & HDL_SDIO_CMD_RESPONSE_MASK) {
-    //   case HDL_SDIO_CMD_RESPONSE_LONG: tmpreg |= SDIO_RESPONSE_SHORT; break;
-    //   case HDL_SDIO_CMD_RESPONSE_SHORT: tmpreg |= SDIO_RESPONSE_LONG; break;
-    //   default: tmpreg |= SDIO_RESPONSE_NO; break;
-    // }
     phy->ARG = sdio_var->cmd_msg->argument;
     MODIFY_REG(phy->CMD, CMD_CLEAR_MASK, tmpreg);
     sdio_var->cmd_state = 1;

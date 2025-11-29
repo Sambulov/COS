@@ -21,19 +21,19 @@ typedef struct {
 hdl_module_new_t(hdl_dma_t, 0, void*, hdl_module_base_iface_t);
 hdl_module_new_t(hdl_dma_channel_t, 0, void*, hdl_dma_channel_iface_t);
 
-__STATIC_INLINE uint8_t hdl_dma_channel_run_m2m(void const *desc, void *src, void *dest, uint32_t amount) {
+__STATIC_INLINE uint8_t hdl_dma_channel_run_m2m(void const *desc, void *periph_addr, void *mem_addr, uint32_t amount) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return ((hdl_dma_channel_iface_t *)((hdl_module_base_t *)desc)->iface)->run(desc, HDL_DMA_M2M, (uint32_t)src, (uint32_t)dest, amount);
+  return ((hdl_dma_channel_iface_t *)((hdl_module_base_t *)desc)->iface)->run(desc, HDL_DMA_M2M, (uint32_t)periph_addr, (uint32_t)mem_addr, amount);
 }
 
-__STATIC_INLINE uint8_t hdl_dma_channel_run_p2m(void const *desc, void *src, void *dest, uint32_t amount) {
+__STATIC_INLINE uint8_t hdl_dma_channel_run_p2m(void const *desc, void *periph_addr, void *mem_addr, uint32_t amount) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return ((hdl_dma_channel_iface_t *)((hdl_module_base_t *)desc)->iface)->run(desc, HDL_DMA_P2M, (uint32_t)src, (uint32_t)dest, amount);
+  return ((hdl_dma_channel_iface_t *)((hdl_module_base_t *)desc)->iface)->run(desc, HDL_DMA_P2M, (uint32_t)periph_addr, (uint32_t)mem_addr, amount);
 }
 
-__STATIC_INLINE uint8_t hdl_dma_channel_run_m2p(void const *desc, void *src, void *dest, uint32_t amount) {
+__STATIC_INLINE uint8_t hdl_dma_channel_run_m2p(void const *desc, void *periph_addr, void *mem_addr, uint32_t amount) {
   MODULE_ASSERT(desc, HDL_FALSE);
-  return ((hdl_dma_channel_iface_t *)((hdl_module_base_t *)desc)->iface)->run(desc, HDL_DMA_M2P, (uint32_t)dest, (uint32_t)src, amount);
+  return ((hdl_dma_channel_iface_t *)((hdl_module_base_t *)desc)->iface)->run(desc, HDL_DMA_M2P, (uint32_t)periph_addr, (uint32_t)mem_addr, amount);
 }
 
 __STATIC_INLINE uint8_t hdl_dma_channel_stop(void const *desc) {

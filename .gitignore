@@ -8,6 +8,8 @@ Proprietary/
 Projects/*
 !Projects/DEMO*
 !Projects/CMakeLists.txt
+!Projects/README.md
 .cortex-debug.*
 .vscode/settings.json
 CMakeCache.txt
+README.pdf

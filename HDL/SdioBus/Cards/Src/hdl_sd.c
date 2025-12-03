@@ -145,7 +145,8 @@ static int8_t init_sd(hdl_sd_t *sd) {
         next_state = SD_INIT_STATE_ACMD41_PREP;
         break;
       case SD_INIT_STATE_ACMD41_PREP:
-        if(!(sd_var->cmd_msg.status & HDL_SDIO_ERROR) && (sd_var->cmd_msg.response[0] & HDL_SD_STA_APP_CMD))
+        if(!(sd_var->cmd_msg.status & HDL_SDIO_ERROR) && !(sd_var->cmd_msg.response[0] & HDL_SD_STA_ERRORBITS) && 
+            (sd_var->cmd_msg.response[0] & HDL_SD_STA_APP_CMD))
           next_state = SD_INIT_STATE_ACMD41;
         else
           next_state = SD_INIT_STATE_ACMD41_PREP;
@@ -269,7 +270,8 @@ static int8_t init_sd(hdl_sd_t *sd) {
       break;
     case SD_INIT_STATE_ACMD6:
       cmd = SDMMC_CMD_APP_SD_SET_BUSWIDTH | HDL_SDIO_CMD_RESPONSE_SHORT;
-      arg = 2;
+      arg = HDL_SD_ACMD6_ARG_BUS_WIDTH4;
+      _delay_set(tc, sd_var, 10);
       break;
     case SD_INIT_STATE_COMPLETE:
       hdl_sdio_set_clock(sdio, sd_var->card.max_bus_clk * 1000000);
@@ -295,6 +297,7 @@ static uint8_t sd_read_write(hdl_sd_t *sd) {
   hdl_sdio_t *sdio = (hdl_sdio_t *)sd->dependencies[0];
   hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
   hdl_time_counter_t *tc = (hdl_time_counter_t *)sd->dependencies[1];
+  uint8_t result = HDL_TRUE;
   while (sd_var->nvm_msg != NULL) {
     if(sd_var->fsm.sub.sate == SD_RW_STATE_PREPARE) {
       sd_var->fsm.sub.retry = 3;
@@ -356,6 +359,7 @@ static uint8_t sd_read_write(hdl_sd_t *sd) {
       else
         sd_var->nvm_msg->out_status |= HDL_NVM_ERROR_BUS_FAULT;
       sd_var->fsm.sub.sate = SD_RW_STATE_COMPLETE;
+      result = HDL_FALSE;
     }
     if(sd_var->fsm.sub.sate == SD_RW_STATE_COMPLETE) {
       sd_var->nvm_msg->out_status &= ~HDL_NVM_STATE_BUSY;
@@ -365,7 +369,7 @@ static uint8_t sd_read_write(hdl_sd_t *sd) {
     }
     break;
   }
-  return HDL_TRUE;
+  return result;
 }
 
 static inline void _sd_fsm_reset(hdl_sd_t *sd) {
@@ -382,7 +386,7 @@ static void _sd_reset(hdl_sd_t *sd) {
   sd_var->card.capacity = 0;
   sd_var->card.rca = 0;
   sd_var->cmd_msg.status = HDL_SDIO_STATE_COMPLETE;
-  hdl_sdio_set_clock(sdio, 300000);
+  hdl_sdio_set_clock(sdio, 400000);
   hdl_sdio_set_bus(sdio, HDL_SDIO_BUS_WIDTH_1);
   if(sd_var->nvm_msg != NULL)
     sd_var->nvm_msg->out_status = HDL_NVM_STATE_CANCELED | HDL_NVM_STATE_COMPLETE;
@@ -481,6 +485,7 @@ static uint8_t _hdl_sd_rw(const void *desc, hdl_nvm_message_t *message, hdl_sd_o
     else {
       sd_var->fsm.op_mode = op_mode;
       sd_var->nvm_msg = message;
+      message->synced_size = 0;
       message->out_status = HDL_NVM_STATE_BUSY;
     }
     return HDL_TRUE;

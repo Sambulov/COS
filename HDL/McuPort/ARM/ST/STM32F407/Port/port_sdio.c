@@ -70,7 +70,8 @@ static void _sdio_data_flow(hdl_sdio_mcu_t *sdio) {
         sdio_var->data_msg->status |= HDL_SDIO_ERROR_CRC;
       if(phy->STA & (SDIO_FLAG_TXUNDERR | SDIO_FLAG_RXOVERR))
         sdio_var->data_msg->status |= HDL_SDIO_ERROR_INTERNAL;
-      phy->ICR = SDIO_STATIC_DATA_FLAGS;
+      phy->ICR = SDIO_STATIC_DATA_FLAGS | SDIO_FLAG_STBITERR;
+      CL_REG_CLEAR(phy->DCTRL, SDIO_DCTRL_DTEN);
       sdio_var->data_msg->transferred = hdl_dma_channel_get_counter(sdio_dma);
       sdio_var->data_state = 2;
     }

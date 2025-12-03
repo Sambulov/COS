@@ -16,6 +16,8 @@
 
 #define HDL_SD_OCR_VW_2V7_3V6             0x00FF8000UL
 
+#define HDL_SD_ACMD6_ARG_BUS_WIDTH1       0x00000000UL
+#define HDL_SD_ACMD6_ARG_BUS_WIDTH4       0x00000002UL
 
 
 /* R1 response */
@@ -38,12 +40,23 @@
 #define HDL_SD_STA_WP_ERASE_SKIP                       0x00008000U
 #define HDL_SD_STA_CARD_ECC_DISABLED                   0x00004000U
 #define HDL_SD_STA_ERASE_RESET                         0x00002000U
-#define HDL_SD_STA_READY_FOR_DATA                      0x00000100U
-#define HDL_SD_STA_AKE_SEQ_ERROR                       0x00000008U
-#define HDL_SD_STA_FX_EVENT                            0x00000040U
-#define HDL_SD_STA_APP_CMD                             0x00000020U
 
 #define HDL_SD_STA_STATE_MASK                          0x00001E00U
+#define HDL_SD_STA_STATE_IDLE                          0x00000000U
+#define HDL_SD_STA_STATE_READY                         0x00000200U
+#define HDL_SD_STA_STATE_IDENT                         0x00000400U
+#define HDL_SD_STA_STATE_STBY                          0x00000600U
+#define HDL_SD_STA_STATE_TRAN                          0x00000800U
+#define HDL_SD_STA_STATE_DATA                          0x00000A00U
+#define HDL_SD_STA_STATE_RCV                           0x00000C00U
+#define HDL_SD_STA_STATE_PRG                           0x00000E00U
+#define HDL_SD_STA_STATE_DIS                           0x00001000U
+
+#define HDL_SD_STA_READY_FOR_DATA                      0x00000100U
+#define HDL_SD_STA_FX_EVENT                            0x00000040U
+#define HDL_SD_STA_APP_CMD                             0x00000020U
+#define HDL_SD_STA_AKE_SEQ_ERROR                       0x00000008U
+
 #define HDL_SD_STA_ERRORBITS                           0xFDFFE008U
 
 #endif /* HDL_SD_DEF_H_ */

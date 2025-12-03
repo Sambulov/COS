@@ -9,6 +9,13 @@
 6) При использовании J-Link скачать и установить [J-Link Software](https://www.segger.com/downloads/jlink/)
 7) В Windows понадобится добавить в PATH директории Ninja, OpenOCD ...
 
+### Проверяем в командной строке
+```
+arm-none-eabi-gcc -dumpversion
+ninja --version
+cmake --version
+```
+
 ## Сборка проекта
 ```powershell
 cd <COS dir>

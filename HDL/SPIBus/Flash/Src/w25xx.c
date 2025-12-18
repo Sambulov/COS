@@ -10,9 +10,9 @@ typedef struct {
   uint8_t state  : 7,
           cancel : 1;
   uint32_t burn_time;
-} hdl_w25x20cl_var_t;
+} hdl_w25xx_var_t;
 
-HDL_ASSERRT_STRUCTURE_CAST(hdl_w25x20cl_var_t, *((hdl_w25x20cl_t *)0)->obj_var, HDL_W25X20CL_VAR_SIZE, "w25x20cl.h");
+HDL_ASSERRT_STRUCTURE_CAST(hdl_w25xx_var_t, *((hdl_w25xx_t *)0)->obj_var, HDL_W25XX_VAR_SIZE, "w25xx.h");
 
 #define NVM_STATE_IDLE                  0
 #define NVM_STATE_WP_DISABLE_MSG        1
@@ -32,8 +32,8 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_w25x20cl_var_t, *((hdl_w25x20cl_t *)0)->obj_var, 
 
 static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   (void)this;
-  hdl_w25x20cl_t *flash = (hdl_w25x20cl_t *)arg;
-  hdl_w25x20cl_var_t *flash_var = (hdl_w25x20cl_var_t *)flash->obj_var;
+  hdl_w25xx_t *flash = (hdl_w25xx_t *)arg;
+  hdl_w25xx_var_t *flash_var = (hdl_w25xx_var_t *)flash->obj_var;
   switch (flash_var->state) {
     case NVM_STATE_IDLE:
       if(flash_var->nvm_msg == NULL) break;
@@ -217,8 +217,8 @@ static uint8_t _flash_worker(coroutine_t *this, uint8_t cancel, void *arg) {
 }
 
 static hdl_module_state_t _hdl_w25x20cl(const void *desc, uint8_t enable) {
-  hdl_w25x20cl_t *flash = (hdl_w25x20cl_t *)desc;
-  hdl_w25x20cl_var_t *flash_var = (hdl_w25x20cl_var_t *)flash->obj_var;
+  hdl_w25xx_t *flash = (hdl_w25xx_t *)desc;
+  hdl_w25xx_var_t *flash_var = (hdl_w25xx_var_t *)flash->obj_var;
   if(enable) {
     if((flash->config->sector_size == 0) || (flash->config->page_size == 0)) return HDL_MODULE_FAULT;
     hdl_gpio_pin_t *wp_pin = (hdl_gpio_pin_t *)flash->dependencies[2];
@@ -234,9 +234,9 @@ static hdl_module_state_t _hdl_w25x20cl(const void *desc, uint8_t enable) {
   return HDL_MODULE_UNLOADED;
 }
 
-static uint8_t _hdl_w25x20cl_transfer(const void *desc, hdl_nvm_message_t *message, uint8_t op) {
-  hdl_w25x20cl_t *flash = (hdl_w25x20cl_t *)desc;
-  hdl_w25x20cl_var_t *flash_var = (hdl_w25x20cl_var_t *)flash->obj_var;
+static uint8_t _hdl_w25xx_transfer(const void *desc, hdl_nvm_message_t *message, uint8_t op) {
+  hdl_w25xx_t *flash = (hdl_w25xx_t *)desc;
+  hdl_w25xx_var_t *flash_var = (hdl_w25xx_var_t *)flash->obj_var;
   if((message == NULL) || (flash_var->nvm_msg != NULL)) return HDL_FALSE;
   message->out_status = HDL_NVM_STATE_BUSY;
   message->synced_size = 0;
@@ -246,7 +246,7 @@ static uint8_t _hdl_w25x20cl_transfer(const void *desc, hdl_nvm_message_t *messa
 }
 
 static uint8_t _hdl_w25x20cl_info_get(const void *desc, hdl_nvm_info_t *out_info) {
-  hdl_w25x20cl_t *flash = (hdl_w25x20cl_t *)desc;
+  hdl_w25xx_t *flash = (hdl_w25xx_t *)desc;
   if(out_info != NULL) {
     out_info->sector_size = flash->config->sector_size;
     out_info->mtu_size = flash->config->page_size;
@@ -257,20 +257,20 @@ static uint8_t _hdl_w25x20cl_info_get(const void *desc, hdl_nvm_info_t *out_info
 }
 
 static uint8_t _hdl_w25x20cl_read(const void *desc, hdl_nvm_message_t *message) {
-  return _hdl_w25x20cl_transfer(desc, message, FLASH_READ);
+  return _hdl_w25xx_transfer(desc, message, FLASH_READ);
 }
 
 static uint8_t _hdl_w25x20cl_write(const void *desc, hdl_nvm_message_t *message) {
-  return _hdl_w25x20cl_transfer(desc, message, FLASH_WRITE);
+  return _hdl_w25xx_transfer(desc, message, FLASH_WRITE);
 }
 
 static uint8_t _hdl_w25x20cl_erase(const void *desc, hdl_nvm_message_t *message) {
-  return _hdl_w25x20cl_transfer(desc, message, FLASH_ERASE);
+  return _hdl_w25xx_transfer(desc, message, FLASH_ERASE);
 }
 
 static uint8_t _hdl_w25x20cl_cancel(const void *desc) {
-  hdl_w25x20cl_t *flash = (hdl_w25x20cl_t *)desc;
-  hdl_w25x20cl_var_t *flash_var = (hdl_w25x20cl_var_t *)flash->obj_var;
+  hdl_w25xx_t *flash = (hdl_w25xx_t *)desc;
+  hdl_w25xx_var_t *flash_var = (hdl_w25xx_var_t *)flash->obj_var;
   if(flash_var->nvm_msg == NULL) return HDL_TRUE;
   flash_var->cancel = 1;
   return HDL_FALSE;

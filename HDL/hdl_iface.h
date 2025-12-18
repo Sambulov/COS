@@ -40,7 +40,7 @@ extern "C" {
 #include "hdl_i2c_bm8563.h"
 #include "hdl_sd.h"
 #include "hdl_eeprom_i2c.h"
-#include "W25X20CL.h"
+#include "w25xx.h"
 #include "xl9535.h"
 #include "ms5194t.h"
 #include "74HC595.h"

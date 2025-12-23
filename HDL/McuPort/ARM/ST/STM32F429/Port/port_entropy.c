@@ -1,6 +1,6 @@
 #include "hdl_iface.h"
 
-static uint32_t _hdl_entropy_poll(const void *desc, uint8_t *output, uint32_t amount) {
+static uint32_t _hdl_entropy_poll(const void *desc, void *output, uint32_t amount) {
   (void)desc;
   volatile uint8_t randomValue[4];
   uint8_t av = 0;
@@ -13,7 +13,7 @@ static uint32_t _hdl_entropy_poll(const void *desc, uint8_t *output, uint32_t am
       *(uint32_t *)randomValue = RNG->DR;
       av = 4;
     }
-    output[index] = randomValue[--av];
+    ((uint8_t *)output)[index] = randomValue[--av];
   }
   return index;
 }

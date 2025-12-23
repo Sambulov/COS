@@ -278,8 +278,10 @@ static uint8_t _hdl_can_transmit(const void *desc, hdl_can_message_t *message) {
   if(!can_var->init_complete || can_var->reset) return HDL_FALSE;
   hdl_can_message_t **slot = NULL;
   for(uint32_t i = 0; i < 3; i++) {
-    if(!slot && (periph->TSR & (CAN_TSR_TME0 << i)) && (can_var->msg[i] == NULL)) slot = &can_var->msg[i];
-    if(can_var->msg[i] == message) return HDL_FALSE;
+    if(!slot && (periph->TSR & (CAN_TSR_TME0 << i)) && (can_var->msg[i] == NULL)) 
+      slot = &can_var->msg[i];
+    if(can_var->msg[i] == message) 
+      return HDL_TRUE;
   }
   if(slot) {
     *slot = message;
@@ -298,10 +300,10 @@ static uint8_t _hdl_can_cancel(const void *desc, hdl_can_message_t *message) {
       can_var->msg[i]->status = HDL_CAN_MESSAGE_FAULT_ABORT | HDL_CAN_MESSAGE_STATUS_COMPLETE;
       periph->TSR |= (CAN_TSR_ABRQ0 << (8 * i));
       can_var->msg[i] = NULL;
-      return HDL_TRUE;
+      break;
     }
   }
-  return HDL_FALSE;
+  return HDL_TRUE;
 }
 
 static uint8_t _hdl_can_set(const void *desc, uint32_t qt, uint8_t prop, uint8_t phase1, uint8_t phase2) {

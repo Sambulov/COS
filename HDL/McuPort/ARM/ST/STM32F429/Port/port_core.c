@@ -91,19 +91,22 @@ void OTG_HS_ISR()             { call_isr(HDL_NVIC_IRQ77_OTG_HS, 0); }
 void DCMI_ISR()               { call_isr(HDL_NVIC_IRQ78_DCMI, 0); }
 void HASH_RNG_ISR()           { call_isr(HDL_NVIC_IRQ80_HASH_RNG, 0); }
 void FPU_ISR()                { call_isr(HDL_NVIC_IRQ81_FPU, 0); }
-void UART7_ISR()              { call_isr(HDL_NVIC_UART7_IRQ82, 0); }
-void UART8_ISR()              { call_isr(HDL_NVIC_UART8_IRQ83, 0); }
-void SPI4_ISR()               { call_isr(HDL_NVIC_SPI4_IRQ84, 0); }
-void SPI5_ISR()               { call_isr(HDL_NVIC_SPI5_IRQ85, 0); }
-void SPI6_ISR()               { call_isr(HDL_NVIC_SPI6_IRQ86, 0); }
-void SAI1_ISR()               { call_isr(HDL_NVIC_SAI1_IRQ87, 0); }
-void LTDC_ISR()               { call_isr(HDL_NVIC_LTDC_IRQ88, 0); }
-void LTDC_ER_ISR()            { call_isr(HDL_NVIC_LTDC_ER_IRQ89, 0); }
-void DMA2D_ISR()              { call_isr(HDL_NVIC_DMA2D_IRQ90, 0); }
+void UART7_ISR()              { call_isr(HDL_NVIC_IRQ82_UART7, 0); }
+void UART8_ISR()              { call_isr(HDL_NVIC_IRQ83_UART8, 0); }
+void SPI4_ISR()               { call_isr(HDL_NVIC_IRQ84_SPI4, 0); }
+void SPI5_ISR()               { call_isr(HDL_NVIC_IRQ85_SPI5, 0); }
+void SPI6_ISR()               { call_isr(HDL_NVIC_IRQ86_SPI6, 0); }
+void SAI1_ISR()               { call_isr(HDL_NVIC_IRQ87_SAI1, 0); }
+void LTDC_ISR()               { call_isr(HDL_NVIC_IRQ88_LTDC, 0); }
+void LTDC_ER_ISR()            { call_isr(HDL_NVIC_IRQ89_LTDC_ER, 0); }
+void DMA2D_ISR()              { call_isr(HDL_NVIC_IRQ90_DMA2D, 0); }
 
 static hdl_module_state_t _hdl_core(const void *desc, uint8_t enable) {
   (void)desc;
   if(enable) {
+#if __FPU_USED
+    SCB->CPACR |= ((3UL << (10 * 2)) | (3UL << (11 * 2)));
+#endif
     hdl_core_arm_t *core = (hdl_core_arm_t *)desc;
     FLASH->ACR |= FLASH_ACR_ICEN;
     FLASH->ACR |= FLASH_ACR_DCEN;

@@ -4,6 +4,7 @@
 
 #define HDL_VTOR_TAB_ALIGN         1024  //(2 << SCB_VTOR_TBLOFF_Pos)
 
+
 typedef enum {
   /* Cortex-M4 processor exceptions numbers */
   HDL_NVIC_EXCEPTION_NonMaskableInt         = -14,    /*!< 2 Non Maskable Interrupt                                          */
@@ -98,15 +99,15 @@ typedef enum {
   HDL_NVIC_IRQ79                      = 79,
   HDL_NVIC_IRQ80_HASH_RNG             = 80,     /*!< Hash and RNG global interrupt                                     */
   HDL_NVIC_IRQ81_FPU                  = 81,     /*!< FPU global interrupt                                              */
-  HDL_NVIC_UART7_IRQ82                = 82,     /*!< UART7 global interrupt                                            */
-  HDL_NVIC_UART8_IRQ83                = 83,     /*!< UART8 global interrupt                                            */
-  HDL_NVIC_SPI4_IRQ84                 = 84,     /*!< SPI4 global Interrupt                                             */
-  HDL_NVIC_SPI5_IRQ85                 = 85,     /*!< SPI5 global Interrupt                                             */
-  HDL_NVIC_SPI6_IRQ86                 = 86,     /*!< SPI6 global Interrupt                                             */
-  HDL_NVIC_SAI1_IRQ87                 = 87,     /*!< SAI1 global Interrupt                                             */
-  HDL_NVIC_LTDC_IRQ88                 = 88,     /*!< LTDC global Interrupt                                             */
-  HDL_NVIC_LTDC_ER_IRQ89              = 89,     /*!< LTDC Error global Interrupt                                       */
-  HDL_NVIC_DMA2D_IRQ90                = 90,     /*!< DMA2D global Interrupt                                            */
+  HDL_NVIC_IRQ82_UART7                = 82,     /*!< UART7 global interrupt                                            */
+  HDL_NVIC_IRQ83_UART8                = 83,     /*!< UART8 global interrupt                                            */
+  HDL_NVIC_IRQ84_SPI4                 = 84,     /*!< SPI4 global Interrupt                                             */
+  HDL_NVIC_IRQ85_SPI5                 = 85,     /*!< SPI5 global Interrupt                                             */
+  HDL_NVIC_IRQ86_SPI6                 = 86,     /*!< SPI6 global Interrupt                                             */
+  HDL_NVIC_IRQ87_SAI1                 = 87,     /*!< SAI1 global Interrupt                                             */
+  HDL_NVIC_IRQ88_LTDC                 = 88,     /*!< LTDC global Interrupt                                             */
+  HDL_NVIC_IRQ89_LTDC_ER              = 89,     /*!< LTDC Error global Interrupt                                       */
+  HDL_NVIC_IRQ90_DMA2D                = 90,     /*!< DMA2D global Interrupt                                            */
   HDL_NVIC_IRQ91                      = 91,
   HDL_NVIC_IRQ92                      = 92,
   HDL_NVIC_IRQ93                      = 93,
@@ -166,7 +167,6 @@ void SVC_Handler();
 void DebugMon_Handler();
 void PendSV_Handler();
 void SysTick_Handler();
-
 void WWDG_ISR();
 void PVD_ISR();
 void TAMP_STAMP_ISR();

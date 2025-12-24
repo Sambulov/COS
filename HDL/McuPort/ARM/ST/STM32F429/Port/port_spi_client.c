@@ -127,6 +127,7 @@ static volatile uint32_t *_hdl_spi_reset(hdl_spi_client_mcu_t *spi) {
       break;
     case (uint32_t)SPI2:
     case (uint32_t)SPI3:
+      break;
     default:
       return NULL;
   }

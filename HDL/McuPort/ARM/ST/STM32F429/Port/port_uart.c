@@ -139,6 +139,8 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
     case (uint32_t)USART3:
     case (uint32_t)UART4:
     case (uint32_t)UART5:
+    case (uint32_t)UART7:
+    case (uint32_t)UART8:
       break;
     default:
       return HDL_MODULE_FAULT;

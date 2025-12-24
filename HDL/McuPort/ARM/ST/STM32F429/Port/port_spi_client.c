@@ -119,15 +119,14 @@ static volatile uint32_t *_hdl_spi_reset(hdl_spi_client_mcu_t *spi) {
   SPI_TypeDef *periph = (SPI_TypeDef *)spi->config->phy;
   switch ((uint32_t)periph) {
     case (uint32_t)SPI1:
+    case (uint32_t)SPI4:
+    case (uint32_t)SPI5:
+    case (uint32_t)SPI6:
       rcc_en = &RCC->APB2ENR;
       rcc_rst = &RCC->APB2RSTR;
       break;
     case (uint32_t)SPI2:
     case (uint32_t)SPI3:
-      break;
-    //case (uint32_t)SPI4:
-    //case (uint32_t)SPI5:
-    //case (uint32_t)SPI6:
     default:
       return NULL;
   }

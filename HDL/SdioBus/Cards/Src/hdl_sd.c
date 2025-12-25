@@ -474,7 +474,7 @@ static uint8_t _hdl_sd_rw(const void *desc, hdl_nvm_message_t *message, hdl_sd_o
   hdl_sd_t *sd = (hdl_sd_t *)desc;
   hdl_sd_var_t *sd_var = (hdl_sd_var_t *)sd->obj_var;
   if((message != NULL) && (sd_var->fsm.sd_state == SD_STATE_READY) && (sd_var->nvm_msg == NULL)) {
-    if(message->address & (sd_var->card.block_size - 1))
+    if((message->address & (sd_var->card.block_size - 1)) || (message->size & (sd_var->card.block_size - 1)))
       message->out_status = HDL_NVM_ERROR_SECTOR_UNALIGNED | HDL_NVM_STATE_COMPLETE;
     else if((message->address + message->size) >= sd_var->card.capacity)
       message->out_status = HDL_NVM_ERROR_OUT_OF_RANGE | HDL_NVM_STATE_COMPLETE;

@@ -249,7 +249,7 @@ static uint8_t _hdl_w25x20cl_info_get(const void *desc, hdl_nvm_info_t *out_info
   hdl_w25xx_t *flash = (hdl_w25xx_t *)desc;
   if(out_info != NULL) {
     out_info->sector_size = flash->config->sector_size;
-    out_info->mtu_size = flash->config->page_size;
+    out_info->mtu_size = 1;
     out_info->volume = flash->config->size;
     return HDL_TRUE;
   }
@@ -276,8 +276,7 @@ static uint8_t _hdl_w25x20cl_cancel(const void *desc) {
   return HDL_FALSE;
 }
 
-
-const hdl_nvm_iface_t hdl_w25x20cl_iface = {
+const hdl_nvm_iface_t hdl_w25xx_iface = {
   .init = &_hdl_w25x20cl,
   .cancel = &_hdl_w25x20cl_cancel,
   .read = &_hdl_w25x20cl_read,

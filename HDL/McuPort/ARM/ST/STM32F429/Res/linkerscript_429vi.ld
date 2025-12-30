@@ -12,7 +12,7 @@ MEMORY
 	CCMRAM (RWX) : ORIGIN = 0x10000000, LENGTH = 64K
 }
 
-_estack = 0x20020000;
+_estack = ORIGIN(SRAM) + LENGTH(SRAM);
 
 SECTIONS
 {
@@ -119,25 +119,8 @@ SECTIONS
 	} > SRAM
 
 	PROVIDE(end = .);
-	.heap (NOLOAD) :
-	{
-		. = ALIGN(4);
-		PROVIDE(__heap_start__ = .);
-		PROVIDE(_heap_start = .);
-		KEEP(*(.heap))
-		. = ALIGN(4);
-		PROVIDE(__heap_end__ = .);
-	} > SRAM
-	_heap_size = __heap_end__ - __heap_start__;
-
-	.reserved_for_stack (NOLOAD) :
-	{
-		. = ALIGN(4);
-		PROVIDE(__reserved_for_stack_start__ = .);
-		KEEP(*(.reserved_for_stack))
-		. = ALIGN(4);
-		PROVIDE(__reserved_for_stack_end__ = .);
-	} > SRAM
-
+	_free_ram_start = .;
+	_free_ram_end = _estack;
+	_free_ram_size = _free_ram_end - _free_ram_start;
 }
 

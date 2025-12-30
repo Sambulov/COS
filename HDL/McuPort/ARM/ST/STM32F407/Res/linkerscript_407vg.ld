@@ -119,8 +119,6 @@ SECTIONS
 	} > SRAM
 
 	PROVIDE(end = .);
-
-	PROVIDE(end = .);
 	_free_ram_start = .;
 	_free_ram_end = _estack;
 	_free_ram_size = _free_ram_end - _free_ram_start;

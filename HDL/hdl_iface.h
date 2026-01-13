@@ -38,6 +38,7 @@ extern "C" {
 #include "hdl_i2c_tmp112.h"
 #include "hdl_i2c_lis2dh12.h"
 #include "hdl_i2c_bm8563.h"
+#include "hdl_i2c_ds3231.h"
 #include "hdl_sd.h"
 #include "hdl_eeprom_i2c.h"
 #include "w25xx.h"

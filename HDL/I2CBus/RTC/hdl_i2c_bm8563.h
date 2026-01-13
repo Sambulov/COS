@@ -55,8 +55,6 @@ __STATIC_INLINE uint8_t hdl_i2c_bm8563_set(const void *desc, hdl_i2c_bm8563_data
   return ((hdl_i2c_bm8563_iface_t *)((hdl_module_base_t *)desc)->iface)->set(desc, data);
 }
 
-#define TO_BCD_BYTE(val)  ((uint8_t)((val % 10) | ((val / 10) % 10) * 16))
-
 __STATIC_INLINE uint8_t hdl_i2c_bm8563_build(hdl_i2c_bm8563_data_t *data, 
   uint16_t year, uint8_t month, uint8_t day, uint8_t week_day, uint8_t hour, uint8_t min, uint8_t sec) {
   if((data != NULL) && 
@@ -67,14 +65,14 @@ __STATIC_INLINE uint8_t hdl_i2c_bm8563_build(hdl_i2c_bm8563_data_t *data,
      (hour <= 23) &&
      (min < 60) &&
      (sec < 60)) {
-    data->year = TO_BCD_BYTE(year);
+    data->year = CL_TO_BCD_BYTE(year);
     data->cent = (year < 2000);
-    data->month = TO_BCD_BYTE(month);
-    data->day = TO_BCD_BYTE(day);
+    data->month = CL_TO_BCD_BYTE(month);
+    data->day = CL_TO_BCD_BYTE(day);
     data->dow = week_day % 7;
-    data->hour = TO_BCD_BYTE(hour);
-    data->min = TO_BCD_BYTE(min);
-    data->sec = TO_BCD_BYTE(sec);
+    data->hour = CL_TO_BCD_BYTE(hour);
+    data->min = CL_TO_BCD_BYTE(min);
+    data->sec = CL_TO_BCD_BYTE(sec);
     data->state = HDL_I2C_BM8563_XFER_STATE_READY;
     return HDL_TRUE;
   }

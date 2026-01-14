@@ -150,6 +150,10 @@ static hdl_module_state_t _hdl_uart(const void *desc, uint8_t enable) {
   if(enable) {
     CL_REG_SET(*rcc_en, uart->config->rcu);
     _hdl_uart_set(desc, uart->config->word_len, uart->config->baudrate, uart->config->parity, uart->config->stop_bits);
+    if(uart->config->half_duplex)
+      periph->CR3 |= USART_CR3_HDSEL;
+    else 
+      periph->CR3 &= ~USART_CR3_HDSEL;
     coroutine_add(&uart_var->worker, &_uart_worker, uart);
     uart_var->transceiver = NULL;
     uart_var->tx_byte = 0;

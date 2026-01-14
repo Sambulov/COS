@@ -12,6 +12,7 @@ typedef struct {
   hdl_uart_word_t word_len;       /* HDL_UART_WORD_8BIT, HDL_UART_WORD_9BIT */
   hdl_uart_parity_t parity;       /* HDL_UART_PARITY_NONE, HDL_UART_PARITY_ODD, HDL_UART_PARITY_EVEN */
   hdl_uart_stop_bits_t stop_bits; /* HDL_UART_STOP_BITS1, HDL_UART_STOP_BITS0_5, HDL_UART_STOP_BITS2, HDL_UART_STOP_BITS1_5 */
+  uint8_t half_duplex :1;
 } hdl_uart_config_t;
 
 /* depends on:

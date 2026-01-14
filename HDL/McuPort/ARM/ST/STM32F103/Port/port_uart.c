@@ -126,6 +126,10 @@ uint8_t _hdl_uart_set(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl
   periph->CR1 = par | wl | USART_CR1_TE | USART_CR1_RE | USART_CR1_RXNEIE | USART_CR1_PEIE | USART_CR1_IDLEIE;
   periph->CR2 = stp;
   periph->CR3 = USART_CR3_EIE;
+  if(uart->config->half_duplex)
+    periph->CR3 |= USART_CR3_HDSEL;
+  else 
+    periph->CR3 &= ~USART_CR3_HDSEL;
   periph->BRR = freq.num / (freq.denom * boud);
   CL_REG_MODIFY(periph->CR1, USART_CR1_UE, en);
   return HDL_TRUE;

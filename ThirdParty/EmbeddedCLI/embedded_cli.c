@@ -916,7 +916,7 @@ static void printBindingHelp(EmbeddedCli *cli, CliCommandBinding *binding) {
 static void initInternalBindings(EmbeddedCli *cli) {
     CliCommandBinding b = {
             "help",
-            "Print list of commands",
+            "Print list of commands, use <cmd> -h for details",
             true,
             NULL,
             onHelp
@@ -936,11 +936,11 @@ static void onHelp(EmbeddedCli *cli, char *tokens, void *context) {
 
     uint16_t tokenCount = embeddedCliGetTokenCount(tokens);
     if (tokenCount == 0) {
-        for (int i = 0; i < impl->bindingsCount; ++i) {
+        printBindingHelp(cli, &impl->bindings[0]);
+        for (int i = 1; i < impl->bindingsCount; ++i) {
             writeToOutput(cli, " * ");
             writeToOutput(cli, impl->bindings[i].name);
             writeToOutput(cli, lineBreak);
-            printBindingHelp(cli, &impl->bindings[i]);
         }
     } else if (tokenCount == 1) {
         // try find command

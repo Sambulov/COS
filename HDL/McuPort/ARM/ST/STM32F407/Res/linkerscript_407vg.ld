@@ -107,17 +107,26 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		_sbss = .;
-
 		PROVIDE(__bss_start__ = _sbss);
 		*(.bss)
 		*(.bss*)
 		*(COMMON)
 		. = ALIGN(4);
 		_ebss = .;
-
 		PROVIDE(__bss_end__ = _ebss);
 	} > SRAM
 
+	.ccm :
+	{
+		. = ALIGN(4);
+		_sccm = .;
+		PROVIDE(__ccm_start__ = _sccm);
+		*(.ccm)
+		*(.ccm*)
+		. = ALIGN(4);
+		_eccm = .;
+		PROVIDE(__ccm_end__ = _eccm);
+	} > CCMRAM
 	PROVIDE(end = .);
 	_free_ram_start = .;
 	_free_ram_end = _estack;

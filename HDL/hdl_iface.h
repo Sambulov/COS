@@ -30,6 +30,7 @@ extern "C" {
 #include "hdl_spi.h"
 #include "hdl_spi_client_sw.h"
 #include "hdl_sdio.h"
+#include "hdl_mac.h"
 #include "hdl_can.h"
 #include "hdl_button.h"
 #include "hdl_buzzer.h"
@@ -45,6 +46,7 @@ extern "C" {
 #include "xl9535.h"
 #include "ms5194t.h"
 #include "74HC595.h"
+#include "lan8742.h"
 
 //#include "smarc_carrier.h"
 //#include "smarc_module.h"

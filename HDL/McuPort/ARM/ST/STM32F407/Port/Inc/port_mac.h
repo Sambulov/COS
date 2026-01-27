@@ -3,7 +3,7 @@
 
 #include "hdl_mac.h"
 
-#define HDL_MAC_MCU_VAR_SIZE        116
+#define HDL_MAC_MCU_VAR_SIZE        120
 
 typedef struct {
   const uint8_t mac_addr[6];      /* default MAC */

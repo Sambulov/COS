@@ -3,28 +3,34 @@
 
 #include "hdl_eth_phy.h"
 
-typedef struct {
+typedef struct hdl_mac_buffer_s hdl_mac_buffer_t;
+
+struct hdl_mac_buffer_s {
   void *data;
-  uint32_t data_length;
-} hdl_mac_data_t;
+  uint32_t length;
+  hdl_mac_buffer_t *next;
+};
 
 typedef struct {
   uint8_t mac_addr[6];
   uint32_t mtu;
 } hdl_mac_config_t;
 
-typedef uint8_t (*hdl_mac_transfer_t)(const void *desc, ETH_BufferTypeDef *data, uint32_t total_len);
-typedef uint8_t (*hdl_mac_transfer2_t)(const void *desc, void **data);
+typedef uint8_t (*hdl_mac_transmit_t)(const void *desc, hdl_mac_buffer_t *data, uint32_t total_len);
+typedef uint8_t (*hdl_mac_receive_t)(const void *desc, void **data);
 typedef uint8_t (*hdl_mac_cnf_t)(const void *desc, hdl_mac_config_t *cnf);
-typedef void (*hdl_mac_force_event_t)(const void *desc);
+typedef uint8_t (*hdl_mac_get_phy_t)(const void *desc, hdl_eth_phy_t **phy);
+typedef uint8_t (*hdl_mac_buffer_cb_t)(void *context, void **buffer);
+typedef void (*hdl_mac_set_buffer_cb_t)(const void *desc, hdl_mac_buffer_cb_t cb);
 
 typedef struct {
   hdl_module_initializer_t init;
-  hdl_mac_transfer2_t receive;
-  hdl_mac_transfer_t transmit;
-  hdl_mac_cnf_t get_cnf;
+  hdl_mac_transmit_t transmit;
+  hdl_mac_receive_t receive;
+  hdl_mac_set_buffer_cb_t set_buffer_cb;
   hdl_mac_cnf_t set_cnf;
-  hdl_event_subscribtion_t subscribe;
+  hdl_mac_cnf_t get_cnf;
+  hdl_mac_get_phy_t get_phy;
 } hdl_mac_iface_t;
 
 hdl_module_new_t(hdl_mac_t, 0, void *, hdl_mac_iface_t);
@@ -34,7 +40,7 @@ __STATIC_INLINE uint8_t hdl_mac_receive(const void *desc, void **data) {
   return ((hdl_mac_t *)desc)->iface->receive(desc, data);
 }
 
-__STATIC_INLINE uint8_t hdl_mac_transmit(const void *desc, ETH_BufferTypeDef *data, uint32_t total_len) {
+__STATIC_INLINE uint8_t hdl_mac_transmit(const void *desc, hdl_mac_buffer_t *data, uint32_t total_len) {
   MODULE_ASSERT(desc, HDL_FALSE);
   return ((hdl_mac_t *)desc)->iface->transmit(desc, data, total_len);
 }
@@ -49,9 +55,14 @@ __STATIC_INLINE uint8_t hdl_mac_set_cnf(const void *desc, hdl_mac_config_t *cnf)
   return ((hdl_mac_t *)desc)->iface->set_cnf(desc, cnf);
 }
 
-__STATIC_INLINE void hdl_mac_subscribe(const void *desc, hdl_delegate_t *delegate) {
+__STATIC_INLINE uint8_t hdl_mac_get_phy(const void *desc, hdl_eth_phy_t **phy) {
+  MODULE_ASSERT(desc, HDL_FALSE);
+  return ((hdl_mac_t *)desc)->iface->get_phy(desc, phy);
+}
+
+__STATIC_INLINE void hdl_mac_set_buffer_cb(const void *desc, hdl_mac_buffer_cb_t cb) {
   MODULE_ASSERT(desc, );
-  ((hdl_mac_t *)desc)->iface->subscribe(desc, delegate);
+  ((hdl_mac_t *)desc)->iface->set_buffer_cb(desc, cb);
 }
 
 #endif /* HDL_MAC_H_ */

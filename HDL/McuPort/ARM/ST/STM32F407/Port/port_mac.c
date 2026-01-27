@@ -8,6 +8,7 @@ typedef struct {
   ETH_DMADescTypeDef *tx_desc;
   ETH_DMADescTypeDef *rx_desc;
   ETH_TxPacketConfigTypeDef tx_config;
+  hdl_mac_buffer_cb_t get_buf;
 } hdl_mac_mcu_var_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_mac_mcu_var_t, *((hdl_mac_mcu_t *)0)->obj_var, HDL_ETH_MCU_VAR_SIZE, port_mac.h);
@@ -440,11 +441,11 @@ static uint8_t _hdl_mac_get_cnf(const void *desc, hdl_mac_config_t *cnf) {
   return HDL_FALSE;
 }
 
-static uint8_t _hdl_mac_transmit(const void *desc, ETH_BufferTypeDef *data, uint32_t total_len) {
+static uint8_t _hdl_mac_transmit(const void *desc, hdl_mac_buffer_t *buf, uint32_t total_len) {
   hdl_mac_mcu_t *mac = (hdl_mac_mcu_t *)desc;
   hdl_mac_mcu_var_t *mac_var = (hdl_mac_mcu_var_t *)mac->obj_var;
   mac_var->tx_config.Length = total_len;
-  mac_var->tx_config.TxBuffer = data;
+  mac_var->tx_config.TxBuffer = (ETH_BufferTypeDef *)buf;
   /* todo */
   hmac.gState = HAL_ETH_STATE_STARTED;
   HAL_ETH_Transmit(&hmac, &mac_var->tx_config, 20);
@@ -459,10 +460,19 @@ static uint8_t _hdl_mac_receive(const void *desc, void **data) {
   return HDL_TRUE;
 }
 
-static void _hdl_mac_subscribe(const void *desc, hdl_delegate_t *delegate) {
+static uint8_t _hdl_mac_get_phy(const void *desc, hdl_eth_phy_t **phy) {
+  if(phy) {
+    hdl_mac_mcu_t *mac = (hdl_mac_mcu_t *)desc;
+    *phy = (hdl_eth_phy_t *)mac->dependencies[DEPENDENCY_PHY];
+    return HDL_TRUE;
+  }
+  return HDL_FALSE;
+}
+
+static void _hdl_mac_set_buffer_cb(const void *desc, hdl_mac_buffer_cb_t cb) {
   hdl_mac_mcu_t *mac = (hdl_mac_mcu_t *)desc;
-  hdl_eth_phy_t *phy = (hdl_eth_phy_t *)mac->dependencies[DEPENDENCY_PHY];
-  hdl_eth_phy_subscribe(phy, delegate);
+  hdl_mac_mcu_var_t *mac_var = (hdl_mac_mcu_var_t *)mac->obj_var;
+  mac_var->get_buf = cb;
 }
 
 const hdl_mac_iface_t hdl_mac_mcu_iface = {
@@ -471,5 +481,6 @@ const hdl_mac_iface_t hdl_mac_mcu_iface = {
   .receive = &_hdl_mac_receive,
   .get_cnf = &_hdl_mac_get_cnf,
   .set_cnf = &_hdl_mac_set_cnf,
-  .subscribe = &_hdl_mac_subscribe
+  .get_phy = &_hdl_mac_get_phy,
+  .set_buffer_cb = &_hdl_mac_set_buffer_cb
 };

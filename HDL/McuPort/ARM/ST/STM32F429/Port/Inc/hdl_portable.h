@@ -16,5 +16,7 @@
 #include "port_spi.h"
 #include "port_can.h"
 #include "port_sdio.h"
+#include "port_mdio.h"
+#include "port_mac.h"
 
 #endif // HDL_PORTABLE_H_

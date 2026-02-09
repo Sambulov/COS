@@ -62,13 +62,14 @@ static void _sdio_data_flow(hdl_sdio_mcu_t *sdio) {
     sdio_var->data_state = 1;
   }
   if(sdio_var->data_state == 1) {
-    if(!(phy->STA & (SDIO_STA_RXACT | SDIO_STA_TXACT))) {
+    uint32_t sta = phy->STA;
+    if(!(sta & (SDIO_STA_RXACT | SDIO_STA_TXACT)) || (sta & (SDIO_STA_RXOVERR | SDIO_STA_TXUNDERR))) {
       hdl_dma_channel_stop(sdio_dma);
-      if((phy->STA & SDIO_FLAG_DTIMEOUT) && !((phy->STA & SDIO_FLAG_DATAEND) && (phy->STA && SDIO_FLAG_DBCKEND)))
+      if((sta & SDIO_FLAG_DTIMEOUT) && !((sta & SDIO_FLAG_DATAEND) && (sta && SDIO_FLAG_DBCKEND)))
         sdio_var->data_msg->status |= HDL_SDIO_ERROR_TIMEOUT;
-      if(phy->STA & SDIO_FLAG_DCRCFAIL)
+      if(sta & SDIO_FLAG_DCRCFAIL)
         sdio_var->data_msg->status |= HDL_SDIO_ERROR_CRC;
-      if(phy->STA & (SDIO_FLAG_TXUNDERR | SDIO_FLAG_RXOVERR))
+      if(sta & (SDIO_FLAG_TXUNDERR | SDIO_FLAG_RXOVERR))
         sdio_var->data_msg->status |= HDL_SDIO_ERROR_INTERNAL;
       phy->ICR = SDIO_STATIC_DATA_FLAGS | SDIO_FLAG_STBITERR;
       CL_REG_CLEAR(phy->DCTRL, SDIO_DCTRL_DTEN);

@@ -207,8 +207,8 @@ static int8_t init_sd(hdl_sd_t *sd) {
     sd_var->fsm.sub.cmd_sent = HDL_FALSE;
   }
 
-  uint8_t cmd;
-  uint32_t arg;
+  uint8_t cmd = 0;
+  uint32_t arg = 0;
   switch (sd_var->fsm.sub.sate) {
     case SD_INIT_STATE_PREPARE:
       sd_var->fsm.sub.cmd_sent = HDL_FALSE;

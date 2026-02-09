@@ -19,7 +19,7 @@ typedef struct {
 typedef uint8_t (*hdl_mac_transmit_t)(const void *desc, hdl_mac_buffer_t *data, uint32_t total_len);
 typedef uint8_t (*hdl_mac_receive_t)(const void *desc, void **data);
 typedef uint8_t (*hdl_mac_cnf_t)(const void *desc, hdl_mac_config_t *cnf);
-typedef uint8_t (*hdl_mac_get_phy_t)(const void *desc, hdl_eth_phy_t **phy);
+typedef hdl_eth_phy_t *(*hdl_mac_get_phy_t)(const void *desc);
 typedef uint8_t (*hdl_mac_buffer_allocator_t)(void *context, void **buffer);
 typedef void (*hdl_mac_set_buffer_allocator_t)(const void *desc, hdl_mac_buffer_allocator_t allocator, void *context);
 
@@ -55,9 +55,9 @@ __STATIC_INLINE uint8_t hdl_mac_set_cnf(const void *desc, hdl_mac_config_t *cnf)
   return ((hdl_mac_t *)desc)->iface->set_cnf(desc, cnf);
 }
 
-__STATIC_INLINE uint8_t hdl_mac_get_phy(const void *desc, hdl_eth_phy_t **phy) {
-  MODULE_ASSERT(desc, HDL_FALSE);
-  return ((hdl_mac_t *)desc)->iface->get_phy(desc, phy);
+__STATIC_INLINE hdl_eth_phy_t *hdl_mac_get_phy(const void *desc) {
+  MODULE_ASSERT(desc, NULL);
+  return ((hdl_mac_t *)desc)->iface->get_phy(desc);
 }
 
 __STATIC_INLINE void hdl_mac_set_buffer_allocator(const void *desc, hdl_mac_buffer_allocator_t allocator, void *context) {

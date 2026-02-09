@@ -209,7 +209,7 @@ static EmbeddedCliConfig defaultConfig;
  */
 static const uint16_t cliInternalBindingCount = 1;
 
-static const char *lineBreak = "\r\n";
+static const char *const lineBreak = "\r\n";
 
 /* References for VT100 escape sequences: 
  * https://learn.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences 
@@ -217,22 +217,22 @@ static const char *lineBreak = "\r\n";
  */
 
 /** Escape sequence - Cursor forward (right) */
-static const char *escSeqCursorRight = "\x1B[C";
+static const char *const escSeqCursorRight = "\x1B[C";
 
 /** Escape sequence - Cursor backward (left) */
-static const char *escSeqCursorLeft = "\x1B[D";
+static const char *const escSeqCursorLeft = "\x1B[D";
 
 /** Escape sequence - Cursor save position */
-static const char *escSeqCursorSave = "\x1B[s";
+static const char *const escSeqCursorSave = "\x1B[s";
 
 /** Escape sequence - Cursor restore position */
-static const char *escSeqCursorRestore = "\x1B[u";
+static const char *const escSeqCursorRestore = "\x1B[u";
 
 /** Escape sequence - Cursor insert character (ICH) */
-static const char *escSeqInsertChar = "\x1B[@";
+static const char *const escSeqInsertChar = "\x1B[@";
 
 /** Escape sequence - Cursor delete character (DCH) */
-static const char *escSeqDeleteChar = "\x1B[P";
+static const char *const escSeqDeleteChar = "\x1B[P";
 
 /**
  * Navigate through command history back and forth. If navigateUp is true,
@@ -524,6 +524,11 @@ void embeddedCliReceiveChar(EmbeddedCli *cli, char c) {
     if (!fifoBufPush(&impl->rxBuffer, c)) {
         SET_FLAG(impl->flags, CLI_FLAG_OVERFLOW);
     }
+}
+
+void embeddedCliPopReceivedChar(EmbeddedCli *cli, char *c) {
+    PREPARE_IMPL(cli);
+    if (c) *c = fifoBufPop(&impl->rxBuffer);
 }
 
 void embeddedCliProcess(EmbeddedCli *cli) {
@@ -1281,6 +1286,7 @@ uint16_t embedded_cli_required_size(embedded_cli_config_t *config) __attribute__
 embedded_cli_t *embedded_cli_new(embedded_cli_config_t *config)    __attribute__ ((alias ("embeddedCliNew")));
 embedded_cli_t *embedded_cli_new_default(void)                     __attribute__ ((alias ("embeddedCliNewDefault")));
 void embedded_cli_receive_char(embedded_cli_t *cli, char c)        __attribute__ ((alias ("embeddedCliReceiveChar")));
+void embedded_cli_pop_received_char(embedded_cli_t *cli, char *c)  __attribute__ ((alias ("embeddedCliPopReceivedChar")));
 void embedded_cli_process(embedded_cli_t *cli)                     __attribute__ ((alias ("embeddedCliProcess")));
 bool embedded_cli_add_binding(embedded_cli_t *cli, cli_command_binding_t binding) 
                                                                    __attribute__ ((alias ("embeddedCliAddBinding")));

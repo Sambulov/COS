@@ -8,7 +8,8 @@ typedef struct {
   uint8_t tx_byte      : 1,
           half_duplex  : 1,
           transmiting  : 1,
-          receiving    : 1;
+          receiving    : 1,
+          idle         : 1;
 } hdl_uart_var_t;
 
 HDL_ASSERRT_STRUCTURE_CAST(hdl_uart_var_t, *((hdl_uart_mcu_t *)0)->obj_var, HDL_UART_VAR_SIZE, port_uart.h);
@@ -27,7 +28,11 @@ static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
   uint8_t transmit_ready = (uart_var->transceiver != NULL) &&
     (uart_var->transceiver->tx_available != NULL) &&
     ((uart_var->transceiver->tx_available(uart_var->transceiver->transmitter_context) + uart_var->tx_byte) >= _uart_word_len(periph));
-
+  if(uart_var->idle) {
+    uart_var->idle = HDL_FALSE;
+    if((uart_var->transceiver != NULL) && (uart_var->transceiver->end_of_transmission != NULL))
+      uart_var->transceiver->end_of_transmission(uart_var->transceiver->receiver_context);
+  }
   if((transmit_ready) && (!uart_var->half_duplex || !uart_var->receiving)) {
     hdl_gpio_set_active(rts);
     transmit_ready = (hdl_is_null_module(rts) || hdl_gpio_is_active(rts));
@@ -36,10 +41,11 @@ static uint8_t _uart_worker(coroutine_t *this, uint8_t cancel, void *arg) {
       CL_REG_SET(periph->CR1, USART_CR1_TXEIE);
     }
   }
-  else if (!(periph->CR1 & USART_CR1_TXEIE) && (!uart_var->transmiting || (periph->SR & USART_SR_TC))) {
-    CL_REG_CLEAR(periph->SR, USART_SR_TC);
-    uart_var->transmiting = HDL_FALSE;
-    hdl_gpio_set_inactive(rts);
+  else if (uart_var->transmiting) {
+    if (!(periph->CR1 & USART_CR1_TXEIE) && (periph->SR & USART_SR_TC)) {
+      uart_var->transmiting = HDL_FALSE;
+      hdl_gpio_set_inactive(rts);
+    }
   }
   return cancel;
 }
@@ -48,7 +54,6 @@ static void _rst_uart_status(USART_TypeDef *uart) {
 	__IO uint32_t tmpreg;
 	tmpreg = uart->SR;
 	tmpreg = uart->DR;
-  uart->SR = ~USART_SR_TC;
 	(void)tmpreg;
 }
 
@@ -58,16 +63,11 @@ static void event_uart_isr(void *event, void *sender, void *context) {
   hdl_uart_var_t *uart_var = (hdl_uart_var_t *)uart->obj_var;
   USART_TypeDef *periph = (USART_TypeDef *)uart->config->phy;
   uint8_t wl = _uart_word_len(periph);
-  
-	if (periph->SR & USART_SR_IDLE) {
-    //(void)periph->DR; /* dummy read */
-    _rst_uart_status(periph);
-    if((uart_var->transceiver != NULL) && (uart_var->transceiver->end_of_transmission != NULL))
-        uart_var->transceiver->end_of_transmission(uart_var->transceiver->receiver_context);
-    uart_var->receiving = HDL_FALSE;
-	}
+  uint32_t status = periph->SR;
+  uint16_t data = periph->DR;
+
   ///* UART in mode Transmitter ------------------------------------------------*/
-  if ((periph->CR1 & USART_CR1_TXEIE) && (periph->SR & USART_SR_TXE)) {
+  if ((periph->CR1 & USART_CR1_TXEIE) && (status & USART_SR_TXE)) {
     int32_t len = 0;
     if((uart_var->transceiver != NULL) &&
        (uart_var->transceiver->tx_empty != NULL))
@@ -85,16 +85,18 @@ static void event_uart_isr(void *event, void *sender, void *context) {
       CL_REG_CLEAR(periph->CR1, USART_CR1_TXEIE);
   }
   /* UART in mode Receiver ---------------------------------------------------*/
-  if (periph->SR & USART_SR_RXNE) {
-    uint16_t data = periph->DR;
-    if(!uart_var->half_duplex || !uart_var->transmiting) {
-      uart_var->receiving = HDL_TRUE;
+  if (status & USART_SR_RXNE) {
+    uart_var->receiving = !uart_var->half_duplex || !uart_var->transmiting;
+    if(uart_var->receiving) {
       if (uart_var->transceiver && uart_var->transceiver->rx_data)
         uart_var->transceiver->rx_data(uart_var->transceiver->receiver_context, (uint8_t *)&data, wl);
     }
   }
-  if (periph->SR & (USART_SR_NE | USART_SR_FE | USART_SR_ORE | USART_SR_PE))
-    _rst_uart_status(periph);
+  if (status & USART_SR_IDLE) {
+    uart_var->idle = HDL_TRUE;
+    uart_var->receiving = HDL_FALSE;
+	}
+  //if (status & (USART_SR_NE | USART_SR_FE | USART_SR_ORE | USART_SR_PE))
 }
 
 uint8_t _hdl_uart_set(const void *desc, hdl_uart_word_t bits, uint32_t boud, hdl_uart_parity_t parity, hdl_uart_stop_bits_t stop) {

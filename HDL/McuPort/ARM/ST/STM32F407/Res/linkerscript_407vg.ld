@@ -116,6 +116,11 @@ SECTIONS
 		PROVIDE(__bss_end__ = _ebss);
 	} > SRAM
 
+	PROVIDE(end = .);
+	_free_ram_start = .;
+	_free_ram_end = _estack;
+	_free_ram_size = _free_ram_end - _free_ram_start;
+
 	.ccm :
 	{
 		. = ALIGN(4);
@@ -127,8 +132,4 @@ SECTIONS
 		_eccm = .;
 		PROVIDE(__ccm_end__ = _eccm);
 	} > CCMRAM
-	PROVIDE(end = .);
-	_free_ram_start = .;
-	_free_ram_end = _estack;
-	_free_ram_size = _free_ram_end - _free_ram_start;
 }

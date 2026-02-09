@@ -257,6 +257,14 @@ EmbeddedCli *embeddedCliNewDefault(void);
 void embeddedCliReceiveChar(EmbeddedCli *cli, char c);
 
 /**
+ * Pop received character from internal buffer
+ * You can call this function from command hundler for user input processing
+ * @param cli
+ * @param c 
+ */
+void embeddedCliPopReceivedChar(EmbeddedCli *cli, char *c);
+
+/**
  * Process rx/tx buffers. Command callbacks are called from here
  * @param cli
  */
@@ -348,6 +356,7 @@ uint16_t embedded_cli_required_size(embedded_cli_config_t *config);
 embedded_cli_t *embedded_cli_new(embedded_cli_config_t *config);
 embedded_cli_t *embedded_cli_new_default(void);
 void embedded_cli_receive_char(embedded_cli_t *cli, char c);
+void embedded_cli_pop_received_char(embedded_cli_t *cli, char *c);
 void embedded_cli_process(embedded_cli_t *cli);
 bool embedded_cli_add_binding(embedded_cli_t *cli, cli_command_binding_t binding);
 void embedded_cli_print(embedded_cli_t *cli, const char *string);

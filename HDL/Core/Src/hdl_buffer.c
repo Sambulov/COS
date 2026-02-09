@@ -12,31 +12,20 @@ HDL_ASSERRT_STRUCTURE_CAST(hdl_isr_buffer_private_t, hdl_isr_buffer_t, HDL_ISR_B
 
 int32_t hdl_isr_buffer_rx_cb_t (void *proto, uint8_t *data, uint16_t count) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)proto;
+  uint16_t i = count;
   if(buf->private.rx_buf.pucBuffer != NULL) {
-    uint16_t i = count;
-    while (i--) {
-      scb_push(&buf->private.rx_buf, *data);
-      data++;
-    }
+    while (i-- && scb_push(&buf->private.rx_buf, *data++));
   }
-  return count;
+  return count - i;
 }
 
 int32_t hdl_isr_buffer_tx_cb_t (void *proto, uint8_t *data, uint16_t count) {
   hdl_isr_buffer_private_t *buf = (hdl_isr_buffer_private_t*)proto;
+  uint16_t i = count;
   if(buf->private.tx_buf.pucBuffer != NULL) {
-    uint16_t av = scb_available(&buf->private.tx_buf);
-    count = CL_MIN(count, av);
-    uint16_t i = count;
-    while (i--) {
-      *data = scb_pop(&buf->private.tx_buf);
-      data++;
-    }
+    while (i-- && scb_pop(&buf->private.tx_buf, data++));
   }
-  else {
-    count = 0;
-  }
-  return count;
+  return count - i;
 }
 
 int32_t hdl_isr_buffer_rx_av(void *proto) {
@@ -88,8 +77,7 @@ uint16_t hdl_isr_buffer_read(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t len
   lenght = CL_MIN(lenght, available);
   available = lenght;
   while (available--) {
-    *data = scb_pop(&buf->private.rx_buf);
-    data++;
+    scb_pop(&buf->private.rx_buf, data++);
   }
   return lenght;
 }
@@ -100,7 +88,7 @@ uint16_t hdl_isr_buffer_write(hdl_isr_buffer_t *desc, uint8_t *data, uint16_t le
   lenght = CL_MIN(lenght, available);
   available = lenght;
   while (available--) {
-    scb_push(&buf->private.tx_buf, *data);
+    scb_push(&buf->private.tx_buf, *data++);
     data++;
   }
   return lenght;

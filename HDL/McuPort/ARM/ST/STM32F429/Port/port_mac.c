@@ -456,17 +456,12 @@ static uint8_t _hdl_mac_receive(const void *desc, void **data) {
   (void)desc;
   /* todo */
   hmac.gState = HAL_ETH_STATE_STARTED;
-  HAL_ETH_ReadData(&hmac, data);
-  return HDL_TRUE;
+  return HAL_ETH_ReadData(&hmac, data) == HAL_OK;
 }
 
-static uint8_t _hdl_mac_get_phy(const void *desc, hdl_eth_phy_t **phy) {
-  if(phy) {
-    hdl_mac_mcu_t *mac = (hdl_mac_mcu_t *)desc;
-    *phy = (hdl_eth_phy_t *)mac->dependencies[DEPENDENCY_PHY];
-    return HDL_TRUE;
-  }
-  return HDL_FALSE;
+static hdl_eth_phy_t *_hdl_mac_get_phy(const void *desc) {
+  hdl_mac_mcu_t *mac = (hdl_mac_mcu_t *)desc;
+  return (hdl_eth_phy_t *)mac->dependencies[DEPENDENCY_PHY];
 }
 
 static void _hdl_mac_set_buffer_allocator(const void *desc, hdl_mac_buffer_allocator_t allocator, void *context) {

@@ -2,9 +2,12 @@
 #define HDL_GPIO_H_
 
 typedef enum {
-  HDL_GPIO_LOW = 0,
-  HDL_GPIO_HIGH = !HDL_GPIO_LOW,
-  HDL_GPIO_HIGH_Z = -1
+  HDL_GPIO_LOW       = 0,
+  HDL_GPIO_HIGH      = !HDL_GPIO_LOW,
+  HDL_GPIO_HIGH_Z    = -1,
+  HDL_GPIO_OPEN      = HDL_GPIO_LOW,
+  HDL_GPIO_CLOSED    = HDL_GPIO_HIGH,
+  HDL_GPIO_UNDEFINED = HDL_GPIO_HIGH_Z,
 } hdl_gpio_state;
 
 _Static_assert(((HDL_GPIO_LOW == !HDL_GPIO_HIGH) && (HDL_GPIO_HIGH == !HDL_GPIO_LOW)), "Expression (HDL_GPIO_LOW == !HDL_GPIO_HIGH) must always be true");

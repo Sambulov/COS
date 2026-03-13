@@ -13,6 +13,10 @@ endif()
 if(POLICY CMP0181)
   cmake_policy(SET CMP0181 NEW)
 endif()
+if(POLICY CMP0126)
+  cmake_policy(SET CMP0126 NEW)
+endif()
+
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/Projects")
 add_subdirectory("${CMAKE_SOURCE_DIR}/HDL")

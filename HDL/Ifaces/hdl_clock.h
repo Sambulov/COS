@@ -1,10 +1,7 @@
 #ifndef HDL_CLK_SOURCE_H_
 #define HDL_CLK_SOURCE_H_
 
-typedef struct {
-  uint32_t num;                   /* frequency numerator  */
-  uint32_t denom;                 /* frequency denominator */
-} hdl_clock_freq_t;
+typedef decimal32_t hdl_clock_freq_t;
 
 typedef uint8_t (*hdl_clock_get_t)(const void *, hdl_clock_freq_t *);
 
@@ -20,7 +17,7 @@ __STATIC_INLINE uint8_t hdl_clock_get(const void *desc, hdl_clock_freq_t *out_fr
   return ((hdl_clock_t *)desc)->iface->get(desc, out_freq);
 }
 
-void hdl_clock_calc_mul(hdl_clock_freq_t *in, int32_t factor, hdl_clock_freq_t *out);
-void hdl_clock_calc_div(hdl_clock_freq_t *in, int32_t factor, hdl_clock_freq_t *out);
+void hdl_clock_calc_mul(hdl_clock_freq_t *in, uint32_t factor, hdl_clock_freq_t *out);
+void hdl_clock_calc_div(hdl_clock_freq_t *in, uint32_t factor, hdl_clock_freq_t *out);
 
 #endif // HDL_CLK_SOURCE_H_

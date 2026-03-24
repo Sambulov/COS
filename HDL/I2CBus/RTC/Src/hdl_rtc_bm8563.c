@@ -65,15 +65,15 @@ static uint8_t _bm8563_responce_awaiting(coroutine_t *this, uint8_t cancel, void
   if(!(state & HDL_I2C_MEM_BUSY)) {
     hdl_rtc_event_trigger_t trigger = {
       .date_time = {
-        .day = bm8563_var->dt.day,
-        .hours = bm8563_var->dt.hour,
-        .minutes = bm8563_var->dt.min,
-        .month = bm8563_var->dt.month,
-        .seconds = bm8563_var->dt.sec,
+        .day = CL_FROM_BCD_BYTE(bm8563_var->dt.day),
+        .hours = CL_FROM_BCD_BYTE(bm8563_var->dt.hour),
+        .minutes = CL_FROM_BCD_BYTE(bm8563_var->dt.min),
+        .month = CL_FROM_BCD_BYTE(bm8563_var->dt.month),
+        .seconds = CL_FROM_BCD_BYTE(bm8563_var->dt.sec),
         .time_zone_hours = 0,
         .time_zone_minutes = 0,
-        .week_day = bm8563_var->dt.dow,
-        .year = bm8563_var->dt.year
+        .week_day = CL_FROM_BCD_BYTE(bm8563_var->dt.dow),
+        .year = CL_FROM_BCD_BYTE(bm8563_var->dt.year)
       },
       .sync_status = HDL_RTC_DATE_TIME_READED
     };
@@ -125,7 +125,8 @@ static hdl_module_state_t _hdl_rtc_bm8563(const void *desc, uint8_t enable) {
 static uint8_t _hdl_rtc_sync(const void *desc, const hdl_datetime_t *dt) {
   hdl_rtc_bm8563_t *bm8563 = (hdl_rtc_bm8563_t *)desc;
   hdl_rtc_bm8563_var_t *bm8563_var = (hdl_rtc_bm8563_var_t *)bm8563->obj_var;
-  if(bm8563_var->sync) return HDL_FALSE;
+  if(bm8563_var->sync || (hdl_module_state(desc) != HDL_MODULE_ACTIVE)) 
+    return HDL_FALSE;
   bm8563_var->sync = bm8563_var->sync_read = (dt == NULL);
   if(!bm8563_var->sync_read) {
     bm8563_var->sync = _rtc_bm8563_build(&bm8563_var->dt, 

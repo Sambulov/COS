@@ -63,7 +63,7 @@ static hdl_module_state_t _hdl_gpio_pin(const void *desc, const uint8_t enable){
     uint32_t mask_2bits = 0x3 * offset_2bits;
     CL_REG_MODIFY(port->OSPEEDR, mask_2bits, hwc->ospeed * offset_2bits);
     CL_REG_MODIFY(port->PUPDR, mask_2bits, hwc->pull * offset_2bits);
-    CL_REG_MODIFY(port->OTYPER, gpio->config->pin, hwc->otype);
+    CL_REG_MODIFY(port->OTYPER, gpio->config->pin, hwc->otype * gpio->config->pin);
     _set_gpio_af(gpio, hwc->af);
     CL_REG_MODIFY(port->MODER, mask_2bits, hwc->mode * offset_2bits);
   }
@@ -72,7 +72,6 @@ static hdl_module_state_t _hdl_gpio_pin(const void *desc, const uint8_t enable){
     CL_REG_CLEAR(port->MODER, 0x03 << (gpio->config->pin * gpio->config->pin));
     return HDL_MODULE_UNLOADED;
   }
-
   return HDL_MODULE_ACTIVE;
 }
 

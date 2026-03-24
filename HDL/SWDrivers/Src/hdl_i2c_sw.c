@@ -60,7 +60,8 @@ static uint8_t _sw_i2c_start(hdl_i2c_t *i2c) {
 
 uint8_t _sw_i2c_stop_handler(hdl_i2c_t *i2c) {
   hdl_i2c_sw_var_t *i2c_var = (hdl_i2c_sw_var_t *)i2c->obj_var;
-  if(i2c_var->message->options & HDL_I2C_MESSAGE_STOP) {
+  if((i2c_var->message->options & HDL_I2C_MESSAGE_STOP) || 
+     ((i2c_var->message->status & HDL_I2C_MESSAGE_FAULT_MASK))) {
     hdl_gpio_pin_t *scl = (hdl_gpio_pin_t *)i2c->dependencies[0];
     hdl_gpio_pin_t *sda = (hdl_gpio_pin_t *)i2c->dependencies[1];
     hdl_gpio_set_active(sda);

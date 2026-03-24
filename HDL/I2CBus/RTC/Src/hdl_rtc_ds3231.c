@@ -65,15 +65,15 @@ static uint8_t _ds3231_responce_awaiting(coroutine_t *this, uint8_t cancel, void
   if(!(state & HDL_I2C_MEM_BUSY)) {
     hdl_rtc_event_trigger_t trigger = {
       .date_time = {
-        .day = ds3231_var->dt.day,
-        .hours = ds3231_var->dt.hour,
-        .minutes = ds3231_var->dt.min,
-        .month = ds3231_var->dt.month,
-        .seconds = ds3231_var->dt.sec,
+        .day = CL_FROM_BCD_BYTE(ds3231_var->dt.day),
+        .hours = CL_FROM_BCD_BYTE(ds3231_var->dt.hour),
+        .minutes = CL_FROM_BCD_BYTE(ds3231_var->dt.min),
+        .month = CL_FROM_BCD_BYTE(ds3231_var->dt.month),
+        .seconds = CL_FROM_BCD_BYTE(ds3231_var->dt.sec),
         .time_zone_hours = 0,
         .time_zone_minutes = 0,
         .week_day = ds3231_var->dt.dow,
-        .year = ds3231_var->dt.year
+        .year = CL_FROM_BCD_BYTE(ds3231_var->dt.year)
       },
       .sync_status = HDL_RTC_DATE_TIME_READED
     };
@@ -125,7 +125,8 @@ static hdl_module_state_t _hdl_rtc_ds3231(const void *desc, uint8_t enable) {
 static uint8_t _hdl_rtc_sync(const void *desc, const hdl_datetime_t *dt) {
   hdl_rtc_ds3231_t *ds3231 = (hdl_rtc_ds3231_t *)desc;
   hdl_rtc_ds3231_var_t *ds3231_var = (hdl_rtc_ds3231_var_t *)ds3231->obj_var;
-  if(ds3231_var->sync) return HDL_FALSE;
+  if(ds3231_var->sync || (hdl_module_state(desc) != HDL_MODULE_ACTIVE)) 
+    return HDL_FALSE;
   ds3231_var->sync = ds3231_var->sync_read = (dt == NULL);
   if(!ds3231_var->sync_read) {
     ds3231_var->sync = _rtc_ds3231_build(&ds3231_var->dt, 

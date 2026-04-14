@@ -4,7 +4,7 @@
 typedef uint8_t (* hdl_meter_get_t)(const void *desc);
 
 typedef enum {
-  HDL_METER_MEASURE_COMPLETE,
+  HDL_METER_MEASURE_OK,
   HDL_METER_MEASURE_FAULT,
 } hdl_meter_measure_status_t;
 

@@ -4,6 +4,7 @@ typedef struct {
   //hdl_delegate_t can_err_isr;
   hdl_can_message_t *msg[3];
   hdl_can_message_t msg_buf;
+  uint8_t msg_payload[8];
   hdl_event_t event;
   coroutine_t worker;
   uint8_t init_begin    : 1,
@@ -48,7 +49,9 @@ static uint8_t _hdl_can_init(CAN_TypeDef *periph, const hdl_can_mcu_config_t *co
 }
 
 static uint8_t can_receive(CAN_TypeDef *can, hdl_can_message_t *msg) {
-  if(!(can->RF0R & CAN_RF0R_FMP0)) return HDL_FALSE;  /* Check pending message */
+  if(!(can->RF0R & CAN_RF0R_FMP0)) 
+    return HDL_FALSE;  /* Check pending message */
+  msg->status = HDL_CAN_MESSAGE_STATUS_RECEIVED;
   msg->options = 0;
   msg->id = (can->sFIFOMailBox[0].RIR >> 21U) & HDL_CAN_ID_MASK;
   if(CAN_RI0R_IDE & can->sFIFOMailBox[0].RIR) {
@@ -69,7 +72,7 @@ static uint8_t can_transmit(CAN_TypeDef *can, hdl_can_var_t *can_var) {
   for(uint32_t i = 0; i < 3; i++) {
     hdl_can_message_t *msg = can_var->msg[i];
     if(msg != NULL) {
-      if(msg->status == HDL_CAN_MESSAGE_STATUS_INITIAL) {
+      if(msg->status == HDL_CAN_MESSAGE_STATUS_ENQUEUED) {
         /* Set up the Id */
         can->sTxMailBox[i].TIR &= CAN_TI0R_TXRQ;
         if (msg->options & HDL_CAN_MESSAGE_IDE) can->sTxMailBox[i].TIR |= (msg->id << 3U) | CAN_TI0R_IDE;
@@ -83,14 +86,16 @@ static uint8_t can_transmit(CAN_TypeDef *can, hdl_can_var_t *can_var) {
         can->sTxMailBox[i].TDHR = ((uint32_t *)msg->payload)[1];
         /* Request transmission */
         can->sTxMailBox[i].TIR |= CAN_TI0R_TXRQ;
-        can_var->msg[i]->status |= HDL_CAN_MESSAGE_STATUS_PENDING;
+        can_var->msg[i]->status |= HDL_CAN_MESSAGE_STATUS_TRANSMITTING;
+        hdl_event_raise(&can_var->event, can, can_var->msg[i]);
       }
       // todo: timeout
       if(can->TSR & (CAN_TSR_TME0 << i)) {
         msg->status = HDL_CAN_MESSAGE_STATUS_COMPLETE;
-        if(can->TSR & (CAN_TSR_TERR0 << (4 * i))) msg->status |= HDL_CAN_MESSAGE_FAULT_XFER_ERROR;
+        if(can->TSR & (CAN_TSR_TERR0 << (4 * i))) msg->status |= HDL_CAN_MESSAGE_FAULT_INTERNAL_ERROR;
         if(can->TSR & (CAN_TSR_ALST0 << (4 * i))) msg->status |= HDL_CAN_MESSAGE_FAULT_ARBITRATION_LOST;
         can->TSR |= (CAN_TSR_RQCP0 << (4 * i));
+        hdl_event_raise(&can_var->event, can, can_var->msg[i]);
         can_var->msg[i] = NULL;
       }
     }
@@ -108,6 +113,7 @@ static uint8_t _can_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     for(uint32_t i = 0; i < 3; i++) {
       if(can_var->msg[i] != NULL) {
         can_var->msg[i]->status = HDL_CAN_MESSAGE_FAULT_ABORT | HDL_CAN_MESSAGE_STATUS_COMPLETE;
+        hdl_event_raise(&can_var->event, can, can_var->msg[i]);
         can_var->msg[i] = NULL;
       }
     }
@@ -119,8 +125,10 @@ static uint8_t _can_worker(coroutine_t *this, uint8_t cancel, void *arg) {
     can_var->reset         = 0;
   }
   if(can_var->init_complete) {
-    if(can_receive(periph, &can_var->msg_buf)) hdl_event_raise(&can_var->event, can, &can_var->msg_buf);
-    //if(can_error(periph))  hdl_event_raise(&can_var->event, can, HDL_CAN_EVENT_ERR);
+    if(can_receive(periph, &can_var->msg_buf)) 
+      hdl_event_raise(&can_var->event, can, &can_var->msg_buf);
+    //if(can_error(periph))  
+    //  hdl_event_raise(&can_var->event, can, HDL_CAN_EVENT_ERR);
     can_transmit(periph, can_var);
   }
   else {
@@ -276,6 +284,11 @@ static uint8_t _hdl_can_transmit(const void *desc, hdl_can_message_t *message) {
   hdl_can_var_t *can_var = (hdl_can_var_t *)can->obj_var;
   CAN_TypeDef *periph = (CAN_TypeDef *)can->config->phy;
   if(!can_var->init_complete || can_var->reset) return HDL_FALSE;
+  if((message->options & HDL_CAN_MESSAGE_FD) || (message->dlc > 8)) {
+    message->status = HDL_CAN_MESSAGE_STATUS_COMPLETE | HDL_CAN_MESSAGE_FAULT_UNSUPPRTED;
+    hdl_event_raise(&can_var->event, can, message);
+    return HDL_FALSE;
+  }
   hdl_can_message_t **slot = NULL;
   for(uint32_t i = 0; i < 3; i++) {
     if(!slot && (periph->TSR & (CAN_TSR_TME0 << i)) && (can_var->msg[i] == NULL)) 
@@ -285,7 +298,8 @@ static uint8_t _hdl_can_transmit(const void *desc, hdl_can_message_t *message) {
   }
   if(slot) {
     *slot = message;
-    message->status = HDL_CAN_MESSAGE_STATUS_INITIAL;
+    message->status = HDL_CAN_MESSAGE_STATUS_ENQUEUED;
+    hdl_event_raise(&can_var->event, can, message);
     return HDL_TRUE;
   }
   return HDL_FALSE;
@@ -299,6 +313,7 @@ static uint8_t _hdl_can_cancel(const void *desc, hdl_can_message_t *message) {
     if(can_var->msg[i] == message) {
       can_var->msg[i]->status = HDL_CAN_MESSAGE_FAULT_ABORT | HDL_CAN_MESSAGE_STATUS_COMPLETE;
       periph->TSR |= (CAN_TSR_ABRQ0 << (8 * i));
+      hdl_event_raise(&can_var->event, can, can_var->msg[i]);
       can_var->msg[i] = NULL;
       break;
     }

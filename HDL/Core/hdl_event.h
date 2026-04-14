@@ -11,5 +11,6 @@ typedef void (*hdl_event_subscribtion_t)(const void *desc, hdl_delegate_t *deleg
 #define hdl_event_subscribe event_subscribe
 #define hdl_event_unsubscribe event_unsubscribe
 #define hdl_event_raise event_raise
+#define hdl_event_clear event_clear
 
 #endif // HDL_EVENT_H_

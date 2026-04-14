@@ -47,6 +47,8 @@ extern "C" {
 #include "hdl_i2c_lis2dh12.h"
 #include "hdl_sd.h"
 #include "hdl_eeprom_i2c.h"
+
+#include "hdl_transport.h"
 #include "w25xx.h"
 #include "xl9535.h"
 #include "ms5194t.h"

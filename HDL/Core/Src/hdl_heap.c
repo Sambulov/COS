@@ -25,18 +25,24 @@ void _hdl_heap_init() {
   }
 }
 
-uint8_t _hdl_try_alloc(hdl_mem_block_t *block, uint32_t size) {
+uint8_t _hdl_try_alloc(hdl_mem_block_t *free_block, uint32_t size) {
   size = (size + 3) & ~0x3UL;
-  if(block->size > size) {
-    if(block->size > (size + 2 * sizeof(hdl_mem_block_t))) {
-      uint32_t block_size = size + sizeof(hdl_mem_block_t);
-      hdl_mem_block_t *split = (hdl_mem_block_t *)(((uint32_t)block) + block_size);
-      split->size = block->size - block_size;
-      block->size = block_size | OCCUPIED_BLOCK_FLAG;
-      void *addr = block->address;
-      block->address = split;
+  if(free_block->size > size) {
+    if(free_block->size > (size + 2 * sizeof(hdl_mem_block_t))) {
+      uint32_t alloc_size = size + sizeof(hdl_mem_block_t);
+      hdl_mem_block_t *split = (hdl_mem_block_t *)(((uint32_t)free_block) + alloc_size);
+      void *addr = free_block->address;
       split->address = addr;
+      split->size = free_block->size - alloc_size;
+      free_block->address = split;
+      free_block->size = alloc_size;
     }
+    else 
+    {
+      __NOP();
+      /* code */
+    }
+    free_block->size |= OCCUPIED_BLOCK_FLAG;
     return HDL_TRUE;
   }
   return HDL_FALSE;

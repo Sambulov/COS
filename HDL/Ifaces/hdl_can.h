@@ -5,33 +5,43 @@
 #define HDL_CAN_IDE_MASK                 0x1FFFFFFFUL
 
 typedef enum {
-  HDL_CAN_MESSAGE_STATUS_INITIAL         = 0x00,
-  HDL_CAN_MESSAGE_STATUS_PENDING         = 0x01,
-  HDL_CAN_MESSAGE_STATUS_NACK            = 0x02,
+  HDL_CAN_MESSAGE_STATUS_RECEIVED        = 0x00,
+  HDL_CAN_MESSAGE_STATUS_ENQUEUED        = 0x01,
+  HDL_CAN_MESSAGE_STATUS_TRANSMITTING    = 0x02,
+  HDL_CAN_MESSAGE_STATUS_NACK            = 0x04,
+  HDL_CAN_MESSAGE_STATUS_COMPLETE        = 0x08,
   HDL_CAN_MESSAGE_FAULT_ABORT            = 0x10,
   HDL_CAN_MESSAGE_FAULT_ARBITRATION_LOST = 0x20,
-  HDL_CAN_MESSAGE_FAULT_XFER_ERROR       = 0x70,
-  HDL_CAN_MESSAGE_STATUS_COMPLETE        = 0x80
+  HDL_CAN_MESSAGE_FAULT_UNSUPPRTED       = 0x40,
+  HDL_CAN_MESSAGE_FAULT_INTERNAL_ERROR   = 0x80,
+  HDL_CAN_MESSAGE_FAULT_ERROR_MASK       = 0xF0
 } hdl_can_message_status_t;
 
 typedef enum {
   HDL_CAN_MESSAGE_IDE               = 0x01, /* Extended ID 29-bits */
   HDL_CAN_MESSAGE_RTR               = 0x02, /* Remote Transmission Request */
-  /* TODO: CAN FD OPTIONS */
+  HDL_CAN_MESSAGE_FD                = 0x04, /* FD frame */
 } hdl_can_message_options_t;
 
 typedef struct {
-  uint8_t dlc;         /* Data Length Code 0..8 */
-  hdl_can_message_status_t status;
+  uint8_t dlc;        /* Data Length Code 
+                         Standart: 0..8; 
+                         FD: 9-12B; 10-16B; 11-20B; 12-24B; 13-36B; 14-48B; 15-64B */
   hdl_can_message_options_t options;
-  uint32_t id;
-  uint8_t payload[8];
+  hdl_can_message_status_t status;
+  uint32_t id;        /* 11 or (IDE)29 bits */
+  uint8_t payload[];  /* Data 0..64 */
 } hdl_can_message_t;
 
 typedef struct {
-  hdl_can_message_t base;
-  uint8_t payload[56];
-} hdl_can_fd_message_t;
+  hdl_can_message_t std;
+  uint8_t payload[8];
+} hdl_can_message_std_t;
+
+typedef struct {
+  hdl_can_message_t fd;
+  uint8_t payload[64];
+} hdl_can_message_fd_t;
 
 typedef struct {
   uint32_t id;
@@ -64,7 +74,7 @@ __STATIC_INLINE uint8_t hdl_can_transmit(const void *desc, hdl_can_message_t *me
 }
 
 __STATIC_INLINE uint8_t hdl_can_cancel(const void *desc, hdl_can_message_t *message) {
-  MODULE_ASSERT(desc, HDL_FALSE);
+  MODULE_ASSERT(desc, HDL_TRUE);
   return ((hdl_can_t *)desc)->iface->cancel(desc, message);
 }
 

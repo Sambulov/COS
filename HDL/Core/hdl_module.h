@@ -38,6 +38,10 @@ typedef struct {
     const config_t config; \
   } name;
 
+#define hdl_module_full_size(mod_type)          (sizeof(mod_type) + sizeof(*((mod_type *)0)->mod_var) + sizeof(*((mod_type *)0)->obj_var))
+#define hdl_module_sizeof_mod_var(mod_type)     (sizeof(*((mod_type *)0)->mod_var))
+#define hdl_module_sizeof_obj_var(mod_type)     (sizeof(*((mod_type *)0)->obj_var))
+
 #define MODULE_ASSERT(desc, err_res)        if(!(desc) || hdl_is_null_module(desc) || (hdl_state(desc) == HDL_MODULE_FAULT)) return err_res;
 #define MODULE_ASSERT_FAST(desc, err_res)   if(!(desc) || hdl_is_null_module(desc)) return err_res;
 

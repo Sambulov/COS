@@ -34,12 +34,12 @@ typedef struct {
 } hdl_can_message_t;
 
 typedef struct {
-  hdl_can_message_t std;
+  hdl_can_message_t hdr;
   uint8_t payload[8];
 } hdl_can_message_std_t;
 
 typedef struct {
-  hdl_can_message_t fd;
+  hdl_can_message_t hdr;
   uint8_t payload[64];
 } hdl_can_message_fd_t;
 

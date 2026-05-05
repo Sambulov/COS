@@ -10,15 +10,34 @@ import sys
 import tempfile
 import time
 import logging
+import threading
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class OpenOCDManager:
-    def __init__(self):
+    def __init__(self, log_file=None):
         self.process = None
         self.temp_dir = None
         self.running = False
+        self.log_file = log_file
+        self.stdout_thread = None
+        self.stderr_thread = None
+        self.stop_logging = threading.Event()
+
+    def _log_output(self, stream, stream_name):
+        """Читает поток и выводит в лог/консоль."""
+        for line in iter(stream.readline, ''):
+            if self.stop_logging.is_set():
+                break
+            if line.strip():
+                # Выводим в консоль сервера
+                logger.info(f"[OpenOCD-{stream_name}] {line.rstrip()}")
+                # Если указан файл, пишем туда
+                if self.log_file:
+                    with open(self.log_file, 'a', encoding='utf-8') as f:
+                        f.write(f"[{stream_name}] {line}")
+        stream.close()
 
     def start_openocd(self, files):
         if self.running and self.process and self.process.poll() is None:
@@ -43,20 +62,45 @@ class OpenOCDManager:
             for cfg in file_paths:
                 cmd.extend(['-f', cfg])
             logger.info(f"Starting OpenOCD: {' '.join(cmd)}")
+            
+            # Запускаем процесс с PIPE для захвата вывода
             self.process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                bufsize=1  # построчный буфер
             )
+            
+            # Сбрасываем флаг остановки логов
+            self.stop_logging.clear()
+            
+            # Запускаем потоки для чтения stdout и stderr
+            self.stdout_thread = threading.Thread(
+                target=self._log_output,
+                args=(self.process.stdout, 'stdout'),
+                daemon=True
+            )
+            self.stderr_thread = threading.Thread(
+                target=self._log_output,
+                args=(self.process.stderr, 'stderr'),
+                daemon=True
+            )
+            self.stdout_thread.start()
+            self.stderr_thread.start()
+            
+            # Даём немного времени на запуск
             time.sleep(1.0)
             retcode = self.process.poll()
             if retcode is not None:
-                _, stderr = self.process.communicate()
-                error_msg = stderr.strip() if stderr else "OpenOCD exited immediately"
-                logger.error(f"OpenOCD failed: {error_msg}")
+                # Процесс завершился - ошибка
+                self.stop_logging.set()
+                self.stdout_thread.join(timeout=1)
+                self.stderr_thread.join(timeout=1)
+                # stderr уже выведен через _log_output, но можно добавить финальную ошибку
                 self._cleanup()
-                return False, f"OpenOCD launch failed: {error_msg}"
+                return False, "OpenOCD exited immediately (see logs above)"
+            
             self.running = True
             return True, "OpenOCD started successfully"
         except FileNotFoundError:
@@ -80,6 +124,14 @@ class OpenOCDManager:
                     logger.warning("Force killing OpenOCD")
                     self.process.kill()
                     self.process.wait()
+            
+            # Останавливаем потоки чтения логов
+            self.stop_logging.set()
+            if self.stdout_thread and self.stdout_thread.is_alive():
+                self.stdout_thread.join(timeout=2)
+            if self.stderr_thread and self.stderr_thread.is_alive():
+                self.stderr_thread.join(timeout=2)
+                
             self._cleanup()
             return True, "OpenOCD stopped"
         except Exception as e:
@@ -90,9 +142,16 @@ class OpenOCDManager:
     def _cleanup(self):
         if self.temp_dir and os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir, ignore_errors=True)
+        if self.process:
+            if self.process.stdout:
+                self.process.stdout.close()
+            if self.process.stderr:
+                self.process.stderr.close()
         self.process = None
         self.temp_dir = None
         self.running = False
+        self.stdout_thread = None
+        self.stderr_thread = None
 
 def recv_exact(sock, num_bytes):
     data = b''
@@ -142,7 +201,6 @@ def handle_client(conn, manager):
         conn.close()
 
 def parse_address(addr_str, default_host='127.0.0.1', default_port=12345):
-    """Разбирает строку вида host:port. Если порт не указан, используется default_port."""
     if ':' in addr_str:
         host, port_str = addr_str.rsplit(':', 1)
         try:
@@ -158,15 +216,18 @@ def main():
     parser = argparse.ArgumentParser(description="OpenOCD Control Server")
     parser.add_argument('--address', default='127.0.0.1:12345',
                         help='Bind address in format ip:port (default: 127.0.0.1:12345)')
+    parser.add_argument('--log-file', help='File to write OpenOCD output (optional)')
     args = parser.parse_args()
 
     host, port = parse_address(args.address)
-    manager = OpenOCDManager()
+    manager = OpenOCDManager(log_file=args.log_file)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((host, port))
     server.listen(5)
     logger.info(f"Server listening on {host}:{port}")
+    if args.log_file:
+        logger.info(f"OpenOCD logs will be appended to {args.log_file}")
 
     try:
         while True:

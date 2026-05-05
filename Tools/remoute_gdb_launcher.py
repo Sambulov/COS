@@ -178,6 +178,7 @@ def handle_client(conn, manager):
         request = json.loads(data.decode('utf-8'))
         command = request.get('command')
         if command == 'start':
+            manager.stop_openocd()
             files = request.get('files')
             if not files or not isinstance(files, list):
                 response = {"status": "error", "message": "Missing files list"}

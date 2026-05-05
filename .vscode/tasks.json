@@ -60,5 +60,38 @@
 			"detail": "Flash",
 			"group": "build"
 		},
+		{
+			"type": "shell",
+			"label": "Run Remoute GDB",
+            "linux": {
+				"command": "ping 127.0.0.1",
+			},
+			"windows": {
+				"command": "ping 127.0.0.1",
+			},
+		},
+		{
+			"type": "shell",
+			"label": "Start remoute OpenOCD",
+            "group": "build",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/Tools/remoute_gdb_launch.py",
+                "--server",
+                "${config:REMOUTE_GDB_LAUNCHER}", 
+                "${workspaceFolder}/build/oocd_tool.cfg", 
+                "${workspaceFolder}/build/oocd_mcu.cfg"
+            ]
+		},
+        {
+            "label": "Stop remoute OpenOCD",
+            "type": "shell",
+            "group": "build",
+            "command": "python",
+            "args": ["${workspaceFolder}/Tools/remoute_gdb_launch.py", "--stop"],
+            "presentation": {
+                "reveal": "silent"
+            }
+        }
     ]
 }

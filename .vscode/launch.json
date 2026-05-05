@@ -127,5 +127,61 @@
 			//	"samplesPerSecond": 4
 			//},
 		},
+        {
+            "name": "Remote OOCD Debug",
+            "type": "cortex-debug",
+            "request": "launch",
+            "preLaunchTask": "Start remoute OpenOCD",
+            "postDebugTask": "Stop remoute OpenOCD",
+            "servertype": "external",
+			"cwd": "${workspaceFolder}",
+			"executable": "./build/firmware.elf",
+            //"interface": "swd",
+			"device": "${config:MCU}",
+            //"showDevDebugOutput": "parsed",
+			"showDevDebugOutput": "raw",
+			"svdFile": "./build/mcu.svd",
+			"runToEntryPoint": "main",
+            "gdbTarget": "${config:REMOUTE_GDB_TARGET}",
+            "overrideLaunchCommands": [
+                "monitor reset halt",
+                //"monitor flash erase_sector 0 0 11"
+                //"monitor flash erase 0x08010000 0x0801FFFF"
+                //"monitor flash erase",
+                //"monitor flash erase_address 0x08000000 0x00100000",
+                //"flash erase_sector 0 0 last",
+                //"flash erase_bank 0",
+                "load",
+                "monitor reset halt",
+            ],
+        },
+        // {
+        //     "name": "Remote JLink Debug",
+        //     "type": "cortex-debug",
+        //     "request": "launch",
+        //     //"preLaunchTask": "Start remoute JLink",
+        //     //"postDebugTask": "Stop remoute JLink",
+        //     "servertype": "external",
+		// 	"cwd": "${workspaceFolder}",
+		// 	"executable": "./build/firmware.elf",
+        //     //"interface": "swd",
+		// 	"device": "${config:MCU}",
+        //     //"showDevDebugOutput": "parsed",
+		// 	"showDevDebugOutput": "raw",
+		// 	"svdFile": "./build/mcu.svd",
+		// 	"runToEntryPoint": "main",
+        //     "gdbTarget": "${config:REMOUTE_GDB_TARGET}",
+        //     "overrideLaunchCommands": [
+        //         //"-target-select remote ${gdbTarget}",
+        //         "monitor device ${config:MCU}",
+        //         "monitor reset",
+        //         "monitor halt",
+        //         //"monitor flash erase 0x08010000 0x0801FFFF"
+        //         "monitor flash erase",
+        //         "load",
+        //         "monitor reset",
+        //         "monitor halt"
+        //     ],
+        // }
     ]
 }

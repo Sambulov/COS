@@ -45,6 +45,15 @@ typedef struct {
 #define MODULE_ASSERT(desc, err_res)        if(!(desc) || hdl_is_null_module(desc) || (hdl_state(desc) == HDL_MODULE_FAULT)) return err_res;
 #define MODULE_ASSERT_FAST(desc, err_res)   if(!(desc) || hdl_is_null_module(desc)) return err_res;
 
+typedef struct {
+    const void *module_ptr;
+    const void *meta_ptr;
+} hdl_module_meta_entry_t;
+
+#define HDL_MODULE_META(module_ptr, type, ...) \
+    static const hdl_module_meta_entry_t __CONCAT(_meta_,__LINE__)  \
+        __attribute__((section(".module_meta"), used)) = { (module_ptr), (&(const type){__VA_ARGS__}) }
+
 __STATIC_INLINE uint8_t hdl_is_null_module(const void *desc) {
   hdl_module_base_t *mod = (hdl_module_base_t *)desc;
   return (mod->iface == NULL) && (mod->config == NULL) && (mod->dependencies == NULL);

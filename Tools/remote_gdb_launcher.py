@@ -59,6 +59,7 @@ class OpenOCDManager:
                 logger.info(f"Saved config: {file_path}")
 
             cmd = ['openocd']
+            cmd.extend(['-c', 'bindto 0.0.0.0'])
             for cfg in file_paths:
                 cmd.extend(['-f', cfg])
             logger.info(f"Starting OpenOCD: {' '.join(cmd)}")

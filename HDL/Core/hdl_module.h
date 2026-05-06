@@ -56,7 +56,7 @@ typedef struct {
 
 __STATIC_INLINE uint8_t hdl_is_null_module(const void *desc) {
   hdl_module_base_t *mod = (hdl_module_base_t *)desc;
-  return (mod->iface == NULL) && (mod->config == NULL) && (mod->dependencies == NULL);
+  return mod && !mod->iface && !mod->config && !mod->dependencies;
 }
 
 uint8_t hdl_module_take(const void *desc, const void *owner);

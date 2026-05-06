@@ -72,11 +72,11 @@
 		},
 		{
 			"type": "shell",
-			"label": "Start remoute OpenOCD",
+			"label": "Start remote OpenOCD",
             "group": "build",
             "command": "python",
             "args": [
-                "${workspaceFolder}/Tools/remoute_gdb_launch.py",
+                "${workspaceFolder}/Tools/remote_gdb_launch.py",
                 "--server",
                 "${config:REMOUTE_GDB_LAUNCHER}", 
                 "${workspaceFolder}/build/oocd_tool.cfg", 
@@ -84,11 +84,11 @@
             ]
 		},
         {
-            "label": "Stop remoute OpenOCD",
+            "label": "Stop remote OpenOCD",
             "type": "shell",
             "group": "build",
             "command": "python",
-            "args": ["${workspaceFolder}/Tools/remoute_gdb_launch.py", "--stop"],
+            "args": ["${workspaceFolder}/Tools/remote_gdb_launch.py", "--stop"],
             "presentation": {
                 "reveal": "silent"
             }

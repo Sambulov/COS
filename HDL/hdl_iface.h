@@ -51,6 +51,8 @@ extern "C" {
 #include "hdl_transport.h"
 
 #include "hdl_modbus.h"
+#include "hdl_serial_modbus.h"
+#include "hdl_transport_modbus.h"
 #include "w25xx.h"
 #include "xl9535.h"
 #include "ms5194t.h"

@@ -31,21 +31,21 @@ typedef struct {
   hdl_transport_event_type_t event; /**< Event type (one of the status flags). */
   union {
     struct {
-      void *ptr;        /**< Received data (read-only). */
+      const void *ptr;  /**< Received data (read-only). */
       uint32_t length;  /**< Number of bytes in this fragment. */
       uint32_t left;    /**< Remaining bytes in the current message (0 if complete, HDL_TRANSPORT_STREAM_LENGTH - unknown). */
-    } data;             /**< Valid for HDL_TRANSPORT_RECEIVED event. */
+    } data;             /**< Valid for HDL_TRANSPORT_RECEIVED, HDL_TRANSPORT_TRANSFER_COMPLETE, HDL_TRANSPORT_TRANSFER_ERR events. */
     struct {
       void *ptr;        /**< Buffer provided by transport to be filled. */
       uint32_t size;    /**< Size of the provided buffer. */
       uint32_t fill;    /**< Fragment writed size, set by user (set 0 => send stretching). */
-    } buffer;           /**< Valid for HDL_TRANSPORT_TRANSFER events. */
+    } buffer;           /**< Valid for HDL_TRANSPORT_TRANSFER_BUFER event. */
   };
 } hdl_transport_event_trigger_t;
 
 typedef hdl_transport_result_t (*hdl_transport_open_t)(const void *self, const void *config);
 typedef hdl_transport_result_t (*hdl_transport_op_t)(const void *self);
-typedef hdl_transport_result_t (*hdl_transport_begin_send_t)(const void *self, void *data, uint32_t length);
+typedef hdl_transport_result_t (*hdl_transport_begin_send_t)(const void *self, const void *data, uint32_t length);
 
 typedef struct {
   hdl_module_initializer_t init;
@@ -91,7 +91,7 @@ __STATIC_INLINE hdl_transport_result_t hdl_transport_close(const void *self) {
  * @return        One of: HDL_TRANSPORT_CALL_OK, HDL_TRANSPORT_CALL_BUSY,
  *                HDL_TRANSPORT_BAD_CALL, or HDL_TRANSPORT_INVALID.
  */
-__STATIC_INLINE hdl_transport_result_t hdl_transport_send_zero_copy(const void *self, void *data, uint32_t length) {
+__STATIC_INLINE hdl_transport_result_t hdl_transport_send_zero_copy(const void *self, const void *data, uint32_t length) {
   MODULE_ASSERT(self, HDL_TRANSPORT_INVALID);
   return ((hdl_transport_iface_t *)((hdl_module_base_t *)self)->iface)->begin_send(self, data, length);
 }

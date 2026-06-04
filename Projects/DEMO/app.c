@@ -13,13 +13,13 @@ void main() {
   hdl_enable(&mod_app);
 
   while (!hdl_init_complete()) {
-    cooperative_scheduler(cl_false);
+    cooperative_scheduler(HDL_FALSE);
   }
   gpio_test();
   spi_client_test();
 
   //stream_test(uart_stream_init());
-  modbus_client_test(app_modbus_init(uart_stream_init()));
+  //modbus_client_test(app_modbus_init(uart_stream_init()));
   //modbus_server_test(app_modbus_init(uart_stream_init()));
 
   while (1) {
@@ -31,7 +31,7 @@ void main() {
       loops = 0;
       log_time = now;
     }
-    cooperative_scheduler(cl_false);
+    cooperative_scheduler(HDL_FALSE);
     loops++;
   }
 }

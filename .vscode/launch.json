@@ -22,8 +22,8 @@
                 "toolchainPrefix": ""
             },
             "linux": {
-                "serverpath": "/usr/bin/openocd",
-                "gdbPath": "/usr/bin/gdb-multiarch"
+                "serverpath": "openocd",
+                "gdbPath": "gdb-multiarch"
             },
             "serialNumber": "", // add programmer serial number if having multiple attached the same time.
             "servertype": "openocd",
@@ -66,8 +66,8 @@
                 "toolchainPrefix": ""
             },
             "linux": {
-                "serverpath": "/usr/bin/openocd",
-                "gdbPath": "/usr/bin/gdb-multiarch"
+                "serverpath": "openocd",
+                "gdbPath": "gdb-multiarch"
             },
             "serialNumber": "", // add programmer serial number if having multiple attached the same time.
             "servertype": "openocd",
@@ -103,8 +103,8 @@
 				"serverpath": "JLinkGDBServerCL.exe",
 			},
 			"linux": {
-				"serverpath": "/usr/bin/JLinkGDBServerCLExe",
-				"gdbPath": "/usr/bin/gdb-multiarch"
+				"serverpath": "JLinkGDBServerCLExe",
+				"gdbPath": "gdb-multiarch"
 			},
 			"runToEntryPoint": "main",
 			"showDevDebugOutput": "parsed",

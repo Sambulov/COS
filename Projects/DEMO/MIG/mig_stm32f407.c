@@ -3009,16 +3009,17 @@ const hdl_74hc595_pin_t mod_gpio_exp2_chip1_q7 = {
  *                        FLASH
  *************************************************************/
 
-const hdl_w25x20cl_t mod_w25x20cl = {
-  .iface = &hdl_w25x20cl_iface,
+const hdl_w25xx_t mod_w25x20cl = {
+  .iface = &hdl_w25xx_iface,
   .dependencies = hdl_module_dependencies(&mod_spi2_ch1, &mod_systick_timer, &hdl_null_module, &hdl_null_module),
-  .config = hdl_module_config(hdl_w25x20cl_config_t, 
+  .config = hdl_module_config(hdl_w25xx_config_t, 
     .write_time = 5,
+    .sector_erase_time = 40,
     .page_size = 256,
     .sector_size = 4096,
     .size = 262144
   ),
-  .obj_var = static_malloc(HDL_W25X20CL_VAR_SIZE),
+  .obj_var = static_malloc(HDL_W25XX_VAR_SIZE),
   .mod_var = static_malloc(HDL_MODULE_VAR_SIZE)
 };
 

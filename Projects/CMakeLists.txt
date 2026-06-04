@@ -6,7 +6,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/proj_select.txt")
   list(GET PROJECT_DEF 3 LAUNCHER)
 else()
   file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/proj_select.txt" 
-      "DEMO\nDEMO_STM32F407\n\n"
+      "DEMO\nDEMO_STM32F407\n\n\n"
   )
   set(PROJECT "DEMO")
   set(BOARD "DEMO_STM32F407")

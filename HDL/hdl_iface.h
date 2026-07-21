@@ -59,6 +59,9 @@ extern "C" {
 #include "74HC595.h"
 #include "lan8742.h"
 
+#include "hdl_dc_supply.h"
+#include "hdl_ac_supply.h"
+
 //#include "smarc_carrier.h"
 //#include "smarc_module.h"
 

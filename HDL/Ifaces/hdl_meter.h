@@ -2,15 +2,15 @@
 #define HDL_METER_H_
 
 typedef enum {
-  HDL_METER_FAULT           = 0x00,
+  HDL_METER_UNKNOWN         = 0x00,
   HDL_METER_OK              = 0x01,
-  HDL_METER_MEASURE_VALID   = 0x02,
+  HDL_METER_FAULT           = 0x80,
 } hdl_meter_status_t;
 
 typedef struct {
   hdl_meter_status_t status;
-  decimal32_t measure;
-  uint32_t measure_id;
+  decimal32_t value;
+  uint32_t id;
 } hdl_meter_measure_t;
 
 typedef hdl_meter_measure_t hdl_meter_event_trigger_t;

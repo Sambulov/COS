@@ -13,16 +13,17 @@ typedef enum {
   HDL_AC_SUPPLY_STATUS_VF_CAPABILITY      = 0x02, /* Invertor mode supported */
   HDL_AC_SUPPLY_STATUS_PQ_CAPABILITY      = 0x04, /* Injertor mode supported */
   HDL_AC_SUPPLY_STATUS_NON_ADJUSTABLE     = 0x08, /* Grid itself */
-  HDL_AC_SUPPLY_STATUS_OK                 = 0x10,
+  
+  HDL_AC_SUPPLY_STATUS_OK                 = 0x40,
   HDL_AC_SUPPLY_STATUS_GENERAL_FAULT      = 0x80,
 } hdl_ac_supply_status_t;
 
 typedef struct {
   decimal32_t voltage_min;
-  decimal32_t current_min;
-  decimal32_t frequency_min;
   decimal32_t voltage_max;
+  decimal32_t current_min;
   decimal32_t current_max;
+  decimal32_t frequency_min;
   decimal32_t frequency_max;
   decimal32_t power_max;
 } hdl_ac_supply_limitations_t;

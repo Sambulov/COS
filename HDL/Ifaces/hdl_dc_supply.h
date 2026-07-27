@@ -12,14 +12,15 @@ typedef enum {
   HDL_DC_SUPPLY_STATUS_CV_CAPABILITY      = 0x02,
   HDL_DC_SUPPLY_STATUS_CC_CAPABILITY      = 0x04,
   HDL_DC_SUPPLY_STATUS_NON_ADJUSTABLE     = 0x08,
-  HDL_DC_SUPPLY_STATUS_OK                 = 0x10,
+
+  HDL_DC_SUPPLY_STATUS_OK                 = 0x40,
   HDL_DC_SUPPLY_STATUS_GENERAL_FAULT      = 0x80,
 } hdl_dc_supply_status_t;
 
 typedef struct {
   decimal32_t voltage_min;
-  decimal32_t current_min;
   decimal32_t voltage_max;
+  decimal32_t current_min;
   decimal32_t current_max;
   decimal32_t power_max;
 } hdl_dc_supply_limitations_t;

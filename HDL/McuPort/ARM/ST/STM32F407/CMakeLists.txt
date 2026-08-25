@@ -1,9 +1,14 @@
 if (MCU STREQUAL "STM32F407VG")
+  set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/linkerscript_407vg.ld")
   set(JS_FILE "flash_407vg.jlink")
-  set(LD_FILE "linkerscript_407vg.ld")
+elseif(MCU STREQUAL "STM32F407VE")
+  set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/linkerscript_407ve.ld")
+  set(JS_FILE "flash_407ve.jlink")
 else()
   return()
 endif()
+
+set_property(GLOBAL PROPERTY LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}")
 
 set(SWD_FILE "stm32f407.svd")
 set(OOCD_TOOL_CNF "stlink.cfg")
@@ -37,7 +42,6 @@ else ()
   set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -mfloat-abi=soft)
 endif()
 
-file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}" "${CMAKE_BINARY_DIR}/linkerscript.ld")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" "${CMAKE_BINARY_DIR}/flash.jlink")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${OOCD_TOOL_CNF}" "${CMAKE_BINARY_DIR}/oocd_tool.cfg")

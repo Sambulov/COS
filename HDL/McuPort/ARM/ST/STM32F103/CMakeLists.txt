@@ -1,9 +1,11 @@
 if (MCU STREQUAL "STM32F103CB")
-  set(JS_FILE "flash_cb.jlink")
   set(LD_FILE "linkerscript_103cb.ld")
+  set(JS_FILE "flash_cb.jlink")
 else()
   return()
 endif()
+
+set_property(GLOBAL PROPERTY LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}")
 
 set(SWD_FILE "mcu.svd")
 
@@ -24,7 +26,6 @@ set(MCPU cortex-m3)
 set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mcpu=${MCPU} -mfloat-abi=soft)
 set_property(GLOBAL APPEND PROPERTY HDL_DEFINES "__MCU_HAL_HDR__=<stm32f1xx_hal.h>")
 
-file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}" "${CMAKE_BINARY_DIR}/linkerscript.ld")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" "${CMAKE_BINARY_DIR}/flash.jlink")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
 

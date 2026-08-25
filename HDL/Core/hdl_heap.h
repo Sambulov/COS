@@ -19,4 +19,6 @@ static inline void *hdl_calloc(size_t amount, size_t block) {
 
 void hdl_free(void *ptr);
 
+void hdl_heap_stat(uint32_t *free, uint32_t *total);
+
 #endif /* HDL_HEAP_H_ */

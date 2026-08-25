@@ -52,42 +52,47 @@ __STATIC_INLINE void hdl_gpio_toggle(const void *desc) {
   ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->toggle(desc);
 }
 
+__STATIC_INLINE hdl_gpio_state hdl_gpio_get_inactive_default(const void *desc) {
+  MODULE_ASSERT_FAST(desc, HDL_GPIO_UNDEFINED);
+  return((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default;
+}
+
 __STATIC_INLINE void hdl_gpio_set_inactive(const void *desc) {
   MODULE_ASSERT_FAST(desc, );
   ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->write(
-    (desc), ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default
+    desc, hdl_gpio_get_inactive_default(desc)
   );
 }
 
 __STATIC_INLINE void hdl_gpio_set_active(const void *desc) {
   MODULE_ASSERT_FAST(desc, );
   ((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->write(
-    (desc), !((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default
+    (desc), !hdl_gpio_get_inactive_default(desc)
   );
 }
 
 __STATIC_INLINE uint8_t hdl_gpio_is_inactive(const void *desc) {
   MODULE_ASSERT_FAST(desc, HDL_FALSE);
   return (((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read(desc) == 
-    ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
+    hdl_gpio_get_inactive_default(desc));
 }
 
 __STATIC_INLINE uint8_t hdl_gpio_is_active(const void *desc) {               
   MODULE_ASSERT_FAST(desc, HDL_FALSE);
   return (((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read(desc) == 
-    !((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
+    !hdl_gpio_get_inactive_default(desc));
 }
 
 __STATIC_INLINE uint8_t hdl_gpio_is_set_as_inactive(const void *desc) {
   MODULE_ASSERT_FAST(desc, HDL_FALSE);
   return (((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read_ouput(desc) == 
-    ((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
+    hdl_gpio_get_inactive_default(desc));
 }
 
 __STATIC_INLINE uint8_t hdl_gpio_is_set_as_active(const void *desc) {
   MODULE_ASSERT_FAST(desc, HDL_FALSE);
   return (((hdl_gpio_pin_iface_t *)((hdl_module_base_t *)desc)->iface)->read_ouput(desc) == 
-    !((hdl_gpio_pin_config_t *)((hdl_module_base_t *)(desc))->config)->inactive_default);
+    !hdl_gpio_get_inactive_default(desc));
 }
 
 #endif // HDL_GPIO_H_

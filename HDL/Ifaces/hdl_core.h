@@ -6,6 +6,8 @@ hdl_module_new_t(hdl_core_t, 0, void*, hdl_module_base_iface_t);
 
 uint8_t hdl_core_is_in_isr();
 
+void hdl_core_reset();
+
 hdl_module_new_t(hdl_interrupt_controller_t, 0, void*, hdl_module_base_iface_t);
 
 typedef uint8_t (*hdl_interrupt_request_t)(const void *, hdl_delegate_t *);

@@ -299,6 +299,11 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE uint32_t __get_LR(void)  {
   return(result); 
 } 
 
+void hdl_core_reset() {
+  __set_FAULTMASK(1);
+  NVIC_SystemReset();
+}
+
 void call_isr(hdl_nvic_irq_n_t irqn, void *event_trigger) {
   hdl_nvic_t *ic = (hdl_nvic_t *)((uint32_t *)SCB->VTOR)[0];
   hdl_nvic_var_t *ic_var = (hdl_nvic_var_t *)ic->obj_var;
@@ -324,7 +329,8 @@ void call_isr(hdl_nvic_irq_n_t irqn, void *event_trigger) {
     //If you get stuck here, your code is missing some interrupt request. see interrupts in MIG file.
     asm("bkpt 255");
     #endif
-    while(irqn < 0) ;
+    if(irqn < 0) 
+      hdl_core_reset();
     NVIC_DisableIRQ((IRQn_Type)irqn);
   }
 }
@@ -358,6 +364,8 @@ __attribute__((naked, noreturn)) void reset_handler() {
 	  *pDest = *pSource;
   for (pDest = &_sbss; pDest != &_ebss; pDest++)
     *pDest = 0;
+  for (pDest = &_sstack; pDest != &_estack; pDest++)
+    *pDest = (void *)STACK_WATERMARK;
   __libc_init_array();
   main();
   for (;;) ;

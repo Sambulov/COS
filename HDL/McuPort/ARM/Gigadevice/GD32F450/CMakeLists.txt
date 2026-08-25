@@ -5,6 +5,8 @@ else()
   return()
 endif()
 
+set_property(GLOBAL PROPERTY LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}")
+
 set(SWD_FILE "mcu.svd")
 
 file(GLOB MCU_PORT
@@ -38,7 +40,6 @@ endif()
 #   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd" COPYONLY)
 # endif()
 
-file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}" "${CMAKE_BINARY_DIR}/linkerscript.ld")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" "${CMAKE_BINARY_DIR}/flash.jlink")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
 

@@ -1,9 +1,11 @@
 if (MCU STREQUAL "STM32F429VI")
+  set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/linkerscript_429vi.ld")
   set(JS_FILE "flash_429vi.jlink")
-  set(LD_FILE "linkerscript_429vi.ld")
 else()
   return()
 endif()
+
+set_property(GLOBAL PROPERTY LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}")
 
 set(SWD_FILE "stm32f429vi.svd")
 set(OOCD_TOOL_CNF "stlink.cfg")
@@ -34,12 +36,6 @@ if(DEFINED HARD_FLOAT)
 else ()
   set_property(GLOBAL APPEND PROPERTY HDL_COMPILE_OPTIONS -mfloat-abi=soft)
   set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -mfloat-abi=soft)
-endif()
-
-if(CUSTOM_LINKER_SCRIPT)
-  configure_file("${CUSTOM_LINKER_SCRIPT}" "${CMAKE_BINARY_DIR}/linkerscript.ld" @ONLY)
-else()
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}" "${CMAKE_BINARY_DIR}/linkerscript.ld" @ONLY)
 endif()
 
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" "${CMAKE_BINARY_DIR}/flash.jlink")

@@ -1,9 +1,11 @@
 if (MCU STREQUAL "M463KGCAE")
+  set(LD_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/linkerscript_m463.ld")
   set(JS_FILE "flash_m463.jlink")
-  set(LD_FILE "linkerscript_m463.ld")
 else()
   return()
 endif()
+
+set_property(GLOBAL PROPERTY LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}")
 
 set(SWD_FILE "mcu.svd")
 set(OOCD_TOOL_CNF "tool.cfg")
@@ -35,7 +37,6 @@ else ()
   set_property(GLOBAL APPEND PROPERTY HDL_LINK_OPTIONS -mfloat-abi=soft)
 endif()
 
-file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${LD_FILE}" "${CMAKE_BINARY_DIR}/linkerscript.ld")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${JS_FILE}" "${CMAKE_BINARY_DIR}/flash.jlink")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${SWD_FILE}" "${CMAKE_BINARY_DIR}/mcu.svd")
 file(COPY_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Res/${OOCD_TOOL_CNF}" "${CMAKE_BINARY_DIR}/oocd_tool.cfg")

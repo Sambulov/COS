@@ -2,8 +2,8 @@ ENTRY(reset_handler)
 
 MEMORY
 {
-	FLASH (RX)   : ORIGIN = 0x08000000 + @BOOT_OFFSET@, LENGTH = 2M - @BOOT_OFFSET@
-	SRAM (RWX)   : ORIGIN = 0x20000000, LENGTH = 192K
+	FLASH (RX)   : ORIGIN = 0x08000000 + @BOOT_OFFSET@, LENGTH = 512K - @BOOT_OFFSET@
+	SRAM (RWX)   : ORIGIN = 0x20000000, LENGTH = 128K
 	CCMRAM (RWX) : ORIGIN = 0x10000000, LENGTH = 64K
 }
 
@@ -15,14 +15,14 @@ _sstack = _stack_start;
 
 SECTIONS
 {
-	.isr_vector (READONLY):
+	.isr_vector :
 	{
 		. = ALIGN(4);
 		KEEP(*(.isr_vector))
 		. = ALIGN(4);
 	} > FLASH
 
-	.text (READONLY):
+	.text :
 	{
 		. = ALIGN(4);
 		_stext = .;
@@ -40,7 +40,7 @@ SECTIONS
 
 	} > FLASH
 
-	.ARM.extab (READONLY):
+	.ARM.extab :
 	{
 		. = ALIGN(4);
 		*(.ARM.extab)
@@ -48,7 +48,7 @@ SECTIONS
 		. = ALIGN(4);
 	} > FLASH
 
-	.exidx (READONLY):
+	.exidx :
 	{
 		. = ALIGN(4);
 		PROVIDE(__exidx_start = .);
@@ -57,19 +57,19 @@ SECTIONS
 		PROVIDE(__exidx_end = .);
 	} > FLASH
 
-	.ARM.attributes (READONLY):
+	.ARM.attributes :
 	{
 		*(.ARM.attributes)
 	} > FLASH
 
-	.preinit_array (READONLY):
+	.preinit_array :
 	{
 		PROVIDE(__preinit_array_start = .);
 		KEEP(*(.preinit_array*))
 		PROVIDE(__preinit_array_end = .);
 	} > FLASH
 
-	.init_array (READONLY):
+	.init_array :
 	{
 		PROVIDE(__init_array_start = .);
 		KEEP(*(SORT(.init_array.*)))
@@ -77,7 +77,7 @@ SECTIONS
 		PROVIDE(__init_array_end = .);
 	} > FLASH
 
-	.fini_array (READONLY):
+	.fini_array :
 	{
 		PROVIDE(__fini_array_start = .);
 		KEEP(*(.fini_array*))
@@ -106,14 +106,12 @@ SECTIONS
 	{
 		. = ALIGN(4);
 		_sbss = .;
-
 		PROVIDE(__bss_start__ = _sbss);
 		*(.bss)
 		*(.bss*)
 		*(COMMON)
 		. = ALIGN(4);
 		_ebss = .;
-
 		PROVIDE(__bss_end__ = _ebss);
 	} > SRAM
 

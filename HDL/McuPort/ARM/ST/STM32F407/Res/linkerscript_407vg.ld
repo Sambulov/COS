@@ -11,6 +11,7 @@ _stack_size = @STACK_RESERV@;
 _stack_end   = ORIGIN(SRAM) + LENGTH(SRAM);
 _stack_start = _stack_end - _stack_size;
 _estack = _stack_end;
+_sstack = _stack_start;
 
 SECTIONS
 {
@@ -114,12 +115,20 @@ SECTIONS
 		PROVIDE(__bss_end__ = _ebss);
 	} > SRAM
 
-    ASSERT(_ebss <= _stack_start, "SRAM overflow: .bss and .data exceed stack start")
-
     PROVIDE(end = .);
     _free_ram_start = .;
     _free_ram_end   = _stack_start;
     _free_ram_size  = _free_ram_end - _free_ram_start;
+
+    ASSERT(_free_ram_size >= @HEAP_RESERV@, "SRAM overflow: heap doesn't fit")
+    ASSERT(_ebss <= _stack_start, "SRAM overflow: .bss and .data exceed stack start")
+
+	.stack _stack_start (NOLOAD) :
+	{
+		. = ALIGN(4);
+		. = . + _stack_size;
+		. = ALIGN(4);
+	} > SRAM
 
 	.ccm :
 	{

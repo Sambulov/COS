@@ -52,6 +52,7 @@ typedef struct {
   const hdl_ac_supply_limitations_t *limitations;
   const hdl_ac_supply_vf_setpoint_t *vf_setpoint;
   const hdl_ac_supply_pq_setpoint_t *pq_setpoint;
+  const hdl_ac_supply_guards_t *guards;
 } hdl_ac_supply_event_trigger_t;
 
 typedef uint8_t (* hdl_ac_supply_trigger_t)(const void *desc);

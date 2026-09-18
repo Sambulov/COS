@@ -69,7 +69,7 @@ static void _mac_dma_set_default_config(ETH_TypeDef *phy) {
     ETH_DMAOMR_TTC | ETH_DMAOMR_FEF | ETH_DMAOMR_FUGF | ETH_DMAOMR_RTC | ETH_DMAOMR_OSF |
     ETH_DMAOMR_DFRF
     ,
-    ETH_DMAOMR_RSF | ETH_DMAOMR_TSF | ETH_DMAOMR_TTC_64Bytes | ETH_DMAOMR_RTC_64Bytes | ETH_DMAOMR_OSF
+    ETH_DMAOMR_RSF | ETH_DMAOMR_TSF | ETH_DMAOMR_TTC_64Bytes | ETH_DMAOMR_RTC_64Bytes
   );
   uint32_t timer = 1000;
   while (timer--);
@@ -446,10 +446,40 @@ static uint8_t _hdl_mac_transmit(const void *desc, hdl_mac_buffer_t *buf, uint32
   hdl_mac_mcu_var_t *mac_var = (hdl_mac_mcu_var_t *)mac->obj_var;
   mac_var->tx_config.Length = total_len;
   mac_var->tx_config.TxBuffer = (ETH_BufferTypeDef *)buf;
+  /* IP fragments: the MAC checksum engine cannot compute the L4 checksum of a
+     fragmented datagram (it would overwrite the checksum field in the first
+     fragment with a wrong value). lwIP computes correct checksums (incl. the
+     fragment IP header checksums), so bypass the hardware offload for frames
+     that carry MF or a non-zero fragment offset. */
+  mac_var->tx_config.ChecksumCtrl = ETH_CHECKSUM_IPHDR_PAYLOAD_INSERT_PHDR_CALC;
+  if(total_len >= 34U) {
+    const uint8_t *ip = (const uint8_t *)buf[0].data + 14U; /* eth hdr is 14 B */
+    if((ip[0] >> 4) == 4U) { /* IPv4 */
+      uint16_t fo = (uint16_t)(((uint16_t)(ip[6] & 0x1FU) << 8) | ip[7]);
+      if((ip[6] & 0x20U) || fo)
+        mac_var->tx_config.ChecksumCtrl = ETH_CHECKSUM_DISABLE;
+    }
+  }
   /* todo */
   hmac.gState = HAL_ETH_STATE_STARTED;
-  HAL_ETH_Transmit(&hmac, &mac_var->tx_config, 20);
-  return HDL_TRUE;
+  /* Deterministic resume: the TX DMA may be parked behind the ring position,
+     so point it at the first descriptor of this frame before the kick. Safe
+     while the DMA is suspended between frames (RM0090: DMACHRDR writable in
+     suspend). */
+  WRITE_REG(ETH->DMACHRDR, (uint32_t)&hmac.Init.TxDesc[hmac.TxDescList.CurTxDesc]);
+  HAL_StatusTypeDef res = HAL_ETH_Transmit(&hmac, &mac_var->tx_config, 20);
+  /* HAL_ETH_Transmit returns when OWN clears on the last descriptor of the
+     frame - the DMA clears OWN at descriptor fetch, before the buffer data
+     has been read. lwIP frees the pbufs right after this call (and the next
+     fragment may reuse the same heap block), so give the DMA time to read
+     the buffers before returning. */
+  {
+    /* short settle: the DMA reads a frame's buffers within a few microseconds;
+       2000 iterations (~30 us) is a wide margin without costing throughput */
+    volatile uint32_t i = 2000;
+    while(i--);
+  }
+  return (res == HAL_OK) ? HDL_TRUE : HDL_FALSE;
 }
 
 static uint8_t _hdl_mac_receive(const void *desc, void **data) {

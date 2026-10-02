@@ -70,6 +70,7 @@ static void _hdl_hw_enable_parents(hdl_module_base_t *desc) {
 }
 
 void hdl_enable(const void *desc) {
+  if(!desc) return;
   static coroutine_t hdl_module_worker;
   if(!hdl_enabled) { 
     coroutine_add(&hdl_module_worker, &_hdl_module_work, NULL);

@@ -41,7 +41,8 @@ typedef struct {
 } hdl_ac_supply_vf_setpoint_t;
 
 typedef struct {
-  decimal32_t cut_off_voltage;
+  decimal32_t cut_off_high_voltage;
+  decimal32_t cut_off_low_voltage;
   decimal32_t ramp_up_rate;
   decimal32_t ramp_down_rate;
 } hdl_ac_supply_guards_t;

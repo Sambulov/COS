@@ -7,7 +7,7 @@ typedef enum {
   HDL_TRANSPORT_OPEN              = 0x01, /**< Begin listening (server mode) or try to connect(client mode). */
   HDL_TRANSPORT_ESTABLISHED       = 0x02, /**< New connection accepted (server mode) or connection success(client mode). */
   HDL_TRANSPORT_CLOSED            = 0x04, /**< Transport broken; resources should be freed. */
-  HDL_TRANSPORT_TRANSFER_BUFER    = 0x10, /**< Outgoing buffer provided for filling. */
+  HDL_TRANSPORT_TRANSFER_BUFFER   = 0x10, /**< Outgoing buffer provided for filling. */
   HDL_TRANSPORT_TRANSFER_COMPLETE = 0x20, /**< Send transaction complete. */
   HDL_TRANSPORT_TRANSFER_ERR      = 0x40, /**< Last send operation failed or terminated. */
   HDL_TRANSPORT_RECEIVED          = 0x80, /**< Data received. */

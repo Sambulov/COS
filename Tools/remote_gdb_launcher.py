@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import locale
 import os
 import shutil
 import socket
@@ -16,14 +17,16 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class OpenOCDManager:
-    def __init__(self, log_file=None):
+    def __init__(self, log_file=None, allow_exec=False):
         self.process = None
         self.temp_dir = None
         self.running = False
         self.log_file = log_file
+        self.allow_exec = allow_exec   # команда exec разрешена только ключом --allow-exec
         self.stdout_thread = None
         self.stderr_thread = None
         self.stop_logging = threading.Event()
+        self.lock = threading.Lock()   # start/stop могут прийти от разных клиентов сразу
 
     def _log_output(self, stream, stream_name):
         """Читает поток и выводит в лог/консоль."""
@@ -163,8 +166,24 @@ def recv_exact(sock, num_bytes):
         data += chunk
     return data
 
-def send_message(sock, msg_bytes):
-    sock.sendall(struct.pack('>I', len(msg_bytes)) + msg_bytes)
+# Размер порции записи в сокет. Одиночный send на несколько килобайт уходит одним
+# сегментом TCP и молча пропадает там, где MTU пути меньше (туннель с MTU 1328 и
+# без ICMP «нужна фрагментация»), поэтому пишем порциями и не даём ядру склеить их.
+CHUNK = 1024
+REQUEST_TIMEOUT = 30.0   # с: сколько ждём запрос от клиента
+
+
+def send_all(sock, data, chunk=CHUNK):
+    view = memoryview(data)
+    for i in range(0, len(view), chunk):
+        sock.sendall(view[i:i + chunk])
+        if (i + chunk) < len(view):
+            time.sleep(0.001)
+
+
+def send_message(sock, msg_bytes, chunk=CHUNK):
+    send_all(sock, struct.pack('>I', len(msg_bytes)), chunk)
+    send_all(sock, msg_bytes, chunk)
 
 def recv_message(sock):
     raw_len = recv_exact(sock, 4)
@@ -173,22 +192,116 @@ def recv_message(sock):
         raise ValueError("Message too large")
     return recv_exact(sock, msg_len)
 
+# --- выполнение команд оболочки на этой машине (команда exec) ---
+EXEC_MAX_OUTPUT = 256 * 1024   # байт: больше не отдаём клиенту, лишнее обрезаем
+EXEC_MAX_TIMEOUT = 3600.0      # с: предел ожидания одной команды
+
+
+def console_encoding():
+    """Кодировка консоли этой машины: в ней cmd.exe отдаёт вывод."""
+    try:
+        import ctypes
+        return 'cp%d' % ctypes.windll.kernel32.GetOEMCP()
+    except Exception:
+        return None
+
+
+def decode_output(data):
+    """Вывод команды приходит в консольной кодировке машины — пробуем по очереди."""
+    for enc in ('utf-8', console_encoding(), locale.getpreferredencoding(False), 'cp866'):
+        if not enc:
+            continue
+        try:
+            return data.decode(enc)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return data.decode('utf-8', errors='replace')
+
+
+def kill_tree(proc):
+    """Снять процесс вместе с потомками: shell=True оставляет живых детей."""
+    if (proc.poll() is None) and (os.name == 'nt'):
+        try:
+            res = subprocess.run(['taskkill', '/F', '/T', '/PID', str(proc.pid)],
+                                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.DEVNULL, timeout=10)
+            if res.returncode != 0:
+                logger.warning(f"taskkill returned {res.returncode}: the process tree may survive")
+        except Exception as e:
+            logger.warning(f"taskkill failed: {e}")
+    if proc.poll() is None:
+        try:
+            proc.kill()
+        except Exception:
+            pass
+
+
+def run_shell(cmd, timeout, cwd=None):
+    """Выполнить команду оболочки и вернуть её код возврата и вывод."""
+    started = time.time()
+    proc = subprocess.Popen(cmd, shell=True, cwd=cwd, stdin=subprocess.DEVNULL,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    timed_out = False
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        kill_tree(proc)                # по времени снимаем всё дерево процессов
+        try:
+            out, err = proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            # потомок держит пайп открытым: ждать его нельзя, отдаём что успели
+            proc.kill()
+            out, err = b'', b''
+    cut = False
+    if len(out) > EXEC_MAX_OUTPUT:
+        out, cut = out[:EXEC_MAX_OUTPUT], True
+    if len(err) > EXEC_MAX_OUTPUT:
+        err, cut = err[:EXEC_MAX_OUTPUT], True
+    return {"status": "ok", "code": proc.returncode, "out": decode_output(out),
+            "err": decode_output(err), "truncated": cut,
+            "elapsed": round(time.time() - started, 3), "timeout": timed_out}
+
 def handle_client(conn, manager):
     try:
+        conn.settimeout(REQUEST_TIMEOUT)
         data = recv_message(conn)
         request = json.loads(data.decode('utf-8'))
         command = request.get('command')
         if command == 'start':
-            manager.stop_openocd()
-            files = request.get('files')
-            if not files or not isinstance(files, list):
-                response = {"status": "error", "message": "Missing files list"}
-            else:
-                success, msg = manager.start_openocd(files)
-                response = {"status": "ok" if success else "error", "message": msg}
+            with manager.lock:
+                manager.stop_openocd()
+                files = request.get('files')
+                if not files or not isinstance(files, list):
+                    response = {"status": "error", "message": "Missing files list"}
+                else:
+                    success, msg = manager.start_openocd(files)
+                    response = {"status": "ok" if success else "error", "message": msg}
         elif command == 'stop':
-            success, msg = manager.stop_openocd()
+            with manager.lock:
+                success, msg = manager.stop_openocd()
             response = {"status": "ok" if success else "error", "message": msg}
+        elif command == 'exec':
+            if not manager.allow_exec:
+                response = {"status": "error",
+                            "message": "exec is disabled: restart the launcher with --allow-exec"}
+            else:
+                cmd = request.get('cmd')
+                if not cmd or not isinstance(cmd, str):
+                    response = {"status": "error", "message": "Missing cmd"}
+                else:
+                    try:
+                        timeout = float(request.get('timeout') or REQUEST_TIMEOUT)
+                    except (TypeError, ValueError):
+                        timeout = REQUEST_TIMEOUT
+                    timeout = max(1.0, min(timeout, EXEC_MAX_TIMEOUT))
+                    cwd = request.get('cwd') or None
+                    logger.info(f"Exec: {cmd} (timeout {timeout:g} s, cwd {cwd or os.getcwd()})")
+                    try:
+                        response = run_shell(cmd, timeout, cwd)
+                    except Exception as e:
+                        logger.error(f"Exec failed: {e}")
+                        response = {"status": "error", "message": f"{type(e).__name__}: {e}"}
         else:
             response = {"status": "error", "message": f"Unknown command: {command}"}
         send_message(conn, json.dumps(response).encode('utf-8'))
@@ -216,13 +329,15 @@ def parse_address(addr_str, default_host='127.0.0.1', default_port=12345):
 
 def main():
     parser = argparse.ArgumentParser(description="OpenOCD Control Server")
-    parser.add_argument('--address', default='127.0.0.1:12345',
-                        help='Bind address in format ip:port (default: 127.0.0.1:12345)')
+    parser.add_argument('--address', default='0.0.0.0:12345',
+                        help='Bind address in format ip:port (default: 0.0.0.0:12345)')
     parser.add_argument('--log-file', help='File to write OpenOCD output (optional)')
+    parser.add_argument('--allow-exec', action='store_true',
+                        help='Allow the exec command (shell commands on this machine)')
     args = parser.parse_args()
 
     host, port = parse_address(args.address)
-    manager = OpenOCDManager(log_file=args.log_file)
+    manager = OpenOCDManager(log_file=args.log_file, allow_exec=args.allow_exec)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((host, port))
@@ -230,12 +345,14 @@ def main():
     logger.info(f"Server listening on {host}:{port}")
     if args.log_file:
         logger.info(f"OpenOCD logs will be appended to {args.log_file}")
+    if args.allow_exec:
+        logger.info("exec is enabled: shell commands from clients are allowed")
 
     try:
         while True:
             conn, addr = server.accept()
             logger.info(f"Connection from {addr}")
-            handle_client(conn, manager)
+            threading.Thread(target=handle_client, args=(conn, manager), daemon=True).start()
     except KeyboardInterrupt:
         logger.info("Shutting down")
         manager.stop_openocd()

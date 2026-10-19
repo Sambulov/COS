@@ -144,6 +144,8 @@
 			"runToEntryPoint": "main",
             "gdbTarget": "${config:REMOUTE_GDB_TARGET}",
             "overrideLaunchCommands": [
+                "set remote memory-read-packet-size 1024",
+                "set remote memory-write-packet-size 1024",
                 "monitor reset halt",
                 //"monitor flash erase_sector 0 0 11"
                 //"monitor flash erase 0x08010000 0x0801FFFF"

@@ -101,7 +101,7 @@ __attribute__((naked, noreturn)) uint8_t hdl_coroutine_run_yielding(coroutine_t 
   __asm volatile("STR  R0, [SP, #0x00]");    /* coroutine_t this */
 
   __asm volatile("CBZ  R0, __cor_exit_cancel"); /* if this coroutine == NULL  then exit cancel */
-  __asm volatile("LDR  R3, [R0, #"CL_TOSTR(CO_ROUTINE_DESC_SIZE)"]");      /* R3 = ccb */
+  __asm volatile("LDR  R3, [R0, %c0]" : : "I"(CO_ROUTINE_DESC_SIZE));     /* R3 = ccb */
   __asm volatile("CBZ  R3, __cor_exit_cancel"); /* if ccb == NULL then exit cancel */
   __asm volatile("LDR  R4, [R3, #8]");       /* R4 = stack_size */
   __asm volatile("CMP  R4, #127");

@@ -14,7 +14,7 @@ typedef enum {
   HDL_AC_SUPPLY_STATUS_PQ_CAPABILITY      = 0x04, /* Injertor mode supported */
   HDL_AC_SUPPLY_STATUS_NON_ADJUSTABLE     = 0x08, /* Grid itself */
   
-  HDL_AC_SUPPLY_STATUS_OK                 = 0x40,
+  HDL_AC_SUPPLY_STATUS_LINK_OK            = 0x40,
   HDL_AC_SUPPLY_STATUS_GENERAL_FAULT      = 0x80,
 } hdl_ac_supply_status_t;
 

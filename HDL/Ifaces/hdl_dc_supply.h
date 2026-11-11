@@ -13,7 +13,7 @@ typedef enum {
   HDL_DC_SUPPLY_STATUS_CC_CAPABILITY      = 0x04,
   HDL_DC_SUPPLY_STATUS_NON_ADJUSTABLE     = 0x08,
 
-  HDL_DC_SUPPLY_STATUS_OK                 = 0x40,
+  HDL_DC_SUPPLY_STATUS_LINK_OK            = 0x40,
   HDL_DC_SUPPLY_STATUS_GENERAL_FAULT      = 0x80,
 } hdl_dc_supply_status_t;
 
